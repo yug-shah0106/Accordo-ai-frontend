@@ -1,0 +1,9 @@
+.overflow-auto{
+    scrollbar-color: #e2e3e4 #f0f0f0;
+}
+
+.css-1tktgsa-MuiPaper-root-MuiPopover-paper-MuiMenu-paper{
+    box-shadow: none !important;
+    border: 1px solid #D3DBFD !important;
+    border-radius: 8px !important;
+}
