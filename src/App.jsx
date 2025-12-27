@@ -34,8 +34,9 @@ import ChatLayout from "./Layout/ChatLayout";
 import Chat from "./components/chat/Chat";
 import ProtectedRoute from "./components/utils/ProtectedRoute";
 import PoSummary from "./components/po/PoSummary";
-import Roles from "./components/roles/roles";
+import Roles from "./components/roles/Roles";
 import GroupSummary from "./pages/GroupSummary";
+import NegotiationChat from "./components/NegotiationChat";
 
 function App() {
   return (
@@ -115,6 +116,9 @@ function App() {
           </Route>
           <Route path="test" element={<DashBoardLayout logo={sideBarLogo} />}>
             <Route index element={<Test />} />
+          </Route>
+          <Route path="test-negotiation" element={<DashBoardLayout logo={sideBarLogo} />}>
+            <Route index element={<NegotiationChat />} />
           </Route>
 
           <Route path="/successmessage" element={<SuccessMessage />} />
