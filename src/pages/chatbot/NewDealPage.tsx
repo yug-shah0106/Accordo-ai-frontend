@@ -57,13 +57,13 @@ export default function NewDealPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
+    <div className="flex flex-col min-h-full bg-gray-100">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 pt-6 pb-4 flex-shrink-0">
+        <div className="max-w-2xl mx-auto">
           <button
             onClick={() => navigate("/chatbot")}
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-4 flex items-center gap-1"
+            className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-3 flex items-center gap-1"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -75,12 +75,17 @@ export default function NewDealPage() {
             </svg>
             Back to Deals
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">Create New Deal</h1>
-          <p className="text-gray-600 mt-1">Start a new procurement negotiation</p>
+          <h1 className="text-2xl font-bold text-gray-900">Create New Deal</h1>
+          <p className="text-gray-600 text-sm mt-1">Start a new procurement negotiation</p>
         </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 px-6 pt-6 pb-6">
+        <div className="max-w-2xl mx-auto">
 
         {/* Form */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg shadow-sm pt-6 px-6 pb-0">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Title */}
             <div>
@@ -142,7 +147,7 @@ export default function NewDealPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="bg-red-50 border border-red-200 rounded-lg pt-4 px-4 pb-0">
                 <div className="flex items-start">
                   <svg
                     className="w-5 h-5 text-red-600 mt-0.5"
@@ -186,6 +191,7 @@ export default function NewDealPage() {
               </button>
             </div>
           </form>
+        </div>
         </div>
       </div>
     </div>
