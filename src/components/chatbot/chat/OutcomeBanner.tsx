@@ -106,7 +106,7 @@ export default function OutcomeBanner({
 
   return (
     <div
-      className={`${config.bgColor} border-l-4 ${config.borderColor} rounded-lg p-6 shadow-md mb-4`}
+      className={`${config.bgColor} border-l-4 ${config.borderColor} rounded-lg pt-6 px-6 pb-0 shadow-md mb-4`}
     >
       <div className="flex items-start gap-4">
         {/* Icon */}
@@ -130,7 +130,7 @@ export default function OutcomeBanner({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Final Offer */}
             {finalOffer && (finalOffer.unit_price !== null || finalOffer.payment_terms) && (
-              <div className="bg-white bg-opacity-60 rounded-lg p-3">
+              <div className="bg-white bg-opacity-60 rounded-lg pt-3 px-3 pb-0">
                 <h4 className="text-xs font-semibold text-gray-600 mb-2">Final Offer</h4>
                 <div className="space-y-1">
                   {finalOffer.unit_price !== null && (
@@ -155,7 +155,7 @@ export default function OutcomeBanner({
 
             {/* Utility Score */}
             {utilityPercent !== null && (
-              <div className="bg-white bg-opacity-60 rounded-lg p-3">
+              <div className="bg-white bg-opacity-60 rounded-lg pt-3 px-3 pb-0">
                 <h4 className="text-xs font-semibold text-gray-600 mb-2">Final Utility</h4>
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
@@ -184,7 +184,7 @@ export default function OutcomeBanner({
             )}
 
             {/* Rounds Completed */}
-            <div className="bg-white bg-opacity-60 rounded-lg p-3">
+            <div className="bg-white bg-opacity-60 rounded-lg pt-3 px-3 pb-0">
               <h4 className="text-xs font-semibold text-gray-600 mb-2">Rounds Completed</h4>
               <div className="flex items-center gap-2">
                 <svg
@@ -207,7 +207,7 @@ export default function OutcomeBanner({
 
           {/* Additional context for ESCALATED status */}
           {status === 'ESCALATED' && (
-            <div className="mt-4 bg-white bg-opacity-60 rounded-lg p-3">
+            <div className="mt-4 bg-white bg-opacity-60 rounded-lg pt-3 px-3 pb-0">
               <p className="text-xs text-gray-700">
                 <strong>Next Steps:</strong> A human negotiator should review this deal and decide
                 whether to continue negotiations, modify parameters, or close the deal.
@@ -217,7 +217,7 @@ export default function OutcomeBanner({
 
           {/* Additional context for WALKED_AWAY status */}
           {status === 'WALKED_AWAY' && (
-            <div className="mt-4 bg-white bg-opacity-60 rounded-lg p-3">
+            <div className="mt-4 bg-white bg-opacity-60 rounded-lg pt-3 px-3 pb-0">
               <p className="text-xs text-gray-700">
                 <strong>Recommendation:</strong> The vendor's offer did not meet minimum requirements.
                 Consider exploring alternative vendors or adjusting negotiation parameters.

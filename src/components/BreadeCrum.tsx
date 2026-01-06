@@ -9,7 +9,7 @@ interface BreadcrumbProps {
 
 const Breadcrumb = ({ breadcrumbItems }: BreadcrumbProps) => {
     return (
-        <div className="bg-blue-100 px-4 py-2 rounded-lg inline-flex items-center space-x-2 text-blue-600">
+        <div className="bg-blue-100 px-4 pt-2 pb-0 rounded-lg inline-flex items-center space-x-2 text-blue-600">
             {breadcrumbItems?.map((item: BreadcrumbItem, index: number) => (
                 <div key={index} className="flex items-center gap-2">
                     <span

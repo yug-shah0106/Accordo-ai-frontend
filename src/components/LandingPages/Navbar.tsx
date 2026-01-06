@@ -20,7 +20,7 @@ const Navbar = () => {
 
   return (
     <nav className="block xl:absolute w-full border-gray-200 dark:bg-gray-900 bg-black z-10">
-      <div className="w-[90%] flex items-start  mx-auto p-2 relative">
+      <div className="w-[90%] flex items-start  mx-auto pt-2 px-2 pb-0 relative">
         <div className="flex items-center justify-between w-full ">
           <Link
             to="/home"
@@ -31,7 +31,7 @@ const Navbar = () => {
 
           <button
             onClick={handleMobileMenuToggle}
-            className="block md:hidden p-2 text-white"
+            className="block md:hidden pt-2 px-2 pb-0 text-white"
             aria-label="Toggle menu"
           >
             <svg
@@ -51,11 +51,11 @@ const Navbar = () => {
           </button>
 
           <div className="items-start justify-start hidden w-full md:flex md:w-auto md:order-1">
-            <ul className="flex flex-col font-medium  p-4 md:p-0 mt-4 border border-gray-100 rounded-lg md:space-x-4 md:flex-row md:mt-0 md:border-0 dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+            <ul className="flex flex-col font-medium  pt-4 px-4 pb-0 md:p-0 mt-4 border border-gray-100 rounded-lg md:space-x-4 md:flex-row md:mt-0 md:border-0 dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
               <li>
                 <a
                   href="#"
-                  className="block py-2 mt-2 px-3 md:p-0 text-white rounded hover:bg-gray-100 md:hover:bg-transparent dark:text-white dark:hover:bg-gray-700 dark:hover:text-white"
+                  className="block pt-2 pb-0 mt-2 px-3 md:p-0 text-white rounded hover:bg-gray-100 md:hover:bg-transparent dark:text-white dark:hover:bg-gray-700 dark:hover:text-white"
                 >
                   About Us
                 </a>
@@ -68,7 +68,7 @@ const Navbar = () => {
                   onMouseLeave={handleMouseLeave}
                   className="relative"
                 >
-                  <button className="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 dark:text-white md:dark:hover:text-blue-500">
+                  <button className="flex items-center justify-between w-full pt-2 pb-0 px-3 text-white rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 dark:text-white md:dark:hover:text-blue-500">
                     {menu.title}
                     <svg
                       className="w-2.5 h-2.5 ms-2.5"
@@ -94,7 +94,7 @@ const Navbar = () => {
                           <li key={i}>
                             <a
                               href="#"
-                              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                              className="block px-4 pt-2 pb-0 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                             >
                               {option}
                             </a>
@@ -109,7 +109,7 @@ const Navbar = () => {
               {/* <li>
                 <a
                   href="#"
-                  className="block py-2 mt-2 px-3 md:p-0 text-white rounded hover:bg-gray-100 md:hover:bg-transparent dark:text-white dark:hover:bg-gray-700 dark:hover:text-white"
+                  className="block pt-2 pb-0 mt-2 px-3 md:p-0 text-white rounded hover:bg-gray-100 md:hover:bg-transparent dark:text-white dark:hover:bg-gray-700 dark:hover:text-white"
                 >
                   API
                 </a>
@@ -117,7 +117,7 @@ const Navbar = () => {
               <li>
                 <a
                   href="#"
-                  className="block py-2 mt-2 px-3 md:p-0 text-white rounded hover:bg-gray-100 md:hover:bg-transparent dark:text-white dark:hover:bg-gray-700 dark:hover:text-white"
+                  className="block pt-2 pb-0 mt-2 px-3 md:p-0 text-white rounded hover:bg-gray-100 md:hover:bg-transparent dark:text-white dark:hover:bg-gray-700 dark:hover:text-white"
                 >
                   Pricing
                 </a>
@@ -127,13 +127,13 @@ const Navbar = () => {
           <div className="hidden md:flex gap-5 md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
             <Link
               to="/sign-in"
-              className="text-white bg-[#234BF3] font-medium rounded-lg text-sm px-4 py-2 text-center"
+              className="text-white bg-[#234BF3] font-medium rounded-lg text-sm px-4 pt-2 pb-0 text-center"
             >
               Login
             </Link>
             {/* <Link
               to="/sign-up"
-              className="text-white bg-[#234BF3] font-medium rounded-lg text-sm px-4 py-2 text-center"
+              className="text-white bg-[#234BF3] font-medium rounded-lg text-sm px-4 pt-2 pb-0 text-center"
             >
               Register
             </Link> */}
@@ -145,11 +145,11 @@ const Navbar = () => {
             mobileMenuOpen ? "absolute top-full " : "hidden"
           }  `}
         >
-          <ul className="flex flex-col font-medium p-4 mt-2 border border-gray-100 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700">
+          <ul className="flex flex-col font-medium pt-4 px-4 pb-0 mt-2 border border-gray-100 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700">
             <li>
               <a
                 href="#"
-                className="block py-2 mt-2 px-3 text-gray-900 rounded hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600 dark:hover:text-white"
+                className="block pt-2 pb-0 mt-2 px-3 text-gray-900 rounded hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600 dark:hover:text-white"
               >
                 About Us
               </a>
@@ -158,7 +158,7 @@ const Navbar = () => {
               <li key={index}>
                 <button
                   onClick={() => handleMouseEnter(index)}
-                  className="flex items-center justify-between w-full py-2 px-3 text-gray-900 rounded hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                  className="flex items-center justify-between w-full pt-2 pb-0 px-3 text-gray-900 rounded hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
                 >
                   {menu.title}
                   <svg
@@ -185,7 +185,7 @@ const Navbar = () => {
                         <li key={i}>
                           <a
                             href="#"
-                            className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                            className="block px-4 pt-2 pb-0 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                           >
                             {option}
                           </a>
@@ -197,16 +197,16 @@ const Navbar = () => {
               </li>
             ))}
 
-            <div className="flex justify-end gap-6 py-2">
+            <div className="flex justify-end gap-6 pt-2 pb-0">
               <Link
                 to="/sign-in"
-                className="text-black font-semibold rounded-lg text-sm  py-2 text-center"
+                className="text-black font-semibold rounded-lg text-sm  pt-2 pb-0 text-center"
               >
                 Login
               </Link>
               {/* <Link
                 to="/sign-up"
-                className="text-white bg-[#234BF3] font-medium rounded-lg text-sm px-4 py-2 text-center"
+                className="text-white bg-[#234BF3] font-medium rounded-lg text-sm px-4 pt-2 pb-0 text-center"
               >
                 Register
               </Link> */}

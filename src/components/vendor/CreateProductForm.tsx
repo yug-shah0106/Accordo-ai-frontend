@@ -79,20 +79,24 @@ const CreateProductForm = () => {
 
 
   return (
-    <div className="w-full h-full mx-auto bg-white p-16  rounded-md">
-      <h2 className="flex items-center gap-2 text-xl font-medium mb-3">
-        <IoArrowBackOutline
-          onClick={() => {
-            navigate(-1);
-          }}
-          className="cursor-pointer"
-        />
-        {id ? "Edit Product " : "Create Product "}
-      </h2>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-16 pb-4 flex-shrink-0">
+        <h2 className="flex items-center gap-2 text-xl font-medium">
+          <IoArrowBackOutline
+            onClick={() => {
+              navigate(-1);
+            }}
+            className="cursor-pointer"
+          />
+          {id ? "Edit Product " : "Create Product "}
+        </h2>
+      </div>
 
-      <div className=" rounded-md mt-5">
+      {/* Scrollable Form Content */}
+      <div className="flex-1 overflow-y-auto px-16 pb-0">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-2 gap-6 p-6">
+          <div className="grid grid-cols-2 gap-6 pt-6 pb-0">
             <InputField
               label="Name"
               name="productName"
@@ -177,7 +181,7 @@ const CreateProductForm = () => {
               wholeInputClassName={`!my-0`}
             /> */}
           </div>
-          <div className="flex justify-start mt-6 space-x-4 p-6">
+          <div className="flex justify-start mt-6 space-x-4 pt-6 pb-0">
             <Button
               className="px-4 py-2 border border-gray-300 rounded-md !text-gray-900 !bg-white hover:bg-gray-100 !w-fit"
               onClick={() => navigate(-1)}
@@ -190,7 +194,7 @@ const CreateProductForm = () => {
               type="submit"
               disabled={isSubmitting}
               className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 !w-fit"
-            
+
             >
               {id ? "Update" : "Create"}
             </Button>

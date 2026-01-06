@@ -157,10 +157,10 @@ const CompanyProfile = ({
   };
 
   return (
-    <div className="border-2 rounded p-6">
+    <div className="border-2 rounded pt-6 px-6 pb-0">
       <div className="my-4 mx-2">
         <h3 className="text-lg font-semibold ">General Information</h3>
-        <p className="font-normal text-[#46403E] py-2">
+        <p className="font-normal text-[#46403E] pt-2 pb-0">
           Your details will be used for general information
         </p>
       </div>
@@ -231,7 +231,7 @@ const CompanyProfile = ({
         <div>
           <div className="my-4 mx-2">
             <h3 className="text-lg font-semibold">Buyer Details</h3>
-            <p className="font-normal text-[#46403E] py-2">
+            <p className="font-normal text-[#46403E] pt-2 pb-0">
               Your details will be used for Buyer Details
             </p>
           </div>
@@ -395,7 +395,7 @@ const CompanyProfile = ({
         <div>
           <div className="mt-10 mb-4 mx-2">
             <h3 className="text-lg font-semibold">Point of Contact details</h3>
-            <p className="font-normal text-[#46403E] py-2">
+            <p className="font-normal text-[#46403E] pt-2 pb-0">
               Your details will be used for Contact Details
             </p>
           </div>
@@ -467,11 +467,11 @@ const CompanyProfile = ({
         <div className="">
           <div className="mt-10 mx-4">
             <h3 className="text-lg font-semibold">Bank Details</h3>
-            <p className="font-normal text-[#46403E] py-2">
+            <p className="font-normal text-[#46403E] pt-2 pb-0">
               Your details will be used for Bank details
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-4 mt-4 p-3">
+          <div className="grid grid-cols-2 gap-4 mt-4 pt-3 px-3 pb-0">
             <InputField
               label="Bank Name"
               name="bankName"
@@ -609,7 +609,7 @@ const CompanyProfile = ({
             <h3 className="text-lg font-semibold">
               Escalation matrix
             </h3>
-            <p className="font-normal text-[#46403E] py-2">
+            <p className="font-normal text-[#46403E] pt-2 pb-0">
               Your details will be used for Escalation matrix
             </p>
           </div>
@@ -667,7 +667,7 @@ const CompanyProfile = ({
         <div>
           <div className="mt-10 mb-4 mx-2">
             <h3 className="text-lg font-semibold">Currency Details</h3>
-            <p className="font-normal text-[#46403E] py-2">
+            <p className="font-normal text-[#46403E] pt-2 pb-0">
               Your details will be used for Escalation matrix
             </p>
           </div>

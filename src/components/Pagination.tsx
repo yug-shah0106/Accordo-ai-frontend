@@ -22,7 +22,7 @@ const Pagination = ({
   };
 
   return (
-    <div className="flex justify-between items-end py-4">
+    <div className="flex justify-between items-end pt-4 pb-0">
       <p className="text-sm font-medium text-gray-500">
         {Math.min(currentPage * limit, totalDoc) === 0
           ? "No entries found"
@@ -43,7 +43,7 @@ const Pagination = ({
           <button
             key={index}
             onClick={() => handlePageClick(index + 1)}
-            className={`px-3 py-1 text-sm text-gray-700 rounded-md ${currentPage === index + 1 ? "bg-blue-100" : ""
+            className={`px-3 pt-1 pb-0 text-sm text-gray-700 rounded-md ${currentPage === index + 1 ? "bg-blue-100" : ""
               }`}
           >
             {index + 1}

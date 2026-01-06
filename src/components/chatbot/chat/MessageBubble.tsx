@@ -39,7 +39,7 @@ export default function MessageBubble({ message, round, isGrouped = false }: Mes
       } ${isVendor ? "justify-start" : "justify-end"}`}
     >
       <div
-        className={`max-w-[70%] rounded-lg p-3 ${
+        className={`max-w-[70%] rounded-lg pt-3 px-3 pb-0 ${
           isVendor
             ? "bg-white border border-gray-200"
             : "bg-blue-50 border border-blue-200 border-l-2"

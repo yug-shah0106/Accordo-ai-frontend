@@ -32,7 +32,7 @@ const VendorManagementForm = () => {
   return (
     <div className="flex w-full bg-gray-100">
       <Sidebar />
-      <div className="w-9/12 mx-auto p-8">
+      <div className="w-9/12 mx-auto pt-8 px-8 pb-0">
         <CreateProductForm
           formData={formData} 
           setFormData={setFormData} 

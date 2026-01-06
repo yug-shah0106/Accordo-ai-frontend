@@ -106,20 +106,24 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
   };
 
   return (
-    <div className="w-full h-full mx-auto bg-white p-16 rounded-md">
-      <h2 className="flex items-center gap-2 text-xl font-medium mb-3">
-        <IoArrowBackOutline
-          onClick={() => {
-            navigate(-1);
-          }}
-          className="cursor-pointer"
-        />
-        {id ? "Edit Project" : "Create Project"}
-      </h2>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-16 pb-4 flex-shrink-0">
+        <h2 className="flex items-center gap-2 text-xl font-medium">
+          <IoArrowBackOutline
+            onClick={() => {
+              navigate(-1);
+            }}
+            className="cursor-pointer"
+          />
+          {id ? "Edit Project" : "Create Project"}
+        </h2>
+      </div>
 
-      <div className="rounded-md mt-5">
+      {/* Scrollable Form Content */}
+      <div className="flex-1 overflow-y-auto px-16 pb-0">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-2 gap-6 p-6">
+          <div className="grid grid-cols-2 gap-6 pt-6 pb-0">
             {id && <InputField
               label="Project Id"
               name="projectId"
@@ -171,7 +175,7 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
             />
           </div>
 
-          <div className="flex items-center gap-2 px-6 mb-4">
+          <div className="flex items-center gap-2 mb-4">
             <div className="grow">
               <SelectField
                 label="POC"
@@ -188,8 +192,8 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
               />
             </div>
             <div className="self-end cursor-pointer">
-              <Button 
-                className="px-4 py-2.5 bg-[#2563eb] text-white hover:bg-[#1d4ed8] rounded-lg font-medium transition-all duration-200 flex items-center gap-2 min-w-[90px] justify-center shadow-sm hover:shadow-md active:shadow-inner" 
+              <Button
+                className="px-4 py-2 bg-[#2563eb] text-white hover:bg-[#1d4ed8] rounded-lg font-medium transition-all duration-200 flex items-center gap-2 min-w-[90px] justify-center shadow-sm hover:shadow-md active:shadow-inner" 
                 onClick={async () => {
                   const selectedPoc = watch("selectedPoc");
                   if (!selectedPoc) {
@@ -215,14 +219,14 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
           </div>
 
           {errors.pointOfContact && (
-            <div className="px-6 text-red-500 text-sm mb-4">
+            <div className="text-red-500 text-sm mb-4">
               {errors.pointOfContact.message}
             </div>
           )}
 
           {Array.isArray(watch("pointOfContact")) &&
             watch("pointOfContact")?.length > 0 && (
-              <div className="flex flex-wrap gap-4 px-6">
+              <div className="flex flex-wrap gap-4">
                 {watch("pointOfContact")?.map((i) => {
                   const matchPoc = data?.find((poc) => poc?.id == i);
                   const profilePic = matchPoc?.profilePic
@@ -259,7 +263,7 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
               </div>
             )}
 
-          <div className="flex justify-end gap-4 px-6 mt-8">
+          <div className="flex justify-end gap-4 mt-8">
             <Button
               type="button"
               className="px-6 py-3 bg-white border-2 border-[#e5e7eb] text-[#374151] hover:bg-[#f3f4f6] hover:border-[#d1d5db] rounded-lg font-medium transition-all duration-200 flex items-center gap-2 min-w-[120px] justify-center shadow-sm hover:shadow-md active:shadow-inner"
@@ -271,8 +275,8 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
               type="submit"
               disabled={isSubmitting || !isValid}
               className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 min-w-[120px] justify-center shadow-sm hover:shadow-md active:shadow-inner
-                ${isSubmitting || !isValid 
-                  ? 'bg-[#f3f4f6] text-[#9ca3af] cursor-not-allowed shadow-none' 
+                ${isSubmitting || !isValid
+                  ? 'bg-[#f3f4f6] text-[#9ca3af] cursor-not-allowed shadow-none'
                   : 'bg-[#2563eb] text-white hover:bg-[#1d4ed8] active:bg-[#1e40af]'
                 }`}
             >

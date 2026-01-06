@@ -23,14 +23,14 @@ const DateFromTo = ({ label, value, onChange }: DateFromToProps) => {
           type="date"
           value={value?.from || ""}
           onChange={(e) => onChange("from", e.target.value)}
-          className="border border-gray-300 rounded-md px-2 py-1 text-sm w-full"
+          className="border border-gray-300 rounded-md px-2 pt-1 pb-0 text-sm w-full"
           inputProps={{  style: { padding: "4px 8px" } }} 
         />
         <TextField
           type="date"
           value={value?.to || ""}
           onChange={(e) => onChange("to", e.target.value)}
-          className="border border-gray-300 rounded-md px-2 py-1 text-sm w-full"
+          className="border border-gray-300 rounded-md px-2 pt-1 pb-0 text-sm w-full"
           inputProps={{ min: value?.from || today, style: { padding: "4px 8px" } }} 
         />
       </Box>

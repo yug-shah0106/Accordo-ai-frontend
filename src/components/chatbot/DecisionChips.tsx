@@ -12,7 +12,7 @@ interface DecisionChipsProps {
 
 export default function DecisionChips({ decisions, onSelect }: DecisionChipsProps) {
   const getChipStyles = (decision: DecisionAction): string => {
-    const baseStyles = 'inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-200';
+    const baseStyles = 'inline-flex items-center px-4 pt-2 pb-0 rounded-full text-sm font-medium transition-all duration-200';
 
     switch (decision) {
       case 'ACCEPT':

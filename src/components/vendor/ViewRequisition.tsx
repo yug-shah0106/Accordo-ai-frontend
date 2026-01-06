@@ -292,7 +292,7 @@ const ViewRequisition = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 h-full">
+    <div className="bg-white rounded-lg shadow-md pt-6 px-6 pb-0 h-full">
       <div className="mb-4">
         <p className="text-xl font-medium text-gray-800 flex items-center gap-2">
           <FaArrowLeft
@@ -311,14 +311,14 @@ const ViewRequisition = () => {
             onChange={(e) => debounce(e.target.value)}
             type="text"
             placeholder=" Search by name"
-            className="border border-gray-300 rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full px-4"
+            className="border border-gray-300 rounded-md pr-10 pt-2 pb-0 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full px-4"
           />
           <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
         </div>
         <div className="flex gap-6">
           <button
             onClick={() => setIsFilterModalOpen((prev) => (!prev))}
-            className="rounded-md px-4 py-2 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1">
+            className="rounded-md px-4 pt-2 pb-0 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1">
             <VscSettings /> Filter <FaCaretDown />
           </button>
 
@@ -336,7 +336,7 @@ const ViewRequisition = () => {
           <Link
             to="/project-management/create-requisition"
             state={state}
-            className="bg-[#234BF3] text-white font-medium rounded-md px-4 py-2 text-sm flex items-center gap-2"
+            className="bg-[#234BF3] text-white font-medium rounded-md px-4 pt-2 pb-0 text-sm flex items-center gap-2"
           >
             <PiPlusSquareBold className="font-extrabold text-xl rounded-3xl" />{" "}
             Add
@@ -363,7 +363,7 @@ const ViewRequisition = () => {
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 right-0 w-1/4 p-6 bg-white shadow-lg h-full z-10 transition-transform transform ${isSidebarOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 right-0 w-1/4 pt-6 px-6 pb-0 bg-white shadow-lg h-full z-10 transition-transform transform ${isSidebarOpen ? "translate-x-0" : "translate-x-full"
           }`}
       >
         <div className="">
@@ -378,7 +378,7 @@ const ViewRequisition = () => {
               <Link
                 to="/project-management/create-requisition"
                 state={state}
-                className="bg-[#FEEBDB] text-[#B24D00] font-sm rounded-full px-4 py-2 text-sm flex items-center gap-2"
+                className="bg-[#FEEBDB] text-[#B24D00] font-sm rounded-full px-4 pt-2 pb-0 text-sm flex items-center gap-2"
               >
                 Create
               </Link>
@@ -482,7 +482,7 @@ const ViewRequisition = () => {
         </div>
 
         {selectedProject?.RequisitionAttachment?.length > 0 && (
-          <div className="mt-2 py-2">
+          <div className="mt-2 pt-2 pb-0">
             <p className="font-medium text-gray-500">Attachments</p>
             <div className="flex gap-4 mt-4">
               {selectedProject?.RequisitionAttachment?.map((attachment) => (

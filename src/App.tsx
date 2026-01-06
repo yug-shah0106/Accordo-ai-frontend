@@ -43,9 +43,11 @@ import ConversationRoom from "./pages/chatbot/ConversationRoom";
 import ArchivedDealsPage from "./pages/chatbot/ArchivedDealsPage";
 import TrashPage from "./pages/chatbot/TrashPage";
 import SummaryPage from "./pages/chatbot/SummaryPage";
+import NegotiationSummary from "./pages/chatbot/NegotiationSummary";
 import DemoScenarios from "./pages/chatbot/DemoScenarios";
 import AboutPage from "./pages/chatbot/AboutPage";
 import ConversationDealPage from "./pages/chatbot/ConversationDealPage";
+import Feedback from "./pages/Feedback";
 
 function App() {
   return (
@@ -236,6 +238,14 @@ function App() {
             element={<DashBoardLayout logo={sideBarLogo} />}
           ></Route>
 
+          {/* Feedback Route */}
+          <Route
+            path="/feedback"
+            element={<DashBoardLayout logo={sideBarLogo} />}
+          >
+            <Route index element={<Feedback />} />
+          </Route>
+
           {/* Chatbot Routes */}
           <Route
             path="/chatbot"
@@ -246,6 +256,7 @@ function App() {
             <Route path="deals/:dealId" element={<NegotiationRoom />} />
             <Route path="conversation/:dealId" element={<ConversationRoom />} />
             <Route path="deals/:dealId/summary" element={<SummaryPage />} />
+            <Route path="summary" element={<NegotiationSummary />} />
             <Route path="archived" element={<ArchivedDealsPage />} />
             <Route path="trash" element={<TrashPage />} />
             <Route path="demo" element={<DemoScenarios />} />

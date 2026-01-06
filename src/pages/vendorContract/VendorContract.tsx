@@ -169,22 +169,22 @@ const VendorContact = () => {
                 <table className="w-full border-collapse border border-gray-300">
                   <thead>
                     <tr>
-                      <th className="border border-gray-300 px-4 py-2">Product Name</th>
-                      <th className="border border-gray-300 px-4 py-2">Required Quantity</th>
-                      <th className="border border-gray-300 px-4 py-2">Your Quoted Price</th>
-                      <th className="border border-gray-300 px-4 py-2">Your Delivery Date</th>
+                      <th className="border border-gray-300 px-4 pt-2 pb-0">Product Name</th>
+                      <th className="border border-gray-300 px-4 pt-2 pb-0">Required Quantity</th>
+                      <th className="border border-gray-300 px-4 pt-2 pb-0">Your Quoted Price</th>
+                      <th className="border border-gray-300 px-4 pt-2 pb-0">Your Delivery Date</th>
                     </tr>
                   </thead>
                   <tbody>
                     {contracts?.Requisition?.RequisitionProduct?.map((product, idx) => (
                       <tr key={product.id}>
-                        <td className="border border-gray-300 px-4 py-2">
+                        <td className="border border-gray-300 px-4 pt-2 pb-0">
                           {product.Product.productName}
                         </td>
-                        <td className="border border-gray-300 px-4 py-2">
+                        <td className="border border-gray-300 px-4 pt-2 pb-0">
                           {product.qty || 0}
                         </td>
-                        <td className="border border-gray-300 px-4 py-2">
+                        <td className="border border-gray-300 px-4 pt-2 pb-0">
                           <InputField
                             type="number"
                             min={0}
@@ -196,7 +196,7 @@ const VendorContact = () => {
                             wholeInputClassName="w-full"
                           />
                         </td>
-                        <td className="border border-gray-300 px-4 py-2">
+                        <td className="border border-gray-300 px-4 pt-2 pb-0">
                           <DateField
                             name={`deliveryDate_${product.id}`}
                             register={register}
@@ -213,7 +213,7 @@ const VendorContact = () => {
             )}
 
             {/* Additional Terms Section */}
-            <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
+            <div className="bg-white rounded-lg pt-6 px-6 pb-0 shadow-sm mb-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Terms</h3>
               <div className="space-y-4">
                 <SelectField

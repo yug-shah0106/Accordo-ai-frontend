@@ -40,10 +40,10 @@ export default function PolicyCard({ policy, description }: PolicyCardProps) {
   };
 
   return (
-    <div className="rounded-lg border bg-white p-6 shadow-sm">
+    <div className="rounded-lg border bg-white pt-6 px-6 pb-0 shadow-sm">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Vendor Policy</h3>
 
-      <div className={`inline-flex items-center px-4 py-2 rounded-full font-medium border mb-4 ${getPolicyColor()}`}>
+      <div className={`inline-flex items-center px-4 pt-2 pb-0 rounded-full font-medium border mb-4 ${getPolicyColor()}`}>
         {policy}
       </div>
 

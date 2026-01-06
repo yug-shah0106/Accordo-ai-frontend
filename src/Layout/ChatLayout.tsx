@@ -7,9 +7,9 @@ interface ChatLayoutProps {
 
 const ChatLayout = ({ logo }: ChatLayoutProps) => {
     return (
-        <div className="flex h-screen  bg-[#F5F6F8]">
+        <div className="flex min-h-screen  bg-[#F5F6F8]">
             <ChatSidebar logo={logo} />
-            <main className="flex-1 flex-grow   h-full overflow-auto hide-scrollbar">
+            <main className="flex-1 flex-grow   min-h-full">
                 <Outlet />
             </main>
         </div>

@@ -56,8 +56,6 @@ const RoleSelectionModal = ({ onClose,edit_role }) => {
             name: "Product Management",
             permissions: [
                 0,1,2,3,
-            ],permissions: [
-                0,1,2,3,
             ],
         },
         {
@@ -120,7 +118,7 @@ const RoleSelectionModal = ({ onClose,edit_role }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white w-[700px] rounded-lg shadow-lg">
                 {/* Header */}
-                <div className="flex justify-between items-center p-4 border-b">
+                <div className="flex justify-between items-center pt-4 px-4 pb-0 border-b">
                     <h2 className="text-xl font-bold">Add Project Level Role</h2>
                     <IoClose className="text-2xl cursor-pointer" onClick={onClose} />
                 </div>
@@ -133,7 +131,7 @@ const RoleSelectionModal = ({ onClose,edit_role }) => {
                             value={roleName}
                             onChange={(e) => setRoleName(e.target.value)}
                             placeholder="Enter role name"
-                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 pt-2 pb-0 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
 
@@ -143,7 +141,7 @@ const RoleSelectionModal = ({ onClose,edit_role }) => {
                         {modules.map((module) => (
                             <div
                                 key={module.id}
-                                className={`border rounded-lg p-4 shadow-sm ${selectedModules[module.id]
+                                className={`border rounded-lg pt-4 px-4 pb-0 shadow-sm ${selectedModules[module.id]
                                         ? "bg-gray-50"
                                         : "bg-gray-100 opacity-70"
                                     }`}
@@ -185,15 +183,15 @@ const RoleSelectionModal = ({ onClose,edit_role }) => {
                 </div>
 
                 {/* Footer Buttons */}
-                <div className="flex justify-end gap-4 p-4 border-t">
+                <div className="flex justify-end gap-4 pt-4 px-4 pb-0 border-t">
                     <Button
-                        className="bg-gray-10 text-gray-700 px-4 py-2 rounded-md"
+                        className="bg-gray-10 text-gray-700 px-4 pt-2 pb-0 rounded-md"
                         onClick={onClose}
                     >
                         Cancel
                     </Button>
                     <Button
-                        className={`px-4 py-2 rounded-md ${roleName
+                        className={`px-4 pt-2 pb-0 rounded-md ${roleName
                                 ? "bg-red-500 text-white hover:bg-red-600"
                                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
                             }`}

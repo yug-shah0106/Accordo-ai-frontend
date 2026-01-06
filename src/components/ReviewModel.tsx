@@ -31,20 +31,20 @@ const ReviewModal = ({ show, rating, setRating, review, setReview, onClose, onSu
 
                 </div>
                 <hr className="mt-3" />
-                <div className="px-2 pb-6">
+                <div className="px-2 pb-0">
 
                     <textarea
-                        className="w-full  rounded-lg p-2  text-gray-700"
+                        className="w-full  rounded-lg pt-2 px-2 pb-0  text-gray-700"
                         placeholder="Leave a review (optional)"
                         value={review}
                         onChange={(e) => setReview(e.target.value)}
                     ></textarea>
 
                     <div className="flex justify-center gap-5 mt-4">
-                        <button className="px-4 py-2 border border-[#18100E] rounded-md text-[#18100E] hover:bg-gray-200" onClick={onClose}>
+                        <button className="px-4 pt-2 pb-0 border border-[#18100E] rounded-md text-[#18100E] hover:bg-gray-200" onClick={onClose}>
                             Dismiss
                         </button>
-                        <button className="px-4 py-2 bg-[#234BF3] text-white rounded-md hover:bg-blue-700" onClick={onSubmit}>
+                        <button className="px-4 pt-2 pb-0 bg-[#234BF3] text-white rounded-md hover:bg-blue-700" onClick={onSubmit}>
                             Submit
                         </button>
                     </div>

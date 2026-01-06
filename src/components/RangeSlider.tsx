@@ -33,7 +33,7 @@ const RangeSlider = ({ label, description, value, range, onChange, onInputChange
           />
         </div>
         <Box className="flex gap-4 mt-2">
-          <div className="border border-gray-300 rounded-md px-2 py-1">
+          <div className="border border-gray-300 rounded-md px-2 pt-1 pb-0">
             <label className="text-xs font-Roboto font-normal text-gray-600">Min  {label}</label>
             <input
               type="number"
@@ -43,7 +43,7 @@ const RangeSlider = ({ label, description, value, range, onChange, onInputChange
               placeholder="Min"
             />
           </div>
-          <div className="border border-gray-300 rounded-md  px-2 py-1">
+          <div className="border border-gray-300 rounded-md  px-2 pt-1 pb-0">
             <label className="text-xs font-Roboto font-normal text-gray-600">Max  {label}</label>
             <input
               type="number"

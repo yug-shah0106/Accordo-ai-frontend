@@ -95,9 +95,10 @@ const AddVendor: React.FC = () => {
   }, [id, currentStep]);
 
   return (
-    <div className="w-full min-h-full mx-auto bg-white py-16 px-8 xl:px-16  rounded-md">
-      <div className="mb-4 flex border-b-2 pb-4 justify-between">
-        <p className="text-xl  font-semibold text-gray-800 flex items-center gap-2">
+    <div className="flex flex-col min-h-full">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-8 xl:px-16 pb-4 flex-shrink-0">
+        <p className="text-xl font-semibold text-gray-800 flex items-center gap-2">
           <IoArrowBackOutline
             onClick={() => {
               navigate(-1);
@@ -105,12 +106,14 @@ const AddVendor: React.FC = () => {
             className="cursor-pointer"
           />
           {/* {id ? "Edit" : "Add"} */}
-           Vendor 
+           Vendor
         </p>
       </div>
 
-      <div className="flex flex-wrap xl:flex-nowrap">
-        <div className="xl:w-[20%] h-[20%] mt-4 rounded p-6 border-2 sm:w-full ">
+      {/* Form Content */}
+      <div className="flex-1 px-8 xl:px-16 pb-6">
+        <div className="flex flex-wrap xl:flex-nowrap pt-4">
+        <div className="xl:w-[20%] h-[20%] mt-4 rounded pt-6 px-6 pb-0 border-2 sm:w-full ">
           <h2 className="text-lg font-semibold border-b-2">Details </h2>
           <ul className="sm:flex xl:block xl:whitespace-normal scroll_hide whitespace-nowrap overflow-x-auto gap-3 sm:justify-between text-sm">
             {/* Basic Information */}
@@ -213,7 +216,7 @@ const AddVendor: React.FC = () => {
           </ul>
         </div>
 
-        <div className="w-full py-4 xl:p-4">
+        <div className="w-full pt-4 pb-0 xl:p-4">
           {currentStep === 1 && (
             <VendorGeneralInformation
               currentStep={currentStep}
@@ -283,6 +286,7 @@ const AddVendor: React.FC = () => {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 };

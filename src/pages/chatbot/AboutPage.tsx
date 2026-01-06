@@ -5,8 +5,8 @@
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto px-6 py-12">
+    <div className="h-full bg-gray-50">
+      <div className="max-w-5xl mx-auto px-6 pt-12 pb-0">
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -39,7 +39,7 @@ export default function AboutPage() {
         {/* Main Content Blocks */}
         <div className="space-y-8">
           {/* Problem Block */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm pt-8 px-8 pb-0">
             <h2 className="text-2xl font-bold text-red-600 mb-2">The Problem</h2>
             <h3 className="text-xl font-semibold text-gray-900 mb-4">
               Negotiations Don't Scale
@@ -70,7 +70,7 @@ export default function AboutPage() {
           </div>
 
           {/* Solution Block */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm pt-8 px-8 pb-0">
             <h2 className="text-2xl font-bold text-blue-600 mb-2">The Solution</h2>
             <h3 className="text-xl font-semibold text-gray-900 mb-4">
               Policy-Controlled Negotiation Agent
@@ -101,7 +101,7 @@ export default function AboutPage() {
           </div>
 
           {/* How It Works Block */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm pt-8 px-8 pb-0">
             <h2 className="text-2xl font-bold text-green-600 mb-2">How It Works</h2>
             <h3 className="text-xl font-semibold text-gray-900 mb-6">
               Extract • Evaluate • Counter • Audit
@@ -163,7 +163,7 @@ export default function AboutPage() {
           </div>
 
           {/* Safety Block */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm pt-8 px-8 pb-0">
             <h2 className="text-2xl font-bold text-purple-600 mb-2">Why It's Safe</h2>
             <h3 className="text-xl font-semibold text-gray-900 mb-6">
               Guardrails + Human Approval (Future)
@@ -174,7 +174,7 @@ export default function AboutPage() {
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="border border-purple-200 rounded-lg p-4">
+              <div className="border border-purple-200 rounded-lg pt-4 px-4 pb-0">
                 <h4 className="text-lg font-semibold text-gray-900 mb-2">Policy Guardrails</h4>
                 <p className="text-gray-700 text-sm">
                   Hard limits on acceptable terms (e.g., max price, minimum payment terms).
@@ -182,7 +182,7 @@ export default function AboutPage() {
                 </p>
               </div>
 
-              <div className="border border-purple-200 rounded-lg p-4">
+              <div className="border border-purple-200 rounded-lg pt-4 px-4 pb-0">
                 <h4 className="text-lg font-semibold text-gray-900 mb-2">Utility Thresholds</h4>
                 <p className="text-gray-700 text-sm">
                   Automatic acceptance/walk-away thresholds based on calculated utility scores.
@@ -190,7 +190,7 @@ export default function AboutPage() {
                 </p>
               </div>
 
-              <div className="border border-purple-200 rounded-lg p-4">
+              <div className="border border-purple-200 rounded-lg pt-4 px-4 pb-0">
                 <h4 className="text-lg font-semibold text-gray-900 mb-2">Full Transparency</h4>
                 <p className="text-gray-700 text-sm">
                   Every decision is logged with reasoning. Review why the agent accepted,
@@ -198,7 +198,7 @@ export default function AboutPage() {
                 </p>
               </div>
 
-              <div className="border border-purple-200 rounded-lg p-4">
+              <div className="border border-purple-200 rounded-lg pt-4 px-4 pb-0">
                 <h4 className="text-lg font-semibold text-gray-900 mb-2">Human Approval (Future)</h4>
                 <p className="text-gray-700 text-sm">
                   Optional human-in-the-loop approval for high-value deals or when guardrails
@@ -210,7 +210,7 @@ export default function AboutPage() {
         </div>
 
         {/* CTA Section */}
-        <div className="mt-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-8 text-center text-white">
+        <div className="mt-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg pt-8 px-8 pb-0 text-center text-white">
           <h2 className="text-3xl font-bold mb-4">Ready to see it in action?</h2>
           <p className="text-lg mb-6 opacity-90">
             Create a deal and watch Accordo.ai negotiate on your behalf.

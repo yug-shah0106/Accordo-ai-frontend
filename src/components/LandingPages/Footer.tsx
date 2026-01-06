@@ -8,7 +8,7 @@ const Footer = () => {
         {/* <div className="py-6 xl:py-28 xl:px-60 rounded-b-[174px] xl:flex justify-between relative">
           <div className="w-full  xl:w-[60%] ">
             <div className="w-[70%] mx-auto my-6">
-              <h1 className="text-2xl xl:text-5xl py-2">
+              <h1 className="text-2xl xl:text-5xl pt-2 pb-0">
                 Lets Get in
                 <span className="text-[#656ED3] font-bold">Touch!</span>
               </h1>
@@ -32,7 +32,7 @@ const Footer = () => {
             />
           </div>
           <div className="w-full xl:w-[40%] ">
-            <form className="bg-[#0d0d0d] border border-[#232323] px-10 py-10 rounded-xl w-[80%] mx-auto">
+            <form className="bg-[#0d0d0d] border border-[#232323] px-10 pt-10 pb-0 rounded-xl w-[80%] mx-auto">
               <div className="mb-4">
                 <label
                   htmlFor="name"
@@ -43,7 +43,7 @@ const Footer = () => {
                 <input
                   type="text"
                   id="name"
-                  className="w-full border border-[#343434] bg-[#1f1f1f] rounded-md px-3 py-2 text-sm focus:outline-none"
+                  className="w-full border border-[#343434] bg-[#1f1f1f] rounded-md px-3 pt-2 pb-0 text-sm focus:outline-none"
                 />
               </div>
               <div className="mb-4">
@@ -56,7 +56,7 @@ const Footer = () => {
                 <input
                   type="email"
                   id="email"
-                  className="w-full border border-[#343434] bg-[#1f1f1f] rounded-md px-3 py-2 text-sm focus:outline-none"
+                  className="w-full border border-[#343434] bg-[#1f1f1f] rounded-md px-3 pt-2 pb-0 text-sm focus:outline-none"
                 />
               </div>
               <div className="mb-6">
@@ -68,14 +68,14 @@ const Footer = () => {
                 </label>
                 <textarea
                   id="message"
-                  className="w-full border border-[#343434] bg-[#1f1f1f] rounded-md px-3 py-2 text-sm focus:outline-none"
+                  className="w-full border border-[#343434] bg-[#1f1f1f] rounded-md px-3 pt-2 pb-0 text-sm focus:outline-none"
                   rows="4"
                 ></textarea>
               </div>
               <div className="w-full text-end">
                 <button
                   type="submit"
-                  className=" bg-[#234BF3] text-white rounded p-2 transition"
+                  className=" bg-[#234BF3] text-white rounded pt-2 px-2 pb-0 transition"
                 >
                   Submit
                 </button>
@@ -83,11 +83,11 @@ const Footer = () => {
             </form>
           </div>
         </div> */}
-        <div className="xl:pb-20 xl:pt-32 py-10 lg:w-[80%] w-[90%] mx-auto">
+        <div className="xl:pb-20 xl:pt-32 pt-10 pb-0 lg:w-[80%] w-[90%] mx-auto">
           <div className="grid lg:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4">
             <div className="lg:col-span-1 sm:col-span-3 col-span-2">
               <img src={logo} alt="logo" className="h-28" />
-              {/* <p className="text-[#234BF3] py-2">info@accordo.ai</p> */}
+              {/* <p className="text-[#234BF3] pt-2 pb-0">info@accordo.ai</p> */}
             </div>
             <div className="px-3 md:px-4">
               <p className="new-design-small mb-6 text-white">Company</p>

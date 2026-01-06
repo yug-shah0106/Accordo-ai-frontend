@@ -20,7 +20,7 @@ export default function DealRules({ config }: DealRulesProps) {
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between pt-6 px-6 pb-0 hover:bg-gray-50 transition-colors"
       >
         <h3 className="text-lg font-semibold text-gray-900">Deal Rules</h3>
         <svg
@@ -35,7 +35,7 @@ export default function DealRules({ config }: DealRulesProps) {
 
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="px-6 pb-6 space-y-6">
+        <div className="px-6 pb-0 space-y-6">
           {/* Price Parameters */}
           <div className="border-t border-gray-200 pt-4">
             <h4 className="text-sm font-semibold text-gray-700 mb-3">Price Parameters</h4>
@@ -77,7 +77,7 @@ export default function DealRules({ config }: DealRulesProps) {
                   {parameters.payment_terms.options.map((option) => (
                     <span
                       key={option}
-                      className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800"
+                      className="inline-flex items-center px-2 pt-1 pb-0 rounded text-xs font-medium bg-blue-100 text-blue-800"
                     >
                       {option}
                     </span>

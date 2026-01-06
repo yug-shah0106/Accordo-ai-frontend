@@ -62,7 +62,7 @@ export default function SignUp() {
   };
 
   return (
-    <div className="w-full max-w-sm p-6 mx-auto mt-8">
+    <div className="w-full max-w-sm pt-6 px-6 pb-0 mx-auto mt-8">
       <h2 className="text-2xl font-bold text-center text-gray-800">Register</h2>
 
       <form className="mt-6" onSubmit={handleSubmit(onSubmit)}>
@@ -141,7 +141,7 @@ export default function SignUp() {
       )}
 
       <div className="mt-6 text-center text-sm text-gray-600">
-        <div className="bg-[#D3DBFD33]/[20%] py-3 rounded-md text-[#18100E]">
+        <div className="bg-[#D3DBFD33]/[20%] pt-3 pb-0 rounded-md text-[#18100E]">
           <p>
             Don't have an account?{" "}
             <Link to="/sign-in" className=" hover:underline font-bold">

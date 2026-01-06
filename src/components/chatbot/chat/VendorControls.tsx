@@ -121,7 +121,7 @@ export default function VendorControls({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+    <div className="bg-white border border-gray-200 rounded-lg pt-4 px-4 pb-0 shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-900">Vendor Autopilot</h3>
@@ -143,7 +143,7 @@ export default function VendorControls({
           value={selectedScenario}
           onChange={(e) => setSelectedScenario(e.target.value as ScenarioType)}
           disabled={isControlsDisabled}
-          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-3 pt-2 pb-0 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <option value="SOFT">Soft (Flexible vendor)</option>
           <option value="HARD">Hard (Tough negotiator)</option>
@@ -153,7 +153,7 @@ export default function VendorControls({
 
       {/* Progress Indicator */}
       {isNegotiating && (
-        <div className="mb-4 bg-gray-50 rounded-lg p-3">
+        <div className="mb-4 bg-gray-50 rounded-lg pt-3 px-3 pb-0">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-medium text-gray-600">Progress</span>
             <span className="text-xs text-gray-500">
@@ -174,14 +174,14 @@ export default function VendorControls({
         <button
           onClick={handleAutoNext}
           disabled={isControlsDisabled}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-4 pt-2 pb-0 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           Auto Next
         </button>
         <button
           onClick={handleRunFullDemo}
           disabled={isControlsDisabled}
-          className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 active:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-4 pt-2 pb-0 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 active:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           Run Full Demo
         </button>
@@ -191,7 +191,7 @@ export default function VendorControls({
       {isRunning && (
         <button
           onClick={handleStop}
-          className="w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-300 rounded-lg hover:bg-red-100 active:bg-red-200 transition-colors"
+          className="w-full px-4 pt-2 pb-0 text-sm font-medium text-red-600 bg-red-50 border border-red-300 rounded-lg hover:bg-red-100 active:bg-red-200 transition-colors"
         >
           Stop Autopilot
         </button>
@@ -199,7 +199,7 @@ export default function VendorControls({
 
       {/* Status Messages */}
       {!isNegotiating && (
-        <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+        <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg pt-3 px-3 pb-0">
           <p className="text-xs text-yellow-800">
             <span className="font-semibold">Status: {dealStatus}</span>
             <br />
@@ -210,7 +210,7 @@ export default function VendorControls({
 
       {/* Error Message */}
       {error && (
-        <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3">
+        <div className="mt-3 bg-red-50 border border-red-200 rounded-lg pt-3 px-3 pb-0">
           <p className="text-xs text-red-800">
             <span className="font-semibold">Error:</span> {error}
           </p>

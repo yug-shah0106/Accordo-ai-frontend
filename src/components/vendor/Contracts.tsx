@@ -317,7 +317,7 @@ const Contracts = () => {
 
   return (
     <div className="w-full h-full">
-      <div className="bg-white rounded-lg shadow-md p-6 h-full">
+      <div className="bg-white rounded-lg shadow-md pt-6 px-6 pb-0 h-full">
         <div className=" justify-between gap-2 mb-4">
           <div className="mb-4">
             <p className="text-xl font-semibold text-gray-800 flex items-center gap-2">
@@ -359,20 +359,20 @@ const Contracts = () => {
                 onChange={(e) => debounce(e.target.value)}
                 type="text"
                 placeholder="Search Product"
-                className="border p-2 border-gray-300 rounded-md pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full"
+                className="border pt-2 px-2 pb-0 border-gray-300 rounded-md pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full"
               />
               <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
             </div>
             <div className="flex gap-6">
               <button
                 onClick={() => setIsFilterModalOpen((prev) => !prev)}
-                className="rounded-md px-4 py-2 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1"
+                className="rounded-md px-4 pt-2 pb-0 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1"
               >
                 <VscSettings /> Filter <FaCaretDown />
               </button>
               <button
                 // to={`/requisition-management/edit-requisition/${state.id}?redirect=3`}
-                className="bg-[#234BF3] text-white font-medium rounded-md px-4 py-2 text-sm flex items-center gap-2"
+                className="bg-[#234BF3] text-white font-medium rounded-md px-4 pt-2 pb-0 text-sm flex items-center gap-2"
                 onClick={handleNavigation}
               >
                 <PiPlusSquareBold className="font-bold text-xl rounded-3xl" />{" "}
@@ -415,19 +415,19 @@ const Contracts = () => {
 
         {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-md shadow-md w-1/3">
+            <div className="bg-white pt-6 px-6 pb-0 rounded-md shadow-md w-1/3">
               <p className="text-lg font-semibold mb-4">
                 Are you sure you want to approve this contract?
               </p>
               <div className="flex justify-end gap-4">
                 <button
-                  className="px-4 py-2 bg-gray-300 rounded-md"
+                  className="px-4 pt-2 pb-0 bg-gray-300 rounded-md"
                   onClick={() => setIsModalOpen(false)}
                 >
                   Cancel
                 </button>
                 <button
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md"
+                  className="px-4 pt-2 pb-0 bg-blue-600 text-white rounded-md"
                   onClick={() => handleContractApproved(currentRow)}
                 >
                   Yes, Approve
@@ -527,7 +527,7 @@ const Contracts = () => {
                 return (
                   <div className="space-y-6">
                     {/* Vendor Information */}
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg pt-4 px-4 pb-0 border border-blue-100">
                       <div className="flex items-center justify-between">
                         <div>
                           <h3 className="text-lg font-semibold text-gray-800">
@@ -538,7 +538,7 @@ const Contracts = () => {
                           </p>
                         </div>
                         <div className="text-right">
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                          <span className={`inline-flex items-center px-3 pt-1 pb-0 rounded-full text-xs font-medium ${
                             contractModel?.status === "Accepted" ? "bg-green-100 text-green-800" :
                             contractModel?.status === "Rejected" ? "bg-red-100 text-red-800" :
                             contractModel?.status === "InitialQuotation" ? "bg-blue-100 text-blue-800" :
@@ -552,7 +552,7 @@ const Contracts = () => {
 
                     {/* Products Table */}
                     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-                      <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                      <div className="bg-gray-50 px-6 pt-4 pb-0 border-b border-gray-200">
                         <h4 className="text-lg font-semibold text-gray-800 flex items-center">
                           <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -564,19 +564,19 @@ const Contracts = () => {
                         <table className="w-full">
                           <thead className="bg-gray-50">
                             <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Product
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Quantity
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Quoted Price
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Total Value
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Delivery Date
                               </th>
                             </tr>
@@ -589,27 +589,27 @@ const Contracts = () => {
                               
                               return (
                                 <tr key={i} className="hover:bg-gray-50 transition-colors">
-                                  <td className="px-6 py-4 whitespace-nowrap">
+                                  <td className="px-6 pt-4 pb-0 whitespace-nowrap">
                                     <div className="text-sm font-medium text-gray-900">
                                       {product?.productName || "N/A"}
                                     </div>
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
+                                  <td className="px-6 pt-4 pb-0 whitespace-nowrap">
                                     <div className="text-sm text-gray-900">
                                       {quantity}
                                     </div>
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
+                                  <td className="px-6 pt-4 pb-0 whitespace-nowrap">
                                     <div className="text-sm text-gray-900 font-semibold">
                                       {product?.quotedPrice ? `₹${product.quotedPrice}` : "N/A"}
                                     </div>
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
+                                  <td className="px-6 pt-4 pb-0 whitespace-nowrap">
                                     <div className="text-sm text-gray-900 font-semibold text-green-600">
                                       {totalValue > 0 ? `₹${totalValue.toLocaleString()}` : "N/A"}
                                     </div>
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
+                                  <td className="px-6 pt-4 pb-0 whitespace-nowrap">
                                     <div className="text-sm text-gray-900">
                                       {product?.deliveryDate ? new Date(product.deliveryDate).toLocaleDateString() : "N/A"}
                                     </div>
@@ -623,14 +623,14 @@ const Contracts = () => {
                     </div>
 
                     {/* Payment Terms Section */}
-                    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                    <div className="bg-white rounded-lg border border-gray-200 pt-6 px-6 pb-0 shadow-sm">
                       <div className="flex items-center mb-4">
                         <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                         </svg>
                         <h4 className="text-lg font-semibold text-gray-800">Payment Terms</h4>
                       </div>
-                      <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+                      <div className="bg-blue-50 rounded-lg pt-4 px-4 pb-0 border border-blue-100">
                         <p className="text-sm font-medium text-blue-900">
                           {formattedPaymentTerms}
                         </p>
@@ -639,14 +639,14 @@ const Contracts = () => {
 
                     {/* Additional Notes Section */}
                     {additionalNotes && (
-                      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                      <div className="bg-white rounded-lg border border-gray-200 pt-6 px-6 pb-0 shadow-sm">
                         <div className="flex items-center mb-4">
                           <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
                           <h4 className="text-lg font-semibold text-gray-800">Additional Notes</h4>
                         </div>
-                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                        <div className="bg-gray-50 rounded-lg pt-4 px-4 pb-0 border border-gray-100">
                           <p className="text-sm text-gray-700 leading-relaxed">
                             {additionalNotes}
                           </p>
@@ -655,7 +655,7 @@ const Contracts = () => {
                     )}
 
                     {/* Contract Summary */}
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 border border-green-100">
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg pt-6 px-6 pb-0 border border-green-100">
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="text-lg font-semibold text-gray-800 mb-2">Contract Summary</h4>

@@ -62,7 +62,7 @@ const NegotiationChat = () => {
                 <p className="text-sm text-gray-500">Negotiating RFQ #1001</p>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto pt-4 px-4 pb-0 space-y-4">
                 {messages.length === 0 && (
                     <div className="text-center text-gray-400 mt-10">
                         Start the conversation by saying "Hi" or making an offer.
@@ -74,7 +74,7 @@ const NegotiationChat = () => {
                         className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                     >
                         <div
-                            className={`max-w-[80%] p-3 rounded-lg ${msg.role === "user"
+                            className={`max-w-[80%] pt-3 px-3 pb-0 rounded-lg ${msg.role === "user"
                                     ? "bg-blue-600 text-white rounded-br-none"
                                     : msg.role === "system"
                                         ? "bg-red-100 text-red-800"
@@ -87,7 +87,7 @@ const NegotiationChat = () => {
                 ))}
                 {loading && (
                     <div className="flex justify-start">
-                        <div className="bg-gray-100 p-3 rounded-lg rounded-bl-none">
+                        <div className="bg-gray-100 pt-3 px-3 pb-0 rounded-lg rounded-bl-none">
                             <div className="flex space-x-2">
                                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
@@ -107,13 +107,13 @@ const NegotiationChat = () => {
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder="Type your message..."
-                        className="flex-1 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="flex-1 pt-2 px-2 pb-0 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         disabled={loading}
                     />
                     <button
                         onClick={handleSend}
                         disabled={loading || !input.trim()}
-                        className={`px-4 py-2 rounded-md text-white font-medium ${loading || !input.trim()
+                        className={`px-4 pt-2 pb-0 rounded-md text-white font-medium ${loading || !input.trim()
                                 ? "bg-blue-300 cursor-not-allowed"
                                 : "bg-blue-600 hover:bg-blue-700"
                             }`}

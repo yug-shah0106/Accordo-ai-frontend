@@ -8,13 +8,35 @@
   ;
 }
 
+/* Dark mode support */
+.dark {
+  @apply bg-dark-bg text-dark-text;
+}
+
+.dark body {
+  @apply bg-dark-bg text-dark-text;
+}
+
+/* Apply dark mode to main containers */
+.dark #root {
+  @apply bg-dark-bg;
+}
+
+/* Root element should allow scrolling */
+html, body {
+  height: 100%;
+  overflow: auto;
+}
+
+#root {
+  min-height: 100%;
+}
+
 body {
-  /* overflow-x: hidden; */
-  /* width: 100vw; */
   padding: 0;
   margin: 0;
-  overflow-y: scroll;
   box-sizing: border-box;
+  @apply transition-colors duration-200;
 }
 
 /* General Scrollbar Customization */

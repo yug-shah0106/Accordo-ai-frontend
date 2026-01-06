@@ -5,7 +5,7 @@ import { TbHours24 } from 'react-icons/tb';
 
 const ChooseUs = () => {
   return (
-    <div className="lg:flex justify-center space-x-6 p-6 ">
+    <div className="lg:flex justify-center space-x-6 pt-6 px-6 pb-0 ">
      
       <div className=" lg:w-1/4 w-[80%] mx-auto">
         <div className="  w-[100%] sm:h-auto h-[100%] shadow-[22px_20px_0px_-4px_#EF2D2E] bg-[#D9D9D9] "><img src={img} /></div>

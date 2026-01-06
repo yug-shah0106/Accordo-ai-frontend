@@ -35,7 +35,7 @@ const BudgetCards = ({ budgetData, rfqItems }: BudgetCardsProps) => {
           key={index}
           className={`border ${
             colorMapping[item.title as BudgetTitle]?.border
-          } rounded-[14px] shadow-sm p-4`}
+          } rounded-[14px] shadow-sm pt-4 px-4 pb-0`}
         >
           {/* Circular Icon with Letter */}
           <div className="flex items-center space-x-3 mb-2">

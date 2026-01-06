@@ -267,58 +267,69 @@ const VendorManagement = () => {
     };
   }, []);
 
+  // Reset scroll position when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
-    <div className="bg-white rounded-lg h-full p-6">
-      <div className="mb-4">
-        <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-          <FiGitBranch className="text-xl" />
-          Vendor Management
-        </h1>
-      </div>
+    <div className="flex flex-col bg-white rounded-lg min-h-full">
+      {/* Sticky Header Section */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0">
+        <div className="mb-4">
+          <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <FiGitBranch className="text-xl" />
+            Vendor Management
+          </h1>
+        </div>
 
-      {/* <div className=" grid xl:grid-cols-6 sm:grid-cols-3 gap-4 py-4">
-        {data.map((item, index) => (
-          <div
-            key={index}
-            className="border rounded-lg shadow-sm p-4 flex flex-col justify-start"
-          >
-            <p className="text-gray-500 font-medium lg:text-md md:text-md">
-              {item.title}
-            </p>
-            <h2 className="lg:text-lg md:text-sm font-semibold text-gray-800 ">
-              {item.count}
-            </h2>
+        {/* <div className=" grid xl:grid-cols-6 sm:grid-cols-3 gap-4 pt-4 pb-0">
+          {data.map((item, index) => (
+            <div
+              key={index}
+              className="border rounded-lg shadow-sm pt-4 px-4 pb-0 flex flex-col justify-start"
+            >
+              <p className="text-gray-500 font-medium lg:text-md md:text-md">
+                {item.title}
+              </p>
+              <h2 className="lg:text-lg md:text-sm font-semibold text-gray-800 ">
+                {item.count}
+              </h2>
+            </div>
+          ))}
+        </div> */}
+
+        <div className="flex justify-between gap-3">
+          <div className="relative flex gap-3">
+            <input
+              onChange={(e) => debounce(e.target.value)}
+              type="text"
+              placeholder=" Search by Name"
+              className="border border-gray-300 rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full px-4"
+            />
+
           </div>
-        ))}
-      </div> */}
+          <div className="flex gap-3">
+          {/* <button
+              onClick={() => setIsFilterModalOpen((prev) => !prev)}
+              className="rounded-md px-4 py-2 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1"
+            >
+              <VscSettings /> Filter <FaCaretDown />
+            </button> */}
+            <Link
+              to="/vendor-management/create-vendor"
+              className="bg-[#234BF3] text-white font-medium rounded-md px-4 py-2 text-sm flex items-center gap-2"
+            >
 
-      <div className="flex justify-between gap-3 mb-4">
-        <div className="relative flex gap-3">
-          <input
-            onChange={(e) => debounce(e.target.value)}
-            type="text"
-            placeholder=" Search by Name"
-            className="border border-gray-300 rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full px-4"
-          />
-          
-        </div>
-        <div className="flex gap-3">
-        {/* <button
-            onClick={() => setIsFilterModalOpen((prev) => !prev)}
-            className="rounded-md px-4 py-2 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1"
-          >
-            <VscSettings /> Filter <FaCaretDown />
-          </button> */}
-          <Link
-            to="/vendor-management/create-vendor"
-            className="bg-[#234BF3] text-white font-medium rounded-md px-4 py-2 text-sm flex items-center gap-2"
-          >
-
-            <PiPlusSquareBold className="font-extrabold text-xl rounded-3xl" />{" "}
-            Create
-          </Link>
+              <PiPlusSquareBold className="font-extrabold text-xl rounded-3xl" />{" "}
+              Create
+            </Link>
+          </div>
         </div>
       </div>
+
+      {/* Content Area */}
+      <div className="flex-1 px-6 pb-6">
 
       <div  className="absolute h-[50%] border-b-2 overflow-auto -mt-3   md:right-[35%] right-[20%] top-50">
         {isFilterModalOpen && (
@@ -356,10 +367,11 @@ const VendorManagement = () => {
           />
         </div>
       </div>
+      </div>
 
       <div
         ref={menuRef}
-        className={`fixed top-0 right-0 w-[33%] p-6 bg-white shadow-lg h-full z-10 transition-transform transform ${
+        className={`fixed top-0 right-0 w-[33%] pt-6 px-6 pb-0 bg-white shadow-lg h-full z-10 transition-transform transform ${
           isSidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -397,7 +409,7 @@ const VendorManagement = () => {
             </div>
           )}
 
-          <div className="flex justify-between py-2">
+          <div className="flex justify-between pt-2 pb-0">
             <h3 className="text-lg font-medium mt-4">General Information</h3>
             <MdOutlineKeyboardArrowDown />
           </div>
@@ -418,7 +430,7 @@ const VendorManagement = () => {
             </div>
           )}
 
-          <div className="flex justify-between py-2">
+          <div className="flex justify-between pt-2 pb-0">
             <h3 className="text-lg font-medium mt-4">Vendor Details</h3>
             <MdOutlineKeyboardArrowDown />
           </div>
@@ -495,7 +507,7 @@ const VendorManagement = () => {
             </div>
           )}
 
-          <div className="flex justify-between py-2">
+          <div className="flex justify-between pt-2 pb-0">
             <h3 className="text-lg font-medium mt-4">
               Point of Contact Details
             </h3>
@@ -526,7 +538,7 @@ const VendorManagement = () => {
             </div>
           )}
 
-          <div className="flex justify-between py-2">
+          <div className="flex justify-between pt-2 pb-0">
             <h3 className="text-lg font-medium mt-4">Bank Details</h3>
             <MdOutlineKeyboardArrowDown />
           </div>

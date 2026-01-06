@@ -85,30 +85,30 @@ export default function ChatSidebar({ logo }: ChatSidebarProps) {
             {/* Toggle Button for Mobile */}
             <button
                 onClick={toggleSidebar}
-                className="sm:hidden fixed top-4 left-4 z-50 p-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+                className="sm:hidden fixed top-4 left-4 z-50 pt-2 px-2 pb-0 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors"
             >
                 {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
 
             {/* Sidebar Container */}
             <div
-                className={`bg-white p-6 border-r min-h-screen w-80 fixed top-0 left-0 z-40 transition-all duration-300 ease-in-out shadow-lg
+                className={`bg-white pt-6 px-6 pb-0 border-r h-full w-80 fixed top-0 left-0 z-40 transition-all duration-300 ease-in-out shadow-lg
                 ${isOpen ? "translate-x-0" : "-translate-x-full"} sm:translate-x-0 sm:relative sm:w-80`}
             >
                 {/* Logo */}
-                <div className="flex items-center justify-center px-4 py-6 border-b border-gray-100">
+                <div className="flex items-center justify-center px-4 pt-6 pb-0 border-b border-gray-100">
                     <img src={sideBarLogo} alt="Logo" className="w-24 h-auto" />
                 </div>
 
                 {/* Project and Requisition Info */}
                 {loading ? (
-                    <div className="w-full p-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-100 mt-6">
-                        <div className="flex items-center justify-center py-4">
+                    <div className="w-full pt-4 px-4 pb-0 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-100 mt-6">
+                        <div className="flex items-center justify-center pt-4 pb-0">
                             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                         </div>
                     </div>
                 ) : (
-                    <div className="w-full p-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-100 mt-6">
+                    <div className="w-full pt-4 px-4 pb-0 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-100 mt-6">
                         <div className="flex items-center gap-3 mb-3">
                             <FileText className="w-5 h-5 text-blue-600" />
                             <p className="font-semibold text-blue-700">Project Details</p>
@@ -169,8 +169,8 @@ export default function ChatSidebar({ logo }: ChatSidebarProps) {
                                         <table className="w-full text-sm">
                                             <thead>
                                                 <tr className="bg-blue-50">
-                                                    <th className="px-4 py-3 text-left font-semibold text-blue-700">Product Name</th>
-                                                    <th className="px-4 py-3 text-center font-semibold text-blue-700">Quantity</th>
+                                                    <th className="px-4 pt-3 pb-0 text-left font-semibold text-blue-700">Product Name</th>
+                                                    <th className="px-4 pt-3 pb-0 text-center font-semibold text-blue-700">Quantity</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
@@ -179,8 +179,8 @@ export default function ChatSidebar({ logo }: ChatSidebarProps) {
                                                         key={index}
                                                         className="hover:bg-blue-50/50 transition-colors duration-200"
                                                     >
-                                                        <td className="px-4 py-3 text-gray-700">{product?.Product?.productName || "N/A"}</td>
-                                                        <td className="px-4 py-3 text-center text-gray-700">{product?.qty || 0}</td>
+                                                        <td className="px-4 pt-3 pb-0 text-gray-700">{product?.Product?.productName || "N/A"}</td>
+                                                        <td className="px-4 pt-3 pb-0 text-center text-gray-700">{product?.qty || 0}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>

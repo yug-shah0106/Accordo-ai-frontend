@@ -84,7 +84,7 @@ const VerifyOtp = () => {
   };
 
   return (
-    <div className="w-full max-w-md py-6 mx-auto mt-8">
+    <div className="w-full max-w-md pt-6 pb-0 mx-auto mt-8">
       <h2 className="text-2xl font-semibold text-center mb-6">Verify OTP</h2>
 
       <div className="flex justify-between mb-4">

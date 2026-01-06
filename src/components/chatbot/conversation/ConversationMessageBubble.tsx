@@ -19,7 +19,7 @@ export default function ConversationMessageBubble({ message }: ConversationMessa
   if (isSystem) {
     return (
       <div className="flex justify-center my-4">
-        <div className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm rounded-full">
+        <div className="px-4 pt-2 pb-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm rounded-full">
           {message.content}
         </div>
       </div>
@@ -33,7 +33,7 @@ export default function ConversationMessageBubble({ message }: ConversationMessa
           isAccordo
             ? 'bg-blue-600 dark:bg-blue-700 text-white'
             : 'bg-white dark:bg-dark-surface text-gray-900 dark:text-dark-text border border-gray-200 dark:border-dark-border'
-        } rounded-2xl px-4 py-3 shadow-sm`}
+        } rounded-2xl px-4 pt-3 pb-0 shadow-sm`}
       >
         {/* Role Label (small) */}
         <div

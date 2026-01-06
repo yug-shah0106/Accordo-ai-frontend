@@ -131,10 +131,10 @@ function Roles() {
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="h-full bg-gray-50 pt-6 px-6 pb-0">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm pt-6 px-6 pb-0 mb-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
@@ -146,7 +146,7 @@ function Roles() {
                 </button>
                 <h1 className="text-2xl font-semibold text-gray-800">Roles</h1>
               </div>
-              <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm">
+              <span className="px-3 pt-1 pb-0 bg-blue-100 text-blue-600 rounded-full text-sm">
                 {roles.length} Total Roles
               </span>
             </div>
@@ -155,7 +155,7 @@ function Roles() {
                 setEditRole(null);
                 setIsRoleModalOpen(true);
               }}
-              className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+              className="flex items-center gap-2 bg-blue-500 text-white px-4 pt-2 pb-0 rounded-md hover:bg-blue-600 transition-colors"
             >
               <PiPlusSquareBold className="text-xl" />
               Create New Role
@@ -172,7 +172,7 @@ function Roles() {
                   {columns.map((column, index) => (
                     <th
                       key={index}
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       style={{ width: column.width }}
                     >
                       {column.header}
@@ -189,7 +189,7 @@ function Roles() {
                     {columns.map((column, colIndex) => (
                       <td
                         key={colIndex}
-                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                        className="px-6 pt-4 pb-0 whitespace-nowrap text-sm text-gray-900"
                       >
                         {column.Cell ? column.Cell({ value: row[column.accessor] }) : row[column.accessor]}
                       </td>

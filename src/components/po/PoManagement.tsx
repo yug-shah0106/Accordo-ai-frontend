@@ -222,53 +222,63 @@ const PoManagement = () => {
     };
   }, []);
 
-  return (
-    <div className="w-full h-full">
-      <div className="bg-white rounded-lg h-full p-6">
-        <div className="mb-4">
-          <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-            <PiFramerLogo className="text-xl" />
-            PO Management
-          </h1>
-        </div>
+  // Reset scroll position when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
-        <div className="flex justify-between gap-2 mb-4">
-          <div className="relative ">
-            <input
-              onChange={(e) => debounceSearch(e.target.value)}
-              type="text"
-              placeholder="Search by Seller"
-              className="border border-gray-300 rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full px-4"
-            />
-            <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+  return (
+    <div className="w-full min-h-full">
+      <div className="flex flex-col bg-white rounded-lg min-h-full">
+        {/* Sticky Header Section */}
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0">
+          <div className="mb-4">
+            <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+              <PiFramerLogo className="text-xl" />
+              PO Management
+            </h1>
           </div>
 
-          <div className="flex gap-6">
-            {/* <Link to="/po-management/summary">Summary</Link> */}
-            <button
-              onClick={() => setIsFilterModalOpen((prev) => !prev)}
-              className="rounded-md px-4 py-2 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1"
-            >
-              <VscSettings /> Filter <FaCaretDown />
-            </button>
-            <div className="absolute z-30 md:right-[8%] mt-10 right-[20%]">
-              {isFilterModalOpen && (
-                <div className="overflow-auto border rounded-md shadow-md">
-                  <Filter
-                    onClose={closeFilterModal}
-                    onApply={applyFilters}
-                    filtersData={selectedFilters.reduce((acc, filter, idx) => {
-                      acc[idx] = filter;
-                      return acc;
+          <div className="flex justify-between gap-2">
+            <div className="relative ">
+              <input
+                onChange={(e) => debounceSearch(e.target.value)}
+                type="text"
+                placeholder="Search by Seller"
+                className="border border-gray-300 rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full px-4"
+              />
+              <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            </div>
+
+            <div className="flex gap-6">
+              {/* <Link to="/po-management/summary">Summary</Link> */}
+              <button
+                onClick={() => setIsFilterModalOpen((prev) => !prev)}
+                className="rounded-md px-4 py-2 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1"
+              >
+                <VscSettings /> Filter <FaCaretDown />
+              </button>
+              <div className="absolute z-30 md:right-[8%] mt-10 right-[20%]">
+                {isFilterModalOpen && (
+                  <div className="overflow-auto border rounded-md shadow-md">
+                    <Filter
+                      onClose={closeFilterModal}
+                      onApply={applyFilters}
+                      filtersData={selectedFilters.reduce((acc, filter, idx) => {
+                        acc[idx] = filter;
+                        return acc;
                     }, {} as Record<string, FilterOption>)}
-                  />
-                </div>
-              )}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col justify-between">
+        {/* Content Area */}
+        <div className="flex-1 px-6 pb-6">
+        <div className="flex flex-col justify-between mt-4">
           <div className="border rounded-md overflow-auto hide-scrollbar h-[70vh] ">
             <Table
               data={pos}
@@ -292,11 +302,13 @@ const PoManagement = () => {
             />
           </div>
         </div>
+        </div>
+        {/* End Scrollable Content Area */}
       </div>
 
       <div
         ref={menuRef}
-        className={`fixed top-0 right-0 w-1/4 p-6 bg-white shadow-lg h-full z-10 transition-transform transform ${
+        className={`fixed top-0 right-0 w-1/4 pt-6 px-6 pb-0 bg-white shadow-lg h-full z-10 transition-transform transform ${
           isSidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

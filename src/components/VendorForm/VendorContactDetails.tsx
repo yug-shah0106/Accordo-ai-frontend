@@ -76,13 +76,13 @@ const VendorContactDetails: React.FC<VendorContactDetailsProps> = ({
   }, [company, reset]);
 
   return (
-    <div className="border-2 rounded p-4">
+    <div className="border-2 rounded pt-4 px-4 pb-0">
       <h3 className="text-lg font-semibold">Point of Contact Details</h3>
-      <p className="font-normal text-[#46403E] py-2">
+      <p className="font-normal text-[#46403E] pt-2 pb-0">
         Your details will be used for contact details
       </p>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-2 gap-4 mt-4 p-6">
+        <div className="grid grid-cols-2 gap-4 mt-4 pt-6 px-6 pb-0">
           <InputField
             label="Person Name"
             name="pocName"

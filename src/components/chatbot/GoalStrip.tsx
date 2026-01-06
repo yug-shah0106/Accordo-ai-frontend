@@ -40,7 +40,7 @@ export default function GoalStrip({ target, current, label }: GoalStripProps) {
   };
 
   return (
-    <div className={`rounded-lg border p-4 ${getStatusBg()}`}>
+    <div className={`rounded-lg border pt-4 px-4 pb-0 ${getStatusBg()}`}>
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-semibold text-gray-700">{label}</h4>
         <span className={`text-xs font-medium ${getStatusColor()}`}>

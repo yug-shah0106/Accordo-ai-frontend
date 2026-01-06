@@ -448,6 +448,12 @@ const RequisitionsManagement = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Reset scroll position when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const breadcrumbItems = [];
 
   if (state?.projectId) {
@@ -467,8 +473,9 @@ const RequisitionsManagement = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg !z-10 p-6 h-full">
-      <div>
+    <div className="flex flex-col bg-white rounded-lg h-full overflow-hidden">
+      {/* Sticky Header Section */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0">
         <div className="mb-4">
           <p className="text-xl font-medium text-gray-800 flex items-center gap-2">
             {/* <FaArrowLeft
@@ -484,7 +491,7 @@ const RequisitionsManagement = () => {
           {state !== null && <Breadcrumb breadcrumbItems={breadcrumbItems} />}
         </div>
 
-        <div className="flex justify-between gap-2 mb-4">
+        <div className="flex justify-between gap-2">
           <div className="relative ">
             <input
               onChange={(e) => debounce(e.target.value)}
@@ -528,35 +535,39 @@ const RequisitionsManagement = () => {
         </div>
       </div>
 
-      <div
-        className={`border rounded-md overflow-x-scroll hide-scrollbar-y h-[70vh] ${cursorLoading ? "opacity-60 pointer-events-none cursor-wait" : ""
-          }`}
-      >
-        <Table
-          data={requisitions}
-          columns={columns}
-          actions={actions}
-          style={"bg-gray-100 "}
-          onRowClick={handleRowClick}
-          loading={loading}
-          currentPage={page}
-          itemsPerPage={10}
-        />
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto px-6 pb-0">
+        <div
+          className={`border rounded-md overflow-x-scroll hide-scrollbar-y ${cursorLoading ? "opacity-60 pointer-events-none cursor-wait" : ""
+            }`}
+        >
+          <Table
+            data={requisitions}
+            columns={columns}
+            actions={actions}
+            style={"bg-gray-100 "}
+            onRowClick={handleRowClick}
+            loading={loading}
+            currentPage={page}
+            itemsPerPage={10}
+          />
+        </div>
+        <div className="">
+          <Pagination
+            currentPage={page}
+            totalPages={totalCount}
+            onPageChange={setPage}
+            limit={limit}
+            totalDoc={totalDoc}
+          />
+        </div>
       </div>
-      <div className="">
-        <Pagination
-          currentPage={page}
-          totalPages={totalCount}
-          onPageChange={setPage}
-          limit={limit}
-          totalDoc={totalDoc}
-        />
-      </div>
+      {/* End Scrollable Content Area */}
 
       {/* Sidebar */}
       <div
         ref={menuRef}
-        className={`fixed top-0 right-0 w-2/6 p-6 bg-white shadow-lg h-full z-10 transition-transform transform ${isSidebarOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 right-0 w-2/6 pt-6 px-6 pb-0 bg-white shadow-lg h-full z-10 transition-transform transform ${isSidebarOpen ? "translate-x-0" : "translate-x-full"
           }`}
       >
         <div className="">
@@ -571,7 +582,7 @@ const RequisitionsManagement = () => {
               {/* <Link
                 to="/project-management/create-requisition"
                 state={state}
-                className="bg-[#FEEBDB] text-[#B24D00] font-sm rounded-full px-4 py-2 text-sm flex items-center gap-2"
+                className="bg-[#FEEBDB] text-[#B24D00] font-sm rounded-full px-4 pt-2 pb-0 text-sm flex items-center gap-2"
               > */}
               <Badge status={selectedProject.status} />
               {/* </Link> */}
@@ -668,13 +679,13 @@ const RequisitionsManagement = () => {
           </div>
         </div>
         {selectedProject?.paymentTerms && (
-          <div className="mt-2 py-2">
+          <div className="mt-2 pt-2 pb-0">
             <p className="font-medium text-gray-500">Payment Terms</p>
             <p className="text-xs">{selectedProject?.paymentTerms}</p>
           </div>
         )}
         {selectedProject?.RequisitionAttachment?.length > 0 && (
-          <div className="mt-2 py-2">
+          <div className="mt-2 pt-2 pb-0">
             <p className="font-medium text-gray-500">Attachments</p>
             <div className="flex gap-4 mt-4">
               {selectedProject?.RequisitionAttachment?.map((attachment) => (
@@ -720,7 +731,7 @@ const RequisitionsManagement = () => {
           isDeleteIcon={false}
           handleClose={() => setBenchMarkModal(false)}
           body={
-            <div className="overflow-x-auto p-4">
+            <div className="overflow-x-auto pt-4 px-4 pb-0">
               {(() => {
                 // Parse benchmark response once
                 const benchmarkData = JSON.parse(
@@ -754,16 +765,16 @@ const RequisitionsManagement = () => {
                   <table className="w-full rounded-lg border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-4 py-2 text-center">
+                        <th className="border border-gray-300 px-4 pt-2 pb-0 text-center">
                           Product Name
                         </th>
-                        <th className="border border-gray-300 px-4 py-2 text-center">
+                        <th className="border border-gray-300 px-4 pt-2 pb-0 text-center">
                           Price
                         </th>
-                        <th className="border border-gray-300 px-4 py-2 text-center">
+                        <th className="border border-gray-300 px-4 pt-2 pb-0 text-center">
                           Delivery Date
                         </th>
-                        <th className="border border-gray-300 px-4 py-2 text-center">
+                        <th className="border border-gray-300 px-4 pt-2 pb-0 text-center">
                           Payment Terms
                         </th>
                       </tr>
@@ -771,16 +782,16 @@ const RequisitionsManagement = () => {
                     <tbody>
                       {combinedData.map((item, idx) => (
                         <tr key={idx} className="even:bg-gray-50">
-                          <td className="border border-gray-300 px-4 py-2 text-center">
+                          <td className="border border-gray-300 px-4 pt-2 pb-0 text-center">
                             {item?.product || "N/A"}
                           </td>
-                          <td className="border border-gray-300 px-4 py-2 text-center">
+                          <td className="border border-gray-300 px-4 pt-2 pb-0 text-center">
                             {item?.price || "N/A"}
                           </td>
-                          <td className="border border-gray-300 px-4 py-2 text-center">
+                          <td className="border border-gray-300 px-4 pt-2 pb-0 text-center">
                             {item?.deliveryDate || "N/A"}
                           </td>
-                          <td className="border border-gray-300 px-4 py-2 text-center">
+                          <td className="border border-gray-300 px-4 pt-2 pb-0 text-center">
                             {item?.paymentTerms || "N/A"}
                           </td>
                         </tr>

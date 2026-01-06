@@ -149,7 +149,7 @@ const Test = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg h-max shadow-md p-6">
+    <div className="bg-white rounded-lg h-max shadow-md pt-6 px-6 pb-0">
       <div className="mb-8">
         <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
           <AiFillProject /> Project Management Testing
@@ -159,7 +159,7 @@ const Test = () => {
       {projects.map((project, i) => (
         <div key={i} className="rounded-md mb-2">{console.log({ data: project.projectId })}
           <div
-            className="flex justify-between items-center rounded-md p-4 border cursor-pointer"
+            className="flex justify-between items-center rounded-md pt-4 px-4 pb-0 border cursor-pointer"
             onClick={() => toggleAccordion(i)}
           >
             <span className="text-lg font-semibold">{project.projectName}</span>

@@ -186,9 +186,9 @@ export default function SummaryPage() {
   const savings = calculateSavings();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg">
+    <div className="h-full bg-gray-50 dark:bg-dark-bg">
       {/* Header */}
-      <div className="bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 py-4">
+      <div className="bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 pt-4 pb-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -209,7 +209,7 @@ export default function SummaryPage() {
             <button
               onClick={handleExportCSV}
               disabled={exporting}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 pt-2 pb-0 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
             >
               <FiDownload className="w-4 h-4" />
               Export CSV
@@ -217,7 +217,7 @@ export default function SummaryPage() {
             <button
               onClick={handleExportPDF}
               disabled={exporting}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 pt-2 pb-0 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
             >
               <FiDownload className="w-4 h-4" />
               Export PDF
@@ -229,13 +229,13 @@ export default function SummaryPage() {
       {/* Content */}
       <div className="p-6 space-y-6">
         {/* Outcome Banner */}
-        <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg p-8">
+        <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg pt-8 px-8 pb-0">
           <div className="flex items-center gap-6">
             <div className="flex-shrink-0">{getOutcomeIcon()}</div>
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <span
-                  className={`px-3 py-1 rounded-full text-sm font-semibold ${getOutcomeColor()}`}
+                  className={`px-3 pt-1 pb-0 rounded-full text-sm font-semibold ${getOutcomeColor()}`}
                 >
                   {deal.status}
                 </span>
@@ -259,7 +259,7 @@ export default function SummaryPage() {
         {savings && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Savings */}
-            <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg p-6">
+            <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg pt-6 px-6 pb-0">
               <div className="flex items-center gap-3 mb-3">
                 <FiDollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
                 <h3 className="font-semibold text-gray-900 dark:text-dark-text">
@@ -277,7 +277,7 @@ export default function SummaryPage() {
             </div>
 
             {/* Final Price */}
-            <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg p-6">
+            <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg pt-6 px-6 pb-0">
               <div className="flex items-center gap-3 mb-3">
                 <FiTrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 <h3 className="font-semibold text-gray-900 dark:text-dark-text">Final Price</h3>
@@ -293,7 +293,7 @@ export default function SummaryPage() {
             </div>
 
             {/* Payment Terms */}
-            <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg p-6">
+            <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg pt-6 px-6 pb-0">
               <div className="flex items-center gap-3 mb-3">
                 <FiCalendar className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 <h3 className="font-semibold text-gray-900 dark:text-dark-text">
@@ -313,7 +313,7 @@ export default function SummaryPage() {
         )}
 
         {/* Deal Metadata */}
-        <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg p-6">
+        <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg pt-6 px-6 pb-0">
           <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-4">
             Negotiation Details
           </h3>
@@ -342,7 +342,7 @@ export default function SummaryPage() {
         </div>
 
         {/* Message Transcript */}
-        <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg p-6">
+        <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg pt-6 px-6 pb-0">
           <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-4">
             Full Transcript
           </h3>

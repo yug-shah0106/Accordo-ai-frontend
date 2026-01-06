@@ -118,7 +118,7 @@ export default function ChatTranscript({
                   key={`divider-${item.round}-${idx}`}
                   className="flex items-center justify-center my-4"
                 >
-                  <span className="px-3 py-1 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-full">
+                  <span className="px-3 pt-1 pb-0 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-full">
                     Round {item.round}
                   </span>
                 </div>
@@ -140,7 +140,7 @@ export default function ChatTranscript({
               }`}
             >
               <div
-                className={`px-4 py-3 rounded-lg ${
+                className={`px-4 pt-3 pb-0 rounded-lg ${
                   processingType === "vendor-typing"
                     ? "bg-white border border-gray-200"
                     : "bg-blue-50 border border-blue-200"

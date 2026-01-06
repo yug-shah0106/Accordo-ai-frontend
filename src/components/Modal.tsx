@@ -70,12 +70,12 @@ export default function Modal({
       }}
     >
       <div
-        className={`bg-white p-6 rounded-lg relative ${getModalSize()} ${additionalClasses}`}
+        className={`bg-white pt-6 px-6 pb-0 rounded-lg relative ${getModalSize()} ${additionalClasses}`}
         ref={ref}
       >
         {/* Delete Icon (if applicable) */}
         {isDeleteIcon && (
-          <div className="absolute -top-7 left-[50%] translate-x-[-50%] p-3 rounded-full bg-[#EF2D2E] text-white flex justify-center items-center text-2xl">
+          <div className="absolute -top-7 left-[50%] translate-x-[-50%] pt-3 px-3 pb-0 rounded-full bg-[#EF2D2E] text-white flex justify-center items-center text-2xl">
             <MdOutlineDelete />
           </div>
         )}
@@ -83,7 +83,7 @@ export default function Modal({
         {/* {
           heading === "Benchmark Details" && <button
             onClick={() => { navigate(`edit-requisition/102`) }}
-            className="absolute mr-7  top-3 right-3 px-3 py-1 w-16 h-7  bg-gray-200 text-gray-700 text-xs font-medium rounded-md hover:bg-gray-300"
+            className="absolute mr-7  top-3 right-3 px-3 pt-1 pb-0 w-16 h-7  bg-gray-200 text-gray-700 text-xs font-medium rounded-md hover:bg-gray-300"
           >
             Edit
           </button>
@@ -102,7 +102,7 @@ export default function Modal({
           {showCancelButton && (
             <button
               onClick={handleClose || onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-100"
+              className="px-4 pt-2 pb-0 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-100"
             >
               {cancelText}
             </button>
@@ -110,7 +110,7 @@ export default function Modal({
           {onAction && (
             <button
               onClick={handleAction}
-              className={`px-4 py-2 bg-${actionButtonColor}-500 text-white rounded-md hover:bg-${actionButtonColor}-600`}
+              className={`px-4 pt-2 pb-0 bg-${actionButtonColor}-500 text-white rounded-md hover:bg-${actionButtonColor}-600`}
             >
               {actionText}
             </button>

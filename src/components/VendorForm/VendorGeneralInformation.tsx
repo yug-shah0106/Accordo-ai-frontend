@@ -132,9 +132,9 @@ const VendorGeneralInformation: React.FC<VendorGeneralInformationProps> = ({
   };
   
   return (
-    <div className="border-2 rounded p-4">
+    <div className="border-2 rounded pt-4 px-4 pb-0">
       <h3 className="text-lg font-semibold">General Information</h3>
-      <p className="font-normal text-[#46403E] py-2">
+      <p className="font-normal text-[#46403E] pt-2 pb-0">
         Your details will be used for general information
       </p>
       <form onSubmit={handleSubmit(onSubmit)}>

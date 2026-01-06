@@ -7,7 +7,7 @@ const KeyFeatures = () => {
 
   return (
     <div className="bg-black">
-      <div className="xl:w-[70%] lg:w-[80%] w-[90%] mx-auto py-4 lg:pt-16 pt-10">
+      <div className="xl:w-[70%] lg:w-[80%] w-[90%] mx-auto pt-4 pb-0 lg:pt-16 pt-10">
         <h1 className="md:text-3xl text-2xl text-white xl:text-4xl font-bold mt-4 lg:mb-12">
           Key Features
         </h1>
@@ -81,7 +81,7 @@ const KeyFeatures = () => {
         </div>
 
         <div className="relative col-span-2">
-          <div className="rounded-lg p-2 flex justify-center items-center">
+          <div className="rounded-lg pt-2 px-2 pb-0 flex justify-center items-center">
             <img
               src={keyfeatures}
               alt="Content Block Preview"

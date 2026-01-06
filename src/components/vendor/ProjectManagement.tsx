@@ -64,7 +64,7 @@ const FilterModal = ({ isOpen, onClose, selectedFilters, setSelectedFilters, app
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-500 p-1 hover:bg-gray-100 rounded-full transition-colors duration-200"
+              className="text-gray-400 hover:text-gray-500 pt-1 px-1 pb-0 hover:bg-gray-100 rounded-full transition-colors duration-200"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -74,7 +74,7 @@ const FilterModal = ({ isOpen, onClose, selectedFilters, setSelectedFilters, app
 
           <div className="grid grid-cols-1 gap-4 max-h-[60vh] overflow-y-auto pr-2">
             {selectedFilters.map((filter, index) => (
-              <div key={index} className="space-y-3 bg-gray-50/50 p-3 rounded-lg">
+              <div key={index} className="space-y-3 bg-gray-50/50 pt-3 px-3 pb-0 rounded-lg">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium text-gray-900">
                     {filter.label}
@@ -95,7 +95,7 @@ const FilterModal = ({ isOpen, onClose, selectedFilters, setSelectedFilters, app
                             const value = e.target.value === '' ? '' : Number(e.target.value);
                             setLocalMin(value);
                           }}
-                          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#234BF3] focus:border-transparent transition-all duration-200 shadow-sm"
+                          className="w-full px-3 pt-2 pb-0 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#234BF3] focus:border-transparent transition-all duration-200 shadow-sm"
                           placeholder="Min"
                         />
                       </div>
@@ -110,7 +110,7 @@ const FilterModal = ({ isOpen, onClose, selectedFilters, setSelectedFilters, app
                             const value = e.target.value === '' ? '' : Number(e.target.value);
                             setLocalMax(value);
                           }}
-                          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#234BF3] focus:border-transparent transition-all duration-200 shadow-sm"
+                          className="w-full px-3 pt-2 pb-0 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#234BF3] focus:border-transparent transition-all duration-200 shadow-sm"
                           placeholder="Max"
                         />
                       </div>
@@ -122,16 +122,16 @@ const FilterModal = ({ isOpen, onClose, selectedFilters, setSelectedFilters, app
           </div>
         </div>
 
-        <div className="bg-gray-50 px-4 py-3 border-t border-gray-200 flex justify-end gap-3 sticky bottom-0">
+        <div className="bg-gray-50 px-4 pt-3 pb-0 border-t border-gray-200 flex justify-end gap-3 sticky bottom-0">
           <button
             onClick={onClose}
-            className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#234BF3] transition-all duration-200 shadow-sm"
+            className="px-3 pt-1 pb-0.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#234BF3] transition-all duration-200 shadow-sm"
           >
             Cancel
           </button>
           <button
             onClick={handleApply}
-            className="px-3 py-1.5 text-sm font-medium text-white bg-[#234BF3] border border-transparent rounded-lg hover:bg-[#1d3fd8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#234BF3] transition-all duration-200 shadow-sm"
+            className="px-3 pt-1 pb-0.5 text-sm font-medium text-white bg-[#234BF3] border border-transparent rounded-lg hover:bg-[#1d3fd8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#234BF3] transition-all duration-200 shadow-sm"
           >
             Apply Filters
           </button>
@@ -339,6 +339,11 @@ const ProjectManagement = () => {
     };
   }, []);
 
+  // Reset scroll position when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Add error boundary component
   class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -370,65 +375,66 @@ const ProjectManagement = () => {
 
   return (
     <ErrorBoundary>
-      <div className="bg-white rounded-lg h-full p-6">
-        {/* Header Section */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-800 flex items-center gap-3">
-              <LuTwitch className="text-2xl text-[#234BF3]" /> Project Management
-            </h1>
-            {hasPermission("project", "C") && (
-              <Link
-                to="/project-management/create-project"
-                className="bg-[#234BF3] text-white font-medium rounded-lg px-5 py-2.5 text-sm flex items-center gap-2 hover:bg-[#1d3fd8] transition-colors duration-200 shadow-sm"
-              >
-                <PiPlusSquareBold className="font-extrabold text-xl" /> Create Project
-              </Link>
-            )}
-          </div>
-        </div>
-
-        {/* Search and Stats Section */}
-        <div className="mb-6">
-          <div className="flex flex-col md:flex-row justify-between gap-4">
-            <div className="relative flex-1 max-w-md">
-              <input
-                onChange={(e) => debounceSearch(e.target.value)}
-                type="text"
-                placeholder="Search projects by name..."
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#234BF3] focus:border-transparent transition-all duration-200"
-              />
-              <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="bg-gray-50 px-4 py-2 rounded-lg">
-                <span className="text-sm text-gray-600">Total Projects: </span>
-                <span className="font-semibold text-gray-900">{totalDoc}</span>
-              </div>
-              <div className="bg-gray-50 px-4 py-2 rounded-lg">
-                <span className="text-sm text-gray-600">Page: </span>
-                <span className="font-semibold text-gray-900">{page} of {Math.ceil(totalCount / limit)}</span>
-              </div>
+      <div className="flex flex-col bg-white rounded-lg min-h-full">
+        {/* Sticky Header Section */}
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0">
+          {/* Header */}
+          <div className="mb-4">
+            <div className="flex justify-between items-center">
+              <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                <LuTwitch className="text-xl" /> Project Management
+              </h1>
+              {hasPermission("project", "C") && (
+                <Link
+                  to="/project-management/create-project"
+                  className="bg-[#234BF3] text-white font-medium rounded-lg px-4 py-2 text-sm flex items-center gap-2 hover:bg-[#1d3fd8] transition-colors duration-200 shadow-sm"
+                >
+                  <PiPlusSquareBold className="font-extrabold text-xl" /> Create Project
+                </Link>
+              )}
             </div>
           </div>
-        </div>
 
-        {/* Filter Section */}
-        <div className="mb-6">
-          <div className="flex items-center gap-4">
+          {/* Search and Stats Section */}
+          <div className="mb-4">
+            <div className="flex flex-col md:flex-row justify-between gap-3">
+              <div className="relative flex-1 max-w-md">
+                <input
+                  onChange={(e) => debounceSearch(e.target.value)}
+                  type="text"
+                  placeholder="Search projects by name..."
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#234BF3] focus:border-transparent transition-all duration-200"
+                />
+                <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-gray-50 px-3 py-1.5 rounded-lg">
+                  <span className="text-sm text-gray-600">Total: </span>
+                  <span className="font-semibold text-gray-900">{totalDoc}</span>
+                </div>
+                <div className="bg-gray-50 px-3 py-1.5 rounded-lg">
+                  <span className="text-sm text-gray-600">Page: </span>
+                  <span className="font-semibold text-gray-900">{page}/{Math.ceil(totalCount / limit)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Filter Section */}
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setIsFilterModalOpen((prev) => !prev)}
-              className={`rounded-lg px-4 py-2.5 text-sm font-medium flex items-center gap-2 transition-all duration-200 ${
-                isFilterModalOpen 
-                  ? 'bg-[#234BF3] text-white shadow-sm' 
+              className={`rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all duration-200 ${
+                isFilterModalOpen
+                  ? 'bg-[#234BF3] text-white shadow-sm'
                   : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
               }`}
             >
-              <VscSettings className={isFilterModalOpen ? 'text-white' : 'text-gray-500'} /> 
+              <VscSettings className={isFilterModalOpen ? 'text-white' : 'text-gray-500'} />
               Filters
               <FaCaretDown className={`transition-transform duration-200 ${isFilterModalOpen ? 'rotate-180' : ''}`} />
             </button>
-            {selectedFilters.some(filter => 
+            {selectedFilters.some(filter =>
               (filter.controlType === "rangeNumeric" && (filter.value[0] !== filter.range[0] || filter.value[1] !== filter.range[1]))
             ) && (
               <button
@@ -449,6 +455,10 @@ const ProjectManagement = () => {
           />
         </div>
 
+        {/* Content Area */}
+        <div className="flex-1 px-6 pb-6">
+          <div className="flex flex-col justify-between mt-4">
+
         {/* Table Section */}
         <div className="border border-gray-100 rounded-lg overflow-hidden shadow-sm">
           <div className="overflow-auto h-[70vh] hide-scrollbar">
@@ -465,22 +475,26 @@ const ProjectManagement = () => {
           </div>
         </div>
 
-        {/* Pagination */}
-        <div className="mt-6">
-          <Pagination
-            currentPage={page}
-            totalPages={totalCount}
-            onPageChange={setPage}
-            limit={limit}
-            totalDoc={totalDoc}
-          />
+          {/* Pagination */}
+          <div className="mt-6">
+            <Pagination
+              currentPage={page}
+              totalPages={totalCount}
+              onPageChange={setPage}
+              limit={limit}
+              totalDoc={totalDoc}
+            />
+          </div>
         </div>
+        {/* End Scrollable Content Area */}
+      </div>
+      </div>
 
         {/* Project Details Sidebar */}
         {isSidebarOpen && selectedProject && (
           <div
             ref={menuRef}
-            className={`fixed top-0 right-0 w-1/3 p-6 bg-white shadow-xl h-full z-10 transition-transform transform ${
+            className={`fixed top-0 right-0 w-1/3 pt-6 px-6 pb-0 bg-white shadow-xl h-full z-10 transition-transform transform ${
               isSidebarOpen ? "translate-x-0" : "translate-x-full"
             }`}
           >
@@ -499,7 +513,7 @@ const ProjectManagement = () => {
               </div>
 
               <div className="space-y-6">
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-gray-50 rounded-lg pt-4 px-4 pb-0">
                   <h3 className="text-lg font-medium text-gray-800 mb-4">Basic Information</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
@@ -523,7 +537,7 @@ const ProjectManagement = () => {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-gray-50 rounded-lg pt-4 px-4 pb-0">
                   <h3 className="text-lg font-medium text-gray-800 mb-4">Point of Contact</h3>
                   <div className="space-y-2">
                     {selectedProject?.ProjectPoc?.map((poc) => (
@@ -557,7 +571,6 @@ const ProjectManagement = () => {
             </div>
           </Modal>
         )}
-      </div>
     </ErrorBoundary>
   );
 };

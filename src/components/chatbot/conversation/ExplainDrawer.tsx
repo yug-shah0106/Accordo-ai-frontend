@@ -53,7 +53,7 @@ export default function ExplainDrawer({ dealId, isOpen, onClose }: ExplainDrawer
       {/* Drawer */}
       <div className="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-white dark:bg-dark-surface shadow-2xl z-50 overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 py-4 flex items-center justify-between">
+        <div className="sticky top-0 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 pt-4 pb-0 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-dark-text">
             Decision Breakdown
           </h2>
@@ -68,14 +68,14 @@ export default function ExplainDrawer({ dealId, isOpen, onClose }: ExplainDrawer
         {/* Content */}
         <div className="p-6 space-y-6">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
+            <div className="flex items-center justify-center pt-12 pb-0">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           ) : explainability ? (
             <>
               {/* Vendor Offer */}
               {explainability.vendorOffer && (
-                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg pt-4 px-4 pb-0">
                   <div className="flex items-center gap-2 mb-3">
                     <FiDollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     <h3 className="font-semibold text-gray-900 dark:text-dark-text">
@@ -101,7 +101,7 @@ export default function ExplainDrawer({ dealId, isOpen, onClose }: ExplainDrawer
 
               {/* Utility Breakdown */}
               {explainability.utilities && (
-                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg pt-4 px-4 pb-0">
                   <div className="flex items-center gap-2 mb-3">
                     <FiTrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
                     <h3 className="font-semibold text-gray-900 dark:text-dark-text">
@@ -173,7 +173,7 @@ export default function ExplainDrawer({ dealId, isOpen, onClose }: ExplainDrawer
 
               {/* Decision */}
               {explainability.decision && (
-                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg pt-4 px-4 pb-0">
                   <div className="flex items-center gap-2 mb-3">
                     <FiCheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     <h3 className="font-semibold text-gray-900 dark:text-dark-text">Decision</h3>
@@ -238,7 +238,7 @@ export default function ExplainDrawer({ dealId, isOpen, onClose }: ExplainDrawer
               )}
             </>
           ) : (
-            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+            <div className="text-center pt-12 pb-0 text-gray-500 dark:text-gray-400">
               No explainability data available
             </div>
           )}

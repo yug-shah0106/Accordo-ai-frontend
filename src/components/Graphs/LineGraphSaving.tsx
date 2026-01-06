@@ -367,21 +367,21 @@ const LineGraphSaving = () => {
           <h3 className="text-gray-600 font-medium">Category-wise Savings Trend</h3>
           <div className="flex space-x-2">
             <button
-              className={`px-3 py-1 text-sm rounded ${filterType === "D" ? "bg-blue-500 text-white" : "bg-gray-200"
+              className={`px-3 pt-1 pb-0 text-sm rounded ${filterType === "D" ? "bg-blue-500 text-white" : "bg-gray-200"
                 }`}
               onClick={() => handleFilterChange("D")}
             >
               D
             </button>
             <button
-              className={`px-3 py-1 text-sm rounded ${filterType === "M" ? "bg-blue-500 text-white" : "bg-gray-200"
+              className={`px-3 pt-1 pb-0 text-sm rounded ${filterType === "M" ? "bg-blue-500 text-white" : "bg-gray-200"
                 }`}
               onClick={() => handleFilterChange("M")}
             >
               M
             </button>
             <button
-              className={`px-3 py-1 text-sm rounded ${filterType === "Y" ? "bg-blue-500 text-white" : "bg-gray-200"
+              className={`px-3 pt-1 pb-0 text-sm rounded ${filterType === "Y" ? "bg-blue-500 text-white" : "bg-gray-200"
                 }`}
               onClick={() => handleFilterChange("Y")}
             >

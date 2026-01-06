@@ -34,7 +34,7 @@ export default function NegotiationInsights({ utilities }: NegotiationInsightsPr
   };
 
   return (
-    <div className="rounded-lg border bg-white p-6 shadow-sm">
+    <div className="rounded-lg border bg-white pt-6 px-6 pb-0 shadow-sm">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Negotiation Insights</h3>
 
       <div className="space-y-4">
@@ -97,7 +97,7 @@ export default function NegotiationInsights({ utilities }: NegotiationInsightsPr
         </div>
 
         {/* Utility Breakdown Info */}
-        <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+        <div className="mt-4 pt-3 px-3 pb-0 bg-blue-50 rounded-lg">
           <p className="text-xs text-blue-800">
             <span className="font-semibold">Formula:</span> (Price × 60%) + (Terms × 40%)
           </p>

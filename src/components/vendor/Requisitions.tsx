@@ -26,18 +26,18 @@ function Requisitions({isOpen, toggleMenu}) {
       <table className="table-auto w-full text-left mb-3">
         <thead>
           <tr className="border-t border-[#D1CFCF]">
-            <th className="text-sm font-semibold px-4 py-2">Vendor Id</th>
-            <th className="text-sm font-semibold px-4 py-2">Quantity</th>
+            <th className="text-sm font-semibold px-4 pt-2 pb-0">Vendor Id</th>
+            <th className="text-sm font-semibold px-4 pt-2 pb-0">Quantity</th>
           </tr>
         </thead>
         <tbody>
           {data.map((value, i) => {
             return (
               <tr key={i} className="border-t border-[#D1CFCF]">
-                <td className="text-sm font-medium px-4 py-2">
+                <td className="text-sm font-medium px-4 pt-2 pb-0">
                   {value.venderId}
                 </td>
-                <td className="text-sm font-medium px-4 py-2">
+                <td className="text-sm font-medium px-4 pt-2 pb-0">
                   {value.Quantity}
                 </td>
               </tr>
@@ -48,7 +48,7 @@ function Requisitions({isOpen, toggleMenu}) {
       </table>
 
       <div className="pt-4 font-medium text-base px-4">
-        <p className="text-black mb-2 border-b text-base border-gray-300 pb-4">
+        <p className="text-black mb-2 border-b text-base border-gray-300 pb-0">
           Final Contract
         </p>
         <div className="">
@@ -81,7 +81,7 @@ function Requisitions({isOpen, toggleMenu}) {
         </div>
         <Link
           to="/verifyOtp"
-          className="bg-[#009A4F] w-1/3 md:w-1/2 text-white mx-auto block font-medium py-2 px-4 rounded mt-4 text-center">
+          className="bg-[#009A4F] w-1/3 md:w-1/2 text-white mx-auto block font-medium pt-2 pb-0 px-4 rounded mt-4 text-center">
           Verify
         </Link>
       </div>

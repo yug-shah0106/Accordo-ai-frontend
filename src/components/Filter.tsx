@@ -111,7 +111,7 @@ const Filter = ({ onApply, onClose, filtersData = {} }: FilterProps) => {
 
   return (
     <Box
-      className="p-6 bg-white rounded-lg shadow-xl w-[400px] py-6"
+      className="p-6 bg-white rounded-lg shadow-xl w-[400px] pt-6 pb-0"
       ref={filterRef}
     >
       <div className="flex justify-between">
@@ -181,19 +181,19 @@ const Filter = ({ onApply, onClose, filtersData = {} }: FilterProps) => {
       <Box className="flex justify-end gap-4 mt-6">
         {/* <button
           onClick={onClose}
-          className="bg-gray-300 text-gray-800 rounded-md px-4 py-2"
+          className="bg-gray-300 text-gray-800 rounded-md px-4 pt-2 pb-0"
         >
           Cancel
         </button> */}
         <button
           onClick={handleReset}
-          className="bg-gray-300 text-gray-800 rounded-md px-3 py-2"
+          className="bg-gray-300 text-gray-800 rounded-md px-3 pt-2 pb-0"
         >
           Reset
         </button>
         <button
           onClick={() => onApply(filters)}
-          className="bg-[#234BF3] text-white rounded-md px-3 py-2"
+          className="bg-[#234BF3] text-white rounded-md px-3 pt-2 pb-0"
         >
           Apply
         </button>

@@ -151,7 +151,7 @@ export default function DemoScenarios() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="h-full bg-gray-50 pt-6 px-6 pb-0">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -163,7 +163,7 @@ export default function DemoScenarios() {
         </div>
 
         {/* Info Banner */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg pt-4 px-4 pb-0 mb-8">
           <div className="flex items-start">
             <svg
               className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0"
@@ -190,19 +190,19 @@ export default function DemoScenarios() {
           {/* Left Column: Scenario Selection & Deal Selector */}
           <div className="lg:col-span-1 space-y-6">
             {/* Deal Selector */}
-            <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+            <div className="bg-white border border-gray-200 rounded-lg pt-5 px-5 pb-0 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Deal</h3>
 
               {loadingDeals ? (
-                <div className="flex items-center justify-center py-8">
+                <div className="flex items-center justify-center pt-8 pb-0">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
                 </div>
               ) : deals.length === 0 ? (
-                <div className="text-center py-6">
+                <div className="text-center pt-6 pb-0">
                   <p className="text-sm text-gray-600 mb-4">No negotiating deals available</p>
                   <button
                     onClick={() => navigate('/chatbot/deals/new')}
-                    className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+                    className="px-4 pt-2 pb-0 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
                   >
                     Create New Deal
                   </button>
@@ -211,7 +211,7 @@ export default function DemoScenarios() {
                 <select
                   value={selectedDeal || ''}
                   onChange={(e) => setSelectedDeal(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  className="w-full px-3 pt-2 pb-0 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 >
                   {deals.map((deal) => (
                     <option key={deal.id} value={deal.id}>
@@ -230,7 +230,7 @@ export default function DemoScenarios() {
                   key={scenario.type}
                   onClick={() => handleScenarioSelect(scenario.type)}
                   disabled={isRunning}
-                  className={`w-full text-left rounded-lg border-2 p-4 transition-all duration-200 ${
+                  className={`w-full text-left rounded-lg border-2 pt-4 px-4 pb-0 transition-all duration-200 ${
                     selectedScenario === scenario.type
                       ? `${scenario.borderColor} ${scenario.bgColor} shadow-md`
                       : 'border-gray-200 bg-white hover:border-gray-300'
@@ -250,7 +250,7 @@ export default function DemoScenarios() {
             <button
               onClick={handleRunDemo}
               disabled={isRunning || !selectedDeal}
-              className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all duration-200 ${
+              className={`w-full pt-3 pb-0 px-4 rounded-lg font-semibold text-white transition-all duration-200 ${
                 isRunning || !selectedDeal
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 shadow-md'
@@ -293,7 +293,7 @@ export default function DemoScenarios() {
                 /* Results View */
                 <div className="p-6">
                   {/* Results Header */}
-                  <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+                  <div className="flex items-center justify-between mb-6 pb-0 border-b border-gray-200">
                     <div>
                       <h3 className="text-xl font-bold text-gray-900">Demo Results</h3>
                       <p className="text-sm text-gray-600 mt-1">
@@ -302,14 +302,14 @@ export default function DemoScenarios() {
                     </div>
                     <button
                       onClick={handleViewDeal}
-                      className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+                      className="px-4 pt-2 pb-0 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
                     >
                       View Deal
                     </button>
                   </div>
 
                   {/* Final Status */}
-                  <div className={`rounded-lg p-4 mb-6 ${
+                  <div className={`rounded-lg pt-4 px-4 pb-0 mb-6 ${
                     demoResults.finalStatus === 'ACCEPTED'
                       ? 'bg-green-50 border border-green-200'
                       : demoResults.finalStatus === 'WALKED_AWAY'
@@ -349,11 +349,11 @@ export default function DemoScenarios() {
                     <h4 className="text-sm font-semibold text-gray-700 mb-3">Negotiation Transcript</h4>
                     <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
                       {demoResults.steps.map((step, idx) => (
-                        <div key={idx} className="border-l-4 border-blue-300 pl-4 py-2">
+                        <div key={idx} className="border-l-4 border-blue-300 pl-4 pt-2 pb-0">
                           <div className="text-xs font-semibold text-gray-500 mb-2">Round {step.round}</div>
 
                           {/* Vendor Message */}
-                          <div className="mb-3 bg-gray-50 rounded-lg p-3">
+                          <div className="mb-3 bg-gray-50 rounded-lg pt-3 px-3 pb-0">
                             <div className="text-xs font-medium text-gray-600 mb-1">Vendor</div>
                             <p className="text-sm text-gray-800">{step.vendorMessage.content}</p>
                             {step.vendorMessage.extractedOffer && (
@@ -364,7 +364,7 @@ export default function DemoScenarios() {
                           </div>
 
                           {/* Accordo Response */}
-                          <div className="bg-blue-50 rounded-lg p-3">
+                          <div className="bg-blue-50 rounded-lg pt-3 px-3 pb-0">
                             <div className="text-xs font-medium text-blue-700 mb-1">Accordo</div>
                             {step.accordoMessage.engineDecision && (
                               <div className="mb-2">
@@ -395,7 +395,7 @@ export default function DemoScenarios() {
                 </div>
               ) : isRunning ? (
                 /* Running State */
-                <div className="flex flex-col items-center justify-center h-full py-20">
+                <div className="flex flex-col items-center justify-center h-full pt-20 pb-0">
                   <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-6" />
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">Running Demo...</h3>
                   <p className="text-sm text-gray-600 mb-4">
@@ -408,7 +408,7 @@ export default function DemoScenarios() {
                 </div>
               ) : (
                 /* Empty State */
-                <div className="flex flex-col items-center justify-center h-full py-20 text-center px-6">
+                <div className="flex flex-col items-center justify-center h-full pt-20 pb-0 text-center px-6">
                   <svg className="w-20 h-20 text-gray-300 mb-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                   </svg>
@@ -420,7 +420,7 @@ export default function DemoScenarios() {
               )}
 
               {error && (
-                <div className="mx-6 mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="mx-6 mb-6 bg-red-50 border border-red-200 rounded-lg pt-4 px-4 pb-0">
                   <p className="text-sm text-red-800">
                     <strong>Error:</strong> {error}
                   </p>
@@ -431,7 +431,7 @@ export default function DemoScenarios() {
         </div>
 
         {/* Additional Info */}
-        <div className="mt-8 bg-white rounded-lg border border-gray-200 p-6">
+        <div className="mt-8 bg-white rounded-lg border border-gray-200 pt-6 px-6 pb-0">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">What to Expect</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

@@ -99,7 +99,7 @@ export function HistoryPanel({
   return (
     <div className={`bg-white border border-gray-200 rounded-lg shadow-sm ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between pt-4 px-4 pb-0 border-b border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900">Recent Deals</h3>
         <div className="flex items-center space-x-2">
           {showClearButton && recentDeals.length > 0 && (
@@ -211,7 +211,7 @@ function DealHistoryItem({
           <StatusBadge status={status} size="sm" />
           <button
             onClick={(e) => onRemove(dealId, e)}
-            className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600 transition-all p-1"
+            className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600 transition-all pt-1 px-1 pb-0"
             title="Remove from history"
           >
             <svg
@@ -242,7 +242,7 @@ interface StatusBadgeProps {
 function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
   const sizeClasses = {
     sm: 'text-xs px-2 py-0.5',
-    md: 'text-sm px-2.5 py-1',
+    md: 'text-sm px-2.5 pt-1 pb-0',
   };
 
   const statusConfig: Record<

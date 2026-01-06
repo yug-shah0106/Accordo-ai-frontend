@@ -3,7 +3,7 @@ import dashboard from "../../assets/Dashboard.png";
 const HeroSection = () => {
   return (
     <div className="bg-black text-white">
-      {/* <div className="grid grid-cols-1 items-center p-4 justify-center h-full gap-8"> */}
+      {/* <div className="grid grid-cols-1 items-center pt-4 px-4 pb-0 justify-center h-full gap-8"> */}
       <div className="flex justify-center w-[90%] text-center mx-auto items-center xl:pt-36 pt-10">
         <div className="xl:w-[60%] sm:w-[80%] ">
           <h1 className="text-2xl text-wrap lg:text-4xl font-bold mb-4 leading-tight lg:leading-[3rem]">
@@ -15,10 +15,10 @@ const HeroSection = () => {
               tracking, and eSigning every important document you handle.
             </p> */}
           <div className="flex justify-center space-y-4 sm:space-y-0 sm:space-x-8 mt-10">
-            <button className="bg-[#234BF3] text-white font-medium xl:font-bold py-2 px-4 rounded-lg w-auto">
+            <button className="bg-[#234BF3] text-white font-medium xl:font-bold pt-2 pb-0 px-4 rounded-lg w-auto">
               Request a demo
             </button>
-            {/* <button className="bg-white text-gray-600 font-bold py-1 px-4 rounded-lg border border-[#272626] w-full sm:w-auto">
+            {/* <button className="bg-white text-gray-600 font-bold pt-1 pb-0 px-4 rounded-lg border border-[#272626] w-full sm:w-auto">
               Start free 14-day trial
             </button> */}
           </div>

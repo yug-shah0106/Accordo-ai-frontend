@@ -79,9 +79,9 @@ const VendorCurrencyDetails: React.FC<VendorReviewProps> = ({
   }
 
   return (
-    <div className="border-2 rounded p-4">
+    <div className="border-2 rounded pt-4 px-4 pb-0">
       <h3 className="text-lg font-semibold">Review Details {companyId}</h3>
-      <p className="font-normal text-[#46403E] py-2">
+      <p className="font-normal text-[#46403E] pt-2 pb-0">
         Your details will be used for Review details
       </p>
       <div className="px-2">
@@ -278,8 +278,8 @@ const VendorCurrencyDetails: React.FC<VendorReviewProps> = ({
 
 
       <div className="py-6">
-        <Link 
-          to="/vendor-management" 
+        <Link
+          to="/vendor-management"
           className="p-4 py-2 m-2 bg-blue-600 text-white rounded" >
           Okay
         </Link>

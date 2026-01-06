@@ -36,9 +36,9 @@ const Accordion = () => {
       <h2 className="xl:text-3xl text-xl font-bold text-center pt-6 mb-10">Frequently Asked Question</h2>
       <div className="space-y-2 ">
         {questions.map((question, index) => (
-          <div key={index} className='bg-white w-full xl:w-[70%] shadow rounded-lg py-5 px-4 mx-auto'>
+          <div key={index} className='bg-white w-full xl:w-[70%] shadow rounded-lg pt-5 pb-0 px-4 mx-auto'>
             <button
-              className={`w-full text-left p-4 rounded-lg  transition-colors`}
+              className={`w-full text-left pt-4 px-4 pb-0 rounded-lg  transition-colors`}
               onClick={() => toggleAccordion(index)}
             >
               <h3 className="sm:text-lg text-sm font-medium flex justify-between items-center">

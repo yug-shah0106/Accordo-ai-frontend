@@ -182,7 +182,7 @@ export function ConversationEnhanced({
           <p className="mt-2">{error}</p>
           <button
             onClick={reload}
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="mt-4 px-4 pt-2 pb-0 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             Retry
           </button>
@@ -258,7 +258,7 @@ function TopBar({
   onToggleSidebar,
 }: TopBarProps) {
   return (
-    <div className="bg-white border-b border-gray-200 px-6 py-4">
+    <div className="bg-white border-b border-gray-200 px-6 pt-4 pb-0">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           {/* Phase Badge */}
@@ -348,7 +348,7 @@ function PhaseBadge({ phase }: PhaseBadgeProps) {
 
   return (
     <div
-      className={`px-3 py-1 rounded-full text-sm font-medium border ${config.color} flex items-center space-x-1`}
+      className={`px-3 pt-1 pb-0 rounded-full text-sm font-medium border ${config.color} flex items-center space-x-1`}
     >
       <span>{config.icon}</span>
       <span>{config.label}</span>
@@ -373,7 +373,7 @@ function RefusalWarning({ count, level }: RefusalWarningProps) {
 
   return (
     <div
-      className={`px-3 py-1 rounded-full text-sm font-medium ${config.color} flex items-center space-x-1 animate-pulse`}
+      className={`px-3 pt-1 pb-0 rounded-full text-sm font-medium ${config.color} flex items-center space-x-1 animate-pulse`}
     >
       <span>{config.icon}</span>
       <span>
@@ -389,7 +389,7 @@ interface TurnCounterProps {
 
 function TurnCounter({ count }: TurnCounterProps) {
   return (
-    <div className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 border border-gray-300">
+    <div className="px-3 pt-1 pb-0 rounded-full text-sm font-medium bg-gray-100 text-gray-700 border border-gray-300">
       Turn {count}
     </div>
   );
@@ -408,9 +408,9 @@ function MessageTranscript({ messages, loading }: MessageTranscriptProps) {
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50 p-6 space-y-4">
+    <div className="flex-1 overflow-y-auto bg-gray-50 pt-6 px-6 pb-0 space-y-4">
       {messages.length === 0 && !loading && (
-        <div className="text-center text-gray-500 py-12">
+        <div className="text-center text-gray-500 pt-12 pb-0">
           <p className="text-lg">No messages yet</p>
           <p className="text-sm mt-2">Start the conversation</p>
         </div>
@@ -424,7 +424,7 @@ function MessageTranscript({ messages, loading }: MessageTranscriptProps) {
       ))}
 
       {loading && (
-        <div className="flex justify-center py-4">
+        <div className="flex justify-center pt-4 pb-0">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500" />
         </div>
       )}
@@ -451,7 +451,7 @@ function MessageBubbleWithIntent({
   if (isSystem) {
     return (
       <div className="flex justify-center">
-        <div className="px-4 py-2 bg-gray-200 text-gray-700 rounded-full text-sm">
+        <div className="px-4 pt-2 pb-0 bg-gray-200 text-gray-700 rounded-full text-sm">
           {message.content}
         </div>
       </div>
@@ -470,7 +470,7 @@ function MessageBubbleWithIntent({
 
         {/* Message Bubble */}
         <div
-          className={`px-4 py-3 rounded-lg ${
+          className={`px-4 pt-3 pb-0 rounded-lg ${
             isVendor
               ? 'bg-white border border-gray-200'
               : 'bg-blue-500 text-white'
@@ -576,7 +576,7 @@ function EnhancedComposer({
   const suggestions = getSuggestedResponses(phase);
 
   return (
-    <div className="bg-white border-t border-gray-200 p-4 space-y-3">
+    <div className="bg-white border-t border-gray-200 pt-4 px-4 pb-0 space-y-3">
       {/* Suggested Responses */}
       {showSuggestedResponses && suggestions.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -584,7 +584,7 @@ function EnhancedComposer({
             <button
               key={index}
               onClick={() => onSelectSuggestion(suggestion)}
-              className="px-3 py-1 text-sm bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors"
+              className="px-3 pt-1 pb-0 text-sm bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors"
               disabled={disabled}
             >
               {suggestion}
@@ -608,13 +608,13 @@ function EnhancedComposer({
             disabled ? 'Conversation closed' : 'Type your message...'
           }
           disabled={disabled || sending}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          className="flex-1 px-4 pt-2 pb-0 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           rows={3}
         />
         <button
           onClick={onSend}
           disabled={disabled || sending || !value.trim()}
-          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors h-[76px]"
+          className="px-6 pt-2 pb-0 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors h-[76px]"
         >
           {sending ? 'Sending...' : 'Send'}
         </button>

@@ -86,13 +86,13 @@ const Table = ({
       <table className="w-full bg-white font-normal rounded-lg text-sm">
         <thead className={`${style}`}>
           <tr className="text-gray-400">
-            <th className="px-4 py-2 text-left font-normal">S.No</th>
+            <th className="px-4 pt-2 pb-0 text-left font-normal">S.No</th>
             {columns.map((col, index) => (
-              <th key={index} className="px-4 py-2 text-center font-normal">
+              <th key={index} className="px-4 pt-2 pb-0 text-center font-normal">
                 {col?.header ?? col}
               </th>
             ))}
-            <th className="px-4 py-2 text-left font-normal">Action</th>
+            <th className="px-4 pt-2 pb-0 text-left font-normal">Action</th>
           </tr>
         </thead>
         <tbody className="text-center">
@@ -104,11 +104,11 @@ const Table = ({
                   className="text-[#18100E] border-t hover:bg-gray-50 cursor-pointer"
                   onClick={() => onRowClick(row)}
                 >
-                  <td className="px-4 text-justify py-2">
+                  <td className="px-4 text-justify pt-2 pb-0">
                     {index + 1 + (currentPage - 1) * itemsPerPage}
                   </td>
                   {columns.map((col, colIndex) => (
-                    <td key={colIndex} className="px-4 py-2 ">
+                    <td key={colIndex} className="px-4 pt-2 pb-0 ">
                       {col?.header === "Project ID" ||
                       col?.header === "RFQ ID" ? (
                         typeof row[col?.accessor ?? col] === "string" ? (
@@ -193,7 +193,7 @@ const Table = ({
                                     + {row[col?.accessor ?? col].length - 1}{" "}
                                     others
                                   </p>
-                                  <div className="absolute left-0 mt-1 w-max max-w-xs z-10 hidden group-hover:block bg-white border border-gray-200 shadow-md rounded-md text-sm p-2">
+                                  <div className="absolute left-0 mt-1 w-max max-w-xs z-10 hidden group-hover:block bg-white border border-gray-200 shadow-md rounded-md text-sm pt-2 px-2 pb-0">
                                     {row[col?.accessor ?? col]
                                       .slice(1)
                                       .map((i, vendorIndex) => (
@@ -229,7 +229,7 @@ const Table = ({
                       )}
                     </td>
                   ))}
-                  <td className="px-4  py-2">
+                  <td className="px-4  pt-2 pb-0">
                     <div className="relative">
                       <IconButton
                         onClick={(evnt) => {

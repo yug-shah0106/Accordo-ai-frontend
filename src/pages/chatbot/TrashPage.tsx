@@ -7,7 +7,8 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiTrash2, FiRefreshCw, FiRotateCcw, FiAlertTriangle } from 'react-icons/fi';
+import { FiTrash2, FiRefreshCw, FiAlertTriangle, FiArchive } from 'react-icons/fi';
+import { MdRestore } from 'react-icons/md';
 import chatbotService from '../../services/chatbot.service';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
@@ -17,8 +18,7 @@ export default function TrashPage() {
   const navigate = useNavigate();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [restoring, setRestoring] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,32 +39,61 @@ export default function TrashPage() {
     }
   };
 
-  const handleRestore = async (dealId: string): Promise<void> => {
+  const handleRecover = async (e: React.MouseEvent, dealId: string, dealTitle: string): Promise<void> => {
+    e.stopPropagation();
+
     try {
-      setRestoring(dealId);
+      setActionLoading(dealId);
       await chatbotService.restoreDeal(dealId);
-      toast.success('Deal restored successfully');
+      toast.success(`"${dealTitle}" has been recovered to main screen`, {
+        duration: 3000,
+        icon: '♻️',
+      });
       setDeals((prev) => prev.filter((d) => d.id !== dealId));
-    } catch (err) {
-      console.error('Failed to restore deal:', err);
-      toast.error('Failed to restore deal');
+    } catch (err: any) {
+      console.error('Failed to recover deal:', err);
+      toast.error(err.response?.data?.message || 'Failed to recover deal');
     } finally {
-      setRestoring(null);
+      setActionLoading(null);
     }
   };
 
-  const handlePermanentDelete = async (dealId: string): Promise<void> => {
+  const handleArchive = async (e: React.MouseEvent, dealId: string, dealTitle: string): Promise<void> => {
+    e.stopPropagation();
+
     try {
-      setDeleting(dealId);
+      setActionLoading(dealId);
+      // Move from deleted to archived: clear deletedAt and set archivedAt
+      await chatbotService.restoreDeal(dealId); // This now clears both flags
+      await chatbotService.archiveDeal(dealId); // Then set archived
+      toast.success(`"${dealTitle}" has been moved to archived`, {
+        duration: 3000,
+        icon: '📦',
+      });
+      setDeals((prev) => prev.filter((d) => d.id !== dealId));
+    } catch (err: any) {
+      console.error('Failed to archive deal:', err);
+      toast.error(err.response?.data?.message || 'Failed to archive deal');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handlePermanentDelete = async (dealId: string, dealTitle: string): Promise<void> => {
+    try {
+      setActionLoading(dealId);
       await chatbotService.permanentlyDeleteDeal(dealId);
-      toast.success('Deal permanently deleted');
+      toast.success(`"${dealTitle}" has been permanently deleted`, {
+        duration: 3000,
+        icon: '🗑️',
+      });
       setDeals((prev) => prev.filter((d) => d.id !== dealId));
       setConfirmDelete(null);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to permanently delete deal:', err);
-      toast.error('Failed to delete deal');
+      toast.error(err.response?.data?.message || 'Failed to delete deal');
     } finally {
-      setDeleting(null);
+      setActionLoading(null);
     }
   };
 
@@ -80,9 +109,9 @@ export default function TrashPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg">
+    <div className="flex flex-col h-full bg-gray-50 dark:bg-dark-bg">
       {/* Header */}
-      <div className="bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 py-4">
+      <div className="sticky top-0 z-10 flex-shrink-0 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 pt-4 pb-3">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-dark-text">Trash</h1>
@@ -108,8 +137,8 @@ export default function TrashPage() {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="p-6">
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto pt-6 px-6 pb-0">
         {deals.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
             <FiTrash2 className="w-16 h-16 text-gray-300 dark:text-gray-700 mb-4" />
@@ -126,7 +155,7 @@ export default function TrashPage() {
             {deals.map((deal) => (
               <div
                 key={deal.id}
-                className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg p-4 hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg pt-4 px-4 pb-0 hover:shadow-md transition-shadow"
               >
                 {/* Header */}
                 <div className="flex items-start justify-between mb-3">
@@ -141,7 +170,7 @@ export default function TrashPage() {
                     )}
                   </div>
                   <span
-                    className={`text-xs px-2 py-1 rounded-full font-medium ${
+                    className={`text-xs px-2 pt-1 pb-0 rounded-full font-medium ${
                       deal.status === 'ACCEPTED'
                         ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                         : deal.status === 'WALKED_AWAY'
@@ -176,18 +205,32 @@ export default function TrashPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleRestore(deal.id)}
-                    disabled={restoring === deal.id}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 rounded-lg transition-colors disabled:opacity-50"
-                  >
-                    <FiRotateCcw className="w-4 h-4" />
-                    {restoring === deal.id ? 'Restoring...' : 'Restore'}
-                  </button>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={(e) => handleRecover(e, deal.id, deal.title)}
+                      disabled={actionLoading === deal.id}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Recover to main screen"
+                    >
+                      <MdRestore className="w-4 h-4" />
+                      Recover
+                    </button>
+                    <button
+                      onClick={(e) => handleArchive(e, deal.id, deal.title)}
+                      disabled={actionLoading === deal.id}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Move to archived"
+                    >
+                      <FiArchive className="w-4 h-4" />
+                      Archive
+                    </button>
+                  </div>
                   <button
                     onClick={() => setConfirmDelete(deal.id)}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg transition-colors"
+                    disabled={actionLoading === deal.id}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Permanently delete"
                   >
                     <FiTrash2 className="w-4 h-4" />
                     Delete Forever
@@ -197,7 +240,7 @@ export default function TrashPage() {
                 {/* Confirmation Modal */}
                 {confirmDelete === deal.id && (
                   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-dark-surface rounded-lg p-6 max-w-md mx-4">
+                    <div className="bg-white dark:bg-dark-surface rounded-lg pt-6 px-6 pb-0 max-w-md mx-4">
                       <div className="flex items-center gap-3 mb-4">
                         <FiAlertTriangle className="w-6 h-6 text-red-600" />
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">
@@ -216,11 +259,11 @@ export default function TrashPage() {
                           Cancel
                         </button>
                         <button
-                          onClick={() => handlePermanentDelete(deal.id)}
-                          disabled={deleting === deal.id}
+                          onClick={() => handlePermanentDelete(deal.id, deal.title)}
+                          disabled={actionLoading === deal.id}
                           className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50"
                         >
-                          {deleting === deal.id ? 'Deleting...' : 'Delete Forever'}
+                          {actionLoading === deal.id ? 'Deleting...' : 'Delete Forever'}
                         </button>
                       </div>
                     </div>

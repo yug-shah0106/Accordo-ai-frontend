@@ -20,7 +20,7 @@ export default function ExplainabilityPanel({ explainability }: ExplainabilityPa
 
   if (!explainability) {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
+      <div className="bg-white border border-gray-200 rounded-lg pt-6 px-6 pb-0 text-center">
         <div className="text-gray-400 mb-2">
           <svg className="w-12 h-12 mx-auto" fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -73,7 +73,7 @@ export default function ExplainabilityPanel({ explainability }: ExplainabilityPa
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-b border-gray-200 px-6 py-4">
+      <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-b border-gray-200 px-6 pt-4 pb-0">
         <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
           <svg className="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
             <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
@@ -92,7 +92,7 @@ export default function ExplainabilityPanel({ explainability }: ExplainabilityPa
 
       <div className="p-6 space-y-6">
         {/* Decision Summary */}
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-gray-50 rounded-lg pt-4 px-4 pb-0">
           <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path
@@ -105,7 +105,7 @@ export default function ExplainabilityPanel({ explainability }: ExplainabilityPa
           </h4>
           <div className="flex items-center gap-3 mb-3">
             <span
-              className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border ${getDecisionColor(
+              className={`inline-flex items-center px-3 pt-1 pb-0 rounded-full text-sm font-semibold border ${getDecisionColor(
                 decision.action
               )}`}
             >
@@ -203,7 +203,7 @@ export default function ExplainabilityPanel({ explainability }: ExplainabilityPa
           </div>
 
           {/* Total Utility */}
-          <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
+          <div className="bg-purple-50 rounded-lg pt-3 px-3 pb-0 border border-purple-200">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-purple-900">Total Utility</span>
               <span className="text-lg font-bold text-purple-900">
@@ -230,7 +230,7 @@ export default function ExplainabilityPanel({ explainability }: ExplainabilityPa
         </div>
 
         {/* Vendor Offer */}
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-gray-50 rounded-lg pt-4 px-4 pb-0">
           <h4 className="text-sm font-semibold text-gray-700 mb-3">Vendor Offer</h4>
           <div className="grid grid-cols-2 gap-3">
             {vendorOffer.unit_price !== null && (
@@ -250,7 +250,7 @@ export default function ExplainabilityPanel({ explainability }: ExplainabilityPa
 
         {/* Counter Offer (if applicable) */}
         {decision.counterOffer && (
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+          <div className="bg-blue-50 rounded-lg pt-4 px-4 pb-0 border border-blue-200">
             <h4 className="text-sm font-semibold text-blue-900 mb-3">Counter Offer</h4>
             <div className="grid grid-cols-2 gap-3">
               {decision.counterOffer.unit_price !== null && (
@@ -277,7 +277,7 @@ export default function ExplainabilityPanel({ explainability }: ExplainabilityPa
         <div className="border border-gray-200 rounded-lg overflow-hidden">
           <button
             onClick={() => setIsConfigExpanded(!isConfigExpanded)}
-            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
+            className="w-full flex items-center justify-between px-4 pt-3 pb-0 bg-gray-50 hover:bg-gray-100 transition-colors"
           >
             <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -305,8 +305,8 @@ export default function ExplainabilityPanel({ explainability }: ExplainabilityPa
           </button>
 
           {isConfigExpanded && (
-            <div className="px-4 py-3 bg-white border-t border-gray-200">
-              <pre className="text-xs text-gray-700 overflow-x-auto bg-gray-50 p-3 rounded">
+            <div className="px-4 pt-3 pb-0 bg-white border-t border-gray-200">
+              <pre className="text-xs text-gray-700 overflow-x-auto bg-gray-50 pt-3 px-3 pb-0 rounded">
                 {JSON.stringify(configSnapshot, null, 2)}
               </pre>
             </div>

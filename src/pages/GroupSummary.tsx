@@ -195,7 +195,7 @@ const GroupSummary = () => {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm pt-6 px-6 pb-0 mb-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Contract Summary</h1>
@@ -208,7 +208,7 @@ const GroupSummary = () => {
               <input
                 type="text"
                 placeholder="Search vendors..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="pl-10 pr-4 pt-2 pb-0 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={loading}
               />
               <FiSearch className="absolute left-3 top-3 text-gray-400" />
@@ -230,7 +230,7 @@ const GroupSummary = () => {
 
       {/* Loading State */}
       {loading && (
-        <div className="bg-white rounded-lg shadow-sm p-12">
+        <div className="bg-white rounded-lg shadow-sm pt-12 px-12 pb-0">
           <div className="flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
             <span className="ml-3 text-gray-600">Loading requisition data...</span>
@@ -240,8 +240,8 @@ const GroupSummary = () => {
 
       {/* Error State */}
       {error && (
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-white rounded-lg shadow-sm pt-6 px-6 pb-0 mb-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg pt-4 px-4 pb-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
@@ -257,7 +257,7 @@ const GroupSummary = () => {
               <button
                 onClick={fetchRequisitionData}
                 disabled={loading}
-                className="ml-4 flex-shrink-0 bg-red-100 hover:bg-red-200 text-red-800 px-3 py-2 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="ml-4 flex-shrink-0 bg-red-100 hover:bg-red-200 text-red-800 px-3 pt-2 pb-0 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FiRefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
                 Retry
@@ -269,7 +269,7 @@ const GroupSummary = () => {
 
       {/* Empty State */}
       {!loading && procurementData.companies.length === 0 && (
-        <div className="bg-white rounded-lg shadow-sm p-12">
+        <div className="bg-white rounded-lg shadow-sm pt-12 px-12 pb-0">
           <div className="text-center">
             <FiFileText className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No requisition found</h3>
@@ -286,14 +286,14 @@ const GroupSummary = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Rank
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Vendor Name
                 </th>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort('totalAmount')}
                 >
                   <div className="flex items-center space-x-1">
@@ -304,7 +304,7 @@ const GroupSummary = () => {
                   </div>
                 </th>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort('agreedAmount')}
                 >
                   <div className="flex items-center space-x-1">
@@ -315,7 +315,7 @@ const GroupSummary = () => {
                   </div>
                 </th>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort('savings')}
                 >
                   <div className="flex items-center space-x-1">
@@ -325,10 +325,10 @@ const GroupSummary = () => {
                     )}
                   </div>
                 </th>
-                {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {/* <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Items
                 </th> */}
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Agreed Delivery Date
                 </th>
               </tr>
@@ -336,7 +336,7 @@ const GroupSummary = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {sortedAndRankedCompanies.map((company) => (
                 <tr key={company.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 pt-4 pb-0 whitespace-nowrap text-sm text-gray-900">
                     <div className="relative flex items-center justify-center w-12 h-12">
                       {getRankIcon(company.rank)}
                       <span className={`absolute text-lg font-bold ${getRankColor(company.rank)}`}>
@@ -344,16 +344,16 @@ const GroupSummary = () => {
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <td className="px-6 pt-4 pb-0 whitespace-nowrap text-sm font-medium text-gray-900">
                     {company.companyName}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 pt-4 pb-0 whitespace-nowrap text-sm text-gray-900">
                     ₹{company.totalAmount.toLocaleString('en-IN')}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 pt-4 pb-0 whitespace-nowrap text-sm text-gray-900">
                     ₹{company.agreedAmount.toLocaleString('en-IN')}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 pt-4 pb-0 whitespace-nowrap">
                     <div className="flex flex-col">
                       <span className={`text-sm font-medium ${company.savings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         ₹{company.savings.toLocaleString('en-IN')}
@@ -363,7 +363,7 @@ const GroupSummary = () => {
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 pt-4 pb-0 whitespace-nowrap text-sm text-gray-500">
                     {company.lastUpdated}
                   </td>
                 </tr>

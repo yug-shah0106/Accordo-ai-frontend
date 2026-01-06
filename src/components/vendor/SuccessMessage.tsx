@@ -6,7 +6,7 @@ const SuccessMessage = () => {
   return (
     <div className="h-screen flex flex-col">
      
-      <nav className="bg-white p-4">
+      <nav className="bg-white pt-4 px-4 pb-0">
         <div className="max-w-screen-xl mx-auto flex justify-between items-center">
           <div className="text-white">
             <img src={logo} alt="Logo" className="w-10 mx-auto" />
@@ -15,7 +15,7 @@ const SuccessMessage = () => {
       </nav>
      
       <div className="flex-grow flex justify-center items-center bg-gray-100">
-        <div className="bg-white p-6 rounded-lg shadow-lg text-center w-full sm:w-96">
+        <div className="bg-white pt-6 px-6 pb-0 rounded-lg shadow-lg text-center w-full sm:w-96">
          
           <div className="text-green-500 text-6xl mb-4">
             {/* <FaCheck /> */}
@@ -24,7 +24,7 @@ const SuccessMessage = () => {
           <p className="text-sm text-gray-600 mb-6">You have successfully completed the process.</p>
           <Link
             to="/"
-            className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700">
+            className="bg-blue-600 text-white pt-2 pb-0 px-6 rounded-lg hover:bg-blue-700">
             Go to Homepage
           </Link>
         </div>

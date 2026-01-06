@@ -119,9 +119,15 @@ const ProductManagement = () => {
   ];
 console.log({products});
 
+  // Reset scroll position when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
-    <div className="w-full h-full">
-      <div className="bg-white rounded-lg h-full p-6">
+    <div className="flex flex-col bg-white rounded-lg h-full overflow-hidden">
+      {/* Sticky Header Section */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0">
         <div className="mb-4">
           <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
             <RiBox3Line className="text-xl" />
@@ -129,7 +135,7 @@ console.log({products});
           </h1>
         </div>
 
-        <div className="flex justify-between gap-2 mb-4 ">
+        <div className="flex justify-between gap-2">
           <div className="relative w-[30%]">
             <input
               onChange={(e) => debounce(e.target.value)}
@@ -140,7 +146,7 @@ console.log({products});
             <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
           </div>
           <div className="flex gap-6">
-           
+
             <Link
               to="/product-management/createproductform"
               className="bg-[#234BF3] text-white font-medium rounded-md px-4 py-2 text-sm flex items-center gap-2"
@@ -150,8 +156,12 @@ console.log({products});
             </Link>
           </div>
         </div>
+      </div>
+
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto px-6 pb-0">
         <div className="flex flex-col justify-between">
-          <div className="border rounded-md hide-scrollbar  overflow-auto h-[70vh]">
+          <div className="border rounded-md hide-scrollbar overflow-auto">
             <Table data={products} columns={columns} actions={actions} loading={loading} style={'bg-gray-100 '} currentPage={page}
             itemsPerPage={10}/>
           </div>
@@ -167,6 +177,7 @@ console.log({products});
           </div>
         </div>
       </div>
+      {/* End Scrollable Content Area */}
 
       {isModal && (
         <Modal

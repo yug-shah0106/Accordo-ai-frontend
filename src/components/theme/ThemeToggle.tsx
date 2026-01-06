@@ -16,7 +16,7 @@ export default function ThemeToggle({ variant = 'icon', className = '' }) {
     return (
       <button
         onClick={toggleTheme}
-        className={`flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors ${className}`}
+        className={`flex items-center gap-3 w-full px-4 pt-3 pb-0 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors ${className}`}
         title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
       >
         {isDark ? (

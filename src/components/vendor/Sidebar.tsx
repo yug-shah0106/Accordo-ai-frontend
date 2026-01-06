@@ -3,7 +3,7 @@ import logo from '../../assets/logo.png';
 
 function Sidebar() {
   return (
-    <div className="lg:w-1/4 w-2/3 lg:p-6 sm:p-2 bg-gray-100 h-screen hide-scrollbar overflow-y-scroll overflow-x-hidden">
+    <div className="lg:w-1/4 w-2/3 lg:pt-6 lg:px-6 lg:pb-0 sm:pt-2 sm:px-2 sm:pb-0 bg-gray-100 h-screen hide-scrollbar overflow-y-scroll overflow-x-hidden">
       <div className="mb-4">
         <img src={logo} alt="Logo" className="w-16 mx-auto" />
       </div>
@@ -13,13 +13,13 @@ function Sidebar() {
         <p className="lg:text-lg font-semibold text-gray-800 sm:text-sm">Requisition Details</p>
       </div>
 
-      <div className="bg-white mt-5 p-6 rounded-md shadow h-auto max-w-full sm:p-4 md:p-5 lg:p-6">
+      <div className="bg-white mt-5 pt-6 px-6 pb-0 rounded-md shadow h-auto max-w-full sm:p-4 md:p-5 lg:p-6">
         <p className="text-sm font-medium text-black text-start">Req Details</p>
         <p className="lg:text-base sm:text-xs text-gray-500 mt-4 text-justify leading-relaxed overflow-hidden text-ellipsis">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
         </p>
         <div className="text-left">
-          <button className="mt-7 px-3 py-2 text-xs font-semibold text-orange-700 bg-orange-100 rounded-full">
+          <button className="mt-7 px-3 pt-2 pb-0 text-xs font-semibold text-orange-700 bg-orange-100 rounded-full">
             Created
           </button>
         </div>

@@ -161,14 +161,14 @@ type FilterType = 'D' | 'M' | 'Y';
 
 //   return (
 //     <div>
-//         <div className="bg-white border rounded-lg shadow-sm p-6">
+//         <div className="bg-white border rounded-lg shadow-sm pt-6 px-6 pb-0">
 //           <h3 className="text-gray-600 font-medium mb-4">
 //             Category wise savings
 //           </h3>
 //           <div className="flex justify-end space-x-2 mb-4">
-//             <button className="px-2 py-1 text-sm bg-gray-200 rounded">D</button>
-//             <button className="px-2 py-1 text-sm bg-gray-200 rounded">M</button>
-//             <button className="px-2 py-1 text-sm bg-gray-200 rounded">Y</button>
+//             <button className="px-2 pt-1 pb-0 text-sm bg-gray-200 rounded">D</button>
+//             <button className="px-2 pt-1 pb-0 text-sm bg-gray-200 rounded">M</button>
+//             <button className="px-2 pt-1 pb-0 text-sm bg-gray-200 rounded">Y</button>
 //           </div>
 //           <Bar data={barData} options={barOptions} />
 //         </div>
@@ -389,25 +389,25 @@ const Bargraph = () => {
 
   return (
     <div>
-      <div className="bg-white border rounded-lg shadow-sm p-6">
+      <div className="bg-white border rounded-lg shadow-sm pt-6 px-6 pb-0">
         <h3 className="text-gray-600 font-medium mb-4">Category-wise Savings</h3>
         <div className="flex justify-end space-x-2 mb-4">
           <button
-            className={`px-3 py-1 text-sm rounded ${filterType === "D" ? "bg-blue-500 text-white" : "bg-gray-200"
+            className={`px-3 pt-1 pb-0 text-sm rounded ${filterType === "D" ? "bg-blue-500 text-white" : "bg-gray-200"
               }`}
             onClick={() => handleFilterChange("D")}
           >
             D
           </button>
           <button
-            className={`px-3 py-1 text-sm rounded ${filterType === "M" ? "bg-blue-500 text-white" : "bg-gray-200"
+            className={`px-3 pt-1 pb-0 text-sm rounded ${filterType === "M" ? "bg-blue-500 text-white" : "bg-gray-200"
               }`}
             onClick={() => handleFilterChange("M")}
           >
             M
           </button>
           <button
-            className={`px-3 py-1 text-sm rounded ${filterType === "Y" ? "bg-blue-500 text-white" : "bg-gray-200"
+            className={`px-3 pt-1 pb-0 text-sm rounded ${filterType === "Y" ? "bg-blue-500 text-white" : "bg-gray-200"
               }`}
             onClick={() => handleFilterChange("Y")}
           >

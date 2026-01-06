@@ -62,7 +62,7 @@ function ChatReplay({ isOpen, toggleMenu }) {
   });
   return (
     <div className="xl:w-2/3 w-full flex   flex-col justify-between">
-      <nav className="bg-white border-b border-b-[#D1CFCF] p-4">
+      <nav className="bg-white border-b border-b-[#D1CFCF] pt-4 px-4 pb-0">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
             <img src={chatLogo} alt="chatLogo" className="w-10 mx-auto" />
@@ -87,7 +87,7 @@ function ChatReplay({ isOpen, toggleMenu }) {
           {chat?.messages.map((message) => (
             <div
               key={message.messageId}
-              className={`message-item max-w-[70%] p-2 mb-2 rounded-md break-words ${
+              className={`message-item max-w-[70%] pt-2 px-2 pb-0 mb-2 rounded-md break-words ${
                 message.senderId === "user123"
                   ? "bg-blue-100 text-left"
                   : "bg-[#F1F1F1] ml-auto font-light text-right"
@@ -102,13 +102,13 @@ function ChatReplay({ isOpen, toggleMenu }) {
           ))}
         </div>
 
-        <div className="text-start text-sm p-3 rounded-lg shadow-lg">
+        <div className="text-start text-sm pt-3 px-3 pb-0 rounded-lg shadow-lg">
           <textarea
             className="text-gray-500 font-light w-[100%] h-16 resize-none outline-none"
             placeholder="Your receiver has been successfully submitted"
           ></textarea>
           <div className="text-end">
-            <button className="ml-auto text-xs bg-blue-600 text-white px-4 py-2 rounded">
+            <button className="ml-auto text-xs bg-blue-600 text-white px-4 pt-2 pb-0 rounded">
               Review
             </button>
           </div>
@@ -126,8 +126,8 @@ export default ChatReplay;
               <img src={chatLogo} alt="chatLogo" className="w-10 mx-auto" />
             </div>
             <div>
-              <p className="font-semibold text-gray-800 pb-4">Support Bot:</p>
-              <p className="bg-[#DCE1F9] p-4 rounded-lg text-[#18100E] font-light">
+              <p className="font-semibold text-gray-800 pb-0">Support Bot:</p>
+              <p className="bg-[#DCE1F9] pt-4 px-4 pb-0 rounded-lg text-[#18100E] font-light">
                 Welcome to NegoEngine. I'm ChatBot, your AI assistant. Let me
                 know how I can help you.
               </p>
@@ -135,7 +135,7 @@ export default ChatReplay;
           </div>
 
           <div className="ml-12">
-            <p className="bg-[#F1F1F1] p-4 rounded-lg text-[#18100E] font-light">
+            <p className="bg-[#F1F1F1] pt-4 px-4 pb-0 rounded-lg text-[#18100E] font-light">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
               eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
               enim ad minim veniam, quis nostrud exercitation.
@@ -148,11 +148,11 @@ export default ChatReplay;
             </div>
             <p className="font-semibold text-gray-800">Support Bot:</p>
           </div>
-          <p className="bg-[#FEEDAF] text-[#18100E] p-2 rounded-lg w-2/3 text-center font-light">
+          <p className="bg-[#FEEDAF] text-[#18100E] pt-2 px-2 pb-0 rounded-lg w-2/3 text-center font-light">
             Thank you for the feedback!
           </p>
           <div className="ml-12">
-            <p className="bg-[#F1F1F1] p-4 rounded-lg text-[#18100E] font-light">
+            <p className="bg-[#F1F1F1] pt-4 px-4 pb-0 rounded-lg text-[#18100E] font-light">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
               eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
               enim ad minim veniam, quis nostrud exercitation.

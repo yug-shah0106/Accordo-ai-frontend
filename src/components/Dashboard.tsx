@@ -182,7 +182,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="bg-white rounded-lg  shadow-md py-6">
+    <div className="bg-white rounded-lg  shadow-md pt-6 pb-0">
       <div className="mb-4">
         <h1 className="text-xl font-semibold text-gray-800 flex items-center px-6 gap-2">
           <FiBarChart2 className="text-xl" />
@@ -191,7 +191,7 @@ const Dashboard = () => {
       </div>
       <hr />
 
-      <div className="flex justify-between p-6">
+      <div className="flex justify-between pt-6 px-6 pb-0">
         <p className="text-xl font-medium">Overview</p>
         {/* <p className="flex items-center gap-2">
           Last 30 days <MdKeyboardArrowDown />
@@ -214,7 +214,7 @@ const Dashboard = () => {
         {/* {["Total Budget", "Actual", "Total Savings"].map((title, index) => (
           <div
             key={index}
-            className="border rounded-lg shadow-sm p-4 flex flex-col justify-between"
+            className="border rounded-lg shadow-sm pt-4 px-4 pb-0 flex flex-col justify-between"
           >
             <p className="text-gray-500 font-medium lg:text-xl md:text-md">
               {title}
@@ -241,11 +241,11 @@ const Dashboard = () => {
         <BudgetCards budgetData={budgetData} rfqItems={rfqItems} />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 p-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 pt-6 px-6 pb-0">
         <div>
           <LineGraphrequisitions />
         </div>
-        <div className="bg-white border  rounded-lg shadow-sm p-4">
+        <div className="bg-white border  rounded-lg shadow-sm pt-4 px-4 pb-0">
           <h3 className="text-gray-600 font-medium mb-2 block text-center ">
             Analytics
           </h3>
@@ -257,7 +257,7 @@ const Dashboard = () => {
         <div>
           <Bargraph />
         </div>
-        <div className="bg-white border rounded-lg shadow-sm p-6">
+        <div className="bg-white border rounded-lg shadow-sm pt-6 px-6 pb-0">
           <LineGraphSaving />
         </div>
       </div>

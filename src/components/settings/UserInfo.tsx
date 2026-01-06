@@ -73,8 +73,8 @@ const UserInfo = () => {
   }, [id, currentStep]);
 
   return (
-    <div className="w-full min-h-full mx-auto bg-white py-16 px-8 xl:px-16  rounded-md">
-      <div className="mb-4 flex border-b-2 pb-4 space-x-12">
+    <div className="w-full min-h-full mx-auto bg-white pt-16 pb-0 px-8 xl:px-16 rounded-md">
+      <div className="mb-4 flex border-b-2 pb-0 space-x-12">
         <p style={{cursor:"pointer",color:'blue'}} onClick={()=>{console.log("clicked")}} className="text-xl  font-semibold text-gray-800 flex items-center gap-2">
           {/* <IoArrowBackOutline
             onClick={() => {
@@ -100,7 +100,7 @@ const UserInfo = () => {
       </div>
 
       <div className="flex flex-wrap xl:flex-nowrap">
-        <div className="xl:w-[20%] h-[20%] mt-4 rounded p-6 border-2 sm:w-full ">
+        <div className="xl:w-[20%] h-[20%] mt-4 rounded pt-6 px-6 pb-0 border-2 sm:w-full ">
           <h2 className="text-lg font-semibold border-b-2">Details </h2>
           <ul className="sm:flex xl:block sm:justify-between text-sm">
             {/* Basic Information */}
@@ -154,7 +154,7 @@ const UserInfo = () => {
           </ul>
         </div>
 
-        <div className="w-full py-4 xl:p-4">
+        <div className="w-full pt-4 pb-0 xl:p-4">
           {currentStep === 1 && (
             <UpdateProfile
               currentStep={currentStep}

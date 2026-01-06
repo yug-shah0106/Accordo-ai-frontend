@@ -27,8 +27,8 @@ const feedbacks = [
 const CustomerFeedback = () => {
   return (
     <section className="py-2 bg-[#FFF8EF]">
-      <div className="sm:w-[55%] mx-auto py-8 px-4">
-        <div className="w-full mx-auto p-4">
+      <div className="sm:w-[55%] mx-auto pt-8 pb-0 px-4">
+        <div className="w-full mx-auto pt-4 px-4 pb-0">
             <h2 className="text-3xl font-semibold text-black mb-4">Our Customer Feedback</h2>
             <p className="text-gray-500 mb-8">Don’t take our word for it. Trust our Customers</p>
         </div>
@@ -36,7 +36,7 @@ const CustomerFeedback = () => {
           {feedbacks.map((feedback, index) => (
             <div
               key={index}
-              className="bg-white shadow-lg rounded p-6 flex flex-col items-start max-w-sm"
+              className="bg-white shadow-lg rounded pt-6 px-6 pb-0 flex flex-col items-start max-w-sm"
             >
                 <div className="flex justify-between w-full">
                     <img

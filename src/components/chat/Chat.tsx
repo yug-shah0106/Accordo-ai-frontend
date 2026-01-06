@@ -208,7 +208,7 @@ const Chat = () => {
 
             <div className="flex flex-col w-full bg-white h-full shadow-2xl">
                 {/* Chat Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-white to-gray-50 shadow-sm">
+                <div className="flex items-center justify-between pt-6 px-6 pb-0 border-b border-gray-100 bg-gradient-to-r from-white to-gray-50 shadow-sm">
                     <div className="flex items-center gap-4">
                         <button
                             onClick={handleCloseChat}
@@ -243,7 +243,7 @@ const Chat = () => {
                 </div>
 
                 {/* Messages Container */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-6 hide-scrollbar bg-gradient-to-b from-gray-50 to-white">
+                <div className="flex-1 overflow-y-auto pt-6 px-6 pb-0 space-y-6 hide-scrollbar bg-gradient-to-b from-gray-50 to-white">
                     {messages.map((msg: ChatMessage) => {
                         // Skip rendering if message is empty and not a typing indicator
                         if (!msg.message && !msg.isTyping) {
@@ -259,7 +259,7 @@ const Chat = () => {
                                     className={`max-w-[75%] ${msg.role === "user" ? "ml-4" : "mr-4"}`}
                                 >
                                     <div
-                                        className={`rounded-2xl px-6 py-4 shadow-lg ${
+                                        className={`rounded-2xl px-6 pt-4 pb-0 shadow-lg ${
                                             msg.role === "user"
                                                 ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-br-md"
                                                 : "bg-white text-gray-800 rounded-bl-md border border-gray-100"
@@ -304,13 +304,13 @@ const Chat = () => {
                             value={inputMessage}
                             onChange={(e) => setInputMessage(e.target.value)}
                             placeholder="Type your message..."
-                            className="flex-1 px-6 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-700 placeholder-gray-400"
+                            className="flex-1 px-6 pt-4 pb-0 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-700 placeholder-gray-400"
                             disabled={loading}
                         />
                         <button
                             type="submit"
                             disabled={!inputMessage.trim() || loading}
-                            className={`px-8 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center gap-3 transform hover:scale-105 ${
+                            className={`px-8 pt-4 pb-0 rounded-xl font-semibold transition-all duration-200 flex items-center gap-3 transform hover:scale-105 ${
                                 !inputMessage.trim() || loading
                                     ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                                     : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl"

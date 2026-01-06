@@ -9,3 +9,5 @@ export type { UseConversationReturn, WarningLevel } from './useConversation';
 
 export { useHistoryTracking, getRelativeTime, clearAllHistory, mergeHistories } from './useHistoryTracking';
 export type { UseHistoryTrackingReturn, HistoryEntry } from './useHistoryTracking';
+
+export { useDealActions } from './useDealActions';

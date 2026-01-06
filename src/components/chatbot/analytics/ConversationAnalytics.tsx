@@ -220,7 +220,7 @@ export function ConversationAnalytics({
   return (
     <div className={`p-6 bg-white rounded-lg shadow space-y-6 ${className}`}>
       {/* Header */}
-      <div className="border-b border-gray-200 pb-4">
+      <div className="border-b border-gray-200 pb-0">
         <h2 className="text-2xl font-semibold text-gray-900">
           Conversation Analytics
         </h2>
@@ -455,7 +455,7 @@ function IntentBadge({ intent, count }: IntentBadgeProps) {
 
   return (
     <div
-      className={`px-3 py-2 rounded-lg ${
+      className={`px-3 pt-2 pb-0 rounded-lg ${
         intentColors[intent] || intentColors.UNKNOWN
       } flex items-center justify-between`}
     >

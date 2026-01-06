@@ -17,7 +17,7 @@ const PoSummary = () => {
 
   return (
     <div className="w-full h-full">
-      <div className="bg-white rounded-lg h-full p-6">
+      <div className="bg-white rounded-lg h-full pt-6 px-6 pb-0">
         <div className="mb-4">
           <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
             <PiFramerLogo className="text-xl" />
@@ -31,7 +31,7 @@ const PoSummary = () => {
               onChange={(e) => debounceSearch(e.target.value)}
               type="text"
               placeholder="Search Summary"
-              className="border border-gray-300 rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full px-4"
+              className="border border-gray-300 rounded-md pr-10 pt-2 pb-0 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full px-4"
             />
             <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
           </div>
@@ -39,7 +39,7 @@ const PoSummary = () => {
           <div className="flex gap-3">
             <button
               onClick={() => setIsFilterModalOpen((prev) => !prev)}
-              className="rounded-md px-4 py-2 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1"
+              className="rounded-md px-4 pt-2 pb-0 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1"
             >
               <VscSettings /> Filter <FaCaretDown />
             </button>
@@ -56,13 +56,13 @@ const PoSummary = () => {
             </div> */}
             <button
               onClick={() => setIsFilterModalOpen((prev) => !prev)}
-              className="rounded-md px-4 py-2 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1"
+              className="rounded-md px-4 pt-2 pb-0 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1"
             >
               Action <FaCaretDown />
             </button>
             <button
               onClick={() => setIsFilterModalOpen((prev) => !prev)}
-              className="rounded-md px-4 py-2 text-sm font-medium text-white bg-[#234BF3] flex items-center gap-1"
+              className="rounded-md px-4 pt-2 pb-0 text-sm font-medium text-white bg-[#234BF3] flex items-center gap-1"
             >
               Comparison <FaCaretDown />
             </button>
@@ -93,80 +93,80 @@ const PoSummary = () => {
           </tr>
           <tr className="border-b">
             <td></td>
-            <td className="font-semibold px-2 py-3">Rank</td>
-            <td><div className="flex items-center justify-center gap-1 px-2 py-3"><img src={price} alt="price" />1</div></td>
-            <td><div className="flex items-center justify-center gap-1 px-2 py-3"><img src={price1} alt="price1" />2</div></td>
-            <td><div className="flex items-center justify-center gap-1 px-2 py-3"><img src={price1} alt="price1" />2</div></td>
-            <td><div className="flex items-center justify-center gap-1 px-2 py-3"><img src={price1} alt="price1" />2</div></td>
-            <td><div className="flex items-center justify-center gap-1 px-2 py-3"><img src={price1} alt="price1" />2</div></td>
-            <td><div className="flex items-center justify-center gap-1 px-2 py-3"><img src={price1} alt="price1" />2</div></td>
-            <td><div className="flex items-center justify-center gap-1 px-2 py-3"><img src={price1} alt="price1" />2</div></td>
+            <td className="font-semibold px-2 pt-3 pb-0">Rank</td>
+            <td><div className="flex items-center justify-center gap-1 px-2 pt-3 pb-0"><img src={price} alt="price" />1</div></td>
+            <td><div className="flex items-center justify-center gap-1 px-2 pt-3 pb-0"><img src={price1} alt="price1" />2</div></td>
+            <td><div className="flex items-center justify-center gap-1 px-2 pt-3 pb-0"><img src={price1} alt="price1" />2</div></td>
+            <td><div className="flex items-center justify-center gap-1 px-2 pt-3 pb-0"><img src={price1} alt="price1" />2</div></td>
+            <td><div className="flex items-center justify-center gap-1 px-2 pt-3 pb-0"><img src={price1} alt="price1" />2</div></td>
+            <td><div className="flex items-center justify-center gap-1 px-2 pt-3 pb-0"><img src={price1} alt="price1" />2</div></td>
+            <td><div className="flex items-center justify-center gap-1 px-2 pt-3 pb-0"><img src={price1} alt="price1" />2</div></td>
           </tr>
           <tr className="border-b">
             <td></td>
-            <td className="font-semibold px-2 py-3">Price</td>
-            <td className="px-2 py-3 text-center">₹200</td>
-            <td className="px-2 py-3 text-center">₹200</td>
-            <td className="px-2 py-3 text-center">₹200</td>
-            <td className="px-2 py-3 text-center">₹200</td>
-            <td className="px-2 py-3 text-center">₹200</td>
-            <td className="px-2 py-3 text-center">₹200</td>
-            <td className="px-2 py-3 text-center">₹200</td>
+            <td className="font-semibold px-2 pt-3 pb-0">Price</td>
+            <td className="px-2 pt-3 pb-0 text-center">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center">₹200</td>
           </tr>
           <tr className="border-b">
             <td></td>
-            <td className="font-semibold px-2 py-3">Price</td>
-            <td className="px-2 py-3 text-center font-semibold text-[#EF2D2E]">-0.2% H</td>
-            <td className="px-2 py-3 text-center font-semibold text-[#009A4F]">+3.2% H</td>
-            <td className="px-2 py-3 text-center font-semibold text-[#EF2D2E]">-0.2% H</td>
-            <td className="px-2 py-3 text-center font-semibold text-[#009A4F]">+3.2% H</td>
-            <td className="px-2 py-3 text-center font-semibold text-[#009A4F]">+3.2% H</td>
-            <td className="px-2 py-3 text-center font-semibold text-[#EF2D2E]">-0.2% H</td>
-            <td className="px-2 py-3 text-center font-semibold text-[#009A4F]">+3.2% H</td>
+            <td className="font-semibold px-2 pt-3 pb-0">Price</td>
+            <td className="px-2 pt-3 pb-0 text-center font-semibold text-[#EF2D2E]">-0.2% H</td>
+            <td className="px-2 pt-3 pb-0 text-center font-semibold text-[#009A4F]">+3.2% H</td>
+            <td className="px-2 pt-3 pb-0 text-center font-semibold text-[#EF2D2E]">-0.2% H</td>
+            <td className="px-2 pt-3 pb-0 text-center font-semibold text-[#009A4F]">+3.2% H</td>
+            <td className="px-2 pt-3 pb-0 text-center font-semibold text-[#009A4F]">+3.2% H</td>
+            <td className="px-2 pt-3 pb-0 text-center font-semibold text-[#EF2D2E]">-0.2% H</td>
+            <td className="px-2 pt-3 pb-0 text-center font-semibold text-[#009A4F]">+3.2% H</td>
           </tr>
           <tr className="border-b">
             <td></td>
-            <td className="font-semibold px-2 py-3">Savings</td>
-            <td className="px-2 py-3 text-center">100 kg</td>
-            <td className="px-2 py-3 text-center">100 kg</td>
-            <td className="px-2 py-3 text-center">100 kg</td>
-            <td className="px-2 py-3 text-center">100 kg</td>
-            <td className="px-2 py-3 text-center">100 kg</td>
-            <td className="px-2 py-3 text-center">100 kg</td>
-            <td className="px-2 py-3 text-center">100 kg</td>
+            <td className="font-semibold px-2 pt-3 pb-0">Savings</td>
+            <td className="px-2 pt-3 pb-0 text-center">100 kg</td>
+            <td className="px-2 pt-3 pb-0 text-center">100 kg</td>
+            <td className="px-2 pt-3 pb-0 text-center">100 kg</td>
+            <td className="px-2 pt-3 pb-0 text-center">100 kg</td>
+            <td className="px-2 pt-3 pb-0 text-center">100 kg</td>
+            <td className="px-2 pt-3 pb-0 text-center">100 kg</td>
+            <td className="px-2 pt-3 pb-0 text-center">100 kg</td>
           </tr>
           <tr className="border-b">
             <td></td>
-            <td className="font-semibold px-2 py-3">Quantity Available</td>
-            <td className="px-2 py-3 text-center">₹200</td>
-            <td className="px-2 py-3 text-center">₹200</td>
-            <td className="px-2 py-3 text-center">₹200</td>
-            <td className="px-2 py-3 text-center">₹200</td>
-            <td className="px-2 py-3 text-center">₹200</td>
-            <td className="px-2 py-3 text-center">₹200</td>
-            <td className="px-2 py-3 text-center">₹200</td>
+            <td className="font-semibold px-2 pt-3 pb-0">Quantity Available</td>
+            <td className="px-2 pt-3 pb-0 text-center">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center">₹200</td>
           </tr>
           <tr className="border-b">
             <td></td>
-            <td className="font-semibold px-2 py-3">GST</td>
-            <td className="px-2 py-3 text-center">18%</td>
-            <td className="px-2 py-3 text-center">20%</td>
-            <td className="px-2 py-3 text-center">30%</td>
-            <td className="px-2 py-3 text-center">60%</td>
-            <td className="px-2 py-3 text-center">90%</td>
-            <td className="px-2 py-3 text-center">40%</td>
-            <td className="px-2 py-3 text-center">10%</td>
+            <td className="font-semibold px-2 pt-3 pb-0">GST</td>
+            <td className="px-2 pt-3 pb-0 text-center">18%</td>
+            <td className="px-2 pt-3 pb-0 text-center">20%</td>
+            <td className="px-2 pt-3 pb-0 text-center">30%</td>
+            <td className="px-2 pt-3 pb-0 text-center">60%</td>
+            <td className="px-2 pt-3 pb-0 text-center">90%</td>
+            <td className="px-2 pt-3 pb-0 text-center">40%</td>
+            <td className="px-2 pt-3 pb-0 text-center">10%</td>
           </tr>
           <tr className="border-b">
             <td></td>
-            <td className="font-semibold px-2 py-3">Amount</td>
-            <td className="px-2 py-3 text-center font-semibold">₹200</td>
-            <td className="px-2 py-3 text-center font-semibold">₹200</td>
-            <td className="px-2 py-3 text-center font-semibold">₹200</td>
-            <td className="px-2 py-3 text-center font-semibold">₹200</td>
-            <td className="px-2 py-3 text-center font-semibold">₹200</td>
-            <td className="px-2 py-3 text-center font-semibold">₹200</td>
-            <td className="px-2 py-3 text-center font-semibold">₹200</td>
+            <td className="font-semibold px-2 pt-3 pb-0">Amount</td>
+            <td className="px-2 pt-3 pb-0 text-center font-semibold">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center font-semibold">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center font-semibold">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center font-semibold">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center font-semibold">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center font-semibold">₹200</td>
+            <td className="px-2 pt-3 pb-0 text-center font-semibold">₹200</td>
           </tr>
         </table>
       </div>

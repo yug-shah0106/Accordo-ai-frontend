@@ -241,13 +241,19 @@ const UserManagement = () => {
     fetchRoles();
   }, []);
 
+  // Reset scroll position when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const [selectedRow, setSelectedRow] = useState<{ element: HTMLElement | null; user: User | null }>({ element: null, user: null });
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="flex flex-col bg-white rounded-lg h-full overflow-hidden">
+      {/* Sticky Header Section */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0">
         {/* Header Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm pt-6 px-6 pb-4 mb-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-8">
               {/* User Management Section */}
@@ -260,7 +266,7 @@ const UserManagement = () => {
                 </div>
                 <Link
                   to="/user-management/create-user"
-                  className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md"
+                  className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md"
                 >
                   <FaPlus className="text-sm" /> Add New User
                 </Link>
@@ -278,7 +284,7 @@ const UserManagement = () => {
                 </div>
                 <Link
                   to="/user-management/edit-roles"
-                  className="inline-flex items-center gap-2 bg-white text-blue-600 px-4 py-2.5 rounded-lg hover:bg-blue-50 transition-all duration-200 text-sm font-medium border border-blue-200 hover:border-blue-300"
+                  className="inline-flex items-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition-all duration-200 text-sm font-medium border border-blue-200 hover:border-blue-300"
                 >
                   <FaPlus className="text-sm" /> Manage Roles
                 </Link>
@@ -287,148 +293,149 @@ const UserManagement = () => {
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search users..."
-                    className="pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64"
-                    onChange={(e) => debounce(e.target.value)}
-                  />
-                  <IoSearchOutline className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                </div>
-                <button
-                  onClick={() => setIsFilterModalOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <VscSettings className="text-gray-500" /> Filter
-                </button>
-              </div>
+        {/* Search and Filter Bar */}
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search users..."
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64"
+                onChange={(e) => debounce(e.target.value)}
+              />
+              <IoSearchOutline className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gray-50 border-b">
-                  {columns.map((column, index) => (
-                    <th
-                      key={index}
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      {column.header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {users?.map((row, rowIndex) => (
-                  <tr
-                    key={row.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    {columns.map((column, colIndex) => (
-                      <td
-                        key={colIndex}
-                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                      >
-                        {column.isBadge ? (
-                          <Badge
-                            status={row[column.accessor]}
-                            className="text-xs"
-                          />
-                        ) : column.accessorKey ? (
-                          row[column.accessor]?.[column.accessorKey]
-                        ) : (
-                          row[column.accessor]
-                        )}
-                      </td>
-                    ))}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="relative">
-                        <PiDotsThreeBold
-                          className="text-xl cursor-pointer hover:text-blue-500 transition-colors"
-                          onClick={(event) => setSelectedRow({ element: event.currentTarget as HTMLElement, user: row })}
-                        />
-                        <Menu
-                          anchorEl={selectedRow.element}
-                          open={Boolean(selectedRow.element) && selectedRow.user?.id === row.id}
-                          onClose={() => setSelectedRow({ element: null, user: null })}
-                          anchorOrigin={{
-                            vertical: "bottom",
-                            horizontal: "right",
-                          }}
-                          transformOrigin={{
-                            vertical: "top",
-                            horizontal: "right",
-                          }}
-                          PaperProps={{
-                            elevation: 2,
-                            sx: {
-                              mt: 1,
-                              minWidth: "150px",
-                            },
-                          }}
-                        >
-                          {actions.map((action, index) => (
-                            action.type === "link" && action.link ? (
-                              <MenuItem
-                                key={index}
-                                component={Link}
-                                to={action.link(row)}
-                                className="flex items-center gap-2 text-gray-700 hover:bg-blue-50"
-                              >
-                                {action.icon} {action.label}
-                              </MenuItem>
-                            ) : action.onClick ? (
-                              <MenuItem
-                                key={index}
-                                onClick={() => {
-                                  action.onClick!(row);
-                                  setSelectedRow({ element: null, user: null });
-                                }}
-                                className="flex items-center gap-2 text-gray-700 hover:bg-blue-50"
-                              >
-                                {action.icon} {action.label}
-                              </MenuItem>
-                            ) : null
-                          ))}
-                        </Menu>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="px-6 py-4 border-t border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600">
-                {totalDoc > 0 ? (
-                  `Showing ${((page - 1) * limit) + 1} to ${Math.min(page * limit, totalDoc)} of ${totalDoc} entries`
-                ) : (
-                  "No entries found"
-                )}
-              </div>
-              {totalCount > 0 && (
-                <Pagination
-                  currentPage={page}
-                  totalPages={totalCount}
-                  onPageChange={setPage}
-                  limit={limit}
-                  totalDoc={totalDoc}
-                />
-              )}
-            </div>
+            <button
+              onClick={() => setIsFilterModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <VscSettings className="text-gray-500" /> Filter
+            </button>
           </div>
         </div>
       </div>
 
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto px-6 pb-0">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50 border-b">
+                {columns.map((column, index) => (
+                  <th
+                    key={index}
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    {column.header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {users?.map((row, rowIndex) => (
+                <tr
+                  key={row.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  {columns.map((column, colIndex) => (
+                    <td
+                      key={colIndex}
+                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                    >
+                      {column.isBadge ? (
+                        <Badge
+                          status={row[column.accessor]}
+                          className="text-xs"
+                        />
+                      ) : column.accessorKey ? (
+                        row[column.accessor]?.[column.accessorKey]
+                      ) : (
+                        row[column.accessor]
+                      )}
+                    </td>
+                  ))}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div className="relative">
+                      <PiDotsThreeBold
+                        className="text-xl cursor-pointer hover:text-blue-500 transition-colors"
+                        onClick={(event) => setSelectedRow({ element: event.currentTarget as HTMLElement, user: row })}
+                      />
+                      <Menu
+                        anchorEl={selectedRow.element}
+                        open={Boolean(selectedRow.element) && selectedRow.user?.id === row.id}
+                        onClose={() => setSelectedRow({ element: null, user: null })}
+                        anchorOrigin={{
+                          vertical: "bottom",
+                          horizontal: "right",
+                        }}
+                        transformOrigin={{
+                          vertical: "top",
+                          horizontal: "right",
+                        }}
+                        PaperProps={{
+                          elevation: 2,
+                          sx: {
+                            mt: 1,
+                            minWidth: "150px",
+                          },
+                        }}
+                      >
+                        {actions.map((action, index) => (
+                          action.type === "link" && action.link ? (
+                            <MenuItem
+                              key={index}
+                              component={Link}
+                              to={action.link(row)}
+                              className="flex items-center gap-2 text-gray-700 hover:bg-blue-50"
+                            >
+                              {action.icon} {action.label}
+                            </MenuItem>
+                          ) : action.onClick ? (
+                            <MenuItem
+                              key={index}
+                              onClick={() => {
+                                action.onClick!(row);
+                                setSelectedRow({ element: null, user: null });
+                              }}
+                              className="flex items-center gap-2 text-gray-700 hover:bg-blue-50"
+                            >
+                              {action.icon} {action.label}
+                            </MenuItem>
+                          ) : null
+                        ))}
+                      </Menu>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="px-6 py-4 border-t border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              {totalDoc > 0 ? (
+                `Showing ${((page - 1) * limit) + 1} to ${Math.min(page * limit, totalDoc)} of ${totalDoc} entries`
+              ) : (
+                "No entries found"
+              )}
+            </div>
+            {totalCount > 0 && (
+              <Pagination
+                currentPage={page}
+                totalPages={totalCount}
+                onPageChange={setPage}
+                limit={limit}
+                totalDoc={totalDoc}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+      {/* End Scrollable Content Area */}
+
+      {/* Modals - Outside Scrollable Area */}
       {isFilterModalOpen && (
         <Filter
           onClose={closeFilterModal}

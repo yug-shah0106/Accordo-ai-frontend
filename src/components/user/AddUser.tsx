@@ -136,10 +136,10 @@ const CreateUserForm = ({ onClose }: CreateUserFormProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Header Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div className="flex flex-col h-full overflow-hidden bg-gray-50">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0 shadow-sm">
+        <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(-1)}
@@ -155,9 +155,12 @@ const CreateUserForm = ({ onClose }: CreateUserFormProps) => {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Form Section */}
-        <div className="bg-white rounded-lg shadow-sm">
+      {/* Scrollable Form Content */}
+      <div className="flex-1 overflow-y-auto px-6 pb-0 pt-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-lg shadow-sm">
           <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -211,7 +214,7 @@ const CreateUserForm = ({ onClose }: CreateUserFormProps) => {
                   <select
                     value={selectedRole}
                     onChange={(e) => setSelectedRole(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                    className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
                   >
                     <option value="">Select a role</option>
                     {userRoles.map((role) => (
@@ -234,7 +237,7 @@ const CreateUserForm = ({ onClose }: CreateUserFormProps) => {
             </div>
 
             {/* Form Actions */}
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+            <div className="px-6 pt-4 pb-0 bg-gray-50 border-t border-gray-200 rounded-b-lg">
               <div className="flex justify-end gap-4">
                 <Button
                   onClick={() => navigate(-1)}
@@ -255,6 +258,7 @@ const CreateUserForm = ({ onClose }: CreateUserFormProps) => {
               </div>
             </div>
           </form>
+        </div>
         </div>
       </div>
     </div>

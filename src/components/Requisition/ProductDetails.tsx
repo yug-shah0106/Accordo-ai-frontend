@@ -366,9 +366,9 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="border-2 rounded p-4">
+      <div className="border-2 rounded pt-4 px-4 pb-0">
         <h3 className="text-lg font-semibold">Product Details</h3>
-        <p className="font-normal text-[#46403E] py-2">
+        <p className="font-normal text-[#46403E] pt-2 pb-0">
           Your details will be used for Product Details
         </p>
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -527,7 +527,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
             />
           </div>
 
-          <div className="bg-white rounded-lg p-6 shadow-sm">
+          <div className="bg-white rounded-lg pt-6 px-6 pb-0 shadow-sm">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Priority Settings</h3>
             <div className="space-y-6">
               {/* Price Priority Input */}
@@ -740,7 +740,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               htmlFor="dropzone-file"
               className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-100 rounded-lg cursor-pointer  hover:bg-gray-100"
             >
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+              <div className="flex flex-col items-center justify-center pt-5 pb-0">
                 <svg
                   className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
                   aria-hidden="true"

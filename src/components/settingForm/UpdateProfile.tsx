@@ -122,9 +122,9 @@ const UpdateProfile = ({
   };
 
   return (
-    <div className="border-2 rounded p-4">
+    <div className="border-2 rounded pt-4 px-4 pb-0">
       <h3 className="text-lg font-semibold">Basic Information {companyId}</h3>
-      <p className="font-normal text-[#46403E] py-2">
+      <p className="font-normal text-[#46403E] pt-2 pb-0">
         Your details will be used for Basic information
       </p>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -190,7 +190,7 @@ const UpdateProfile = ({
 
             <div className="mt-4 flex flex-col border rounded-3xl justify-center">
               {preview && (
-                <div className="flex justify-center p-6">
+                <div className="flex justify-center pt-6 px-6 pb-0">
                   <div className="relative w-32 h-32 rounded overflow-hidden">
                     <img
                       src={preview}
@@ -201,7 +201,7 @@ const UpdateProfile = ({
                 </div>
               )}
 
-              <div className="flex justify-evenly rounded-b-3xl bg-gray-500 p-2">
+              <div className="flex justify-evenly rounded-b-3xl bg-gray-500 pt-2 px-2 pb-0">
                 <label className="flex items-center gap-1 text-white cursor-pointer">
                   <CiEdit />
                   Edit

@@ -18,7 +18,7 @@ const LogoSlider = () => {
   ];
 
   return (
-    <div className="mx-auto w-[80%] mt-12 pb-10">
+    <div className="mx-auto w-[80%] mt-12 pb-0">
       <Swiper
         modules={[Autoplay]}
         spaceBetween={30}

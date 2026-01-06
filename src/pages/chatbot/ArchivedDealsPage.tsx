@@ -7,7 +7,8 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiArchive, FiRefreshCw, FiEye } from 'react-icons/fi';
+import { FiArchive, FiRefreshCw, FiTrash2 } from 'react-icons/fi';
+import { MdRestore } from 'react-icons/md';
 import chatbotService from '../../services/chatbot.service';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
@@ -17,7 +18,7 @@ export default function ArchivedDealsPage() {
   const navigate = useNavigate();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [unarchiving, setUnarchiving] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
     loadArchivedDeals();
@@ -26,7 +27,10 @@ export default function ArchivedDealsPage() {
   const loadArchivedDeals = async (): Promise<void> => {
     try {
       setLoading(true);
-      const res = await chatbotService.listDeals({ archived: true });
+      const res = await chatbotService.listDeals({
+        archived: true,
+        deleted: false // Only show archived deals that are not deleted
+      });
       const responseData: any = res.data;
       setDeals(responseData?.data || responseData?.deals || []);
     } catch (err) {
@@ -37,18 +41,43 @@ export default function ArchivedDealsPage() {
     }
   };
 
-  const handleUnarchive = async (dealId: string): Promise<void> => {
+  const handleRecover = async (e: React.MouseEvent, dealId: string, dealTitle: string): Promise<void> => {
+    e.stopPropagation();
+
     try {
-      setUnarchiving(dealId);
+      setActionLoading(dealId);
       await chatbotService.unarchiveDeal(dealId);
-      toast.success('Deal unarchived successfully');
+      toast.success(`"${dealTitle}" has been recovered to main screen`, {
+        duration: 3000,
+        icon: '♻️',
+      });
       // Remove from list
       setDeals((prev) => prev.filter((d) => d.id !== dealId));
-    } catch (err) {
-      console.error('Failed to unarchive deal:', err);
-      toast.error('Failed to unarchive deal');
+    } catch (err: any) {
+      console.error('Failed to recover deal:', err);
+      toast.error(err.response?.data?.message || 'Failed to recover deal');
     } finally {
-      setUnarchiving(null);
+      setActionLoading(null);
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, dealId: string, dealTitle: string): Promise<void> => {
+    e.stopPropagation();
+
+    try {
+      setActionLoading(dealId);
+      await chatbotService.softDeleteDeal(dealId);
+      toast.success(`"${dealTitle}" has been moved to trash`, {
+        duration: 3000,
+        icon: '🗑️',
+      });
+      // Remove from list
+      setDeals((prev) => prev.filter((d) => d.id !== dealId));
+    } catch (err: any) {
+      console.error('Failed to delete deal:', err);
+      toast.error(err.response?.data?.message || 'Failed to delete deal');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -64,9 +93,9 @@ export default function ArchivedDealsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg">
+    <div className="flex flex-col h-full bg-gray-50 dark:bg-dark-bg">
       {/* Header */}
-      <div className="bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 py-4">
+      <div className="sticky top-0 z-10 flex-shrink-0 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 pt-4 pb-3">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-dark-text">
@@ -94,8 +123,8 @@ export default function ArchivedDealsPage() {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="p-6">
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto pt-6 px-6 pb-0">
         {deals.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
             <FiArchive className="w-16 h-16 text-gray-300 dark:text-gray-700 mb-4" />
@@ -114,7 +143,7 @@ export default function ArchivedDealsPage() {
             {deals.map((deal) => (
               <div
                 key={deal.id}
-                className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg p-4 hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg pt-4 px-4 pb-0 hover:shadow-md transition-shadow"
               >
                 {/* Header */}
                 <div className="flex items-start justify-between mb-3">
@@ -129,7 +158,7 @@ export default function ArchivedDealsPage() {
                     )}
                   </div>
                   <span
-                    className={`text-xs px-2 py-1 rounded-full font-medium ${
+                    className={`text-xs px-2 pt-1 pb-0 rounded-full font-medium ${
                       deal.status === 'ACCEPTED'
                         ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                         : deal.status === 'WALKED_AWAY'
@@ -166,19 +195,22 @@ export default function ArchivedDealsPage() {
                 {/* Actions */}
                 <div className="flex gap-2">
                   <button
-                    onClick={() => navigate(`/chatbot/deals/${deal.id}`)}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    onClick={(e) => handleRecover(e, deal.id, deal.title)}
+                    disabled={actionLoading === deal.id}
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Recover to main screen"
                   >
-                    <FiEye className="w-4 h-4" />
-                    View
+                    <MdRestore className="w-4 h-4" />
+                    Recover
                   </button>
                   <button
-                    onClick={() => handleUnarchive(deal.id)}
-                    disabled={unarchiving === deal.id}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg transition-colors disabled:opacity-50"
+                    onClick={(e) => handleDelete(e, deal.id, deal.title)}
+                    disabled={actionLoading === deal.id}
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Move to trash"
                   >
-                    <FiArchive className="w-4 h-4" />
-                    {unarchiving === deal.id ? 'Unarchiving...' : 'Unarchive'}
+                    <FiTrash2 className="w-4 h-4" />
+                    Delete
                   </button>
                 </div>
               </div>

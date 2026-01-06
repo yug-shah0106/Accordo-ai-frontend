@@ -20,7 +20,7 @@ const Badge = ({ status, color }: BadgeProps) => {
 
   return (
     <span
-      className={`px-3 inline-block  py-2  rounded-full`}
+      className={`px-3 inline-block  pt-2 pb-0  rounded-full`}
       style={{
         color: badgeColor,
         backgroundColor: `${badgeColor + "20"}`,
