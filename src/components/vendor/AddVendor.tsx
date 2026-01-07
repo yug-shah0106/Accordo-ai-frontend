@@ -113,7 +113,7 @@ const AddVendor: React.FC = () => {
       {/* Form Content */}
       <div className="flex-1 px-8 xl:px-16 pb-6">
         <div className="flex flex-wrap xl:flex-nowrap pt-4">
-        <div className="xl:w-[20%] h-[20%] mt-4 rounded pt-6 px-6 pb-0 border-2 sm:w-full ">
+        <div className="xl:w-[20%] h-[20%] mt-4 rounded p-6 border-2 sm:w-full ">
           <h2 className="text-lg font-semibold border-b-2">Details </h2>
           <ul className="sm:flex xl:block xl:whitespace-normal scroll_hide whitespace-nowrap overflow-x-auto gap-3 sm:justify-between text-sm">
             {/* Basic Information */}
@@ -216,7 +216,7 @@ const AddVendor: React.FC = () => {
           </ul>
         </div>
 
-        <div className="w-full pt-4 pb-0 xl:p-4">
+        <div className="w-full p-4">
           {currentStep === 1 && (
             <VendorGeneralInformation
               currentStep={currentStep}

@@ -344,7 +344,7 @@ const VendorManagement = () => {
       </div>
 
       <div className="">
-        <div className="border rounded-md overflow-auto hide-scrollbar h-[55vh] ">
+        <div className="border rounded-md overflow-auto hide-scrollbar">
           <Table
             // data={vendors}
             data={vendors}
@@ -371,7 +371,7 @@ const VendorManagement = () => {
 
       <div
         ref={menuRef}
-        className={`fixed top-0 right-0 w-[33%] pt-6 px-6 pb-0 bg-white shadow-lg h-full z-10 transition-transform transform ${
+        className={`fixed top-0 right-0 w-[33%] p-6 bg-white shadow-lg h-full z-10 transition-transform transform ${
           isSidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

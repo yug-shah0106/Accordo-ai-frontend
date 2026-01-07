@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import MessageBubble from "./MessageBubble";
 import type { Message, MessageRole } from '../../../types';
 
@@ -25,7 +25,8 @@ type TranscriptItem = MessageWithDivider | RoundDivider;
 
 /**
  * ChatTranscript Component
- * Displays chat messages with auto-scroll and processing indicator
+ * Displays chat messages with smart auto-scroll
+ * Only scrolls to bottom when user is near the bottom (within 100px)
  */
 
 interface ChatTranscriptProps {
@@ -40,10 +41,27 @@ export default function ChatTranscript({
   processingType = "analyzing",
 }: ChatTranscriptProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isNearBottom, setIsNearBottom] = useState(true);
 
+  // Track scroll position to determine if user is near bottom
+  const handleScroll = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+    // User is "near bottom" if within 100px
+    setIsNearBottom(distanceFromBottom < 100);
+  };
+
+  // Smart auto-scroll: only scroll if user is near bottom
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isProcessing]);
+    if (isNearBottom && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isProcessing, isNearBottom]);
 
   // Calculate round number for each Accordo message
   const getRoundForMessage = (message: Message, index: number): number | undefined => {
@@ -110,7 +128,11 @@ export default function ChatTranscript({
           </p>
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto">
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto"
+        >
           {messagesWithDividers.map((item, idx) => {
             if (item.type === "divider") {
               return (

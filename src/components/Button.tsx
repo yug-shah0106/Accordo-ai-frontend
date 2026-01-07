@@ -18,7 +18,7 @@ export default function Button({
   loading = false,
 }: ButtonProps) {
   const baseStyles =
-    "w-full pt-2 pb-0 text-white rounded-md focus:outline-none focus:ring transition duration-150 ease-in-out";
+    "w-full py-3 text-base font-medium text-white rounded-md focus:outline-none focus:ring transition duration-150 ease-in-out";
   const defaultStyles = "bg-blue-500 focus:ring-blue-300";
 
   return (

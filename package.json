@@ -52,6 +52,7 @@
     "@vitejs/plugin-react-swc": "^4.2.2",
     "@vitest/ui": "^4.0.16",
     "autoprefixer": "^10.4.20",
+    "baseline-browser-mapping": "^2.9.11",
     "eslint": "^9.21.0",
     "eslint-config-eslint": "^11.0.0",
     "eslint-plugin-import": "^2.31.0",

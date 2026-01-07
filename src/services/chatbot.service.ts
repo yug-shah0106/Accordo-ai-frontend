@@ -314,6 +314,37 @@ export const chatbotService = {
   },
 
   /**
+   * Get AI-generated scenario suggestions for a deal
+   * POST /api/chatbot/deals/:dealId/suggest-counters
+   *
+   * Uses AI to analyze the conversation and generate contextually relevant
+   * counter-offer suggestions for each scenario type (HARD, MEDIUM, SOFT, WALK_AWAY).
+   *
+   * @param dealId - Deal UUID
+   * @returns Scenario suggestions object with arrays of 4 suggestions per scenario
+   */
+  getSuggestedCounters: async (
+    dealId: string
+  ): Promise<{
+    data: {
+      HARD: string[];
+      MEDIUM: string[];
+      SOFT: string[];
+      WALK_AWAY: string[];
+    };
+  }> => {
+    const res = await authApi.post<{
+      data: {
+        HARD: string[];
+        MEDIUM: string[];
+        SOFT: string[];
+        WALK_AWAY: string[];
+      };
+    }>(`${CHATBOT_BASE}/deals/${dealId}/suggest-counters`);
+    return res.data;
+  },
+
+  /**
    * ==================== TEMPLATE MANAGEMENT APIs ====================
    */
 

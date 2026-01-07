@@ -60,13 +60,13 @@ const VendorCurrencyDetails: React.FC<VendorCurrencyDetailsProps> = ({
   }, [company, reset]);
 
   return (
-    <div className="border-2 rounded pt-4 px-4 pb-0">
+    <div className="border-2 rounded p-4">
       <h3 className="text-lg font-semibold">Currency Details</h3>
-      <p className="font-normal text-[#46403E] pt-2 pb-0">
+      <p className="font-normal text-[#46403E] py-2">
         Your details will be used for Currency details
       </p>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-2 gap-4 mt-4 pt-3 px-3 pb-0">
+        <div className="grid grid-cols-2 gap-4 mt-4 p-3">
           <SelectField
             label="Type of Currency"
             name="typeOfCurrency"

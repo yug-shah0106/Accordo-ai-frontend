@@ -122,11 +122,11 @@ export default function ConversationDealPage() {
   }
 
   return (
-    <div className="h-screen flex bg-gray-50">
+    <div className="flex flex-col min-h-full bg-gray-50">
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 pt-4 pb-0">
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 pt-6 pb-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold text-gray-900">
@@ -154,13 +154,13 @@ export default function ConversationDealPage() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-6 pt-4 pb-0 space-y-4">
+        <div className="flex-1 px-6 py-6 space-y-4">
           {messages.map((msg, idx) => (
             <MessageBubble key={msg.id || idx} message={msg} />
           ))}
           {sending && (
             <div className="flex justify-start">
-              <div className="bg-gray-100 rounded-lg px-4 pt-3 pb-0 max-w-md">
+              <div className="bg-gray-100 rounded-lg p-4 max-w-md">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -173,7 +173,7 @@ export default function ConversationDealPage() {
         </div>
 
         {/* Input Area */}
-        <div className="bg-white border-t border-gray-200 px-6 pt-4 pb-0">
+        <div className="sticky bottom-0 z-10 bg-white border-t border-gray-200 px-6 py-4 pb-6 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
           <div className="flex items-center gap-3">
             <input
               type="text"
@@ -196,7 +196,7 @@ export default function ConversationDealPage() {
       </div>
 
       {/* Sidebar - Explainability Panel */}
-      <div className="w-96 bg-white border-l border-gray-200 overflow-y-auto">
+      <div className="hidden lg:block w-96 bg-white border-l border-gray-200 overflow-y-auto max-h-screen">
         <div className="p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
             Optional Explainability
@@ -207,7 +207,7 @@ export default function ConversationDealPage() {
 
           {explainOpen && explainability ? (
             <div className="space-y-4">
-              <div className="bg-gray-50 rounded-lg pt-4 px-4 pb-0 border border-gray-200">
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Decision</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -227,7 +227,7 @@ export default function ConversationDealPage() {
                 </div>
               </div>
 
-              <div className="bg-gray-50 rounded-lg pt-4 px-4 pb-0 border border-gray-200">
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Utilities</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -249,7 +249,7 @@ export default function ConversationDealPage() {
                 </div>
               </div>
 
-              <div className="bg-gray-50 rounded-lg pt-4 px-4 pb-0 border border-gray-200">
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Reasons</h3>
                 <ul className="space-y-1 text-sm text-gray-700">
                   {explainability.decision.reasons.map((reason, idx) => (
@@ -269,7 +269,7 @@ export default function ConversationDealPage() {
               </button>
             </div>
           ) : (
-            <div className="text-center text-gray-500 text-sm pt-8 pb-0">
+            <div className="text-center text-gray-500 text-sm py-8">
               Click "Explain Last Move" to view negotiation insights
             </div>
           )}
@@ -287,7 +287,7 @@ function MessageBubble({ message }: { message: Message }) {
   if (isSystem) {
     return (
       <div className="flex justify-center">
-        <div className="bg-gray-200 text-gray-700 text-xs px-4 pt-2 pb-0 rounded-full">
+        <div className="bg-gray-200 text-gray-700 text-xs p-2 rounded-full">
           {message.content}
         </div>
       </div>
@@ -297,7 +297,7 @@ function MessageBubble({ message }: { message: Message }) {
   return (
     <div className={`flex ${isAccordo ? 'justify-start' : 'justify-end'}`}>
       <div
-        className={`max-w-md rounded-lg px-4 pt-3 pb-0 ${
+        className={`max-w-md rounded-lg p-4 ${
           isAccordo
             ? 'bg-white border border-gray-200'
             : 'bg-blue-600 text-white'

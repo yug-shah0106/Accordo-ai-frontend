@@ -279,7 +279,7 @@ const PoManagement = () => {
         {/* Content Area */}
         <div className="flex-1 px-6 pb-6">
         <div className="flex flex-col justify-between mt-4">
-          <div className="border rounded-md overflow-auto hide-scrollbar h-[70vh] ">
+          <div className="border rounded-md overflow-auto hide-scrollbar">
             <Table
               data={pos}
               columns={columns}
@@ -308,7 +308,7 @@ const PoManagement = () => {
 
       <div
         ref={menuRef}
-        className={`fixed top-0 right-0 w-1/4 pt-6 px-6 pb-0 bg-white shadow-lg h-full z-10 transition-transform transform ${
+        className={`fixed top-0 right-0 w-1/4 p-6 bg-white shadow-lg h-full z-10 transition-transform transform ${
           isSidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

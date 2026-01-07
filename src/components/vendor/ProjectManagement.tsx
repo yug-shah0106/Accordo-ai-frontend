@@ -64,7 +64,7 @@ const FilterModal = ({ isOpen, onClose, selectedFilters, setSelectedFilters, app
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-500 pt-1 px-1 pb-0 hover:bg-gray-100 rounded-full transition-colors duration-200"
+              className="text-gray-400 hover:text-gray-500 p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -95,7 +95,7 @@ const FilterModal = ({ isOpen, onClose, selectedFilters, setSelectedFilters, app
                             const value = e.target.value === '' ? '' : Number(e.target.value);
                             setLocalMin(value);
                           }}
-                          className="w-full px-3 pt-2 pb-0 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#234BF3] focus:border-transparent transition-all duration-200 shadow-sm"
+                          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#234BF3] focus:border-transparent transition-all duration-200 shadow-sm"
                           placeholder="Min"
                         />
                       </div>
@@ -110,7 +110,7 @@ const FilterModal = ({ isOpen, onClose, selectedFilters, setSelectedFilters, app
                             const value = e.target.value === '' ? '' : Number(e.target.value);
                             setLocalMax(value);
                           }}
-                          className="w-full px-3 pt-2 pb-0 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#234BF3] focus:border-transparent transition-all duration-200 shadow-sm"
+                          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#234BF3] focus:border-transparent transition-all duration-200 shadow-sm"
                           placeholder="Max"
                         />
                       </div>
@@ -461,7 +461,7 @@ const ProjectManagement = () => {
 
         {/* Table Section */}
         <div className="border border-gray-100 rounded-lg overflow-hidden shadow-sm">
-          <div className="overflow-auto h-[70vh] hide-scrollbar">
+          <div className="overflow-auto hide-scrollbar">
             <Table
               data={projects}
               columns={columns}

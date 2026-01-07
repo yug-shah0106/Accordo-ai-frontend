@@ -473,7 +473,7 @@ const RequisitionsManagement = () => {
   }
 
   return (
-    <div className="flex flex-col bg-white rounded-lg h-full overflow-hidden">
+    <div className="flex flex-col bg-white rounded-lg min-h-full">
       {/* Sticky Header Section */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0">
         <div className="mb-4">
@@ -536,7 +536,7 @@ const RequisitionsManagement = () => {
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto px-6 pb-0">
+      <div className="flex-1 overflow-y-auto px-6 pb-6">
         <div
           className={`border rounded-md overflow-x-scroll hide-scrollbar-y ${cursorLoading ? "opacity-60 pointer-events-none cursor-wait" : ""
             }`}
@@ -567,7 +567,7 @@ const RequisitionsManagement = () => {
       {/* Sidebar */}
       <div
         ref={menuRef}
-        className={`fixed top-0 right-0 w-2/6 pt-6 px-6 pb-0 bg-white shadow-lg h-full z-10 transition-transform transform ${isSidebarOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 right-0 w-2/6 p-6 bg-white shadow-lg h-full z-10 transition-transform transform ${isSidebarOpen ? "translate-x-0" : "translate-x-full"
           }`}
       >
         <div className="">

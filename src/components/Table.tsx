@@ -82,17 +82,17 @@ const Table = ({
   // };
 
   return (
-    <div>
+    <div className="overflow-y-auto max-h-[calc(100vh-300px)]">
       <table className="w-full bg-white font-normal rounded-lg text-sm">
-        <thead className={`${style}`}>
+        <thead className={`sticky top-0 bg-white z-10 ${style}`}>
           <tr className="text-gray-400">
-            <th className="px-4 pt-2 pb-0 text-left font-normal">S.No</th>
+            <th className="px-4 py-2 text-left font-normal">S.No</th>
             {columns.map((col, index) => (
-              <th key={index} className="px-4 pt-2 pb-0 text-center font-normal">
+              <th key={index} className="px-4 py-2 text-center font-normal">
                 {col?.header ?? col}
               </th>
             ))}
-            <th className="px-4 pt-2 pb-0 text-left font-normal">Action</th>
+            <th className="px-4 py-2 text-left font-normal">Action</th>
           </tr>
         </thead>
         <tbody className="text-center">
@@ -104,11 +104,11 @@ const Table = ({
                   className="text-[#18100E] border-t hover:bg-gray-50 cursor-pointer"
                   onClick={() => onRowClick(row)}
                 >
-                  <td className="px-4 text-justify pt-2 pb-0">
+                  <td className="px-4 py-2 text-justify">
                     {index + 1 + (currentPage - 1) * itemsPerPage}
                   </td>
                   {columns.map((col, colIndex) => (
-                    <td key={colIndex} className="px-4 pt-2 pb-0 ">
+                    <td key={colIndex} className="px-4 py-2">
                       {col?.header === "Project ID" ||
                       col?.header === "RFQ ID" ? (
                         typeof row[col?.accessor ?? col] === "string" ? (
@@ -229,7 +229,7 @@ const Table = ({
                       )}
                     </td>
                   ))}
-                  <td className="px-4  pt-2 pb-0">
+                  <td className="px-4 py-2">
                     <div className="relative">
                       <IconButton
                         onClick={(evnt) => {
@@ -302,14 +302,14 @@ const Table = ({
               <tr>
                 <td
                   colSpan={columns.length + 2}
-                  className="p-[11rem] text-center text-md"
+                  className="p-16 text-center text-md"
                 >
                   No records found
                 </td>
               </tr>
             )
           ) : (
-            Array.from({ length: 10 }).map((_, index) => (
+            Array.from({ length: itemsPerPage }).map((_, index) => (
               <tr key={index}>
                 <TableShimmer span={columns?.length + 2} />
               </tr>

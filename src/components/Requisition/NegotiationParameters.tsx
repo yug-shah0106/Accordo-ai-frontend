@@ -118,14 +118,14 @@ const NegotiationParameters = ({ requisitionId, onUpdate }: NegotiationParameter
 
     if (loading && !formData.batna && !formData.maxDiscount) {
         return (
-            <div className="flex items-center justify-center pt-8 px-8 pb-0">
+            <div className="flex items-center justify-center p-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
         );
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-md pt-6 px-6 pb-0">
+        <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 Negotiation Parameters
             </h3>
@@ -211,7 +211,7 @@ const NegotiationParameters = ({ requisitionId, onUpdate }: NegotiationParameter
             </form>
 
             {formData.batna && formData.discountedValue && (
-                <div className="mt-6 pt-4 px-4 pb-0 bg-blue-50 rounded-lg">
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                     <h4 className="text-sm font-semibold text-blue-900 mb-2">Negotiation Status</h4>
                     <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
@@ -236,7 +236,7 @@ const NegotiationParameters = ({ requisitionId, onUpdate }: NegotiationParameter
                             </span>
                         </div>
                         {Number(formData.discountedValue) <= Number(formData.batna) && (
-                            <div className="mt-2 pt-2 px-2 pb-0 bg-green-100 rounded text-green-800 text-xs">
+                            <div className="mt-2 p-2 bg-green-100 rounded text-green-800 text-xs">
                                 ✓ Target achieved! Current value is at or below BATNA.
                             </div>
                         )}

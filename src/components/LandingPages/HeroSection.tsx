@@ -15,7 +15,7 @@ const HeroSection = () => {
               tracking, and eSigning every important document you handle.
             </p> */}
           <div className="flex justify-center space-y-4 sm:space-y-0 sm:space-x-8 mt-10">
-            <button className="bg-[#234BF3] text-white font-medium xl:font-bold pt-2 pb-0 px-4 rounded-lg w-auto">
+            <button className="bg-[#234BF3] text-white font-medium xl:font-bold py-2 px-4 rounded-lg w-auto">
               Request a demo
             </button>
             {/* <button className="bg-white text-gray-600 font-bold pt-1 pb-0 px-4 rounded-lg border border-[#272626] w-full sm:w-auto">

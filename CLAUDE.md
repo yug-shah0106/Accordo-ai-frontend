@@ -367,6 +367,105 @@ All page components (VendorManagement, ProjectManagement, PoManagement, AddVendo
 - Structured layout with dedicated header section separate from form content
 - White background to differentiate from gray content area
 
+### NegotiationRoom Layout Updates (January 2026)
+
+**Viewport-Locked Layout** - Slack/Discord Style:
+The NegotiationRoom now uses a fixed-viewport layout where the entire viewport IS the app, with no page-level scrolling.
+
+**Implementation** (`src/pages/chatbot/NegotiationRoom.tsx`):
+
+```tsx
+<div className="flex flex-col h-screen overflow-hidden bg-gray-100">
+  {/* Fixed Header - Always visible */}
+  <div className="flex-shrink-0 bg-white border-b px-6 py-4">
+    {/* Back button, Deal title/status, Actions */}
+  </div>
+
+  {/* Main Content - Flex container */}
+  <div className="flex-1 flex overflow-hidden">
+    {/* Chat Column - Independently scrollable */}
+    <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Messages - Scrollable area */}
+      <div className="flex-1 px-6 py-6 overflow-y-auto">
+        <ChatTranscript messages={messages} isProcessing={sending} />
+      </div>
+
+      {/* Composer - Fixed at bottom */}
+      <div className="flex-shrink-0">
+        <Composer onSend={handleSend} ... />
+      </div>
+    </div>
+
+    {/* Sidebar - Fixed width, independently scrollable */}
+    <div className="w-80 bg-white border-l flex-shrink-0 overflow-hidden">
+      <div className="flex-1 overflow-y-auto p-6">
+        {/* Config display */}
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+**Key CSS Classes**:
+- `h-screen` - Full viewport height (100vh)
+- `overflow-hidden` - Prevents page scrolling
+- `flex-1` - Takes remaining space
+- `flex-shrink-0` - Prevents shrinking (header, composer)
+- `overflow-y-auto` - Independent vertical scrolling (messages, sidebar)
+
+**Benefits**:
+1. ✅ Header always visible - no scroll-up needed
+2. ✅ Composer always accessible - no scroll-down needed
+3. ✅ Messages and sidebar scroll independently
+4. ✅ No page-level scrolling interference
+5. ✅ Consistent with modern chat apps (Slack, Discord, Teams)
+
+### Chat Component Improvements (January 2026)
+
+**Smart Auto-Scroll** (`src/components/chatbot/chat/ChatTranscript.tsx`):
+
+Implemented intelligent auto-scroll behavior that only scrolls when the user is near the bottom:
+
+```tsx
+const [isNearBottom, setIsNearBottom] = useState(true);
+const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+const handleScroll = () => {
+  const container = scrollContainerRef.current;
+  if (!container) return;
+
+  const { scrollTop, scrollHeight, clientHeight } = container;
+  const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+  // User is "near bottom" if within 100px
+  setIsNearBottom(distanceFromBottom < 100);
+};
+
+useEffect(() => {
+  if (isNearBottom && messagesEndRef.current) {
+    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+  }
+}, [messages, isProcessing, isNearBottom]);
+```
+
+**Behavior**:
+- ✅ User scrolls up to read old messages → no auto-scroll interference
+- ✅ User stays near bottom → smooth auto-scroll to new messages
+- ✅ 100px threshold for "near bottom" detection
+- ✅ Smooth animated scroll for better UX
+
+**Message Bubble Padding** (`src/components/chatbot/chat/MessageBubble.tsx`):
+
+Updated padding for symmetric spacing:
+- Changed from `pt-6 px-6 pb-0` to `pt-6 px-6 pb-6`
+- Equal top and bottom padding (24px each)
+- Better visual balance and breathing room
+
+**Line References**:
+- NegotiationRoom.tsx: Lines 351-446 (layout structure)
+- ChatTranscript.tsx: Lines 1-64 (smart auto-scroll logic)
+- MessageBubble.tsx: Line 42 (padding update)
+
 ### Testing
 
 Manual testing checklist:

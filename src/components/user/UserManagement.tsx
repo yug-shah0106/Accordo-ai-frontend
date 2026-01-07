@@ -249,7 +249,7 @@ const UserManagement = () => {
   const [selectedRow, setSelectedRow] = useState<{ element: HTMLElement | null; user: User | null }>({ element: null, user: null });
 
   return (
-    <div className="flex flex-col bg-white rounded-lg h-full overflow-hidden">
+    <div className="flex flex-col bg-white rounded-lg min-h-full">
       {/* Sticky Header Section */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0">
         {/* Header Section */}
@@ -316,7 +316,7 @@ const UserManagement = () => {
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto px-6 pb-0">
+      <div className="flex-1 overflow-y-auto px-6 pb-6">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

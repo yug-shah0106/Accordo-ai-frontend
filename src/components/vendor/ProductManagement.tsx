@@ -159,7 +159,7 @@ console.log({products});
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto px-6 pb-0">
+      <div className="flex-1 overflow-y-auto px-6 pb-6">
         <div className="flex flex-col justify-between">
           <div className="border rounded-md hide-scrollbar overflow-auto">
             <Table data={products} columns={columns} actions={actions} loading={loading} style={'bg-gray-100 '} currentPage={page}

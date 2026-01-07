@@ -68,9 +68,9 @@ export default function ConversationRoom() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 dark:bg-dark-bg">
+    <div className="flex flex-col h-screen overflow-hidden bg-gray-50 dark:bg-dark-bg">
       {/* Header */}
-      <div className="bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 pt-4 pb-0">
+      <div className="flex-shrink-0 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 pt-6 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -87,7 +87,7 @@ export default function ConversationRoom() {
               </h1>
               <div className="flex items-center gap-3 mt-1">
                 <span
-                  className={`text-xs px-2 pt-1 pb-0 rounded-full font-medium ${
+                  className={`text-xs px-2 py-1 rounded-full font-medium ${
                     deal.status === 'NEGOTIATING'
                       ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                       : deal.status === 'ACCEPTED'
@@ -133,9 +133,9 @@ export default function ConversationRoom() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col">
         {/* Chat Transcript */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 px-6 py-6 overflow-y-auto">
           {React.createElement(ChatTranscript as any, {
             messages,
             loading,
@@ -145,7 +145,7 @@ export default function ConversationRoom() {
         </div>
 
         {/* Composer */}
-        <div className="border-t border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface">
+        <div className="sticky bottom-0 z-10 border-t border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface">
           {React.createElement(Composer as any, {
             onSend: handleSendMessage,
             disabled: !canSend,

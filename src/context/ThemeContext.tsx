@@ -25,36 +25,29 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>('light');
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // Initialize theme from localStorage
-  useEffect(() => {
+  // Initialize theme from localStorage immediately (synchronous)
+  const getInitialTheme = (): Theme => {
     const savedTheme = localStorage.getItem('accordo-theme');
     if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
-      setTheme(savedTheme);
-      document.documentElement.classList.add(savedTheme);
-    } else {
-      // Default to light theme
-      document.documentElement.classList.add('light');
-      localStorage.setItem('accordo-theme', 'light');
+      return savedTheme;
     }
-    setIsLoading(false);
-  }, []);
+    return 'light';
+  };
+
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+
+  // Apply theme class on mount and when theme changes
+  useEffect(() => {
+    // Remove both classes first
+    document.documentElement.classList.remove('light', 'dark');
+    // Add current theme class
+    document.documentElement.classList.add(theme);
+    // Save to localStorage
+    localStorage.setItem('accordo-theme', theme);
+  }, [theme]);
 
   const toggleTheme = (): void => {
     const newTheme: Theme = theme === 'light' ? 'dark' : 'light';
-
-    // Remove old theme class
-    document.documentElement.classList.remove(theme);
-
-    // Add new theme class
-    document.documentElement.classList.add(newTheme);
-
-    // Save to localStorage
-    localStorage.setItem('accordo-theme', newTheme);
-
-    // Update state
     setTheme(newTheme);
   };
 
@@ -76,11 +69,6 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     isDark: theme === 'dark',
     isLight: theme === 'light',
   };
-
-  // Don't render children until theme is loaded to prevent flash
-  if (isLoading) {
-    return null;
-  }
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

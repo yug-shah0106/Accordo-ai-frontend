@@ -371,13 +371,12 @@ const Sidebar = ({ logo }) => {
   };
 
   // Handle sidebar responsiveness
+  // Sidebar is now collapsed by default on all screens
+  // Users can manually expand it using the toggle button
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 992) {
-        setSidebarOpen(false);
-      } else {
-        setSidebarOpen(true);
-      }
+      // Sidebar remains collapsed by default regardless of screen size
+      // User preference is maintained unless they explicitly toggle
     };
 
     window.addEventListener("resize", handleResize);

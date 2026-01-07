@@ -142,7 +142,7 @@ export default function DealsPage() {
   });
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 dark:bg-dark-bg">
+    <div className="flex flex-col min-h-full bg-gray-50 dark:bg-dark-bg">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-gray-50 dark:bg-dark-bg flex-shrink-0 pt-6 px-6 pb-4 border-b border-gray-200 dark:border-dark-border">
         <div className="flex items-center justify-between">
@@ -177,7 +177,7 @@ export default function DealsPage() {
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto pt-6 px-6 pb-0">
+      <div className="flex-1 pt-6 px-6 pb-6">
         {/* Search and Filters */}
         <div className="mb-6 flex flex-col gap-4">
         {/* Search Bar */}
@@ -272,12 +272,12 @@ export default function DealsPage() {
 
       {/* Deals Grid */}
       {loading && deals.length === 0 ? (
-        <div className="text-center pt-12 pb-0">
+        <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-dark-text-secondary">Loading deals...</p>
         </div>
       ) : error ? (
-        <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm pt-8 px-8 pb-0 text-center">
+        <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm p-8 text-center">
           <div className="text-red-600 mb-4">
             <svg
               className="w-16 h-16 mx-auto"
@@ -297,7 +297,7 @@ export default function DealsPage() {
           <p className="text-gray-600 dark:text-dark-text-secondary text-sm">{error.message}</p>
         </div>
       ) : filteredDeals.length === 0 ? (
-        <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm pt-12 px-12 pb-0 text-center">
+        <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm p-12 text-center">
           <svg
             className="w-16 h-16 mx-auto mb-4 text-gray-400"
             fill="none"
