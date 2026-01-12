@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 npm install          # Install dependencies
-npm run dev          # Start dev server on port 3000
+npm run dev          # Start dev server on port 5001
 npm run build        # Production build (outputs to dist/)
 npm run lint         # Run ESLint
 npm run preview      # Preview production build
@@ -16,21 +16,35 @@ npm run preview      # Preview production build
 
 ```bash
 docker build -t accordo-frontend .
-docker run -p 3000:3000 accordo-frontend
+docker run -p 5001:5001 accordo-frontend
 ```
 
 ## Environment Setup
 
 Create `.env.local` with:
 ```env
-VITE_BACKEND_URL=http://localhost:8000
-VITE_FRONTEND_URL=http://localhost:3000
-VITE_ASSEST_URL=http://localhost:8000
+VITE_BACKEND_URL=http://localhost:5002
+VITE_FRONTEND_URL=http://localhost:5001
+VITE_ASSEST_URL=http://localhost:5002
 VITE_DEV_HOST=0.0.0.0
-VITE_DEV_PORT=3000
+VITE_DEV_PORT=5001
 ```
 
 The dev server proxies `/api` requests to `VITE_BACKEND_URL`.
+
+### Port Configuration (January 2026)
+
+All services are configured to run on sequential ports starting from 5001:
+
+> **Note**: Port 5000 is reserved by macOS AirPlay Receiver. Frontend uses port 5001.
+
+| Service | Port | Environment Variable | Description |
+|---------|------|---------------------|-------------|
+| Frontend | 5001 | `VITE_DEV_PORT` | React/Vite frontend application |
+| Backend API | 5002 | `PORT` | Express.js backend server |
+| Embedding Service | 5003 | `EMBEDDING_SERVICE_PORT` | Python FastAPI embedding service |
+| MailHog SMTP | 5004 | `SENDMAIL_DEV_PORT` | Email testing SMTP server |
+| MailHog Web UI | 5005 | `MAILHOG_WEB_PORT` | Email testing web interface |
 
 ## Architecture
 
