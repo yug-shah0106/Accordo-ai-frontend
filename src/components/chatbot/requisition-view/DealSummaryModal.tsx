@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { FiX, FiMessageSquare, FiDownload, FiShoppingCart, FiCheckCircle, FiXCircle, FiClock, FiTrendingUp } from "react-icons/fi";
 import chatbotService from "../../../services/chatbot.service";
 import type { DealSummaryResponse } from "../../../types/chatbot";
+import type { DealContext } from "../../../types/chatbot";
 import toast from "react-hot-toast";
+import ExportPDFModal from "./ExportPDFModal";
 
 interface DealSummaryModalProps {
   dealId: string;
@@ -22,6 +24,7 @@ export default function DealSummaryModal({ dealId, rfqId, vendorId, isOpen, onCl
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<DealSummaryResponse | null>(null);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   useEffect(() => {
     if (isOpen && dealId && rfqId && vendorId) {
@@ -69,7 +72,14 @@ export default function DealSummaryModal({ dealId, rfqId, vendorId, isOpen, onCl
   };
 
   const handleExportPDF = () => {
-    toast.error("PDF export coming soon!", { icon: "📄" });
+    setShowExportModal(true);
+  };
+
+  // Build deal context for the export modal
+  const dealContext: DealContext = {
+    rfqId,
+    vendorId,
+    dealId,
   };
 
   const handleCreatePO = () => {
@@ -327,6 +337,17 @@ export default function DealSummaryModal({ dealId, rfqId, vendorId, isOpen, onCl
           )}
         </div>
       </div>
+
+      {/* Export PDF Modal */}
+      {summary && (
+        <ExportPDFModal
+          isOpen={showExportModal}
+          onClose={() => setShowExportModal(false)}
+          context={dealContext}
+          vendorName={summary.deal.vendorName}
+          dealTitle={summary.deal.title}
+        />
+      )}
     </div>
   );
 }

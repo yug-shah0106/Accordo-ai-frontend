@@ -22,6 +22,7 @@ import {
   type ScenarioType,
   type ScenarioConfig,
   type VendorScenario,
+  type OfferChip,
 } from '../../../utils/scenarioGenerator';
 
 interface ComposerProps {
@@ -149,9 +150,20 @@ export default function Composer({
     }
   };
 
-  // Get current scenario's messages
+  // Get current scenario's messages and chips
   const currentScenario = scenarios.find(s => s.type === selectedScenario);
   const currentMessages = currentScenario?.messages || [];
+  const currentChips = currentScenario?.chips || [];
+
+  // Get chip styling based on type
+  const getChipStyle = (chipType: OfferChip['type']): string => {
+    const styles: Record<OfferChip['type'], string> = {
+      price: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-300 dark:border-green-700',
+      terms: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-700',
+      delivery: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-700',
+    };
+    return styles[chipType];
+  };
 
   return (
     <div className="bg-white dark:bg-dark-surface border-t border-gray-200 dark:border-dark-border px-4 py-4 pb-6 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
@@ -175,6 +187,20 @@ export default function Composer({
             </button>
           ))}
         </div>
+
+        {/* Offer Details Chips (Price/Net/Delivery) */}
+        {vendorMode && currentChips.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-2">
+            {currentChips.map((chip, idx) => (
+              <span
+                key={idx}
+                className={`px-2.5 py-1 text-xs font-medium rounded-full border ${getChipStyle(chip.type)}`}
+              >
+                {chip.label}: {chip.value}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Quick Message Chips */}
         <div className="flex flex-wrap gap-2">

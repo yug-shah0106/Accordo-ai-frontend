@@ -142,8 +142,12 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
   const { data, loading, error } = useFetchData<Vendor>("/vendor/get-all");
   const contractData = watch("contractData") || [];
 
+  // State for tracking contract creation
+  const [creatingContract, setCreatingContract] = useState<boolean>(false);
+
   // Navigate to Deal Wizard with pre-filled context
-  const handleStartNegotiation = (): void => {
+  // Creates a Contract record IMMEDIATELY to link vendor to requisition
+  const handleStartNegotiation = async (): Promise<void> => {
     const selectedVendorId = watch("selectedVendor");
 
     if (!selectedVendorId) {
@@ -159,43 +163,44 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
       return;
     }
 
-    // Build requisition context for the wizard
-    const requisitionContext = {
-      id: parseInt(requisitionId),
-      rfqNumber: requisition?.rfqNumber || `RFQ-${requisitionId}`,
-      title: requisition?.title || requisition?.rfqNumber || `Requisition ${requisitionId}`,
-      projectName: requisition?.projectName || '',
-      products: requisition?.RequisitionProduct || [],
-      deliveryDate: requisition?.deliveryDate,
-      paymentTerms: requisition?.paymentTerms,
-      totalPrice: requisition?.totalPrice,
-      negotiationClosureDate: requisition?.negotiationClosureDate,
-      estimatedValue: parseFloat(requisition?.totalPrice || '0'),
-      vendorCount: contractData.length + deals.length,
-      productCount: requisition?.RequisitionProduct?.length || 0,
-      status: requisition?.status || '',
-    };
+    setCreatingContract(true);
 
-    // Build vendor context
-    const vendorContext = {
-      id: parseInt(selectedVendorId),
-      name: selectedVendor.Vendor?.name || '',
-      companyName: selectedVendor.Vendor?.companyName || null,
-      email: selectedVendor.Vendor?.email || '',
-      pastDealsCount: 0,
-      addresses: [],
-    };
+    try {
+      // Step 1: Create Contract record IMMEDIATELY (auto-add vendor to requisition)
+      // This ensures the vendor is linked to the requisition before navigating
+      // Skip email and chatbot deal creation - we'll create the deal in the Deal Wizard
+      // IMPORTANT: Convert IDs to numbers - backend expects number types
+      const {
+        data: { data: contractResponse },
+      } = await authApi.post<{ data: Contract }>("/contract/create", {
+        requisitionId: parseInt(requisitionId, 10),
+        vendorId: parseInt(selectedVendorId, 10),
+        skipEmail: true,      // Don't send email - user is navigating to Deal Wizard
+        skipChatbot: true,    // Don't auto-create deal - Deal Wizard will create it
+      });
 
-    // Navigate to deal wizard with URL parameters (refresh-safe)
-    // Using URL params instead of router state ensures data persists across page refreshes
-    const searchParams = new URLSearchParams({
-      rfqId: requisitionId,
-      vendorId: selectedVendorId,
-      locked: 'true',
-      returnTo: `/requisition-management/edit/${requisitionId}`,
-    });
+      // Update local contractData state to reflect the new contract
+      setValue("contractData", [...(watch("contractData") || []), contractResponse]);
+      setValue("selectedVendor", "");
 
-    navigate(`/chatbot/requisitions/deals/new?${searchParams.toString()}`);
+      // Step 2: Navigate with correct vendor ID and name for robust matching
+      // The vendorId from contract is the User.id which the chatbot API expects
+      // Also pass vendorName as fallback for matching
+      const searchParams = new URLSearchParams({
+        rfqId: requisitionId,
+        vendorId: contractResponse.vendorId?.toString() || selectedVendorId,
+        vendorName: selectedVendor.Vendor?.name || '',
+        locked: 'true',
+        returnTo: `/requisition-management/edit/${requisitionId}`,
+      });
+
+      navigate(`/chatbot/requisitions/deals/new?${searchParams.toString()}`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to attach vendor";
+      toast.error(errorMessage);
+    } finally {
+      setCreatingContract(false);
+    }
   };
 
   // Legacy: Add Contract (keeping for backwards compatibility)
@@ -335,12 +340,22 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
           </div>
           <div className="flex gap-2">
             <Button
-              className="px-4 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
+              className="px-4 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleStartNegotiation}
               type="button"
+              disabled={creatingContract}
             >
-              <FiPlay className="w-4 h-4" />
-              Start Negotiation
+              {creatingContract ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Starting...
+                </>
+              ) : (
+                <>
+                  <FiPlay className="w-4 h-4" />
+                  Start Negotiation
+                </>
+              )}
             </Button>
           </div>
         </div>

@@ -82,10 +82,11 @@ export default function NewDealPage() {
   // URL parameters for refresh-safe navigation from VendorDetails
   const urlRfqId = searchParams.get('rfqId');
   const urlVendorId = searchParams.get('vendorId');
+  const urlVendorName = searchParams.get('vendorName');  // Fallback for vendor matching
   const urlLocked = searchParams.get('locked') === 'true';
   const urlReturnTo = searchParams.get('returnTo');
 
-  console.log('[NewDealPage] URL params:', { urlRfqId, urlVendorId, urlLocked, urlReturnTo });
+  console.log('[NewDealPage] URL params:', { urlRfqId, urlVendorId, urlVendorName, urlLocked, urlReturnTo });
 
   // Handle router state from VendorDetails "Start Negotiation" flow
   const routerState = location.state as {
@@ -449,16 +450,27 @@ export default function NewDealPage() {
         const vendorList = vendorRes.data || [];
         console.log('[NewDealPage] Fetched vendors for RFQ:', vendorList.length);
 
-        // Find the specific vendor by ID (check both id and vendorId fields)
+        // Find the specific vendor using multi-criteria matching
+        // Priority: 1. ID match, 2. vendorId match, 3. name match (case-insensitive)
+        const decodedVendorName = urlVendorName ? decodeURIComponent(urlVendorName) : null;
         const selectedVendor = vendorList.find(v =>
           v.id === parseInt(urlVendorId) ||
-          v.vendorId?.toString() === urlVendorId
+          v.id?.toString() === urlVendorId ||
+          v.vendorId?.toString() === urlVendorId ||
+          (decodedVendorName && v.name?.toLowerCase() === decodedVendorName.toLowerCase())
         );
 
         if (selectedVendor) {
-          console.log('[NewDealPage] Found vendor with addresses:', selectedVendor.addresses?.length || 0);
+          console.log('[NewDealPage] Found vendor match:', {
+            id: selectedVendor.id,
+            name: selectedVendor.name,
+            addressCount: selectedVendor.addresses?.length || 0,
+            matchedBy: selectedVendor.id === parseInt(urlVendorId) ? 'id' :
+                       selectedVendor.id?.toString() === urlVendorId ? 'id-string' :
+                       selectedVendor.vendorId?.toString() === urlVendorId ? 'vendorId' : 'name'
+          });
 
-          // Set vendors state - this is what Step 2 uses for addresses
+          // Set vendors state - show ONLY this vendor in locked mode
           setVendors([selectedVendor]);
 
           // Set form data with pre-selected values
@@ -473,19 +485,51 @@ export default function NewDealPage() {
               vendorLocked: isLockedMode,  // Respect locked=true from URL
             }
           }));
-        } else if (vendorList.length > 0) {
-          // Vendor not found by exact ID - auto-select first vendor (per user requirement)
-          console.warn('[NewDealPage] Vendor not found by ID, auto-selecting first vendor');
-          const firstVendor = vendorList[0];
-          setVendors(vendorList);
+        } else if (vendorList.length > 0 && decodedVendorName) {
+          // Vendor not found by ID or name - try partial name match as last resort
+          const partialMatch = vendorList.find(v =>
+            v.name?.toLowerCase().includes(decodedVendorName.toLowerCase()) ||
+            decodedVendorName.toLowerCase().includes(v.name?.toLowerCase() || '')
+          );
 
-          // Auto-select first vendor and unlock dropdown since requested vendor not found
+          if (partialMatch) {
+            console.log('[NewDealPage] Found vendor via partial name match:', partialMatch.name);
+            setVendors([partialMatch]);
+            setFormData(prev => ({
+              ...prev,
+              stepOne: {
+                ...prev.stepOne,
+                requisitionId: parseInt(urlRfqId),
+                vendorId: partialMatch.id,
+                title: selectedRfq?.title || prev.stepOne.title,
+                vendorLocked: isLockedMode,
+              }
+            }));
+          } else {
+            // Still no match - show all vendors but don't auto-select wrong one
+            console.warn('[NewDealPage] No vendor match found, showing all vendors. URL vendorId:', urlVendorId, 'vendorName:', decodedVendorName);
+            setVendors(vendorList);
+            setFormData(prev => ({
+              ...prev,
+              stepOne: {
+                ...prev.stepOne,
+                requisitionId: parseInt(urlRfqId),
+                vendorId: null,  // Don't auto-select wrong vendor
+                title: selectedRfq?.title || prev.stepOne.title,
+                vendorLocked: false,  // Unlock so user can select
+              }
+            }));
+          }
+        } else if (vendorList.length > 0) {
+          // No vendor name hint and no ID match - show all vendors unlocked
+          console.warn('[NewDealPage] Vendor not found by ID, no name hint. Showing all vendors.');
+          setVendors(vendorList);
           setFormData(prev => ({
             ...prev,
             stepOne: {
               ...prev.stepOne,
               requisitionId: parseInt(urlRfqId),
-              vendorId: firstVendor.id,
+              vendorId: null,  // Don't auto-select wrong vendor
               title: selectedRfq?.title || prev.stepOne.title,
               vendorLocked: false,  // Unlock dropdown since requested vendor not found
             }
@@ -515,7 +559,7 @@ export default function NewDealPage() {
     };
 
     initFromUrlParams();
-  }, [urlRfqId, urlVendorId, routerStateInitialized]);
+  }, [urlRfqId, urlVendorId, urlVendorName, routerStateInitialized, isLockedMode]);
 
   // Auto-populate requisition from URL query param
   useEffect(() => {

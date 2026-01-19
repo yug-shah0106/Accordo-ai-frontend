@@ -26,6 +26,16 @@ export interface ScenarioConfig {
   label: string;
   color: string;
   messages: string[];
+  chips?: OfferChip[];  // Visual chips for price/net/delivery (vendor mode)
+}
+
+/**
+ * Offer chip for quick display of price/terms/delivery
+ */
+export interface OfferChip {
+  label: string;
+  value: string;
+  type: 'price' | 'terms' | 'delivery';
 }
 
 /**
@@ -40,6 +50,7 @@ export interface VendorScenario {
     paymentTerms: string;
     deliveryDate: string;
   };
+  chips?: OfferChip[];  // Visual chips for price/net/delivery
   estimatedProfit: number;
 }
 
@@ -284,6 +295,7 @@ export function convertVendorScenariosToConfig(
     label: scenario.label,
     color: getScenarioColor(scenario.type),
     messages: [scenario.message], // Single message from backend (can be expanded)
+    chips: scenario.chips,  // Pass through offer chips (price/net/delivery)
   }));
 }
 

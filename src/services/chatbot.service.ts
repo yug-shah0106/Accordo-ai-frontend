@@ -344,6 +344,45 @@ export const chatbotService = {
   },
 
   /**
+   * Export deal summary as PDF (direct download)
+   * POST /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/export-pdf
+   *
+   * Returns the PDF as a binary blob for client-side download
+   */
+  exportDealPDF: async (
+    ctx: DealContext
+  ): Promise<{ data: Blob; headers: Record<string, string> }> => {
+    const res = await authApi.post(
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'export-pdf'),
+      {},
+      {
+        responseType: 'blob',
+      }
+    );
+    return {
+      data: res.data,
+      headers: res.headers as Record<string, string>,
+    };
+  },
+
+  /**
+   * Email deal summary PDF to a recipient
+   * POST /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/email-pdf
+   *
+   * Generates PDF server-side and sends to specified email address
+   */
+  emailDealPDF: async (
+    ctx: DealContext,
+    email: string
+  ): Promise<{ data: { message: string; email: string; sentAt: string } }> => {
+    const res = await authApi.post<{ data: { message: string; email: string; sentAt: string } }>(
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'email-pdf'),
+      { email }
+    );
+    return res.data;
+  },
+
+  /**
    * Get last explainability for a deal
    * GET /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/explainability
    */
