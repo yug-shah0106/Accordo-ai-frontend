@@ -146,7 +146,13 @@ export default function DemoScenarios() {
 
   const handleViewDeal = () => {
     if (selectedDeal) {
-      navigate(`/chatbot/deals/${selectedDeal}`);
+      // Find the deal to get requisitionId and vendorId
+      const deal = deals.find(d => d.id === selectedDeal);
+      if (deal?.requisitionId && deal?.vendorId) {
+        navigate(`/chatbot/requisitions/${deal.requisitionId}/vendors/${deal.vendorId}/deals/${selectedDeal}`);
+      } else {
+        toast.error('Cannot open deal: missing requisition or vendor context');
+      }
     }
   };
 
@@ -201,7 +207,7 @@ export default function DemoScenarios() {
                 <div className="text-center pt-6 pb-0">
                   <p className="text-sm text-gray-600 mb-4">No negotiating deals available</p>
                   <button
-                    onClick={() => navigate('/chatbot/deals/new')}
+                    onClick={() => navigate('/chatbot/requisitions/deals/new')}
                     className="px-4 pt-2 pb-0 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
                   >
                     Create New Deal

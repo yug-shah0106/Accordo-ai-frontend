@@ -1,44 +1,28 @@
-import { useState, useRef, useEffect } from "react";
-import type { DealStatus } from '../../../types';
-import { chatbotService } from '../../../services/chatbot.service';
-
-type ScenarioType = 'HARD' | 'MEDIUM' | 'SOFT' | 'WALK_AWAY';
-
-// Fallback scenario messages (used when API fails or during loading)
-const FALLBACK_SCENARIO_MESSAGES: Record<ScenarioType, string[]> = {
-  HARD: [
-    "We can do 95 Net 30",
-    "Best I can offer is 93 Net 30",
-    "Ok, final price: 92 Net 30",
-    "This is our absolute limit: 91 Net 30",
-  ],
-  MEDIUM: [
-    "We can do 92 Net 60",
-    "How about 89 Net 60?",
-    "We're open to 87 Net 90",
-    "Final offer: 85 Net 90",
-  ],
-  SOFT: [
-    "We can do 90 Net 60",
-    "How about 88 Net 90?",
-    "We're willing to go to 85 Net 90",
-    "Final offer: 82 Net 90",
-  ],
-  WALK_AWAY: [
-    "We can do 95 Net 30",
-    "Best I can offer is 93 Net 30",
-    "Our final offer is 110 Net 30 - take it or leave it",
-    "Sorry, we can't go lower than 110",
-  ],
-};
-
-// In-memory cache for scenario suggestions (key: `${dealId}-${round}`)
-const scenarioCache = new Map<string, Record<ScenarioType, string[]>>();
-
 /**
  * Composer Component
- * Message input with quick scenario chips
+ *
+ * Message input with quick scenario chips for negotiation.
+ *
+ * Updated January 2026:
+ * - Uses wizard config for dynamic scenario generation
+ * - Removed WALK_AWAY scenario (per user request)
+ * - Uses context object for API calls
+ * - Hybrid approach: frontend generates initial, backend refines
+ * - Added vendor mode for AI-PM negotiation (vendor perspective)
  */
+
+import { useState, useRef, useEffect, useMemo } from "react";
+import type { DealStatus, DealContext, WizardConfig } from '../../../types';
+import { chatbotService } from '../../../services/chatbot.service';
+import {
+  generateScenarioMessages,
+  getScenarioColorClass,
+  generateVendorFallbackScenarios,
+  convertVendorScenariosToConfig,
+  type ScenarioType,
+  type ScenarioConfig,
+  type VendorScenario,
+} from '../../../utils/scenarioGenerator';
 
 interface ComposerProps {
   onSend: (message: string) => void;
@@ -47,8 +31,11 @@ interface ComposerProps {
   sending: boolean;
   dealStatus?: DealStatus;
   canSend?: boolean;
-  dealId?: string;  // For fetching dynamic suggestions
-  currentRound?: number;  // For cache key
+  dealId?: string;
+  context?: DealContext | null;  // For API calls
+  wizardConfig?: WizardConfig | null;  // For scenario generation
+  currentRound?: number;
+  vendorMode?: boolean;  // Enable vendor perspective mode (AI-PM mode)
 }
 
 export default function Composer({
@@ -58,74 +45,94 @@ export default function Composer({
   sending,
   dealStatus,
   canSend = true,
-  dealId,
+  dealId: _dealId,
+  context,
+  wizardConfig,
   currentRound = 0,
+  vendorMode = false,
 }: ComposerProps) {
-  const [scenario, setScenario] = useState<ScenarioType>("HARD");
-  const [scenarioMessages, setScenarioMessages] = useState<Record<ScenarioType, string[]>>(FALLBACK_SCENARIO_MESSAGES);
+  const [selectedScenario, setSelectedScenario] = useState<ScenarioType>("HARD");
+  const [scenarios, setScenarios] = useState<ScenarioConfig[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [pmLastOffer, setPmLastOffer] = useState<{
+    price: number;
+    paymentTerms: string;
+    deliveryDate: string;
+  } | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Fetch dynamic scenario suggestions with caching and retry logic
-  useEffect(() => {
-    if (!dealId) {
-      // No dealId, use fallback messages
-      setScenarioMessages(FALLBACK_SCENARIO_MESSAGES);
-      return;
+  // Generate scenarios from wizard config (frontend generation)
+  // Used for buyer/PM perspective when NOT in vendor mode
+  const generatedScenarios = useMemo(() => {
+    if (vendorMode) {
+      // In vendor mode, use vendor fallback scenarios
+      return generateVendorFallbackScenarios(pmLastOffer);
     }
+    return generateScenarioMessages(wizardConfig, currentRound);
+  }, [wizardConfig, currentRound, vendorMode, pmLastOffer]);
 
-    const fetchSuggestions = async () => {
-      const cacheKey = `${dealId}-${currentRound}`;
+  // Initialize scenarios with frontend-generated values
+  useEffect(() => {
+    setScenarios(generatedScenarios);
+  }, [generatedScenarios]);
 
-      // Check cache first
-      const cached = scenarioCache.get(cacheKey);
-      if (cached) {
-        setScenarioMessages(cached);
-        return;
-      }
+  // Fetch scenarios from backend (different endpoints for vendor vs buyer mode)
+  useEffect(() => {
+    if (!context) return;
 
-      // Fetch from API with retry logic
+    const fetchScenarios = async () => {
       setLoadingSuggestions(true);
-      let lastError: Error | null = null;
 
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-          const response = await chatbotService.getSuggestedCounters(dealId);
-          const suggestions = response.data;
+      try {
+        if (vendorMode) {
+          // Vendor mode: Fetch from /vendor-scenarios endpoint
+          const response = await chatbotService.getVendorScenarios(context);
+          const { scenarios: vendorScenarios, pmLastOffer: lastOffer } = response.data;
 
-          // Cache the result
-          scenarioCache.set(cacheKey, suggestions);
-          setScenarioMessages(suggestions);
-          setLoadingSuggestions(false);
-          return;
-        } catch (error) {
-          lastError = error as Error;
-          console.warn(`[Composer] Attempt ${attempt}/3 failed to fetch suggestions:`, error);
+          // Store PM's last offer for fallback generation
+          if (lastOffer) {
+            setPmLastOffer(lastOffer);
+          }
 
-          if (attempt < 3) {
-            // Exponential backoff: 1s, 2s
-            const delay = Math.pow(2, attempt - 1) * 1000;
-            await new Promise(resolve => setTimeout(resolve, delay));
+          // Convert vendor scenarios to ScenarioConfig format
+          if (vendorScenarios && vendorScenarios.length > 0) {
+            const convertedScenarios = convertVendorScenariosToConfig(
+              vendorScenarios as VendorScenario[]
+            );
+            setScenarios(convertedScenarios);
+          }
+        } else {
+          // Buyer/PM mode: Fetch from /suggestions endpoint (original behavior)
+          const response = await chatbotService.getSuggestedCounters(context);
+          const backendSuggestions = response.data;
+
+          // Merge backend suggestions with frontend-generated ones
+          if (backendSuggestions) {
+            setScenarios(prev => prev.map(scenario => {
+              const backendMessages = backendSuggestions[scenario.type];
+              if (backendMessages && backendMessages.length > 0) {
+                return { ...scenario, messages: backendMessages };
+              }
+              return scenario;
+            }));
           }
         }
+      } catch (error) {
+        // Silently fall back to frontend-generated scenarios
+        console.warn('[Composer] Backend scenarios unavailable, using frontend-generated:', error);
+      } finally {
+        setLoadingSuggestions(false);
       }
-
-      // All retries failed, use fallback
-      console.error('[Composer] All retries failed, using fallback messages:', lastError);
-      setScenarioMessages(FALLBACK_SCENARIO_MESSAGES);
-      setLoadingSuggestions(false);
     };
 
-    fetchSuggestions();
-  }, [dealId, currentRound]);
+    fetchScenarios();
+  }, [context, currentRound, vendorMode]);
 
   // Auto-expand textarea
   useEffect(() => {
     if (textareaRef.current) {
-      // Reset height to auto to get proper scrollHeight
       textareaRef.current.style.height = 'auto';
-      // Calculate new height (min 1 line, max 5 lines)
-      const lineHeight = 24; // approximate line height in pixels
+      const lineHeight = 24;
       const minHeight = lineHeight * 1;
       const maxHeight = lineHeight * 5;
       const newHeight = Math.min(Math.max(textareaRef.current.scrollHeight, minHeight), maxHeight);
@@ -142,31 +149,29 @@ export default function Composer({
     }
   };
 
+  // Get current scenario's messages
+  const currentScenario = scenarios.find(s => s.type === selectedScenario);
+  const currentMessages = currentScenario?.messages || [];
+
   return (
-    <div className="bg-white border-t border-gray-200 px-4 py-4 pb-6 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
-        {/* Scenario Chips */}
+    <div className="bg-white dark:bg-dark-surface border-t border-gray-200 dark:border-dark-border px-4 py-4 pb-6 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
+      {/* Scenario Chips */}
       <div className="mb-3 space-y-2">
-        {/* Scenario Selector */}
+        {/* Scenario Selector - Only HARD, MEDIUM, SOFT (no WALK_AWAY) */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-600">Scenario:</span>
-          {(["HARD", "MEDIUM", "SOFT", "WALK_AWAY"] as const).map((s) => (
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            {vendorMode ? "Your Offers:" : "Quick Offers:"}
+          </span>
+          {scenarios.map((scenario) => (
             <button
-              key={s}
-              onClick={() => setScenario(s)}
+              key={scenario.type}
+              onClick={() => setSelectedScenario(scenario.type)}
               className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors ${
-                scenario === s
-                  ? s === "HARD"
-                    ? "bg-red-600 text-white"
-                    : s === "MEDIUM"
-                    ? "bg-orange-500 text-white"
-                    : s === "SOFT"
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-700 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                getScenarioColorClass(scenario.type, selectedScenario === scenario.type)
               }`}
               disabled={sending}
             >
-              {s}
+              {scenario.label}
             </button>
           ))}
         </div>
@@ -176,27 +181,28 @@ export default function Composer({
           {loadingSuggestions ? (
             // Skeleton loading with shimmer effect
             <>
-              {[1, 2, 3, 4].map((i) => (
+              {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="px-3 py-1 text-xs bg-gray-200 border border-gray-300 rounded"
-                  style={{ width: `${80 + i * 15}px`, height: '28px' }}
+                  className="px-3 py-1 text-xs bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded"
+                  style={{ width: `${80 + i * 20}px`, height: '28px' }}
                 >
-                  <div className="h-3 bg-gray-300 rounded animate-pulse"></div>
+                  <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded animate-pulse"></div>
                 </div>
               ))}
             </>
           ) : (
             // Actual suggestion chips
-            scenarioMessages[scenario]?.map((msg, idx) => (
+            currentMessages.map((msg, idx) => (
               <button
                 key={idx}
                 onClick={() => onSend(msg)}
                 disabled={sending || !canSend}
-                className="px-3 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 text-xs bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border rounded hover:bg-gray-50 dark:hover:bg-dark-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300 max-w-[250px] truncate"
+                title={msg}
               >
-                {msg.substring(0, 25)}
-                {msg.length > 25 ? "..." : ""}
+                {msg.substring(0, 40)}
+                {msg.length > 40 ? "..." : ""}
               </button>
             ))
           )}
@@ -215,10 +221,12 @@ export default function Composer({
               ? "Deal is Escalated. Reset or Resume."
               : !canSend
               ? "Deal is closed"
-              : "Type vendor message..."
+              : vendorMode
+              ? "Type your offer to the buyer..."
+              : "Type your counter-offer..."
           }
           disabled={sending || !canSend}
-          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none overflow-y-auto"
+          className="flex-1 px-4 py-3 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed resize-none overflow-y-auto bg-white dark:bg-dark-surface text-gray-900 dark:text-dark-text"
           rows={1}
           style={{ minHeight: '24px', maxHeight: '120px' }}
         />

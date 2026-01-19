@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import chatbotService from "../../services/chatbot.service";
-import type { Deal, ListDealsParams } from "../../types/chatbot";
-import { FiArchive, FiTrash2, FiPlus } from "react-icons/fi";
-import { MdDelete } from "react-icons/md";
+import type { Deal, ListDealsParams, DealContext } from "../../types/chatbot";
+import { FiArchive, FiPlus } from "react-icons/fi";
 import toast from "react-hot-toast";
 
 interface DealsPageState {
@@ -64,20 +63,50 @@ export default function DealsPage() {
   }, [page]);
 
   const handleCreateDeal = (): void => {
-    navigate("/chatbot/deals/new");
+    navigate("/chatbot/requisitions/deals/new");
   };
 
-  const handleDealClick = (dealId: string): void => {
-    navigate(`/chatbot/deals/${dealId}`);
+  /**
+   * Navigate to deal using nested URL structure
+   * Shows error for legacy deals without requisitionId or vendorId
+   */
+  const handleDealClick = (deal: Deal): void => {
+    if (deal.requisitionId && deal.vendorId) {
+      // Use hierarchical URL structure
+      navigate(`/chatbot/requisitions/${deal.requisitionId}/vendors/${deal.vendorId}/deals/${deal.id}`);
+    } else {
+      // Legacy deals cannot be accessed - missing context
+      toast.error('Cannot open deal: missing requisition or vendor context');
+    }
   };
 
-  const handleArchive = async (e: React.MouseEvent, dealId: string, dealTitle: string) => {
+  /**
+   * Build DealContext from Deal object
+   */
+  const buildContext = (deal: Deal): DealContext | null => {
+    if (!deal.requisitionId || !deal.vendorId) {
+      return null;
+    }
+    return {
+      rfqId: deal.requisitionId,
+      vendorId: deal.vendorId,
+      dealId: deal.id,
+    };
+  };
+
+  const handleArchive = async (e: React.MouseEvent, deal: Deal) => {
     e.stopPropagation(); // Prevent navigation to deal
 
+    const ctx = buildContext(deal);
+    if (!ctx) {
+      toast.error('Cannot archive deal: missing requisition or vendor context');
+      return;
+    }
+
     try {
-      setActionLoading(dealId);
-      await chatbotService.archiveDeal(dealId);
-      toast.success(`"${dealTitle}" has been archived`, {
+      setActionLoading(deal.id);
+      await chatbotService.archiveDeal(ctx);
+      toast.success(`"${deal.title}" has been archived`, {
         duration: 3000,
         icon: '📦',
       });
@@ -85,25 +114,6 @@ export default function DealsPage() {
     } catch (error: any) {
       console.error('Failed to archive deal:', error);
       toast.error(error.response?.data?.message || 'Failed to archive deal');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleDelete = async (e: React.MouseEvent, dealId: string, dealTitle: string) => {
-    e.stopPropagation(); // Prevent navigation to deal
-
-    try {
-      setActionLoading(dealId);
-      await chatbotService.softDeleteDeal(dealId);
-      toast.success(`"${dealTitle}" has been deleted`, {
-        duration: 3000,
-        icon: '🗑️',
-      });
-      fetchDeals(); // Refresh the list
-    } catch (error: any) {
-      console.error('Failed to delete deal:', error);
-      toast.error(error.response?.data?.message || 'Failed to delete deal');
     } finally {
       setActionLoading(null);
     }
@@ -157,13 +167,6 @@ export default function DealsPage() {
             >
               <FiArchive className="w-4 h-4" />
               Archived
-            </button>
-            <button
-              onClick={() => navigate('/chatbot/trash')}
-              className="px-4 py-2 bg-gray-200 dark:bg-dark-surface text-gray-700 dark:text-dark-text font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
-            >
-              <MdDelete className="w-4 h-4" />
-              Trash
             </button>
             <button
               onClick={handleCreateDeal}
@@ -346,7 +349,7 @@ export default function DealsPage() {
             {filteredDeals.map((deal) => (
               <div
                 key={deal.id}
-                onClick={() => handleDealClick(deal.id)}
+                onClick={() => handleDealClick(deal)}
                 className="bg-white dark:bg-dark-surface rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer border border-gray-200 dark:border-dark-border overflow-hidden group"
               >
                 {/* Card Header with Status */}
@@ -404,22 +407,13 @@ export default function DealsPage() {
                   {/* Action Buttons */}
                   <div className="flex items-center gap-2 pt-3 border-t border-gray-100 dark:border-dark-border">
                     <button
-                      onClick={(e) => handleArchive(e, deal.id, deal.title)}
+                      onClick={(e) => handleArchive(e, deal)}
                       disabled={actionLoading === deal.id}
                       className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Archive this deal"
                     >
                       <FiArchive className="w-4 h-4" />
                       Archive
-                    </button>
-                    <button
-                      onClick={(e) => handleDelete(e, deal.id, deal.title)}
-                      disabled={actionLoading === deal.id}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm font-medium rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Delete this deal"
-                    >
-                      <FiTrash2 className="w-4 h-4" />
-                      Delete
                     </button>
                   </div>
                 </div>

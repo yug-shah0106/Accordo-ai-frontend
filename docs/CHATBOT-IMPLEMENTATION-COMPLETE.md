@@ -219,7 +219,7 @@ Successfully completed the full frontend implementation of the Accordo Chatbot F
 
 **Navigation Flow:**
 - `/chatbot` → DealsPage (list all deals)
-- `/chatbot/deals/new` → Create new deal
+- `/chatbot/deals/new?requisitionId=rfqid` → Create new deal with pre-selected RFQ
 - `/chatbot/deals/:dealId` → INSIGHTS mode (NegotiationRoom)
 - `/chatbot/conversation/:dealId` → CONVERSATION mode (ConversationRoom)
 - `/chatbot/deals/:dealId/summary` → Summary & analytics

@@ -6,16 +6,25 @@ import type { Message } from '../../../types';
 /**
  * MessageBubble Component
  * Displays a single message in the chat transcript
+ *
+ * Updated January 2026: Added vendorMode support for AI-PM perspective
+ * - In vendorMode: VENDOR = "You", ACCORDO = "AI Buyer"
+ * - Normal mode: VENDOR = "Vendor", ACCORDO = "Procurement Manager"
  */
 
 interface MessageBubbleProps {
   message: Message;
   round?: number;
   isGrouped?: boolean;
+  vendorMode?: boolean;  // When true, shows vendor-perspective labels
 }
 
-export default function MessageBubble({ message, round, isGrouped = false }: MessageBubbleProps) {
+export default function MessageBubble({ message, round, isGrouped = false, vendorMode = false }: MessageBubbleProps) {
   const [showFull, setShowFull] = useState(false);
+
+  // Guard against undefined/null message
+  if (!message) return null;
+
   const isVendor = message.role === "VENDOR";
   const isAccordo = message.role === "ACCORDO";
   const decision = message.engineDecision;
@@ -48,7 +57,9 @@ export default function MessageBubble({ message, round, isGrouped = false }: Mes
         {/* Message Header */}
         <div className="flex justify-between items-center mb-2 gap-4">
           <span className="text-xs font-medium text-gray-500">
-            {isVendor ? "Vendor" : "Procurement Manager"}
+            {vendorMode
+              ? (isVendor ? "You (Vendor)" : "AI Buyer")
+              : (isVendor ? "Vendor" : "Procurement Manager")}
           </span>
           <span className="text-xs text-gray-400">
             {new Date(message.createdAt).toLocaleTimeString([], {

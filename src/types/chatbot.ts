@@ -11,6 +11,18 @@
 
 export type DealStatus = 'NEGOTIATING' | 'ACCEPTED' | 'WALKED_AWAY' | 'ESCALATED';
 export type DealMode = 'INSIGHTS' | 'CONVERSATION';
+export type ArchiveFilter = 'active' | 'archived' | 'all';
+
+/**
+ * Context for deal operations - required for nested URL construction
+ * All deal-related API calls require rfqId, vendorId, and dealId
+ * to construct the proper nested URL path
+ */
+export interface DealContext {
+  rfqId: number;
+  vendorId: number;
+  dealId: string;
+}
 
 export interface Deal {
   id: string;
@@ -155,6 +167,63 @@ export interface NegotiationConfig {
   accept_threshold: number;
   walkaway_threshold: number;
   max_rounds: number;
+}
+
+/**
+ * WizardConfig - Full configuration from deal creation wizard
+ * Stored in negotiationConfigJson.wizardConfig when deal is created via wizard
+ */
+export interface WizardConfig {
+  priority: NegotiationPriority;
+  priceQuantity: {
+    targetUnitPrice: number;
+    maxAcceptablePrice: number;
+    minOrderQuantity: number;
+    preferredQuantity?: number;
+    volumeDiscountExpectation?: number;
+  };
+  paymentTerms: {
+    minDays: number;
+    maxDays: number;
+    advancePaymentLimit?: number;
+    acceptedMethods?: PaymentMethod[];
+  };
+  delivery: {
+    requiredDate: string;
+    preferredDate?: string;
+    locationId?: number;
+    locationAddress?: string;
+    partialDelivery: {
+      allowed: boolean;
+      type?: PartialDeliveryType;
+      minValue?: number;
+    };
+  };
+  contractSla: {
+    warrantyPeriod: WarrantyPeriod;
+    defectLiabilityMonths?: number;
+    lateDeliveryPenaltyPerDay: number;
+    maxPenaltyCap?: {
+      type: PenaltyCapType;
+      value?: number;
+    };
+    qualityStandards?: string[];
+  };
+  negotiationControl: {
+    deadline?: string | null;
+    maxRounds: number;
+    walkawayThreshold: number;
+  };
+  customParameters: CustomParameter[];
+}
+
+/**
+ * ExtendedNegotiationConfig - Config with optional wizardConfig for dashboard display
+ * Returned by getDealConfig endpoint when deal was created via wizard
+ */
+export interface ExtendedNegotiationConfig extends NegotiationConfig {
+  wizardConfig?: WizardConfig;
+  parameterWeights?: Record<string, number>;
 }
 
 // ============================================================================
@@ -340,3 +409,517 @@ export interface DealFiltersProps {
   filters: ListDealsParams;
   onFilterChange: (filters: ListDealsParams) => void;
 }
+
+// ============================================================================
+// Deal Wizard Types (Multi-Step Negotiation Configuration)
+// ============================================================================
+
+export type NegotiationPriority = 'HIGH' | 'MEDIUM' | 'LOW';
+export type WarrantyPeriod = '6_MONTHS' | '1_YEAR' | '2_YEARS' | '3_YEARS';
+export type PaymentMethod = 'BANK_TRANSFER' | 'CREDIT' | 'LC';
+export type PartialDeliveryType = 'QUANTITY' | 'PERCENTAGE';
+export type PenaltyCapType = 'PERCENTAGE' | 'FIXED';
+export type CustomParameterType = 'BOOLEAN' | 'NUMBER' | 'TEXT' | 'DATE';
+export type ParameterFlexibility = 'FIXED' | 'FLEXIBLE' | 'NICE_TO_HAVE';
+
+/**
+ * Custom negotiation parameter defined by user
+ */
+export interface CustomParameter {
+  id?: string;
+  name: string;
+  type: CustomParameterType;
+  targetValue: boolean | number | string;
+  flexibility: ParameterFlexibility;
+  includeInNegotiation: boolean;
+}
+
+/**
+ * Step 1: Basic Information
+ */
+export interface DealWizardStepOne {
+  requisitionId: number | null;
+  vendorId: number | null;
+  title: string;
+  mode: DealMode;
+  priority: NegotiationPriority;
+}
+
+/**
+ * Step 2: Price & Quantity Parameters
+ */
+export interface PriceQuantityParams {
+  targetUnitPrice: number | null;
+  maxAcceptablePrice: number | null;
+  minOrderQuantity: number | null;
+  preferredQuantity: number | null;
+  volumeDiscountExpectation: number | null;
+}
+
+/**
+ * Step 2: Payment Terms Parameters
+ */
+export interface PaymentTermsParams {
+  minDays: number | null;
+  maxDays: number | null;
+  advancePaymentLimit: number | null;
+  acceptedMethods: PaymentMethod[];
+}
+
+/**
+ * Step 2: Partial Delivery Configuration
+ */
+export interface PartialDeliveryConfig {
+  allowed: boolean;
+  type: PartialDeliveryType | null;
+  minValue: number | null;
+}
+
+/**
+ * Step 2: Delivery Parameters
+ */
+export interface DeliveryParams {
+  requiredDate: string | null;
+  preferredDate: string | null;
+  locationId: string | null;  // String ID like "company-1" or "project-5"
+  locationAddress: string | null;
+  partialDelivery: PartialDeliveryConfig;
+}
+
+/**
+ * Step 2: Commercial Parameters (combined)
+ */
+export interface DealWizardStepTwo {
+  priceQuantity: PriceQuantityParams;
+  paymentTerms: PaymentTermsParams;
+  delivery: DeliveryParams;
+}
+
+/**
+ * Step 3: Maximum Penalty Cap Configuration
+ */
+export interface PenaltyCapConfig {
+  type: PenaltyCapType;
+  value: number | null;
+}
+
+/**
+ * Step 3: Contract & SLA Parameters
+ */
+export interface ContractSlaParams {
+  warrantyPeriod: WarrantyPeriod | null;
+  defectLiabilityMonths: number | null;
+  lateDeliveryPenaltyPerDay: number | null;
+  maxPenaltyCap: PenaltyCapConfig | null;
+  qualityStandards: string[];
+}
+
+/**
+ * Step 3: Negotiation Control Parameters
+ */
+export interface NegotiationControlParams {
+  deadline: string | null;
+  maxRounds: number | null;
+  walkawayThreshold: number | null;
+}
+
+/**
+ * Step 3: Contract & Control Parameters (combined)
+ */
+export interface DealWizardStepThree {
+  contractSla: ContractSlaParams;
+  negotiationControl: NegotiationControlParams;
+  customParameters: CustomParameter[];
+}
+
+/**
+ * Parameter weight for Step 4
+ * Each parameter has a weight from 0-100, and all weights must sum to 100
+ */
+export interface ParameterWeight {
+  parameterId: string;
+  parameterName: string;
+  weight: number; // 0-100
+  source: 'step2' | 'step3' | 'custom';
+  color?: string; // For donut chart visualization
+}
+
+/**
+ * Step 4: Parameter Weights
+ * Users adjust importance weights for all negotiation parameters
+ */
+export interface DealWizardStepFour {
+  weights: ParameterWeight[];
+  aiSuggested: boolean;
+  totalWeight: number; // Should be 100
+}
+
+/**
+ * Complete wizard form data
+ */
+export interface DealWizardFormData {
+  stepOne: DealWizardStepOne;
+  stepTwo: DealWizardStepTwo;
+  stepThree: DealWizardStepThree;
+  stepFour: DealWizardStepFour;
+}
+
+/**
+ * Extended CreateDealInput with full negotiation configuration
+ */
+export interface CreateDealWithConfigInput {
+  // Basic info (Step 1)
+  title: string;
+  counterparty?: string;
+  mode: DealMode;
+  requisitionId: number;
+  vendorId: number;
+  priority: NegotiationPriority;
+
+  // Commercial parameters (Step 2)
+  priceQuantity: PriceQuantityParams;
+  paymentTerms: PaymentTermsParams;
+  delivery: DeliveryParams;
+
+  // Contract & Control (Step 3)
+  contractSla: ContractSlaParams;
+  negotiationControl: NegotiationControlParams;
+  customParameters: CustomParameter[];
+
+  // Parameter Weights (Step 4)
+  parameterWeights: Record<string, number>; // parameterId -> weight (0-100)
+}
+
+/**
+ * Smart defaults response from backend
+ */
+export interface SmartDefaults {
+  priceQuantity: {
+    targetUnitPrice: number | null;
+    maxAcceptablePrice: number | null;
+    volumeDiscountExpectation: number | null;
+  };
+  paymentTerms: {
+    minDays: number;
+    maxDays: number;
+    advancePaymentLimit: number | null;
+  };
+  delivery: {
+    typicalDeliveryDays: number | null;
+  };
+  source: 'vendor_history' | 'similar_deals' | 'industry_default' | 'combined';
+  confidence: number; // 0-1
+}
+
+/**
+ * Deal draft for auto-save
+ */
+export interface DealDraft {
+  id: string;
+  userId: number;
+  requisitionId: number | null;
+  draftData: Partial<DealWizardFormData>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Requisition summary for dropdown
+ */
+export interface RequisitionSummary {
+  id: number;
+  rfqNumber: string;
+  title: string;
+  projectName: string;
+  status: string;
+  estimatedValue: number;
+  negotiationClosureDate: string | null;
+  vendorCount: number;
+  productCount: number;
+}
+
+/**
+ * Vendor address for delivery location selection
+ */
+export interface VendorAddress {
+  id: number;
+  label: string;
+  address: string;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  postalCode: string | null;
+  isDefault: boolean;
+  source?: 'VENDOR' | 'BUYER';  // Indicates whether address is from vendor or buyer company
+}
+
+/**
+ * Vendor summary for dropdown (attached to requisition)
+ */
+export interface VendorSummary {
+  id: number;
+  vendorId?: number;  // Vendor table ID (for matching with VendorDetails navigation)
+  name: string;
+  email?: string;
+  companyId?: number;
+  companyName: string | null;
+  pastDealsCount: number;
+  avgUtilityScore?: number | null;
+  addresses: VendorAddress[];
+}
+
+/**
+ * Delivery address
+ * Note: Backend returns id as string (e.g., "company-1", "project-5")
+ * to distinguish between company and project addresses
+ */
+export interface DeliveryAddress {
+  id: string;
+  name: string;
+  address: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country?: string;
+  type?: 'company' | 'project';
+  isDefault: boolean;
+}
+
+/**
+ * Quality certification
+ */
+export interface QualityCertification {
+  id: string;
+  name: string;
+  category: string;
+}
+
+/**
+ * Wizard step definition
+ */
+export interface WizardStep {
+  id: number;
+  title: string;
+  description: string;
+  isCompleted: boolean;
+  isActive: boolean;
+}
+
+/**
+ * Warranty period display option
+ */
+export interface WarrantyOption {
+  value: WarrantyPeriod;
+  label: string;
+  months: number;
+}
+
+export const WARRANTY_OPTIONS: WarrantyOption[] = [
+  { value: '6_MONTHS', label: '6 Months', months: 6 },
+  { value: '1_YEAR', label: '1 Year', months: 12 },
+  { value: '2_YEARS', label: '2 Years', months: 24 },
+  { value: '3_YEARS', label: '3 Years', months: 36 },
+];
+
+/**
+ * Default values for the wizard form
+ */
+// ============================================================================
+// Requisition-Based Deal View Types
+// ============================================================================
+
+/**
+ * Requisition with aggregated deal statistics
+ * Used in the requisition list page
+ */
+export interface RequisitionWithDeals {
+  id: number;
+  rfqNumber: string;
+  title: string;
+  projectId: number;
+  projectName: string;
+  estimatedValue: number | null;
+  deadline: string | null;
+  createdAt: string;
+  vendorCount: number;
+  activeDeals: number;
+  completedDeals: number;
+  statusCounts: {
+    negotiating: number;
+    accepted: number;
+    walkedAway: number;
+    escalated: number;
+  };
+  completionPercentage: number;
+  lastActivityAt: string | null;
+}
+
+/**
+ * Vendor deal summary for display on the requisition deals page
+ */
+export interface VendorDealSummary {
+  dealId: string;
+  vendorId: number;
+  vendorName: string;
+  vendorEmail: string;
+  companyName: string | null;
+  status: DealStatus;
+  currentRound: number;
+  maxRounds: number;
+  latestOffer: {
+    unitPrice: number | null;
+    paymentTerms: string | null;
+  } | null;
+  utilityScore: number | null;
+  lastActivityAt: string | null;
+  completedAt: string | null;
+}
+
+/**
+ * Deal summary response for the modal display
+ */
+export interface DealSummaryResponse {
+  deal: {
+    id: string;
+    title: string;
+    status: DealStatus;
+    mode: DealMode;
+    vendorName: string;
+    vendorEmail: string;
+    companyName: string | null;
+  };
+  finalOffer: {
+    unitPrice: number | null;
+    paymentTerms: string | null;
+    totalValue: number | null;
+    deliveryDate: string | null;
+  };
+  metrics: {
+    utilityScore: number | null;
+    totalRounds: number;
+    maxRounds: number;
+    startedAt: string;
+    completedAt: string | null;
+    durationDays: number | null;
+  };
+  timeline: Array<{
+    round: number;
+    vendorOffer: string;
+    accordoResponse: string;
+    action: string;
+  }>;
+  chatPreview: string[];
+}
+
+/**
+ * Query parameters for fetching requisitions with deals
+ */
+export interface RequisitionsQueryParams {
+  projectId?: number;
+  status?: 'active' | 'completed' | 'all';
+  archived?: ArchiveFilter;
+  dateFrom?: string;
+  dateTo?: string;
+  sortBy?: 'createdAt' | 'deadline' | 'vendorCount' | 'completionPercentage';
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+}
+
+/**
+ * Query parameters for fetching vendor deals for a requisition
+ */
+export interface RequisitionDealsQueryParams {
+  status?: DealStatus;
+  archived?: ArchiveFilter;
+  sortBy?: 'status' | 'lastActivity' | 'utilityScore' | 'vendorName';
+  sortOrder?: 'asc' | 'desc';
+}
+
+/**
+ * API response for requisitions list
+ */
+export interface RequisitionsListResponse {
+  requisitions: RequisitionWithDeals[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+/**
+ * API response for requisition deals
+ */
+export interface RequisitionDealsResponse {
+  requisition: {
+    id: number;
+    rfqNumber: string;
+    title: string;
+    projectName: string;
+    estimatedValue: number | null;
+    deadline: string | null;
+  };
+  deals: VendorDealSummary[];
+  statusCounts: {
+    negotiating: number;
+    accepted: number;
+    walkedAway: number;
+    escalated: number;
+  };
+}
+
+export const DEFAULT_WIZARD_FORM_DATA: DealWizardFormData = {
+  stepOne: {
+    requisitionId: null,
+    vendorId: null,
+    title: '',
+    mode: 'CONVERSATION',
+    priority: 'MEDIUM',
+  },
+  stepTwo: {
+    priceQuantity: {
+      targetUnitPrice: null,
+      maxAcceptablePrice: null,
+      minOrderQuantity: null,
+      preferredQuantity: null,
+      volumeDiscountExpectation: null,
+    },
+    paymentTerms: {
+      minDays: 30,
+      maxDays: 60,
+      advancePaymentLimit: null,
+      acceptedMethods: ['BANK_TRANSFER'],
+    },
+    delivery: {
+      requiredDate: null,
+      preferredDate: null,
+      locationId: null,
+      locationAddress: null,
+      partialDelivery: {
+        allowed: false,
+        type: null,
+        minValue: null,
+      },
+    },
+  },
+  stepThree: {
+    contractSla: {
+      warrantyPeriod: '1_YEAR',
+      defectLiabilityMonths: null,
+      lateDeliveryPenaltyPerDay: 1,
+      maxPenaltyCap: null,
+      qualityStandards: [],
+    },
+    negotiationControl: {
+      deadline: null,
+      maxRounds: 10,
+      walkawayThreshold: 20,
+    },
+    customParameters: [],
+  },
+  stepFour: {
+    weights: [], // Will be populated from Steps 2+3 data
+    aiSuggested: true,
+    totalWeight: 0,
+  },
+};

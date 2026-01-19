@@ -108,7 +108,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       paymentTerms: "",
     },
   });
-  const { data, loading, error } = useFetchData<Product[]>("/product/getall");
+  const { data, loading, error } = useFetchData<Product>("/product/getall");
   const [requisitionData, setRequisitionData] = useState<{
     id?: string;
     delivery_date?: string;

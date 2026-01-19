@@ -33,12 +33,14 @@ interface ChatTranscriptProps {
   messages: Message[];
   isProcessing?: boolean;
   processingType?: ProcessingType;
+  vendorMode?: boolean;  // When true, shows vendor-perspective labels
 }
 
 export default function ChatTranscript({
   messages,
   isProcessing = false,
   processingType = "analyzing",
+  vendorMode = false,
 }: ChatTranscriptProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -76,19 +78,23 @@ export default function ChatTranscript({
 
   // Group consecutive messages from same role
   const groupMessages = (msgs: Message[]): MessageGroup[] => {
-    if (msgs.length === 0) return [];
+    if (!msgs || msgs.length === 0) return [];
+
+    // Filter out any invalid messages
+    const validMsgs = msgs.filter(m => m && m.role);
+    if (validMsgs.length === 0) return [];
 
     const grouped: MessageGroup[] = [];
-    let currentGroup: Message[] = [msgs[0]];
-    let currentRole: MessageRole = msgs[0].role;
+    let currentGroup: Message[] = [validMsgs[0]];
+    let currentRole: MessageRole = validMsgs[0].role;
 
-    for (let i = 1; i < msgs.length; i++) {
-      if (msgs[i].role === currentRole) {
-        currentGroup.push(msgs[i]);
+    for (let i = 1; i < validMsgs.length; i++) {
+      if (validMsgs[i].role === currentRole) {
+        currentGroup.push(validMsgs[i]);
       } else {
         grouped.push({ messages: currentGroup, role: currentRole });
-        currentGroup = [msgs[i]];
-        currentRole = msgs[i].role;
+        currentGroup = [validMsgs[i]];
+        currentRole = validMsgs[i].role;
       }
     }
     grouped.push({ messages: currentGroup, role: currentRole });
@@ -146,12 +152,15 @@ export default function ChatTranscript({
                 </div>
               );
             }
+            // Use message.id if available, fallback to index for robustness
+            const messageKey = item.message?.id || `msg-${idx}-${item.message?.createdAt || idx}`;
             return (
               <MessageBubble
-                key={item.message.id}
+                key={messageKey}
                 message={item.message}
                 round={item.round}
                 isGrouped={item.isGrouped}
+                vendorMode={vendorMode}
               />
             );
           })}
@@ -171,8 +180,8 @@ export default function ChatTranscript({
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <span>
                     {processingType === "vendor-typing"
-                      ? "Vendor typing..."
-                      : "Accordo is analyzing..."}
+                      ? (vendorMode ? "You're typing..." : "Vendor typing...")
+                      : (vendorMode ? "AI Buyer is responding..." : "Accordo is analyzing...")}
                   </span>
                   <span className="flex gap-1">
                     <span className="animate-bounce" style={{ animationDelay: "0ms" }}>

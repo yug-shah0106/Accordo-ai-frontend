@@ -5,10 +5,12 @@ import useFetchData from "../../hooks/useFetchData";
 import { RiDeleteBinLine } from "react-icons/ri";
 import toast from "react-hot-toast";
 import { authApi } from "../../api";
-import { FiCopy } from "react-icons/fi";
+import { FiCopy, FiExternalLink, FiPlay } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Modal from "../Modal";
+import chatbotService from "../../services/chatbot.service";
+import type { DealStatus, VendorDealSummary } from "../../types/chatbot";
 
 interface Contract {
   id: string;
@@ -26,6 +28,9 @@ interface Product {
 
 interface Requisition {
   id: string;
+  rfqNumber?: string;
+  title?: string;
+  projectName?: string;
   paymentTerms?: string;
   deliveryDate?: string;
   negotiationClosureDate?: string;
@@ -41,6 +46,8 @@ interface Vendor {
   vendorId: string;
   Vendor?: {
     name: string;
+    companyName?: string;
+    email?: string;
   };
 }
 
@@ -56,6 +63,14 @@ interface FormData {
   selectedVendor: string;
   contractData?: Contract[];
 }
+
+// Deal status badge colors
+const statusColors: Record<DealStatus, { bg: string; text: string }> = {
+  NEGOTIATING: { bg: 'bg-blue-100', text: 'text-blue-700' },
+  ACCEPTED: { bg: 'bg-green-100', text: 'text-green-700' },
+  WALKED_AWAY: { bg: 'bg-red-100', text: 'text-red-700' },
+  ESCALATED: { bg: 'bg-yellow-100', text: 'text-yellow-700' },
+};
 
 const VendorDetails: React.FC<VendorDetailsProps> = ({
   currentStep,
@@ -80,6 +95,8 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isConfirmed, setIsConfirmed] = useState<boolean>(false);
+  const [deals, setDeals] = useState<VendorDealSummary[]>([]);
+  const [loadingDeals, setLoadingDeals] = useState<boolean>(false);
 
   useEffect(() => {
     reset({
@@ -87,8 +104,28 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     });
   }, [requisition, reset]);
 
+  // Fetch deals for this requisition
+  useEffect(() => {
+    const fetchDeals = async () => {
+      if (!requisitionId) return;
+
+      setLoadingDeals(true);
+      try {
+        const response = await chatbotService.getRequisitionDeals(parseInt(requisitionId));
+        setDeals(response.data?.deals || []);
+      } catch (error) {
+        console.warn('Failed to load deals:', error);
+        setDeals([]);
+      } finally {
+        setLoadingDeals(false);
+      }
+    };
+
+    fetchDeals();
+  }, [requisitionId]);
+
   const onSubmit = (data: FormData): void => {
-    if (!watch("contractData")?.length) {
+    if (!watch("contractData")?.length && deals.length === 0) {
       toast.error("Add Vendor First");
       return;
     }
@@ -102,9 +139,66 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     }
   };
 
-  const { data, loading, error } = useFetchData<Vendor[]>("/vendor/get-all");
+  const { data, loading, error } = useFetchData<Vendor>("/vendor/get-all");
   const contractData = watch("contractData") || [];
 
+  // Navigate to Deal Wizard with pre-filled context
+  const handleStartNegotiation = (): void => {
+    const selectedVendorId = watch("selectedVendor");
+
+    if (!selectedVendorId) {
+      toast.error("Select a vendor first");
+      return;
+    }
+
+    // Find the vendor data - convert to string for comparison since form values are strings
+    const selectedVendor = data?.find(v => v.vendorId?.toString() === selectedVendorId?.toString());
+
+    if (!selectedVendor) {
+      toast.error("Vendor not found");
+      return;
+    }
+
+    // Build requisition context for the wizard
+    const requisitionContext = {
+      id: parseInt(requisitionId),
+      rfqNumber: requisition?.rfqNumber || `RFQ-${requisitionId}`,
+      title: requisition?.title || requisition?.rfqNumber || `Requisition ${requisitionId}`,
+      projectName: requisition?.projectName || '',
+      products: requisition?.RequisitionProduct || [],
+      deliveryDate: requisition?.deliveryDate,
+      paymentTerms: requisition?.paymentTerms,
+      totalPrice: requisition?.totalPrice,
+      negotiationClosureDate: requisition?.negotiationClosureDate,
+      estimatedValue: parseFloat(requisition?.totalPrice || '0'),
+      vendorCount: contractData.length + deals.length,
+      productCount: requisition?.RequisitionProduct?.length || 0,
+      status: requisition?.status || '',
+    };
+
+    // Build vendor context
+    const vendorContext = {
+      id: parseInt(selectedVendorId),
+      name: selectedVendor.Vendor?.name || '',
+      companyName: selectedVendor.Vendor?.companyName || null,
+      email: selectedVendor.Vendor?.email || '',
+      pastDealsCount: 0,
+      addresses: [],
+    };
+
+    // Navigate to deal wizard with URL parameters (refresh-safe)
+    // Using URL params instead of router state ensures data persists across page refreshes
+    const searchParams = new URLSearchParams({
+      rfqId: requisitionId,
+      vendorId: selectedVendorId,
+      locked: 'true',
+      returnTo: `/requisition-management/edit/${requisitionId}`,
+    });
+
+    navigate(`/chatbot/requisitions/deals/new?${searchParams.toString()}`);
+  };
+
+  // Legacy: Add Contract (keeping for backwards compatibility)
   const handleAddContract = async (): Promise<void> => {
     try {
       if (!watch("selectedVendor")) {
@@ -169,6 +263,11 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     setIsModalOpen(false);
   };
 
+  // Navigate to deal negotiation room
+  const handleViewDeal = (deal: VendorDealSummary): void => {
+    navigate(`/chatbot/requisitions/${requisitionId}/vendors/${deal.vendorId}/deals/${deal.dealId}`);
+  };
+
   const submitRequisition = async (): Promise<void> => {
     try {
       if (!requisition) return;
@@ -203,51 +302,30 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     }
   };
 
+  // Get vendors that don't already have a deal or contract
+  const availableVendors = (data || []).filter((vendor) => {
+    const hasContract = contractData.find(
+      (contract) => contract?.vendorId?.toString() === vendor.vendorId?.toString()
+    );
+    const hasDeal = deals.find(
+      (deal) => deal?.vendorId?.toString() === vendor.vendorId?.toString()
+    );
+    return !hasContract && !hasDeal;
+  });
+
   return (
-    <div className="border-2  rounded p-4">
+    <div className="border-2 rounded p-4">
       <h3 className="text-lg font-semibold">Vendor Details</h3>
       <p className="font-normal text-[#46403E] py-2">
-        Your details will be used for Vendor Details
+        Select a vendor and start a negotiation deal
       </p>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex items-center gap-2 justify-between">
           <div className="grow">
-            {/* <SelectField
-              name="selectedVendor"a
-              // options={data || []}
-              options={data?.filter(
-                (i) =>
-                  Array.isArray(watch("contractData")) && !watch("contractData")?.find(
-                    (product) =>
-                      product?.vendorId?.toString() === i?.id?.toString()
-                  )
-              ) || []}
-              register={register}
-              error={errors.categoryId}
-              wholeInputClassName={`my-1`}
-              optionKey={"name"}
-              optionValue={"id"}
-            /> */}
             <SelectField
               name="selectedVendor"
               placeholder="Select Vendor"
-              // options={(data || [])?.filter(
-              //   (i) =>
-              //     Array.isArray(watch("contractData")) && !watch("contractData")?.find(
-              //       (product) =>
-              //         product?.vendorId?.toString() === i?.id?.toString()
-              //     )
-              // ) || []}
-              options={(data || []).filter(
-                (i) =>
-                  Array.isArray(contractData) &&
-                  !contractData.find(
-                    (product) =>
-                      product?.vendorId &&
-                      i?.id &&
-                      product.vendorId.toString() === i.vendorId.toString()
-                  )
-              )}
+              options={availableVendors}
               register={register}
               error={errors.selectedVendor}
               wholeInputClassName={`my-1`}
@@ -255,62 +333,106 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
               optionValue="vendorId"
             />
           </div>
-          <div className="">
-            {/* <FaSquarePlus
-              className="cursor-pointer"
-              onClick={() => {
-                handleAddContract();
-              }}
-            /> */}
+          <div className="flex gap-2">
             <Button
-              className={"px-2 cursor-pointer"}
-              onClick={() => {
-                handleAddContract();
-              }}
+              className="px-4 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
+              onClick={handleStartNegotiation}
+              type="button"
             >
-              Add
+              <FiPlay className="w-4 h-4" />
+              Start Negotiation
             </Button>
           </div>
         </div>
-        {/* <div>selected dropdown value here</div> */}
 
-        <ul>
-          {Array.isArray(watch("contractData")) &&
-            watch("contractData")?.map((contract, index) => {
-              const matchedProduct = data?.find(
-                (i) =>
-                  i?.vendorId?.toString() === contract?.vendorId?.toString()
-              );
-              return (
-                <li
-                  key={index}
-                  className="bg-[#F3F3F3] px-[10px]  mb-2 py-[10px] flex items-center justify-between gap-3 border-1 border-[#DDDDDD] select-none"
-                >
-                  <div className="d-flex flex-md-row flex-column">
-                    <span className="md:text-base flex-grow text-[13px] font-[590]">
-                      {matchedProduct?.Vendor?.name}
-                    </span>
-                  </div>
-                  <span className="flex items-center gap-3 flex-grow">
-                    <div className="flex items-center justify-between px-[10px] py-[5px] bg-white w-full">
-                      <div className="cursor-pointer break-all">{`${import.meta.env.VITE_FRONTEND_URL
-                        }/vendor-contract/${contract?.uniqueToken}`}</div>
+        {/* Active Negotiations Section */}
+        {(deals.length > 0 || loadingDeals) && (
+          <div className="mt-6">
+            <h4 className="text-sm font-semibold text-gray-700 mb-2">Active Negotiations</h4>
+            {loadingDeals ? (
+              <div className="text-sm text-gray-500">Loading deals...</div>
+            ) : (
+              <ul className="space-y-2">
+                {deals.map((deal) => {
+                  const statusStyle = statusColors[deal.status] || statusColors.NEGOTIATING;
+
+                  return (
+                    <li
+                      key={deal.dealId}
+                      className="bg-blue-50 px-4 py-3 flex items-center justify-between gap-3 border border-blue-200 rounded-lg"
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="flex-1">
+                          <span className="font-medium text-gray-900">
+                            {deal.vendorName || 'Unknown Vendor'}
+                          </span>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${statusStyle.bg} ${statusStyle.text}`}>
+                              {deal.status}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              Round {deal.currentRound}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleViewDeal(deal)}
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+                      >
+                        <FiExternalLink className="w-4 h-4" />
+                        View Deal
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        )}
+
+        {/* Legacy Contracts Section */}
+        {contractData.length > 0 && (
+          <div className="mt-6">
+            <h4 className="text-sm font-semibold text-gray-700 mb-2">Vendor Contracts (Legacy Portal)</h4>
+            <ul className="space-y-2">
+              {contractData.map((contract, index) => {
+                const matchedProduct = data?.find(
+                  (i) => i?.vendorId?.toString() === contract?.vendorId?.toString()
+                );
+                return (
+                  <li
+                    key={index}
+                    className="bg-[#F3F3F3] px-[10px] py-[10px] flex items-center justify-between gap-3 border-1 border-[#DDDDDD] select-none"
+                  >
+                    <div className="d-flex flex-md-row flex-column">
+                      <span className="md:text-base flex-grow text-[13px] font-[590]">
+                        {matchedProduct?.Vendor?.name}
+                      </span>
                     </div>
-                    <FiCopy
-                      className="w-6 h-6 cursor-pointer"
-                      onClick={() => handleCopy(contract)}
-                    />
-                    <RiDeleteBinLine
-                      onClick={() => handleDeleteContract(contract?.id)}
-                      className="cursor-pointer text-[#EF2D2E] w-6 h-6"
-                    />
-                  </span>
-                </li>
-              );
-            })}
-        </ul>
+                    <span className="flex items-center gap-3 flex-grow">
+                      <div className="flex items-center justify-between px-[10px] py-[5px] bg-white w-full">
+                        <div className="cursor-pointer break-all text-xs">{`${import.meta.env.VITE_FRONTEND_URL
+                          }/vendor-contract/${contract?.uniqueToken}`}</div>
+                      </div>
+                      <FiCopy
+                        className="w-5 h-5 cursor-pointer text-gray-600 hover:text-gray-900"
+                        onClick={() => handleCopy(contract)}
+                      />
+                      <RiDeleteBinLine
+                        onClick={() => handleDeleteContract(contract?.id)}
+                        className="cursor-pointer text-[#EF2D2E] w-5 h-5"
+                      />
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
 
-        <div className="mt-4 flex justify-start gap-4">
+        <div className="mt-6 flex justify-start gap-4">
           <Button
             className="px-4 py-2 bg-[white] text-[black] border rounded !w-fit"
             onClick={() => {
@@ -324,9 +446,9 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="px-4 py-2 bg-blue-500 text-white rounded  !w-fit"
+            className="px-4 py-2 bg-blue-500 text-white rounded !w-fit"
           >
-            Next
+            Done
           </Button>
         </div>
       </form>

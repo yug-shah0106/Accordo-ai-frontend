@@ -244,7 +244,13 @@ export default function NegotiationSummary() {
           {filteredDeals.map((deal) => (
             <div
               key={deal.id}
-              onClick={() => navigate(`/chatbot/deals/${deal.id}`)}
+              onClick={() => {
+                if (deal.requisitionId && deal.vendorId) {
+                  navigate(`/chatbot/requisitions/${deal.requisitionId}/vendors/${deal.vendorId}/deals/${deal.id}`);
+                } else {
+                  toast.error('Cannot open deal: missing requisition or vendor context');
+                }
+              }}
               className="bg-white dark:bg-dark-surface rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer border border-gray-200 dark:border-dark-border overflow-hidden group"
             >
               {/* Color-coded status bar */}

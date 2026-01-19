@@ -1,26 +1,86 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 // @ts-ignore - hooks are JS files without type definitions
 import { useDealActions } from "../../hooks/chatbot";
 // @ts-ignore - components barrel export is a JS file without type definitions
 import { ChatTranscript, Composer } from "../../components/chatbot/chat";
 import { exportDealAsPDF, exportDealAsCSV } from "../../utils/exportDeal";
+import chatbotService from "../../services/chatbot.service";
+import type { DealSummaryResponse, ExtendedNegotiationConfig } from "../../types/chatbot";
+import { FiMessageSquare, FiFileText, FiTrendingUp, FiClock, FiCheckCircle, FiXCircle, FiDollarSign, FiCreditCard, FiTruck, FiClipboard, FiSettings, FiActivity } from "react-icons/fi";
+import {
+  CollapsibleSection,
+  ParameterRow,
+  UnifiedUtilityBar,
+  type RecommendationAction,
+} from "../../components/chatbot/sidebar";
+
+// Type for weighted utility data from API
+interface WeightedUtilityData {
+  totalUtility: number;
+  totalUtilityPercent: number;
+  parameterUtilities: Record<string, {
+    parameterId: string;
+    parameterName: string;
+    utility: number;
+    weight: number;
+    contribution: number;
+    currentValue: number | string | boolean | null;
+    targetValue: number | string | boolean | null;
+    maxValue?: number | string | null;
+    status: "excellent" | "good" | "warning" | "critical";
+    color: string;
+  }>;
+  thresholds: {
+    accept: number;
+    escalate: number;
+    walkAway: number;
+  };
+  recommendation: "ACCEPT" | "COUNTER" | "ESCALATE" | "WALK_AWAY";
+  recommendationReason: string;
+}
 
 /**
  * NegotiationRoom Page
  * Main negotiation interface with chat and controls
  */
+type TabType = "chat" | "summary";
+
+// UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function NegotiationRoom() {
   const { dealId } = useParams<{ dealId: string }>();
   const navigate = useNavigate();
   const [inputText, setInputText] = useState<string>("");
   const [showExportDropdown, setShowExportDropdown] = useState<boolean>(false);
   const exportDropdownRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<TabType>("chat");
+
+  // Validate dealId early - redirect if invalid
+  useEffect(() => {
+    if (!dealId || dealId === 'undefined' || !UUID_REGEX.test(dealId)) {
+      toast.error('Invalid deal ID');
+      navigate('/chatbot');
+    }
+  }, [dealId, navigate]);
+  const [summary, setSummary] = useState<DealSummaryResponse | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState<boolean>(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+
+  // Weighted utility state
+  const [utilityData, setUtilityData] = useState<WeightedUtilityData | null>(null);
+  const [_utilityLoading, setUtilityLoading] = useState<boolean>(false);
+
+  // Accordion state for collapsible sidebar sections
+  const [openSection, setOpenSection] = useState<string | null>('price');
 
   const {
     deal,
     messages,
     config,
+    context,
     loading,
     error,
     sending,
@@ -31,6 +91,15 @@ export default function NegotiationRoom() {
     reset,
     reload,
   } = useDealActions(dealId);
+
+  // Compute back URL based on context - navigate to requisition's deals page if available
+  // Using useMemo to make this reactive when context loads asynchronously
+  const backUrl = useMemo(() => {
+    if (context?.rfqId) {
+      return `/chatbot/requisitions/${context.rfqId}`;
+    }
+    return "/chatbot";
+  }, [context?.rfqId]);
 
   const handleSend = async (text: string): Promise<void> => {
     if (!text.trim()) return;
@@ -69,22 +138,95 @@ export default function NegotiationRoom() {
     }
   };
 
+  // Fetch summary when summary tab is selected
+  const fetchSummary = async (): Promise<void> => {
+    if (!context) return;
+    setSummaryLoading(true);
+    setSummaryError(null);
+    try {
+      const response = await chatbotService.getDealSummary(context);
+      setSummary(response.data);
+    } catch (err: any) {
+      console.error("Failed to fetch deal summary:", err);
+      setSummaryError(err.response?.data?.message || "Failed to load deal summary");
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
+  // Fetch summary when switching to summary tab
+  useEffect(() => {
+    if (activeTab === "summary" && !summary && !summaryLoading && context) {
+      fetchSummary();
+    }
+  }, [activeTab, context]);
+
+  // Fetch weighted utility data
+  const fetchUtilityData = useCallback(async (): Promise<void> => {
+    if (!context) return;
+    setUtilityLoading(true);
+    try {
+      const response = await chatbotService.getDealUtility(context);
+      setUtilityData(response.data);
+    } catch (err) {
+      console.error("Failed to fetch utility data:", err);
+      // Silently fail - utility data is optional enhancement
+    } finally {
+      setUtilityLoading(false);
+    }
+  }, [context]);
+
+  // Fetch utility data when deal round changes (after each message exchange)
+  useEffect(() => {
+    if (deal && deal.round > 0) {
+      fetchUtilityData();
+    }
+  }, [deal?.round, fetchUtilityData]);
+
+  const formatCurrency = (value: number | null): string => {
+    if (value === null) return "N/A";
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
+
+  const formatDate = (dateString: string | null): string => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   // Click outside to close dropdown
   useEffect(() => {
+    if (!showExportDropdown) {
+      return;
+    }
+
     const handleClickOutside = (event: MouseEvent): void => {
       if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target as Node)) {
         setShowExportDropdown(false);
       }
     };
 
-    if (showExportDropdown) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showExportDropdown]);
 
   // Extract latest negotiation state from messages
   const getLatestNegotiationState = () => {
+    // Safety check: ensure messages is an array
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return null;
+    }
+
     // Get the most recent Accordo message with explainability data
     const accordoMessages = messages
       .filter((m: any) => m.role === "ACCORDO" && m.explainabilityJson)
@@ -98,6 +240,11 @@ export default function NegotiationRoom() {
 
     const explainability = latestAccordo.explainabilityJson;
 
+    // Safety check: ensure explainability has required properties
+    if (!explainability.vendorOffer || !explainability.utilities || !explainability.decision) {
+      return null;
+    }
+
     // Get all vendor offers to track history
     const vendorOffers = messages
       .filter((m: any) => m.role === "VENDOR" && m.extractedOffer)
@@ -109,41 +256,54 @@ export default function NegotiationRoom() {
       .map((m: any) => m.counterOffer);
 
     return {
-      currentVendorOffer: explainability.vendorOffer,
-      currentAccordoOffer: explainability.decision.counterOffer || latestAccordo.counterOffer,
-      utilities: explainability.utilities,
-      decision: explainability.decision,
-      vendorOfferHistory: vendorOffers,
-      accordoOfferHistory: accordoOffers,
+      currentVendorOffer: explainability.vendorOffer || {},
+      currentAccordoOffer: explainability.decision?.counterOffer || latestAccordo.counterOffer || null,
+      utilities: explainability.utilities || {},
+      decision: explainability.decision || {},
+      vendorOfferHistory: vendorOffers || [],
+      accordoOfferHistory: accordoOffers || [],
     };
   };
 
+  // Get negotiation state first
+  const negotiationState = getLatestNegotiationState();
+
   // Calculate adaptive config based on negotiation progress
   const getAdaptiveConfig = () => {
-    if (!config || !negotiationState) return config;
+    // Safety check: ensure we have config
+    if (!config) return null;
 
-    const { vendorOfferHistory, accordoOfferHistory } = negotiationState;
+    // If no negotiation state, return base config
+    if (!negotiationState) return config;
+
+    // Safety check: ensure negotiationState has required properties
+    const vendorOfferHistory = negotiationState.vendorOfferHistory || [];
+    const accordoOfferHistory = negotiationState.accordoOfferHistory || [];
     const round = deal?.round || 0;
 
+    // Safety check: ensure config has required parameters structure
+    if (!config.parameters?.unit_price || !config.parameters?.payment_terms) {
+      return config;
+    }
+
     // Create adaptive config by adjusting parameters based on negotiation progress
-    const adaptiveConfig = { ...config };
+    const adaptiveConfig = JSON.parse(JSON.stringify(config)); // Deep clone to avoid mutation
 
     // Adaptive Price Parameters
     if (vendorOfferHistory.length > 0 && accordoOfferHistory.length > 0) {
       // Get price trends
       const vendorPrices = vendorOfferHistory
-        .map((o: any) => o.unit_price)
+        .map((o: any) => o?.unit_price)
         .filter((p: any) => p != null);
 
       const accordoPrices = accordoOfferHistory
-        .map((o: any) => o.unit_price)
+        .map((o: any) => o?.unit_price)
         .filter((p: any) => p != null);
 
       if (vendorPrices.length > 0 && accordoPrices.length > 0) {
         // Calculate convergence - are we getting closer?
-        const latestVendorPrice = vendorPrices[vendorPrices.length - 1];
-        const latestAccordoPrice = accordoPrices[accordoPrices.length - 1];
-        const priceGap = Math.abs(latestVendorPrice - latestAccordoPrice);
+        const _latestVendorPrice = vendorPrices[vendorPrices.length - 1];
+        const _latestAccordoPrice = accordoPrices[accordoPrices.length - 1];
 
         // Adjust anchor based on convergence (getting more flexible)
         const convergenceFactor = Math.min(round / (config.max_rounds || 10), 1);
@@ -168,43 +328,122 @@ export default function NegotiationRoom() {
     // and less willing to walk away (also lower walkaway threshold)
     // The thresholds move inversely: accept goes down, walkaway goes down
     adaptiveConfig.accept_threshold = Math.max(
-      config.accept_threshold - (roundProgress * 0.15),
+      (config.accept_threshold || 0.7) - (roundProgress * 0.15),
       0.5 // Never go below 50%
     );
 
     // Walkaway threshold decreases as we get more desperate (inverse relationship)
     adaptiveConfig.walkaway_threshold = Math.max(
-      config.walkaway_threshold - (roundProgress * 0.1),
+      (config.walkaway_threshold || 0.3) - (roundProgress * 0.1),
       0.2 // Never go below 20%
     );
 
     // Adaptive Payment Terms Weights - based on what vendor offers
-    if (negotiationState.currentVendorOffer.payment_terms) {
-      const currentTerm = negotiationState.currentVendorOffer.payment_terms;
+    if (negotiationState.currentVendorOffer?.payment_terms && config.parameters.payment_terms?.utility) {
       // If vendor consistently offers good terms, increase weight of terms
       const termOffers = vendorOfferHistory
-        .map((o: any) => o.payment_terms)
+        .map((o: any) => o?.payment_terms)
         .filter((t: any) => t != null);
 
-      if (termOffers.filter((t: any) => t === "Net 30").length > termOffers.length * 0.6) {
+      if (termOffers.length > 0 && termOffers.filter((t: any) => t === "Net 30").length > termOffers.length * 0.6) {
         // Vendor prefers Net 30, adjust our preference
-        adaptiveConfig.parameters.payment_terms.utility["Net 30"] =
-          Math.min(config.parameters.payment_terms.utility["Net 30"] * 1.1, 1);
+        const currentNet30Utility = config.parameters.payment_terms.utility["Net 30"] || 0.7;
+        adaptiveConfig.parameters.payment_terms.utility["Net 30"] = Math.min(currentNet30Utility * 1.1, 1);
       }
     }
 
     return adaptiveConfig;
   };
 
-  const negotiationState = getLatestNegotiationState();
   const adaptiveConfig = getAdaptiveConfig();
+
+  // Extract wizardConfig and parameterWeights from extended config
+  const extendedConfig = config as ExtendedNegotiationConfig | null;
+  const wizardConfig = extendedConfig?.wizardConfig;
+  const parameterWeights = extendedConfig?.parameterWeights || {};
+
+  // Helper to get weight for a section (sums all parameter weights in that section)
+  const getSectionWeight = useMemo(() => {
+    return (section: 'price' | 'payment' | 'delivery' | 'contract' | 'custom') => {
+      const weights = parameterWeights;
+      switch (section) {
+        case 'price':
+          return (weights.targetUnitPrice || 0) + (weights.maxAcceptablePrice || 0) + (weights.minOrderQuantity || 0);
+        case 'payment':
+          return (weights.paymentTermsRange || 0) + (weights.advancePaymentLimit || 0);
+        case 'delivery':
+          return (weights.requiredDate || 0) + (weights.partialDelivery || 0);
+        case 'contract':
+          return (weights.warrantyPeriod || 0) + (weights.lateDeliveryPenalty || 0);
+        case 'custom':
+          return Object.entries(weights)
+            .filter(([key]) => key.startsWith('custom_'))
+            .reduce((sum, [, val]) => sum + (val || 0), 0);
+        default:
+          return 0;
+      }
+    };
+  }, [parameterWeights]);
+
+  // Check if section has any displayable (non-zero) values
+  // Falls back to engine config parameters if wizardConfig is not available
+  const sectionHasContent = useMemo(() => {
+    const engineParams = adaptiveConfig?.parameters;
+    return {
+      // Price: check wizardConfig first, then engine config
+      price: !!(wizardConfig?.priceQuantity?.targetUnitPrice ||
+                wizardConfig?.priceQuantity?.maxAcceptablePrice ||
+                wizardConfig?.priceQuantity?.minOrderQuantity ||
+                engineParams?.unit_price?.target ||
+                engineParams?.unit_price?.anchor),
+      // Payment: check wizardConfig first, then engine config options
+      payment: !!(wizardConfig?.paymentTerms?.minDays ||
+                  wizardConfig?.paymentTerms?.maxDays ||
+                  engineParams?.payment_terms?.options?.length),
+      // Delivery: only wizardConfig has delivery info
+      delivery: !!(wizardConfig?.delivery?.requiredDate ||
+                   wizardConfig?.delivery?.preferredDate),
+      // Contract: only wizardConfig has contract SLA info
+      contract: !!(wizardConfig?.contractSla?.warrantyPeriod ||
+                   wizardConfig?.contractSla?.lateDeliveryPenaltyPerDay),
+      // Custom: only wizardConfig has custom parameters
+      custom: !!(wizardConfig?.customParameters && wizardConfig.customParameters.length > 0),
+    };
+  }, [wizardConfig, adaptiveConfig]);
+
+  // Helper to get recommendation action type
+  const getRecommendationAction = (): RecommendationAction => {
+    if (utilityData?.recommendation) {
+      return utilityData.recommendation as RecommendationAction;
+    }
+    // Fallback based on utility percentage
+    const utility = utilityData?.totalUtilityPercent || 0;
+    if (utility >= 70) return 'ACCEPT';
+    if (utility >= 50) return 'COUNTER';
+    if (utility >= 30) return 'ESCALATE';
+    return 'WALK_AWAY';
+  };
+
+  // Helper to get utility info for a specific parameter (for display in ParameterRow)
+  const getParamUtilityInfo = useCallback((parameterId: string) => {
+    if (!utilityData?.parameterUtilities || !utilityData.parameterUtilities[parameterId]) {
+      return undefined;
+    }
+    const paramUtil = utilityData.parameterUtilities[parameterId];
+    return {
+      utility: paramUtil.utility,
+      contribution: paramUtil.contribution,
+      status: paramUtil.status,
+      currentValue: paramUtil.currentValue,
+    };
+  }, [utilityData]);
 
   if (loading && !deal) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-dark-bg">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading deal...</p>
+          <p className="text-gray-600 dark:text-dark-text-secondary">Loading deal...</p>
         </div>
       </div>
     );
@@ -212,7 +451,7 @@ export default function NegotiationRoom() {
 
   if (error && !deal) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-dark-bg">
         <div className="text-center">
           <div className="text-red-600 mb-4">
             <svg
@@ -232,7 +471,7 @@ export default function NegotiationRoom() {
           <p className="text-gray-800 dark:text-dark-text font-medium mb-2">Failed to load deal</p>
           <p className="text-gray-600 dark:text-dark-text-secondary text-sm mb-4">{error.message}</p>
           <button
-            onClick={() => navigate("/chatbot")}
+            onClick={() => navigate(backUrl)}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Back to Deals
@@ -245,15 +484,50 @@ export default function NegotiationRoom() {
   // Check if deal is completed - show read-only summary
   const isCompletedDeal = deal?.status === 'ACCEPTED' || deal?.status === 'WALKED_AWAY';
 
+  // Fallback: If loading is done but deal is still null (no error set), show error state
+  if (!loading && !error && !deal) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-dark-bg">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">
+            <svg
+              className="w-16 h-16 mx-auto"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <p className="text-gray-800 dark:text-dark-text font-medium mb-2">Deal not found</p>
+          <p className="text-gray-600 dark:text-dark-text-secondary text-sm mb-4">
+            The deal may have been deleted or you don&apos;t have access to it.
+          </p>
+          <button
+            onClick={() => navigate("/chatbot/requisitions")}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Back to Requisitions
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (isCompletedDeal) {
     return (
-      <div className="flex flex-col min-h-full bg-gray-100 dark:bg-dark-bg">
+      <div className="flex flex-col flex-1 min-h-0 overflow-y-auto bg-gray-100 dark:bg-dark-bg">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 pt-6 pb-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             {/* Left - Back button */}
             <button
-              onClick={() => navigate("/chatbot")}
+              onClick={() => navigate(backUrl)}
               className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -348,13 +622,13 @@ export default function NegotiationRoom() {
   }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-gray-100 dark:bg-dark-bg">
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden bg-gray-100 dark:bg-dark-bg">
       {/* Header - Fixed at top */}
       <div className="flex-shrink-0 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Left - Back button */}
           <button
-            onClick={() => navigate("/chatbot")}
+            onClick={() => navigate(backUrl)}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
           >
             <svg
@@ -420,455 +694,587 @@ export default function NegotiationRoom() {
 
       {/* Main Content - Flex container for chat + sidebar */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Chat Area - Left column */}
+        {/* Main Area - Left column with tabs */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Messages - Scrollable */}
-          <div className="flex-1 px-6 py-6 overflow-y-auto">
-            <ChatTranscript messages={messages} isProcessing={sending} />
+          {/* Tab Navigation */}
+          <div className="flex-shrink-0 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6">
+            <div className="flex gap-1">
+              <button
+                onClick={() => setActiveTab("chat")}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === "chat"
+                    ? "border-blue-600 text-blue-600 dark:text-blue-400"
+                    : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                }`}
+              >
+                <FiMessageSquare className="w-4 h-4" />
+                Chat
+              </button>
+              <button
+                onClick={() => setActiveTab("summary")}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === "summary"
+                    ? "border-blue-600 text-blue-600 dark:text-blue-400"
+                    : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                }`}
+              >
+                <FiFileText className="w-4 h-4" />
+                Summary
+              </button>
+            </div>
           </div>
 
-          {/* Composer - Fixed at bottom */}
-          <div className="flex-shrink-0">
-            <Composer
-              onSend={handleSend}
-              inputText={inputText}
-              onInputChange={setInputText}
-              sending={sending}
-              dealStatus={deal?.status}
-              canSend={canSend}
-              dealId={dealId}
-              currentRound={deal?.round || 0}
-            />
-          </div>
+          {/* Tab Content */}
+          {activeTab === "chat" ? (
+            <>
+              {/* Messages - Scrollable */}
+              <div className="flex-1 px-6 py-6 overflow-y-auto">
+                <ChatTranscript messages={messages} isProcessing={sending} />
+              </div>
+
+              {/* Composer - Fixed at bottom */}
+              <div className="flex-shrink-0">
+                <Composer
+                  onSend={handleSend}
+                  inputText={inputText}
+                  onInputChange={setInputText}
+                  sending={sending}
+                  dealStatus={deal?.status}
+                  canSend={canSend}
+                  dealId={dealId}
+                  context={context}
+                  wizardConfig={wizardConfig}
+                  currentRound={deal?.round || 0}
+                />
+              </div>
+            </>
+          ) : (
+            /* Summary Tab Content */
+            <div className="flex-1 px-6 py-6 overflow-y-auto">
+              {summaryLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600 dark:text-dark-text-secondary">Loading summary...</p>
+                  </div>
+                </div>
+              ) : summaryError ? (
+                <div className="text-center py-12">
+                  <div className="text-red-600 mb-2">
+                    <FiXCircle className="w-12 h-12 mx-auto" />
+                  </div>
+                  <p className="text-gray-600 dark:text-dark-text-secondary">{summaryError}</p>
+                  <button
+                    onClick={fetchSummary}
+                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              ) : summary ? (
+                <div className="max-w-3xl mx-auto space-y-6">
+                  {/* Deal Status Banner */}
+                  <div className={`rounded-xl p-5 ${
+                    summary.deal.status === "ACCEPTED"
+                      ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
+                      : summary.deal.status === "WALKED_AWAY"
+                      ? "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
+                      : summary.deal.status === "ESCALATED"
+                      ? "bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800"
+                      : "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      {summary.deal.status === "ACCEPTED" ? (
+                        <FiCheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                      ) : summary.deal.status === "WALKED_AWAY" ? (
+                        <FiXCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+                      ) : (
+                        <FiMessageSquare className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                      )}
+                      <div>
+                        <h3 className={`text-lg font-semibold ${
+                          summary.deal.status === "ACCEPTED"
+                            ? "text-green-800 dark:text-green-300"
+                            : summary.deal.status === "WALKED_AWAY"
+                            ? "text-red-800 dark:text-red-300"
+                            : "text-blue-800 dark:text-blue-300"
+                        }`}>
+                          {summary.deal.status === "ACCEPTED"
+                            ? "Deal Accepted"
+                            : summary.deal.status === "WALKED_AWAY"
+                            ? "Deal Walked Away"
+                            : summary.deal.status === "ESCALATED"
+                            ? "Deal Escalated"
+                            : "Negotiation In Progress"
+                          }
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {summary.deal.vendorName} • {summary.deal.companyName || summary.deal.vendorEmail}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Final Offer Card */}
+                  <div className="bg-white dark:bg-dark-surface rounded-xl shadow-sm border border-gray-200 dark:border-dark-border p-5">
+                    <h4 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary uppercase tracking-wide mb-4">
+                      {summary.deal.status === "NEGOTIATING" ? "Current Offer" : "Final Offer"}
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Unit Price</p>
+                        <p className="text-xl font-bold text-gray-900 dark:text-dark-text">
+                          {formatCurrency(summary.finalOffer.unitPrice)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Total Value</p>
+                        <p className="text-xl font-bold text-gray-900 dark:text-dark-text">
+                          {formatCurrency(summary.finalOffer.totalValue)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Payment Terms</p>
+                        <p className="text-lg font-medium text-gray-900 dark:text-dark-text">
+                          {summary.finalOffer.paymentTerms || "N/A"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Delivery Date</p>
+                        <p className="text-lg font-medium text-gray-900 dark:text-dark-text">
+                          {summary.finalOffer.deliveryDate
+                            ? new Date(summary.finalOffer.deliveryDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                            : "N/A"
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Metrics Grid */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 text-center">
+                      <FiTrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
+                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        {summary.metrics.utilityScore !== null
+                          ? `${Math.round(summary.metrics.utilityScore * 100)}%`
+                          : "N/A"
+                        }
+                      </p>
+                      <p className="text-xs text-blue-600/70 dark:text-blue-400/70">Utility Score</p>
+                    </div>
+                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 text-center">
+                      <FiMessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
+                      <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                        {summary.metrics.totalRounds}/{summary.metrics.maxRounds}
+                      </p>
+                      <p className="text-xs text-purple-600/70 dark:text-purple-400/70">Rounds Used</p>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 text-center">
+                      <FiClock className="w-6 h-6 text-gray-600 dark:text-gray-400 mx-auto mb-2" />
+                      <p className="text-2xl font-bold text-gray-600 dark:text-gray-400">
+                        {summary.metrics.durationDays !== null
+                          ? `${summary.metrics.durationDays}d`
+                          : "Active"
+                        }
+                      </p>
+                      <p className="text-xs text-gray-600/70 dark:text-gray-400/70">Duration</p>
+                    </div>
+                  </div>
+
+                  {/* Timeline */}
+                  {summary.timeline.length > 0 && (
+                    <div className="bg-white dark:bg-dark-surface rounded-xl shadow-sm border border-gray-200 dark:border-dark-border p-5">
+                      <h4 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary uppercase tracking-wide mb-4">
+                        Negotiation Timeline
+                      </h4>
+                      <div className="space-y-3 max-h-60 overflow-y-auto">
+                        {summary.timeline.map((item, index) => (
+                          <div key={index} className="flex items-start gap-3 text-sm">
+                            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300">
+                              {item.round}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-gray-600 dark:text-dark-text-secondary truncate">
+                                <span className="font-medium text-gray-900 dark:text-dark-text">Vendor:</span> {item.vendorOffer}
+                              </p>
+                              <p className="text-gray-600 dark:text-dark-text-secondary truncate">
+                                <span className="font-medium text-blue-600 dark:text-blue-400">Accordo:</span> {item.accordoResponse}
+                              </p>
+                            </div>
+                            <span className={`flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded ${
+                              item.action === "ACCEPT"
+                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                                : item.action === "COUNTER"
+                                ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                                : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300"
+                            }`}>
+                              {item.action}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Timestamps */}
+                  <div className="text-xs text-gray-500 dark:text-dark-text-secondary flex justify-between pt-4 border-t border-gray-200 dark:border-dark-border">
+                    <span>Started: {formatDate(summary.metrics.startedAt)}</span>
+                    <span>
+                      {summary.metrics.completedAt
+                        ? `Completed: ${formatDate(summary.metrics.completedAt)}`
+                        : "In Progress"
+                      }
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <FiFileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600 dark:text-dark-text-secondary">No summary available</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Sidebar - Right column (Fixed width, independently scrollable) */}
-        <div className="hidden lg:flex lg:flex-col w-80 bg-white dark:bg-dark-surface border-l border-gray-200 dark:border-dark-border flex-shrink-0 overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-dark-text mb-6">Negotiation Dashboard</h2>
+        <div className="hidden lg:flex lg:flex-col w-[324px] bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-dark-surface dark:via-dark-surface dark:to-dark-surface border-l border-indigo-100 dark:border-dark-border flex-shrink-0 overflow-hidden">
+          {/* Sidebar Header - Sticky with blue/indigo theme */}
+          <div className="flex-shrink-0 px-6 pt-5 pb-3 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 shadow-md">
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <FiActivity className="w-5 h-5" />
+              Negotiation Dashboard
+            </h2>
+            <p className="text-xs text-indigo-200 mt-0.5">Real-time utility monitoring</p>
+          </div>
+          <div className="flex-1 overflow-y-auto p-5 sidebar-scroll">
 
             {config && adaptiveConfig ? (
-            <div className="space-y-6">
-              {/* Adaptive Mode Indicator */}
-              {negotiationState && deal && deal.round > 0 && (
-                <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg p-3 shadow-lg">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    <div>
-                      <div className="text-xs font-bold">Adaptive AI Mode Active</div>
-                      <div className="text-xs opacity-90">Config adjusting based on negotiation progress</div>
-                    </div>
-                  </div>
-                </div>
-              )}
+            <div className="space-y-4">
+              {/* 1. Unified Utility & Threshold Bar */}
+              <UnifiedUtilityBar
+                percentage={utilityData?.totalUtilityPercent || (negotiationState?.utilities?.total ? negotiationState.utilities.total * 100 : 0)}
+                recommendation={getRecommendationAction()}
+                thresholds={{
+                  accept: adaptiveConfig.accept_threshold || 0.7,
+                  escalate: 0.5,
+                  walkAway: adaptiveConfig.walkaway_threshold || 0.3,
+                }}
+                dealStatus={deal?.status as "NEGOTIATING" | "ACCEPTED" | "WALKED_AWAY" | "ESCALATED" | undefined}
+                recommendationReason={utilityData?.recommendationReason}
+              />
 
-              {/* Current Progress - Moved to Top */}
+              {/* 3. Current Progress - Blue/Indigo Theme */}
               {deal && (
-                <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-lg p-5 shadow-sm border border-gray-200">
-                  <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Current Progress
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-600">Current Round:</span>
-                      <span className="font-bold text-gray-900">
-                        {deal.round} / {adaptiveConfig.max_rounds}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          deal.round >= adaptiveConfig.max_rounds
-                            ? 'bg-gradient-to-r from-red-500 to-red-600'
-                            : deal.round >= adaptiveConfig.max_rounds * 0.7
-                            ? 'bg-gradient-to-r from-orange-500 to-orange-600'
-                            : 'bg-gradient-to-r from-blue-500 to-blue-600'
-                        }`}
-                        style={{ width: `${Math.min((deal.round / adaptiveConfig.max_rounds) * 100, 100)}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Current Offers Section - Dynamic */}
-              {negotiationState && (
-                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg p-5 shadow-sm border-2 border-emerald-200">
-                  <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                    </svg>
-                    Current Offers
-                  </h3>
-                  <div className="space-y-4">
-                    {/* Vendor Offer */}
-                    <div className="bg-white rounded-lg p-3 border border-emerald-200">
-                      <div className="text-xs font-semibold text-gray-600 mb-2">Vendor's Offer</div>
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-gray-600">Price:</span>
-                          <span className="text-sm font-bold text-gray-900">
-                            ${negotiationState.currentVendorOffer.unit_price?.toFixed(2) || "N/A"}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-gray-600">Payment:</span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {negotiationState.currentVendorOffer.payment_terms || "N/A"}
-                          </span>
-                        </div>
+                <div className="bg-gradient-to-br from-indigo-50 via-blue-50 to-indigo-50 rounded-lg p-4 shadow-sm border border-indigo-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-indigo-100 rounded-md">
+                        <FiClock className="w-4 h-4 text-indigo-600" />
                       </div>
+                      <span className="text-sm font-semibold text-indigo-900">Negotiation Progress</span>
                     </div>
-
-                    {/* Accordo Counter-Offer */}
-                    {negotiationState.currentAccordoOffer && (
-                      <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                        <div className="text-xs font-semibold text-blue-700 mb-2">Our Counter-Offer</div>
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs text-gray-600">Price:</span>
-                            <span className="text-sm font-bold text-blue-900">
-                              ${negotiationState.currentAccordoOffer.unit_price?.toFixed(2) || "N/A"}
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs text-gray-600">Payment:</span>
-                            <span className="text-sm font-medium text-blue-900">
-                              {negotiationState.currentAccordoOffer.payment_terms || "N/A"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Live Utility Score */}
-                    <div className="pt-3 border-t border-emerald-200">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-xs font-semibold text-gray-700">Utility Score</span>
-                        <span className="text-lg font-bold text-emerald-700">
-                          {negotiationState.utilities.total ? (negotiationState.utilities.total * 100).toFixed(1) : "0"}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-700 ${
-                            (negotiationState.utilities.total || 0) >= adaptiveConfig.accept_threshold
-                              ? 'bg-gradient-to-r from-green-500 to-green-600'
-                              : (negotiationState.utilities.total || 0) >= adaptiveConfig.walkaway_threshold
-                              ? 'bg-gradient-to-r from-yellow-500 to-orange-500'
-                              : 'bg-gradient-to-r from-orange-500 to-red-600'
-                          }`}
-                          style={{ width: `${(negotiationState.utilities.total || 0) * 100}%` }}
-                        ></div>
-                      </div>
-                      <div className="flex justify-between text-xs mt-1.5 text-gray-600">
-                        <span>Walk Away ({(adaptiveConfig.walkaway_threshold * 100).toFixed(0)}%)</span>
-                        <span className="text-green-700">Accept ({(adaptiveConfig.accept_threshold * 100).toFixed(0)}%)</span>
-                      </div>
-                    </div>
-
-                    {/* Utility Breakdown */}
-                    <div className="pt-3 border-t border-emerald-200">
-                      <div className="text-xs font-semibold text-gray-700 mb-2">Utility Breakdown</div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-gray-600">Price Utility:</span>
-                          <span className="font-medium">
-                            {negotiationState.utilities.priceUtility ? (negotiationState.utilities.priceUtility * 100).toFixed(1) : "0"}%
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                          <span className="text-gray-600">Terms Utility:</span>
-                          <span className="font-medium">
-                            {negotiationState.utilities.termsUtility ? (negotiationState.utilities.termsUtility * 100).toFixed(1) : "0"}%
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {/* Price Parameters */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-5 shadow-sm">
-                <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Price Parameters
-                  {deal && deal.round > 0 && (
-                    <span className="ml-auto text-xs text-indigo-600 animate-pulse">● Live</span>
-                  )}
-                </h3>
-                <div className="space-y-4">
-                  {/* Anchor Price */}
-                  <div>
-                    <div className="flex justify-between text-xs mb-1.5">
-                      <span className="text-gray-700 font-medium">Anchor (Best Case)</span>
-                      <div className="flex flex-col items-end">
-                        <span className="font-bold text-green-700">
-                          ${adaptiveConfig.parameters.unit_price.anchor.toFixed(2)}
-                        </span>
-                        {config.parameters.unit_price.anchor !== adaptiveConfig.parameters.unit_price.anchor && (
-                          <span className="text-xs text-gray-500 line-through">
-                            ${config.parameters.unit_price.anchor.toFixed(2)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Target Price */}
-                  <div>
-                    <div className="flex justify-between text-xs mb-1.5">
-                      <span className="text-gray-700 font-medium">Target</span>
-                      <div className="flex flex-col items-end">
-                        <span className="font-bold text-blue-700">
-                          ${adaptiveConfig.parameters.unit_price.target.toFixed(2)}
-                        </span>
-                        {config.parameters.unit_price.target !== adaptiveConfig.parameters.unit_price.target && (
-                          <span className="text-xs text-gray-500 line-through">
-                            ${config.parameters.unit_price.target.toFixed(2)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Max Acceptable Price */}
-                  <div>
-                    <div className="flex justify-between text-xs mb-1.5">
-                      <span className="text-gray-700 font-medium">Max Acceptable</span>
-                      <span className="font-bold text-orange-700">
-                        ${adaptiveConfig.parameters.unit_price.max_acceptable.toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Price Range Visualization with Current Position */}
-                  <div className="mt-4 pt-4 border-t border-blue-200">
-                    <div className="text-xs text-gray-600 mb-2">Price Range & Current Position</div>
-                    <div className="relative h-4 bg-gradient-to-r from-green-400 via-yellow-300 to-red-400 rounded-full overflow-hidden">
-                      {/* Current Vendor Price Indicator */}
-                      {negotiationState?.currentVendorOffer.unit_price && (
-                        <>
-                          {(() => {
-                            const currentPrice = negotiationState.currentVendorOffer.unit_price;
-                            const anchor = adaptiveConfig.parameters.unit_price.anchor;
-                            const maxPrice = adaptiveConfig.parameters.unit_price.max_acceptable;
-                            const priceRange = maxPrice - anchor;
-                            const position = ((currentPrice - anchor) / priceRange) * 100;
-                            const clampedPosition = Math.max(0, Math.min(100, position));
-
-                            return (
-                              <div
-                                className="absolute top-0 h-full w-1 bg-gray-900 shadow-lg transition-all duration-700"
-                                style={{ left: `${clampedPosition}%` }}
-                                title={`Current: $${currentPrice.toFixed(2)}`}
-                              >
-                                <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 text-xs font-bold text-gray-900 whitespace-nowrap">
-                                  ↓ ${currentPrice.toFixed(2)}
-                                </div>
-                              </div>
-                            );
-                          })()}
-                        </>
-                      )}
-                    </div>
-                    <div className="flex justify-between text-xs mt-1.5 text-gray-600">
-                      <span className="text-green-700">Ideal (${adaptiveConfig.parameters.unit_price.anchor.toFixed(2)})</span>
-                      <span className="text-orange-700">Max (${adaptiveConfig.parameters.unit_price.max_acceptable.toFixed(2)})</span>
-                    </div>
-                  </div>
-
-                  {/* Concession Step */}
-                  <div className="flex justify-between text-xs pt-3 border-t border-blue-200">
-                    <span className="text-gray-600">Concession Step:</span>
-                    <span className="font-medium text-gray-900">
-                      ${adaptiveConfig.parameters.unit_price.concession_step.toFixed(2)}
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                      deal.round >= adaptiveConfig.max_rounds
+                        ? 'bg-red-100 text-red-700'
+                        : deal.round >= adaptiveConfig.max_rounds * 0.7
+                        ? 'bg-orange-100 text-orange-700'
+                        : 'bg-indigo-100 text-indigo-700'
+                    }`}>
+                      Round {deal.round}/{adaptiveConfig.max_rounds}
                     </span>
                   </div>
-
-                  {/* Weight */}
-                  <div className="pt-3 border-t border-blue-200">
-                    <div className="flex justify-between text-xs mb-2">
-                      <span className="text-gray-700 font-medium">Weight (Importance)</span>
-                      <span className="font-bold text-blue-700">
-                        {(adaptiveConfig.parameters.unit_price.weight * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                      <div
-                        className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500"
-                        style={{ width: `${adaptiveConfig.parameters.unit_price.weight * 100}%` }}
-                      ></div>
-                    </div>
+                  <div className="relative w-full bg-indigo-100 rounded-full h-2.5 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        deal.round >= adaptiveConfig.max_rounds
+                          ? 'bg-gradient-to-r from-red-500 to-red-600'
+                          : deal.round >= adaptiveConfig.max_rounds * 0.7
+                          ? 'bg-gradient-to-r from-orange-500 to-orange-600'
+                          : 'bg-gradient-to-r from-indigo-500 via-blue-500 to-indigo-600'
+                      }`}
+                      style={{ width: `${Math.min((deal.round / adaptiveConfig.max_rounds) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between mt-1.5 text-[10px] text-indigo-500">
+                    <span>Start</span>
+                    <span>{adaptiveConfig.max_rounds} rounds max</span>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* 4. Collapsible Parameter Sections (Accordion) */}
+
+              {/* Price Parameters */}
+              {sectionHasContent.price && (
+                <CollapsibleSection
+                  title="Price Parameters"
+                  icon={<FiDollarSign className="w-4 h-4" />}
+                  weight={getSectionWeight('price')}
+                  isOpen={openSection === 'price'}
+                  onToggle={() => setOpenSection(openSection === 'price' ? null : 'price')}
+                  gradientColors="from-blue-50 to-indigo-50"
+                  borderColor="border-blue-200"
+                  isLive={(deal?.round ?? 0) > 0}
+                >
+                  <div className="space-y-2">
+                    {/* Target Unit Price: wizardConfig fallback to engine target - with range visualization */}
+                    <ParameterRow
+                      label="Target Unit Price"
+                      value={wizardConfig?.priceQuantity?.targetUnitPrice || adaptiveConfig?.parameters?.unit_price?.target}
+                      type="currency"
+                      utilityInfo={getParamUtilityInfo('unit_price')}
+                      rangeMin={adaptiveConfig?.parameters?.unit_price?.anchor}
+                      rangeMax={wizardConfig?.priceQuantity?.maxAcceptablePrice || adaptiveConfig?.parameters?.unit_price?.max_acceptable}
+                    />
+                    {/* Max Acceptable Price: wizardConfig fallback to engine max */}
+                    <ParameterRow
+                      label="Max Acceptable Price"
+                      value={wizardConfig?.priceQuantity?.maxAcceptablePrice || adaptiveConfig?.parameters?.unit_price?.max_acceptable}
+                      type="currency"
+                    />
+                    {/* Min Order Quantity: only from wizardConfig */}
+                    <ParameterRow
+                      label="Min Order Quantity"
+                      value={wizardConfig?.priceQuantity?.minOrderQuantity}
+                      type="number"
+                      utilityInfo={getParamUtilityInfo('quantity')}
+                    />
+                    {/* Preferred Quantity: only from wizardConfig */}
+                    <ParameterRow
+                      label="Preferred Quantity"
+                      value={wizardConfig?.priceQuantity?.preferredQuantity}
+                      type="number"
+                    />
+                    {/* Volume Discount: only from wizardConfig */}
+                    <ParameterRow
+                      label="Volume Discount"
+                      value={wizardConfig?.priceQuantity?.volumeDiscountExpectation}
+                      type="percentage"
+                    />
+                    {/* Anchor Price from engine config */}
+                    <ParameterRow
+                      label="Anchor Price"
+                      value={adaptiveConfig?.parameters?.unit_price?.anchor}
+                      type="currency"
+                      highlight
+                    />
+                    {/* Concession Step from engine config */}
+                    <ParameterRow
+                      label="Concession Step"
+                      value={adaptiveConfig?.parameters?.unit_price?.concession_step}
+                      type="currency"
+                    />
+                  </div>
+                </CollapsibleSection>
+              )}
 
               {/* Payment Terms */}
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-5 shadow-sm">
-                <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Payment Terms
-                  {deal && deal.round > 0 && (
-                    <span className="ml-auto text-xs text-purple-600 animate-pulse">● Live</span>
-                  )}
-                </h3>
-                <div className="space-y-4">
-                  {adaptiveConfig.parameters.payment_terms.options.map((term: string) => {
-                    const utilityValue = adaptiveConfig.parameters.payment_terms.utility[term as keyof typeof adaptiveConfig.parameters.payment_terms.utility];
-                    const originalUtility = config.parameters.payment_terms.utility[term as keyof typeof config.parameters.payment_terms.utility];
-                    const percentage = (utilityValue * 100).toFixed(0);
-                    const isCurrentTerm = negotiationState?.currentVendorOffer.payment_terms === term;
-                    const hasChanged = utilityValue !== originalUtility;
-
-                    return (
-                      <div key={term} className={isCurrentTerm ? "ring-2 ring-purple-400 rounded-lg p-2 bg-white" : ""}>
-                        <div className="flex justify-between text-xs mb-2">
-                          <span className={`font-medium ${isCurrentTerm ? "text-purple-900 font-bold" : "text-gray-700"}`}>
-                            {term} {isCurrentTerm && "← Current"}
-                          </span>
-                          <div className="flex flex-col items-end">
-                            <span className={`font-bold ${isCurrentTerm ? "text-purple-900" : "text-purple-700"}`}>
-                              {percentage}% utility
-                            </span>
-                            {hasChanged && (
-                              <span className="text-xs text-gray-500 line-through">
-                                {(originalUtility * 100).toFixed(0)}%
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              utilityValue >= 0.8
-                                ? 'bg-gradient-to-r from-green-500 to-green-600'
-                                : utilityValue >= 0.5
-                                ? 'bg-gradient-to-r from-yellow-500 to-yellow-600'
-                                : 'bg-gradient-to-r from-orange-500 to-red-600'
-                            }`}
-                            style={{ width: `${utilityValue * 100}%` }}
-                          ></div>
-                        </div>
+              {sectionHasContent.payment && (
+                <CollapsibleSection
+                  title="Payment Terms"
+                  icon={<FiCreditCard className="w-4 h-4" />}
+                  weight={getSectionWeight('payment')}
+                  isOpen={openSection === 'payment'}
+                  onToggle={() => setOpenSection(openSection === 'payment' ? null : 'payment')}
+                  gradientColors="from-purple-50 to-pink-50"
+                  borderColor="border-purple-200"
+                  isLive={(deal?.round ?? 0) > 0}
+                >
+                  <div className="space-y-2">
+                    {/* Payment Terms from wizardConfig - user-entered values */}
+                    {/* Payment Terms Range with utility info */}
+                    {wizardConfig?.paymentTerms?.minDays && wizardConfig?.paymentTerms?.maxDays && (
+                      <ParameterRow
+                        label="Payment Terms Range"
+                        value={`${wizardConfig.paymentTerms.minDays} - ${wizardConfig.paymentTerms.maxDays} days`}
+                        type="text"
+                        utilityInfo={getParamUtilityInfo('payment_terms')}
+                      />
+                    )}
+                    {/* Min Payment Days - only show if no range */}
+                    {(!wizardConfig?.paymentTerms?.maxDays) && (
+                      <ParameterRow
+                        label="Minimum Payment Days"
+                        value={wizardConfig?.paymentTerms?.minDays}
+                        type="days"
+                        utilityInfo={getParamUtilityInfo('payment_terms')}
+                      />
+                    )}
+                    {/* Max Payment Days - only show if no range */}
+                    {(!wizardConfig?.paymentTerms?.minDays) && (
+                      <ParameterRow
+                        label="Maximum Payment Days"
+                        value={wizardConfig?.paymentTerms?.maxDays}
+                        type="days"
+                      />
+                    )}
+                    {/* Advance Payment Limit */}
+                    <ParameterRow
+                      label="Advance Payment Limit"
+                      value={wizardConfig?.paymentTerms?.advancePaymentLimit}
+                      type="percentage"
+                    />
+                    {/* Accepted Payment Methods */}
+                    {wizardConfig?.paymentTerms?.acceptedMethods && wizardConfig.paymentTerms.acceptedMethods.length > 0 && (
+                      <ParameterRow
+                        label="Accepted Methods"
+                        value={wizardConfig.paymentTerms.acceptedMethods.map((method: string) => {
+                          // Format method names for display
+                          switch (method) {
+                            case 'BANK_TRANSFER': return 'Bank Transfer';
+                            case 'CREDIT': return 'Credit';
+                            case 'LC': return 'Letter of Credit';
+                            default: return method;
+                          }
+                        }).join(', ')}
+                        type="text"
+                      />
+                    )}
+                    {/* Show message if no wizard config payment terms */}
+                    {!wizardConfig?.paymentTerms && (
+                      <div className="text-xs text-gray-500 italic py-2">
+                        No payment terms configured
                       </div>
-                    );
-                  })}
-
-                  {/* Weight */}
-                  <div className="pt-3 border-t border-purple-200">
-                    <div className="flex justify-between text-xs mb-2">
-                      <span className="text-gray-700 font-medium">Weight (Importance)</span>
-                      <span className="font-bold text-purple-700">
-                        {(adaptiveConfig.parameters.payment_terms.weight * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                      <div
-                        className="bg-gradient-to-r from-purple-500 to-purple-600 h-full rounded-full transition-all duration-500"
-                        style={{ width: `${adaptiveConfig.parameters.payment_terms.weight * 100}%` }}
-                      ></div>
-                    </div>
+                    )}
                   </div>
-                </div>
-              </div>
+                </CollapsibleSection>
+              )}
 
-              {/* Decision Thresholds */}
-              <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg p-5 shadow-sm">
-                <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Decision Thresholds
-                  {deal && deal.round > 0 && (
-                    <span className="ml-auto text-xs text-amber-600 animate-pulse">● Live</span>
-                  )}
-                </h3>
-                <div className="space-y-4">
-                  {/* Accept Threshold */}
-                  <div>
-                    <div className="flex justify-between text-xs mb-2">
-                      <span className="text-gray-700 font-medium">Accept Threshold</span>
-                      <div className="flex flex-col items-end">
-                        <span className="font-bold text-green-700">
-                          {(adaptiveConfig.accept_threshold * 100).toFixed(0)}% utility
-                        </span>
-                        {config.accept_threshold !== adaptiveConfig.accept_threshold && (
-                          <span className="text-xs text-gray-500 line-through">
-                            {(config.accept_threshold * 100).toFixed(0)}%
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                      <div
-                        className="bg-gradient-to-r from-green-500 to-green-600 h-full rounded-full transition-all duration-700"
-                        style={{ width: `${adaptiveConfig.accept_threshold * 100}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1.5">
-                      Offers above this utility score will be accepted
-                    </p>
+              {/* Delivery Terms */}
+              {sectionHasContent.delivery && (
+                <CollapsibleSection
+                  title="Delivery Terms"
+                  icon={<FiTruck className="w-4 h-4" />}
+                  weight={getSectionWeight('delivery')}
+                  isOpen={openSection === 'delivery'}
+                  onToggle={() => setOpenSection(openSection === 'delivery' ? null : 'delivery')}
+                  gradientColors="from-green-50 to-emerald-50"
+                  borderColor="border-green-200"
+                  isLive={(deal?.round ?? 0) > 0}
+                >
+                  <div className="space-y-2">
+                    <ParameterRow
+                      label="Required Date"
+                      value={wizardConfig?.delivery?.requiredDate}
+                      type="date"
+                      utilityInfo={getParamUtilityInfo('delivery_date')}
+                    />
+                    <ParameterRow
+                      label="Preferred Date"
+                      value={wizardConfig?.delivery?.preferredDate}
+                      type="date"
+                    />
+                    <ParameterRow
+                      label="Delivery Location"
+                      value={wizardConfig?.delivery?.locationAddress}
+                      type="text"
+                    />
+                    <ParameterRow
+                      label="Partial Delivery"
+                      value={wizardConfig?.delivery?.partialDelivery?.allowed}
+                      type="boolean"
+                    />
+                    {wizardConfig?.delivery?.partialDelivery?.allowed && (
+                      <>
+                        <ParameterRow
+                          label="Partial Type"
+                          value={wizardConfig.delivery.partialDelivery.type}
+                          type="text"
+                        />
+                        <ParameterRow
+                          label="Min Partial Value"
+                          value={wizardConfig.delivery.partialDelivery.minValue}
+                          type="currency"
+                        />
+                      </>
+                    )}
                   </div>
+                </CollapsibleSection>
+              )}
 
-                  {/* Walk Away Threshold */}
-                  <div>
-                    <div className="flex justify-between text-xs mb-2">
-                      <span className="text-gray-700 font-medium">Walk Away Threshold</span>
-                      <div className="flex flex-col items-end">
-                        <span className="font-bold text-red-700">
-                          {(adaptiveConfig.walkaway_threshold * 100).toFixed(0)}% utility
-                        </span>
-                        {config.walkaway_threshold !== adaptiveConfig.walkaway_threshold && (
-                          <span className="text-xs text-gray-500 line-through">
-                            {(config.walkaway_threshold * 100).toFixed(0)}%
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                      <div
-                        className="bg-gradient-to-r from-red-500 to-red-600 h-full rounded-full transition-all duration-700"
-                        style={{ width: `${adaptiveConfig.walkaway_threshold * 100}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1.5">
-                      Offers below this utility score will be rejected
-                    </p>
+              {/* Contract & SLA */}
+              {sectionHasContent.contract && (
+                <CollapsibleSection
+                  title="Contract & SLA"
+                  icon={<FiClipboard className="w-4 h-4" />}
+                  weight={getSectionWeight('contract')}
+                  isOpen={openSection === 'contract'}
+                  onToggle={() => setOpenSection(openSection === 'contract' ? null : 'contract')}
+                  gradientColors="from-amber-50 to-orange-50"
+                  borderColor="border-amber-200"
+                  isLive={(deal?.round ?? 0) > 0}
+                >
+                  <div className="space-y-2">
+                    <ParameterRow
+                      label="Warranty Period"
+                      value={wizardConfig?.contractSla?.warrantyPeriod}
+                      type="text"
+                    />
+                    <ParameterRow
+                      label="Defect Liability"
+                      value={wizardConfig?.contractSla?.defectLiabilityMonths}
+                      type="days"
+                    />
+                    <ParameterRow
+                      label="Late Delivery Penalty"
+                      value={wizardConfig?.contractSla?.lateDeliveryPenaltyPerDay}
+                      type="percentage"
+                    />
+                    {wizardConfig?.contractSla?.maxPenaltyCap && (
+                      <ParameterRow
+                        label="Max Penalty Cap"
+                        value={wizardConfig.contractSla.maxPenaltyCap.type === 'PERCENTAGE'
+                          ? `${wizardConfig.contractSla.maxPenaltyCap.value}%`
+                          : `$${wizardConfig.contractSla.maxPenaltyCap.value}`}
+                        type="text"
+                      />
+                    )}
+                    {wizardConfig?.contractSla?.qualityStandards && wizardConfig.contractSla.qualityStandards.length > 0 && (
+                      <ParameterRow
+                        label="Quality Standards"
+                        value={wizardConfig.contractSla.qualityStandards.join(', ')}
+                        type="text"
+                      />
+                    )}
                   </div>
+                </CollapsibleSection>
+              )}
 
-                  {/* Max Rounds */}
-                  <div className="pt-3 border-t border-orange-200">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        <span className="text-xs text-gray-700 font-medium">Max Rounds</span>
-                      </div>
-                      <span className="text-sm font-bold text-amber-700">
-                        {adaptiveConfig.max_rounds} rounds
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-2">
-                      Negotiation will escalate after {adaptiveConfig.max_rounds} rounds
-                    </p>
+              {/* Custom Parameters */}
+              {sectionHasContent.custom && (
+                <CollapsibleSection
+                  title="Custom Parameters"
+                  icon={<FiSettings className="w-4 h-4" />}
+                  weight={getSectionWeight('custom')}
+                  isOpen={openSection === 'custom'}
+                  onToggle={() => setOpenSection(openSection === 'custom' ? null : 'custom')}
+                  gradientColors="from-slate-50 to-gray-100"
+                  borderColor="border-gray-300"
+                  isLive={(deal?.round ?? 0) > 0}
+                >
+                  <div className="space-y-2">
+                    {wizardConfig?.customParameters
+                      ?.filter((param) => param.includeInNegotiation)
+                      .map((param, index) => (
+                        <ParameterRow
+                          key={index}
+                          label={param.name}
+                          value={param.targetValue}
+                          type={param.type === 'NUMBER' ? 'number' : 'text'}
+                        />
+                      ))}
                   </div>
-                </div>
-              </div>
+                </CollapsibleSection>
+              )}
+
             </div>
           ) : (
-            <div className="text-center text-gray-500 text-sm py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
-              Loading config...
+            <div className="text-center text-indigo-600 text-sm py-12">
+              <div className="animate-spin rounded-full h-10 w-10 border-3 border-indigo-200 border-t-indigo-600 mx-auto mb-4"></div>
+              <p className="font-medium">Loading dashboard...</p>
+              <p className="text-xs text-indigo-400 mt-1">Fetching negotiation parameters</p>
             </div>
           )}
           </div>

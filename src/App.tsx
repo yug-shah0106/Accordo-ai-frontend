@@ -38,15 +38,17 @@ import GroupSummary from "./pages/GroupSummary";
 import NegotiationChat from "./components/NegotiationChat";
 import DealsPage from "./pages/chatbot/DealsPage";
 import NegotiationRoom from "./pages/chatbot/NegotiationRoom";
-import NewDealPage from "./pages/chatbot/NewDealPage";
+import NewDealPageWrapper from "./pages/chatbot/NewDealPageWrapper";
 import ConversationRoom from "./pages/chatbot/ConversationRoom";
-import ArchivedDealsPage from "./pages/chatbot/ArchivedDealsPage";
-import TrashPage from "./pages/chatbot/TrashPage";
 import SummaryPage from "./pages/chatbot/SummaryPage";
 import NegotiationSummary from "./pages/chatbot/NegotiationSummary";
 import DemoScenarios from "./pages/chatbot/DemoScenarios";
 import AboutPage from "./pages/chatbot/AboutPage";
-import ConversationDealPage from "./pages/chatbot/ConversationDealPage";
+// ConversationDealPage import removed - old route deprecated
+import RequisitionListPage from "./pages/chatbot/RequisitionListPage";
+import RequisitionDealsPage from "./pages/chatbot/RequisitionDealsPage";
+import ArchivedRequisitionsPage from "./pages/chatbot/ArchivedRequisitionsPage";
+import ArchivedDealsForRequisitionPage from "./pages/chatbot/ArchivedDealsForRequisitionPage";
 import Feedback from "./pages/Feedback";
 
 function App() {
@@ -251,17 +253,24 @@ function App() {
             path="/chatbot"
             element={<DashBoardLayout logo={sideBarLogo} />}
           >
-            <Route index element={<DealsPage />} />
-            <Route path="deals/new" element={<NewDealPage />} />
-            <Route path="deals/:dealId" element={<NegotiationRoom />} />
-            <Route path="conversation/:dealId" element={<ConversationRoom />} />
-            <Route path="deals/:dealId/summary" element={<SummaryPage />} />
+            {/* Main page: Requisition list at /chatbot/requisitions */}
+            <Route path="requisitions" element={<RequisitionListPage />} />
+            {/* Requisition deals page (Level 2) */}
+            <Route path="requisitions/:requisitionId" element={<RequisitionDealsPage />} />
+            {/* Archived requisitions and deals */}
+            <Route path="requisitions/archived" element={<ArchivedRequisitionsPage />} />
+            <Route path="requisitions/:requisitionId/archived" element={<ArchivedDealsForRequisitionPage />} />
+            {/* Legacy flat deals list (accessible via /chatbot/all-deals) */}
+            <Route path="all-deals" element={<DealsPage />} />
+            {/* Deal management - create new deal (with optional requisitionId query param) */}
+            <Route path="requisitions/deals/new" element={<NewDealPageWrapper />} />
+            {/* Nested URL structure for deals (hierarchical pattern) */}
+            <Route path="requisitions/:rfqId/vendors/:vendorId/deals/:dealId" element={<NegotiationRoom />} />
+            <Route path="requisitions/:rfqId/vendors/:vendorId/deals/:dealId/conversation" element={<ConversationRoom />} />
+            <Route path="requisitions/:rfqId/vendors/:vendorId/deals/:dealId/summary" element={<SummaryPage />} />
             <Route path="summary" element={<NegotiationSummary />} />
-            <Route path="archived" element={<ArchivedDealsPage />} />
-            <Route path="trash" element={<TrashPage />} />
             <Route path="demo" element={<DemoScenarios />} />
             <Route path="about" element={<AboutPage />} />
-            <Route path="conversation-deal/:dealId" element={<ConversationDealPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

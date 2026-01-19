@@ -298,7 +298,7 @@ const Sidebar = ({ logo }) => {
     {
       name: "Negotiations",
       icon: <FiMessageSquare className="text-xl" />,
-      link: "chatbot",
+      link: "chatbot/requisitions",
       permissionKey: null,
       isActive: true,
     },

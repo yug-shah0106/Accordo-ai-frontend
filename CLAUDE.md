@@ -49,46 +49,63 @@ All services are configured to run on sequential ports starting from 5001:
 ## Architecture
 
 ### Tech Stack
-- React 18 + Vite
+- React 18 + Vite + TypeScript
 - React Router v7 for routing
 - Tailwind CSS for styling
 - MUI (Material-UI) components
 - Axios for API calls
 - react-hook-form + yup/zod for form validation
 - Chart.js for data visualization
+- react-hot-toast for notifications
 
 ### Project Structure
 
 ```
 src/
-├── api/index.js         # Axios instances with auth interceptors
-├── services/            # API service modules
-│   ├── chat.service.js  # Legacy AI chat service
-│   └── chatbot.service.js # Negotiation chatbot API client
-├── hooks/               # Custom React hooks
-│   └── chatbot/         # Chatbot-specific hooks (useDeal, useDealActions)
-├── utils/               # Utilities (tokenStorage, permissions)
-├── Layout/              # Page layouts (Auth, DashBoardLayout, ChatLayout)
-├── components/          # UI components organized by feature
-│   ├── LandingPages/    # Public landing page components
-│   ├── Requisition/     # Requisition management (multi-step form)
-│   ├── VendorForm/      # Vendor onboarding (multi-step form)
-│   ├── SideBar/         # Navigation sidebar
-│   ├── Graphs/          # Chart.js graph components
-│   ├── vendor/          # Vendor-related views
-│   ├── po/              # Purchase order management
-│   ├── user/            # User management
-│   ├── settings/        # User settings
-│   ├── chat/            # AI negotiation chat (legacy)
-│   └── chatbot/         # Negotiation chatbot components
-│       └── chat/        # Chat UI (MessageBubble, Composer, ChatTranscript, etc.)
-└── pages/               # Route-level page components
-    └── chatbot/         # Chatbot pages (DealsPage, NegotiationRoom, NewDealPage)
+├── api/index.ts             # Axios instances with auth interceptors
+├── services/                # API service modules
+│   ├── chat.service.ts      # Legacy AI chat service
+│   └── chatbot.service.ts   # Negotiation chatbot API client (47+ methods)
+├── hooks/                   # Custom React hooks
+│   └── chatbot/             # Chatbot-specific hooks
+│       ├── useDealActions.ts    # Advanced hook with permissions & utility
+│       ├── useConversation.ts   # Conversation mode hook
+│       └── useHistoryTracking.ts # Deal history tracking
+├── types/                   # TypeScript type definitions
+│   ├── chatbot.ts           # Comprehensive chatbot types (900+ lines)
+│   └── index.ts             # Barrel exports
+├── utils/                   # Utilities (tokenStorage, permissions, scenarioGenerator)
+├── Layout/                  # Page layouts (Auth, DashBoardLayout, ChatLayout)
+├── components/              # UI components organized by feature
+│   ├── LandingPages/        # Public landing page components
+│   ├── Requisition/         # Requisition management (multi-step form)
+│   ├── VendorForm/          # Vendor onboarding (multi-step form)
+│   ├── SideBar/             # Navigation sidebar
+│   ├── Graphs/              # Chart.js graph components
+│   ├── vendor/              # Vendor-related views
+│   ├── po/                  # Purchase order management
+│   ├── user/                # User management
+│   ├── settings/            # User settings
+│   ├── chat/                # AI negotiation chat (legacy)
+│   └── chatbot/             # Negotiation chatbot components
+│       ├── chat/            # Chat UI (MessageBubble, Composer, ChatTranscript, etc.)
+│       ├── common/          # Shared components (ConfirmDialog, ArchiveFilterDropdown)
+│       ├── deal-wizard/     # Multi-step deal creation wizard
+│       ├── requisition-view/ # Requisition-based deal views
+│       └── sidebar/         # Utility sidebar components
+└── pages/                   # Route-level page components
+    └── chatbot/             # Chatbot pages
+        ├── RequisitionListPage.tsx      # Main requisition list
+        ├── RequisitionDealsPage.tsx     # Deals for a requisition
+        ├── NewDealPage.tsx              # 4-step deal creation wizard
+        ├── NegotiationRoom.tsx          # Main negotiation interface
+        ├── ArchivedRequisitionsPage.tsx # Archived requisitions
+        └── ArchivedDealsForRequisitionPage.tsx # Archived deals
 ```
 
 ### API Layer
 
-Three axios instances in `src/api/index.js`:
+Three axios instances in `src/api/index.ts`:
 - `api` - Unauthenticated requests
 - `authApi` - Authenticated JSON requests (auto-adds Bearer token)
 - `authMultiFormApi` - Authenticated multipart/form-data requests
@@ -100,13 +117,13 @@ All auth instances include:
 
 ### Authentication
 
-Tokens stored in localStorage via `src/utils/tokenStorage.js`:
+Tokens stored in localStorage via `src/utils/tokenStorage.ts`:
 - `%accessToken%` - JWT access token
 - `%refreshToken%` - Refresh token
 
 ### Routing Structure
 
-Key route groups in `src/App.jsx`:
+Key route groups in `src/App.tsx`:
 - `/` - Public landing page
 - `/sign-in`, `/sign-up`, `/forgot-password` - Auth flows (Auth layout)
 - `/dashboard` - Main dashboard (DashBoardLayout)
@@ -117,16 +134,19 @@ Key route groups in `src/App.jsx`:
 - `/user-management` - Users and roles
 - `/chat` - AI negotiation chat (ChatLayout - legacy)
 - `/chatbot` - Negotiation chatbot (DashBoardLayout)
-  - `/chatbot` - Deals list (DealsPage)
-  - `/chatbot/deals/new` - Create new deal (NewDealPage)
-  - `/chatbot/deals/:dealId` - Negotiation interface (NegotiationRoom)
+  - `/chatbot` - Requisition list (RequisitionListPage)
+  - `/chatbot/requisitions/:rfqId` - Deals for requisition (RequisitionDealsPage)
+  - `/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/new` - Create deal (NewDealPage)
+  - `/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId` - Negotiation (NegotiationRoom)
+  - `/chatbot/archived` - Archived requisitions
+  - `/chatbot/requisitions/:rfqId/archived` - Archived deals for requisition
 - `/vendor-contract/:id` - Public vendor contract acceptance
 
 ### Forms
 
 Multi-step forms use react-hook-form with step components:
-- `AddRequisition` - Steps: BasicInformation → ProductDetails → VendorDetails → NegotiationParameters
-- `AddVendor` - Steps: VendorBasicInformation → VendorGeneralInformation → VendorCurrencyDetails → VendorContactDetails → VendorBankDetails → VendorReview
+- `AddRequisition` - Steps: BasicInformation -> ProductDetails -> VendorDetails -> NegotiationParameters
+- `AddVendor` - Steps: VendorBasicInformation -> VendorGeneralInformation -> VendorCurrencyDetails -> VendorContactDetails -> VendorBankDetails -> VendorReview
 
 ### Fonts
 
@@ -143,71 +163,147 @@ Vendors access the portal via email links sent by the backend:
 
 ### Backend Integration
 
-The frontend communicates with the Accordo backend (default: `http://localhost:8000`):
+The frontend communicates with the Accordo backend (default: `http://localhost:5002`):
 - Email notifications are sent from the backend when vendors are attached to requisitions
-- Vendors receive links to both this portal and the AI Negotiation chatbot (`http://localhost:5173`)
+- Vendors receive links to both this portal and the AI Negotiation chatbot
 
-## Negotiation Chatbot Module
+## Negotiation Chatbot Module (January 2026 Refactor)
 
 ### Overview
 
-The Negotiation Chatbot is a utility-based AI decision engine for procurement negotiations. It operates in two modes:
-- **INSIGHTS Mode** (Demo): Deterministic decision engine with utility scoring
-- **CONVERSATION Mode**: LLM-driven conversational negotiation (future enhancement)
+The Negotiation Chatbot is a utility-based AI decision engine for procurement negotiations. It now operates with a requisition-centric architecture:
+
+**Key Changes (January 2026)**:
+- Requisition-based navigation: Browse requisitions -> Select vendor -> Create/view deals
+- Nested URL structure: `/api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId`
+- 4-step deal creation wizard with comprehensive negotiation parameters
+- Weighted utility scoring with parameter-level breakdown
+- Archive/unarchive functionality at both requisition and deal levels
+
+### Two Negotiation Modes
+
+- **INSIGHTS Mode**: Deterministic decision engine with utility scoring (default)
+- **CONVERSATION Mode**: LLM-driven conversational negotiation
 
 ### File Structure
 
 ```
 src/
-├── services/chatbot.service.js          # API client (14 functions)
+├── services/chatbot.service.ts              # API client (47+ methods)
+├── types/chatbot.ts                         # Comprehensive types (900+ lines)
 ├── hooks/chatbot/
-│   ├── useDeal.js                       # Simple deal management hook
-│   ├── useDealActions.js                # Advanced hook with permissions
-│   └── index.js                         # Barrel exports
-├── components/chatbot/chat/
-│   ├── ChatTranscript.jsx               # Message list with auto-scroll
-│   ├── Composer.jsx                     # Input with scenario chips
-│   ├── MessageBubble.jsx                # Role-based message display
-│   ├── DecisionBadge.jsx                # Color-coded action badges
-│   ├── OfferCard.jsx                    # Offer display card
-│   └── index.js                         # Barrel exports
+│   ├── useDealActions.ts                    # Deal operations with permissions
+│   ├── useConversation.ts                   # Conversation mode hook
+│   └── useHistoryTracking.ts                # History tracking
+├── components/chatbot/
+│   ├── chat/
+│   │   ├── ChatTranscript.tsx               # Smart auto-scroll message list
+│   │   ├── Composer.tsx                     # Input with AI suggestions
+│   │   ├── MessageBubble.tsx                # Role-based message display
+│   │   ├── DecisionBadge.tsx                # Color-coded action badges
+│   │   ├── ChatErrorBoundary.tsx            # Error handling wrapper
+│   │   └── OutcomeBanner.tsx                # Deal completion banner
+│   ├── common/
+│   │   ├── ConfirmDialog.tsx                # Reusable confirmation modal
+│   │   └── ArchiveFilterDropdown.tsx        # Archive filter selector
+│   ├── deal-wizard/
+│   │   ├── StepOne.tsx                      # Basic info (RFQ, Vendor, Mode)
+│   │   ├── StepTwo.tsx                      # Commercial params (Price, Payment, Delivery)
+│   │   ├── StepThree.tsx                    # Contract & SLA (Warranty, Penalties)
+│   │   ├── StepFour.tsx                     # Parameter weights
+│   │   ├── ReviewStep.tsx                   # Final review before creation
+│   │   ├── StepProgress.tsx                 # Step indicator
+│   │   └── DonutChart.tsx                   # Weight visualization
+│   ├── requisition-view/
+│   │   ├── RequisitionCard.tsx              # Requisition list card
+│   │   ├── VendorDealCard.tsx               # Vendor deal card
+│   │   └── DealSummaryModal.tsx             # Deal summary overlay
+│   └── sidebar/
+│       ├── WeightedUtilityBar.tsx           # Parameter utility breakdown
+│       ├── UnifiedUtilityBar.tsx            # Combined utility display
+│       ├── DecisionThresholdZones.tsx       # Accept/Walk-away zones
+│       ├── CollapsibleSection.tsx           # Collapsible config sections
+│       ├── CollapsibleParameterCard.tsx     # Parameter detail card
+│       └── parameterFormatter.ts            # Parameter display utilities
 └── pages/chatbot/
-    ├── DealsPage.jsx                    # Deal listing with filters
-    ├── NewDealPage.jsx                  # Deal creation form
-    └── NegotiationRoom.jsx              # Main negotiation interface
+    ├── RequisitionListPage.tsx              # Main requisition list
+    ├── RequisitionDealsPage.tsx             # Deals for specific requisition
+    ├── NewDealPage.tsx                      # 4-step wizard
+    ├── NewDealPageWrapper.tsx               # Wrapper for route params
+    ├── NegotiationRoom.tsx                  # Main negotiation interface
+    ├── NegotiationSummary.tsx               # Deal summary page
+    ├── ArchivedRequisitionsPage.tsx         # Archived requisitions
+    ├── ArchivedDealsForRequisitionPage.tsx  # Archived deals
+    ├── AboutPage.tsx                        # About the chatbot
+    └── DemoScenarios.tsx                    # Demo scenario management
 ```
 
-### API Service (`chatbot.service.js`)
+### API Service (`chatbot.service.ts`)
 
-All functions use `authApi` for authenticated requests to `/api/chatbot/*`:
+All functions use `authApi` for authenticated requests with nested URL structure:
 
-**Deal Management**:
-- `createDeal(data)` - Create new deal
-- `listDeals(params)` - List deals with filters (status, mode, archived, deleted)
-- `getDeal(dealId)` - Get deal + messages
-- `getDealConfig(dealId)` - Get negotiation config
+**URL Helpers**:
+```typescript
+buildDealUrl(rfqId, vendorId, dealId?, suffix?);  // Builds nested deal URLs
+buildDraftUrl(rfqId, vendorId, draftId?);         // Builds nested draft URLs
+```
 
-**Messaging**:
-- `sendMessage(dealId, content, role)` - Send vendor/accordo message
+**Requisition Views**:
+- `getRequisitionsWithDeals(params)` - List requisitions with deal stats
+- `getRequisitionsForNegotiation()` - Get available requisitions
+- `getRequisitionDeals(rfqId, params)` - Get all deals for requisition
+- `getRequisitionVendors(rfqId)` - Get vendors attached to requisition
+- `archiveRequisition(rfqId)` - Archive requisition (cascades to deals)
+- `unarchiveRequisition(rfqId)` - Unarchive requisition
 
-**Lifecycle**:
-- `resetDeal(dealId)` - Reset to round 0
-- `archiveDeal(dealId)` - Archive deal
-- `unarchiveDeal(dealId)` - Unarchive deal
-- `softDeleteDeal(dealId)` - Soft delete (recoverable)
-- `restoreDeal(dealId)` - Restore from deleted
-- `permanentlyDeleteDeal(dealId)` - Hard delete
+**Smart Defaults & Drafts**:
+- `getSmartDefaults(rfqId, vendorId)` - AI-suggested negotiation defaults
+- `saveDraft(rfqId, vendorId, data)` - Auto-save deal draft
+- `getDrafts(rfqId, vendorId)` - List user's drafts
+- `deleteDraft(rfqId, vendorId, draftId)` - Delete draft
 
-**Insights**:
-- `getExplainability(dealId)` - Get negotiation audit trail
+**Deal Management (Nested URLs)**:
+- `listDeals(rfqId, vendorId, params)` - List deals for RFQ+Vendor
+- `createDealWithConfig(rfqId, vendorId, data)` - Create deal with full config
+- `getDeal(ctx)` - Get deal + messages
+- `getDealConfig(ctx)` - Get negotiation config
+- `getDealUtility(ctx)` - Get weighted utility breakdown
+- `getDealSummary(ctx)` - Get deal summary for modal
+
+**Messaging (Unified for both modes)**:
+- `sendMessage(ctx, content, role, mode)` - Send message (INSIGHTS or CONVERSATION)
+- `startConversation(ctx)` - Start conversation mode
+- `getSuggestedCounters(ctx)` - Get AI-generated response suggestions
+
+**Deal Lifecycle**:
+- `resetDeal(ctx)` - Reset deal to round 0
+- `archiveDeal(ctx)` - Archive deal
+- `unarchiveDeal(ctx)` - Unarchive deal
+- `retryDealEmail(ctx)` - Retry sending vendor notification
+
+**Vendor Simulation**:
+- `generateVendorMessage(ctx, scenario)` - Simulate vendor response
+- `runDemo(ctx, scenarioType)` - Run full demo scenario
+
+### DealContext Type
+
+All deal operations require a context object:
+```typescript
+interface DealContext {
+  rfqId: number;
+  vendorId: number;
+  dealId: string;
+}
+```
 
 ### Custom Hooks
 
-**`useDealActions(dealId)`**:
+**`useDealActions(rfqId, vendorId, dealId)`**:
 Returns:
 - `deal` - Deal object with status, round, title
 - `messages` - Array of messages (VENDOR, ACCORDO, SYSTEM)
-- `config` - Negotiation config (price params, terms, thresholds)
+- `config` - Negotiation config (parameters, thresholds, weights)
+- `utility` - Weighted utility breakdown with recommendations
 - `loading`, `error`, `sending` - Loading states
 - `canNegotiate`, `canSend`, `canReset` - Permission flags
 - `maxRounds` - Max negotiation rounds from config
@@ -215,60 +311,73 @@ Returns:
 - `reset()` - Reset deal with confirmation
 - `reload()` - Refresh deal data
 
-**`useDeal(dealId)`**:
-Simpler hook for basic operations (no config/permissions).
+**`useConversation(dealContext)`**:
+Conversation mode specific hook with:
+- LLM-driven response handling
+- Reveal offer tracking
+- Turn counting
 
 ### Pages
 
-**`DealsPage.jsx`** (`/chatbot`):
-- Deal cards with status badges
-- Filters: status, mode, archived, deleted
-- Pagination (10 items per page)
-- "New Deal" button → `/chatbot/deals/new`
-- Click card → `/chatbot/deals/:dealId`
+**`RequisitionListPage.tsx`** (`/chatbot`):
+- Requisition cards with deal statistics
+- Archive filter (active/archived/all)
+- Search by RFQ number or title
+- Click card -> `/chatbot/requisitions/:rfqId`
 
-**`NewDealPage.jsx`** (`/chatbot/deals/new`):
-- Form fields: title, counterparty, mode (CONVERSATION/INSIGHTS)
-- Auto-navigates to deal after creation
-- Cancel button → back to deals list
+**`RequisitionDealsPage.tsx`** (`/chatbot/requisitions/:rfqId`):
+- Vendor deal cards with status and progress
+- Status filter (all/negotiating/accepted/walked_away/escalated)
+- Archive filter for deals
+- "Start Negotiation" button -> `/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/new`
 
-**`NegotiationRoom.jsx`** (`/chatbot/deals/:dealId`):
-- **Header**: Deal title, status badge, round counter, Refresh/Reset buttons
+**`NewDealPage.tsx`** (`/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/new`):
+4-step wizard:
+1. **Step 1 - Basic Info**: Mode selection, priority
+2. **Step 2 - Commercial**: Price targets, payment terms, delivery
+3. **Step 3 - Contract/SLA**: Warranty, penalties, quality standards
+4. **Step 4 - Weights**: Parameter importance weights (must sum to 100)
+5. **Review**: Final review before creation
+
+**`NegotiationRoom.tsx`** (`/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId`):
+- **Header**: Back button, deal title/status, round counter, actions
 - **Main area**: ChatTranscript + Composer
-- **Sidebar**: Negotiation config display
-  - Price parameters (target, min, max)
-  - Payment terms (ideal, acceptable)
-  - Thresholds (accept_threshold, walkaway_threshold)
-  - Max rounds
+- **Sidebar**: Weighted utility breakdown, parameter details, thresholds
+- Supports both INSIGHTS and CONVERSATION modes
 
 ### Components
 
-**`MessageBubble.jsx`**:
+**`MessageBubble.tsx`**:
 - Vendor messages: left-aligned, white background
 - Accordo messages: right-aligned, blue background
 - Shows decision metadata (action, utility score, round)
 - "Show more" for long messages (>300 chars)
 
-**`DecisionBadge.jsx`**:
+**`DecisionBadge.tsx`**:
 Color-coded action badges:
-- ACCEPT → Green
-- COUNTER → Blue
-- WALK_AWAY → Red
-- ESCALATE → Orange
-- ASK_CLARIFY → Yellow
+- ACCEPT -> Green
+- COUNTER -> Blue
+- WALK_AWAY -> Red
+- ESCALATE -> Orange
+- ASK_CLARIFY -> Yellow
 
-**`Composer.jsx`**:
+**`Composer.tsx`**:
 - Text input with send button
-- Scenario chips: HARD, SOFT, WALK_AWAY
+- AI-suggested response chips (HARD, MEDIUM, SOFT, WALK_AWAY)
 - Pre-written message templates per scenario
 - Disabled when deal is not NEGOTIATING
 
-**`ChatTranscript.jsx`**:
-- Auto-scroll to latest message
+**`ChatTranscript.tsx`**:
+- Smart auto-scroll (only when user near bottom)
 - Round dividers between negotiation rounds
 - Processing indicator (animated dots)
-- Empty state when no messages
 - Message grouping (consecutive same-role messages)
+
+**`WeightedUtilityBar.tsx`**:
+- Parameter-level utility breakdown
+- Color-coded status (excellent/good/warning/critical)
+- Progress bars with weight percentages
+- Threshold zone visualization
 
 ### Deal Statuses
 
@@ -277,6 +386,35 @@ Color-coded action badges:
 - `WALKED_AWAY` - Accordo walked away (utility too low)
 - `ESCALATED` - Max rounds exceeded
 
+### Deal Wizard Types
+
+```typescript
+interface DealWizardFormData {
+  stepOne: {
+    requisitionId: number | null;
+    vendorId: number | null;
+    title: string;
+    mode: 'INSIGHTS' | 'CONVERSATION';
+    priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  };
+  stepTwo: {
+    priceQuantity: { targetUnitPrice, maxAcceptablePrice, minOrderQuantity, ... };
+    paymentTerms: { minDays, maxDays, advancePaymentLimit, acceptedMethods };
+    delivery: { requiredDate, preferredDate, locationId, partialDelivery };
+  };
+  stepThree: {
+    contractSla: { warrantyPeriod, defectLiabilityMonths, lateDeliveryPenaltyPerDay, ... };
+    negotiationControl: { deadline, maxRounds, walkawayThreshold };
+    customParameters: CustomParameter[];
+  };
+  stepFour: {
+    weights: ParameterWeight[];
+    aiSuggested: boolean;
+    totalWeight: number; // Must equal 100
+  };
+}
+```
+
 ### Integration Points
 
 **Authentication**:
@@ -284,31 +422,49 @@ Color-coded action badges:
 - Token refresh on 401 (transparent to user)
 
 **Navigation**:
-- Sidebar item: "Negotiation Chatbot" (no permission required)
+- Sidebar item: "AI Negotiation" -> `/chatbot`
 - Nested under `DashBoardLayout` for consistent UI
 
 **Error Handling**:
 - Toast notifications via `react-hot-toast`
+- ChatErrorBoundary for graceful degradation
 - Error states in hooks and components
-- Graceful degradation on config load failure
 
 ### Backend API Endpoints
 
 All endpoints under `/api/chatbot/`:
 
+**Requisition Views**:
 ```
-GET    /deals                    # List deals (query: status, mode, archived, deleted, page, limit)
-POST   /deals                    # Create deal (body: title, counterparty, mode)
-GET    /deals/:dealId            # Get deal + messages
-GET    /deals/:dealId/config     # Get negotiation config
-POST   /deals/:dealId/messages   # Send message (body: content, role)
-POST   /deals/:dealId/reset      # Reset deal
-POST   /deals/:dealId/archive    # Archive deal
-POST   /deals/:dealId/unarchive  # Unarchive deal
-POST   /deals/:dealId/soft-delete # Soft delete
-POST   /deals/:dealId/restore    # Restore from deleted
-DELETE /deals/:dealId/permanent  # Permanent delete
-GET    /deals/:dealId/explainability # Get audit trail
+GET    /requisitions                    # List requisitions with deal stats
+GET    /requisitions/for-negotiation    # Available requisitions
+GET    /requisitions/:rfqId/deals       # All deals for requisition
+GET    /requisitions/:rfqId/vendors     # Vendors for requisition
+POST   /requisitions/:rfqId/archive     # Archive requisition
+POST   /requisitions/:rfqId/unarchive   # Unarchive requisition
+```
+
+**Deal Operations (Nested)**:
+```
+GET    /requisitions/:rfqId/vendors/:vendorId/deals                    # List deals
+POST   /requisitions/:rfqId/vendors/:vendorId/deals                    # Create deal
+GET    /requisitions/:rfqId/vendors/:vendorId/deals/:dealId            # Get deal
+GET    /requisitions/:rfqId/vendors/:vendorId/deals/:dealId/config     # Get config
+GET    /requisitions/:rfqId/vendors/:vendorId/deals/:dealId/utility    # Get utility
+GET    /requisitions/:rfqId/vendors/:vendorId/deals/:dealId/summary    # Get summary
+POST   /requisitions/:rfqId/vendors/:vendorId/deals/:dealId/messages   # Send message
+POST   /requisitions/:rfqId/vendors/:vendorId/deals/:dealId/reset      # Reset deal
+POST   /requisitions/:rfqId/vendors/:vendorId/deals/:dealId/archive    # Archive
+POST   /requisitions/:rfqId/vendors/:vendorId/deals/:dealId/unarchive  # Unarchive
+POST   /requisitions/:rfqId/vendors/:vendorId/deals/:dealId/simulate   # Vendor sim
+```
+
+**Smart Defaults & Drafts**:
+```
+GET    /requisitions/:rfqId/vendors/:vendorId/smart-defaults   # Get defaults
+POST   /requisitions/:rfqId/vendors/:vendorId/drafts           # Save draft
+GET    /requisitions/:rfqId/vendors/:vendorId/drafts           # List drafts
+DELETE /requisitions/:rfqId/vendors/:vendorId/drafts/:draftId  # Delete draft
 ```
 
 ### Styling
@@ -358,7 +514,7 @@ All management screens follow this consistent pattern:
 
 ### Page Component Standards
 
-All page components (VendorManagement, ProjectManagement, PoManagement, AddVendor, AddRequisition, NegotiationRoom, etc.) follow:
+All page components follow:
 1. **Outer container**: `flex flex-col min-h-full` - allows vertical layout with natural height
 2. **Sticky header**: `sticky top-0 z-10 bg-white border-b pt-6 pb-4 px-6 flex-shrink-0`
 3. **Content area**: `flex-1 px-6 pb-6` - grows to fill space, no overflow constraints
@@ -369,24 +525,10 @@ All page components (VendorManagement, ProjectManagement, PoManagement, AddVendo
 - Text: `text-gray-900 dark:text-dark-text`
 - Secondary text: `text-gray-600 dark:text-dark-text-secondary`
 
-### Negotiation Chatbot UI Standards
-
-**NegotiationRoom Header** (`src/pages/chatbot/NegotiationRoom.tsx`):
-- Active negotiation header (line 353): `sticky top-0 z-10 bg-white dark:bg-dark-surface border-b px-6 pt-6 pb-4`
-- Completed deal header (line 252): Same padding for consistency
-- Three-section layout: Back button (left), Title + Status (center), Actions (right)
-
-**NewDealPage Header** (`src/pages/chatbot/NewDealPage.tsx`):
-- Sticky header with consistent `pt-6 pb-4` padding
-- Structured layout with dedicated header section separate from form content
-- White background to differentiate from gray content area
-
-### NegotiationRoom Layout Updates (January 2026)
+### NegotiationRoom Layout (January 2026)
 
 **Viewport-Locked Layout** - Slack/Discord Style:
-The NegotiationRoom now uses a fixed-viewport layout where the entire viewport IS the app, with no page-level scrolling.
-
-**Implementation** (`src/pages/chatbot/NegotiationRoom.tsx`):
+The NegotiationRoom uses a fixed-viewport layout where the entire viewport IS the app.
 
 ```tsx
 <div className="flex flex-col h-screen overflow-hidden bg-gray-100">
@@ -413,7 +555,7 @@ The NegotiationRoom now uses a fixed-viewport layout where the entire viewport I
     {/* Sidebar - Fixed width, independently scrollable */}
     <div className="w-80 bg-white border-l flex-shrink-0 overflow-hidden">
       <div className="flex-1 overflow-y-auto p-6">
-        {/* Config display */}
+        {/* Utility breakdown, config display */}
       </div>
     </div>
   </div>
@@ -427,31 +569,15 @@ The NegotiationRoom now uses a fixed-viewport layout where the entire viewport I
 - `flex-shrink-0` - Prevents shrinking (header, composer)
 - `overflow-y-auto` - Independent vertical scrolling (messages, sidebar)
 
-**Benefits**:
-1. ✅ Header always visible - no scroll-up needed
-2. ✅ Composer always accessible - no scroll-down needed
-3. ✅ Messages and sidebar scroll independently
-4. ✅ No page-level scrolling interference
-5. ✅ Consistent with modern chat apps (Slack, Discord, Teams)
+### Chat Component Features (January 2026)
 
-### Chat Component Improvements (January 2026)
-
-**Smart Auto-Scroll** (`src/components/chatbot/chat/ChatTranscript.tsx`):
-
-Implemented intelligent auto-scroll behavior that only scrolls when the user is near the bottom:
-
+**Smart Auto-Scroll** (`ChatTranscript.tsx`):
 ```tsx
 const [isNearBottom, setIsNearBottom] = useState(true);
-const scrollContainerRef = useRef<HTMLDivElement>(null);
 
 const handleScroll = () => {
-  const container = scrollContainerRef.current;
-  if (!container) return;
-
   const { scrollTop, scrollHeight, clientHeight } = container;
   const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-
-  // User is "near bottom" if within 100px
   setIsNearBottom(distanceFromBottom < 100);
 };
 
@@ -463,42 +589,32 @@ useEffect(() => {
 ```
 
 **Behavior**:
-- ✅ User scrolls up to read old messages → no auto-scroll interference
-- ✅ User stays near bottom → smooth auto-scroll to new messages
-- ✅ 100px threshold for "near bottom" detection
-- ✅ Smooth animated scroll for better UX
-
-**Message Bubble Padding** (`src/components/chatbot/chat/MessageBubble.tsx`):
-
-Updated padding for symmetric spacing:
-- Changed from `pt-6 px-6 pb-0` to `pt-6 px-6 pb-6`
-- Equal top and bottom padding (24px each)
-- Better visual balance and breathing room
-
-**Line References**:
-- NegotiationRoom.tsx: Lines 351-446 (layout structure)
-- ChatTranscript.tsx: Lines 1-64 (smart auto-scroll logic)
-- MessageBubble.tsx: Line 42 (padding update)
+- User scrolls up to read old messages -> no auto-scroll interference
+- User stays near bottom -> smooth auto-scroll to new messages
+- 100px threshold for "near bottom" detection
 
 ### Testing
 
 Manual testing checklist:
-- [ ] Create new deal
-- [ ] Send vendor messages
+- [ ] Create new deal via 4-step wizard
+- [ ] Send vendor messages in INSIGHTS mode
+- [ ] View weighted utility breakdown
+- [ ] Test parameter weight adjustments
 - [ ] View decision badges and utility scores
 - [ ] Reset deal (should go back to round 0)
-- [ ] Filter deals by status/mode
-- [ ] Archive/unarchive deals
-- [ ] Soft delete/restore deals
-- [ ] Navigate between deals list and negotiation room
+- [ ] Filter requisitions by archive status
+- [ ] Filter deals by status
+- [ ] Archive/unarchive requisitions and deals
+- [ ] Navigate between requisition list, deals list, and negotiation room
+- [ ] Test smart auto-scroll in chat
 
 ### Future Enhancements
 
-- Conversation mode with LLM integration
-- Vendor auto-reply (simulated vendor)
+- CONVERSATION mode with full LLM integration
+- Vendor auto-reply simulation
 - Explainability modal/drawer
-- Deal summary page with outcome analysis
-- Archived/deleted deals pages
+- Deal comparison across vendors
+- Bulk deal operations
 - Real-time WebSocket updates
 - Deal export (PDF/CSV)
-- Deal cloning
+- Deal cloning from templates
