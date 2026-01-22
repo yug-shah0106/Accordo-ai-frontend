@@ -12,7 +12,6 @@ interface MessageGroup {
 interface MessageWithDivider {
   type: 'message';
   message: Message;
-  round?: number;
   isGrouped: boolean;
 }
 
@@ -59,22 +58,12 @@ export default function ChatTranscript({
   };
 
   // Smart auto-scroll: only scroll if user is near bottom
+  // FIXED (Jan 2026): Added messages.length dependency to ensure scroll triggers on new messages
   useEffect(() => {
     if (isNearBottom && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, isProcessing, isNearBottom]);
-
-  // Calculate round number for each Accordo message
-  const getRoundForMessage = (message: Message, index: number): number | undefined => {
-    if (message.role === "ACCORDO" && message.engineDecision) {
-      const previousAccordo = messages.slice(0, index).filter(
-        (m) => m.role === "ACCORDO" && m.engineDecision
-      );
-      return previousAccordo.length + 1;
-    }
-    return undefined;
-  };
+  }, [messages, messages.length, isProcessing, isNearBottom]);
 
   // Group consecutive messages from same role
   const groupMessages = (msgs: Message[]): MessageGroup[] => {
@@ -103,25 +92,28 @@ export default function ChatTranscript({
 
   const groupedMessages = groupMessages(messages);
 
-  // Add round dividers
+  // Add round dividers BEFORE the first vendor message of each round
+  // Round dividers show "Round X" where X comes from message.round (backend source of truth)
   const messagesWithDividers: TranscriptItem[] = [];
-  let lastRound: number | undefined = undefined;
+  let lastSeenRound: number | null = null;
 
   groupedMessages.forEach((group) => {
     group.messages.forEach((message, msgIdx) => {
-      const index = messages.indexOf(message);
-      const round = getRoundForMessage(message, index);
+      const messageRound = message.round;
       const isGrouped = msgIdx > 0;
 
-      // Add divider if round changed and this is an Accordo message
-      if (round !== undefined && round !== lastRound && lastRound !== undefined) {
-        messagesWithDividers.push({ type: "divider", round });
+      // Add divider BEFORE the first vendor message of a new round
+      // Requirement: "Round X" divider appears before the vendor message that starts that round
+      if (
+        message.role === "VENDOR" &&
+        messageRound !== null &&
+        messageRound !== lastSeenRound
+      ) {
+        messagesWithDividers.push({ type: "divider", round: messageRound });
+        lastSeenRound = messageRound;
       }
 
-      messagesWithDividers.push({ type: "message", message, round, isGrouped });
-      if (round !== undefined) {
-        lastRound = round;
-      }
+      messagesWithDividers.push({ type: "message", message, isGrouped });
     });
   });
 
@@ -158,7 +150,6 @@ export default function ChatTranscript({
               <MessageBubble
                 key={messageKey}
                 message={item.message}
-                round={item.round}
                 isGrouped={item.isGrouped}
                 vendorMode={vendorMode}
               />

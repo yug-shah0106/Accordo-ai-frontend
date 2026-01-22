@@ -65,7 +65,9 @@ src/
 ├── api/index.ts             # Axios instances with auth interceptors
 ├── services/                # API service modules
 │   ├── chat.service.ts      # Legacy AI chat service
-│   └── chatbot.service.ts   # Negotiation chatbot API client (47+ methods)
+│   ├── chatbot.service.ts   # Negotiation chatbot API client (47+ methods)
+│   ├── bidAnalysis.service.ts # Bid comparison API client
+│   └── export.service.ts    # PDF/CSV export utilities
 ├── hooks/                   # Custom React hooks
 │   └── chatbot/             # Chatbot-specific hooks
 │       ├── useDealActions.ts    # Advanced hook with permissions & utility
@@ -363,9 +365,37 @@ Color-coded action badges:
 
 **`Composer.tsx`**:
 - Text input with send button
-- AI-suggested response chips (HARD, MEDIUM, SOFT, WALK_AWAY)
-- Pre-written message templates per scenario
+- AI-suggested response chips (Strong Position, Balanced Offer, Flexible Offer)
+- Pre-written message templates per scenario with **VENDOR PERSPECTIVE** pricing
+- Interactive emphasis chips for filtering suggestions by priority (price/terms/delivery)
 - Disabled when deal is not NEGOTIATING
+
+### Quick Offers - Vendor Perspective Pricing (January 2026)
+
+All Quick Offers in the Composer use **vendor perspective** pricing - vendors want HIGHER prices (profit maximization).
+
+**Scenario Pricing Logic** (`src/utils/scenarioGenerator.ts`):
+
+| Scenario | Label | Price Calculation | Vendor Strategy |
+|----------|-------|-------------------|-----------------|
+| **HARD** | Strong Position | 15% above PM's max price | Maximum profit, aggressive stance |
+| **MEDIUM** | Balanced Offer | 75% of range from target to max | Fair middle ground |
+| **SOFT** | Flexible Offer | 25% of range from target to max | Quick close, near PM's target |
+
+**Example** (Target=$90, Max=$100):
+- Strong Position (HARD): ~$115 (15% above max)
+- Balanced Offer (MEDIUM): ~$97.50 (75% of range)
+- Flexible Offer (SOFT): ~$92.50 (25% of range)
+
+**Payment Terms** (vendor prefers shorter terms = faster cash flow):
+- HARD: Shortest terms (Net 30) - best for vendor
+- MEDIUM: Average terms
+- SOFT: Longest terms (Net 60) - more flexible for buyer
+
+**Key Functions**:
+- `generateScenarioMessages()` - Main scenario generator with vendor perspective
+- `generateEmphasisAwareFallback()` - Instant fallback for emphasis-filtered suggestions
+- `generateVendorFallbackScenarios()` - Vendor mode specific fallback
 
 **`ChatTranscript.tsx`**:
 - Smart auto-scroll (only when user near bottom)
@@ -607,6 +637,42 @@ Manual testing checklist:
 - [ ] Archive/unarchive requisitions and deals
 - [ ] Navigate between requisition list, deals list, and negotiation room
 - [ ] Test smart auto-scroll in chat
+
+## Bid Analysis Module (January 2026)
+
+### Overview
+
+The Bid Analysis module provides comprehensive vendor bid comparison and selection functionality. It allows procurement managers to compare bids across vendors for a requisition and select winning vendors.
+
+### File Structure
+
+```
+src/
+├── services/bidAnalysis.service.ts    # API client for bid analysis
+├── types/bidAnalysis.ts               # TypeScript types
+├── hooks/bidAnalysis/
+│   └── useBidAnalysis.ts              # Data fetching hook
+├── components/BidAnalysis/
+│   ├── BidComparisonTable.tsx         # Comparison table with charts
+│   ├── VendorBidCard.tsx              # Individual vendor bid card
+│   └── WinnerSelectionModal.tsx       # Winner selection dialog
+└── pages/BidAnalysis/
+    ├── BidAnalysisListPage.tsx        # Requisitions with bids
+    └── BidComparisonPage.tsx          # Detailed comparison view
+```
+
+### API Service (`bidAnalysis.service.ts`)
+
+- `getRequisitionsWithBids(params)` - List requisitions with bid statistics
+- `getBidComparison(rfqId)` - Get bid comparison for a requisition
+- `getVendorBids(rfqId)` - Get all vendor bids for requisition
+- `selectWinner(rfqId, bidId, data)` - Select winning vendor
+- `downloadPdfReport(rfqId)` - Download PDF comparison report
+
+### Routes
+
+- `/bid-analysis` - Requisitions with bid analysis
+- `/bid-analysis/:rfqId` - Detailed bid comparison view
 
 ### Future Enhancements
 

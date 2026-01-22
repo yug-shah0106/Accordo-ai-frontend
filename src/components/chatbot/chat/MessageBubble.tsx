@@ -14,12 +14,11 @@ import type { Message } from '../../../types';
 
 interface MessageBubbleProps {
   message: Message;
-  round?: number;
   isGrouped?: boolean;
   vendorMode?: boolean;  // When true, shows vendor-perspective labels
 }
 
-export default function MessageBubble({ message, round, isGrouped = false, vendorMode = false }: MessageBubbleProps) {
+export default function MessageBubble({ message, isGrouped = false, vendorMode = false }: MessageBubbleProps) {
   const [showFull, setShowFull] = useState(false);
 
   // Guard against undefined/null message
@@ -97,7 +96,7 @@ export default function MessageBubble({ message, round, isGrouped = false, vendo
         {isAccordo && decision && (
           <div className="mt-3 flex flex-col gap-2">
             {shouldShowContent && <div className="h-px bg-gray-200 my-1" />}
-            <DecisionBadge decision={decision} round={round} />
+            <DecisionBadge decision={decision} />
             {decision.action === "COUNTER" && decision.counterOffer && (
               <OfferCard offer={decision.counterOffer} />
             )}

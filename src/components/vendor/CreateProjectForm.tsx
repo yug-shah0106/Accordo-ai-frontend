@@ -175,7 +175,7 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
             />
           </div>
 
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-4 mt-4">
             <div className="grow">
               <SelectField
                 label="POC"
@@ -266,7 +266,7 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
           <div className="flex justify-end gap-4 mt-8">
             <Button
               type="button"
-              className="px-6 py-3 bg-white border-2 border-[#e5e7eb] text-[#374151] hover:bg-[#f3f4f6] hover:border-[#d1d5db] rounded-lg font-medium transition-all duration-200 flex items-center gap-2 min-w-[120px] justify-center shadow-sm hover:shadow-md active:shadow-inner"
+              className="px-6 py-3 !bg-white border-2 border-gray-400 !text-gray-800 hover:bg-gray-100 hover:border-gray-500 hover:!text-gray-900 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 min-w-[120px] justify-center"
               onClick={() => navigate(-1)}
             >
               Cancel

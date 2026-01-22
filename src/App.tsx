@@ -50,6 +50,7 @@ import RequisitionDealsPage from "./pages/chatbot/RequisitionDealsPage";
 import ArchivedRequisitionsPage from "./pages/chatbot/ArchivedRequisitionsPage";
 import ArchivedDealsForRequisitionPage from "./pages/chatbot/ArchivedDealsForRequisitionPage";
 import Feedback from "./pages/Feedback";
+import { BidAnalysisListPage, BidAnalysisDetailPage } from "./pages/BidAnalysis";
 
 function App() {
   return (
@@ -246,6 +247,15 @@ function App() {
             element={<DashBoardLayout logo={sideBarLogo} />}
           >
             <Route index element={<Feedback />} />
+          </Route>
+
+          {/* Bid Analysis Routes */}
+          <Route
+            path="/bid-analysis"
+            element={<DashBoardLayout logo={sideBarLogo} />}
+          >
+            <Route index element={<BidAnalysisListPage />} />
+            <Route path="requisitions/:requisitionId" element={<BidAnalysisDetailPage />} />
           </Route>
 
           {/* Chatbot Routes */}

@@ -87,6 +87,7 @@ export interface Message {
   utilityScore: number | null;
   counterOffer: Offer | null;
   explainabilityJson: Explainability | null;
+  round: number | null;  // Which negotiation round this message belongs to
   createdAt: string;
 }
 
@@ -102,6 +103,8 @@ export interface SendMessageInput {
 export interface Offer {
   unit_price: number | null;
   payment_terms: string | null;
+  delivery_date?: string | null;
+  delivery_days?: number | null;
   meta?: {
     raw_terms_days?: number;
     non_standard_terms?: boolean;
@@ -135,6 +138,57 @@ export interface Explainability {
     unitPrice: { anchor: number; target: number; max: number; step: number };
     termOptions: string[];
   };
+}
+
+// ============================================================================
+// Structured Suggestion Types
+// ============================================================================
+
+/**
+ * Emphasis type for suggestion message variety
+ * Each suggestion within a scenario emphasizes a different aspect
+ */
+export type SuggestionEmphasis = 'price' | 'terms' | 'delivery' | 'value';
+
+/**
+ * Scenario types for suggestions
+ */
+export type ScenarioType = 'HARD' | 'MEDIUM' | 'SOFT' | 'WALK_AWAY';
+
+/**
+ * Structured suggestion with price, terms, and delivery
+ * Replaces the old string-only suggestion format
+ */
+export interface StructuredSuggestion {
+  message: string;              // Human-like message text including all terms
+  price: number;                // Unit price value
+  paymentTerms: string;         // e.g., "Net 30", "Net 60", "Net 90"
+  deliveryDate: string;         // ISO date string (YYYY-MM-DD)
+  deliveryDays: number;         // Days from today
+  emphasis: SuggestionEmphasis; // What this message emphasizes
+}
+
+/**
+ * Complete scenario suggestions map
+ */
+export type ScenarioSuggestions = Record<ScenarioType, StructuredSuggestion[]>;
+
+/**
+ * Delivery configuration from deal or computed
+ */
+export interface DeliveryConfig {
+  date: string;                 // ISO date string
+  daysFromToday: number;        // Calculated days
+  isDefault: boolean;           // Whether using 30-day fallback
+}
+
+/**
+ * Offer chip for UI display
+ */
+export interface OfferChip {
+  label: string;                // e.g., "Price", "Terms", "Delivery"
+  value: string;                // e.g., "$92.00", "Net 30", "Jan 15 (14 days)"
+  type: 'price' | 'terms' | 'delivery';
 }
 
 // ============================================================================

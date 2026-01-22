@@ -7,7 +7,6 @@ import type { Decision } from '../../../types';
 
 interface DecisionBadgeProps {
   decision: Decision | null;
-  round?: number;
 }
 
 // Icon components for better visual distinction
@@ -47,13 +46,7 @@ const ChartIcon = () => (
   </svg>
 );
 
-const RefreshIcon = () => (
-  <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-    <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clipRule="evenodd" />
-  </svg>
-);
-
-export default function DecisionBadge({ decision, round }: DecisionBadgeProps) {
+export default function DecisionBadge({ decision }: DecisionBadgeProps) {
   if (!decision || !decision.action) return null;
 
   const getActionStyles = (action: string): { className: string; icon: React.ReactNode; label: string } => {
@@ -118,12 +111,6 @@ export default function DecisionBadge({ decision, round }: DecisionBadgeProps) {
         <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-300">
           <ChartIcon />
           {utilityPercent}%
-        </span>
-      )}
-      {round !== undefined && (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-300">
-          <RefreshIcon />
-          Round {round}
         </span>
       )}
     </div>

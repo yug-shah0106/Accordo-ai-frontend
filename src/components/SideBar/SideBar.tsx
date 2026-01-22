@@ -200,7 +200,7 @@ import { useEffect, useState, useRef } from "react";
 import { FiBarChart2, FiGitBranch, FiMessageSquare, FiSun, FiMoon } from "react-icons/fi";
 import { VscFeedback } from "react-icons/vsc";
 import { BiUserCheck } from "react-icons/bi";
-import { MdAnalytics } from "react-icons/md";
+import { MdVerified } from "react-icons/md";
 import { useLocation, useNavigate } from "react-router-dom";
 import { RiBox3Line } from "react-icons/ri";
 import { SlSettings } from "react-icons/sl";
@@ -300,6 +300,13 @@ const Sidebar = ({ logo }) => {
       icon: <FiMessageSquare className="text-xl" />,
       link: "chatbot/requisitions",
       permissionKey: null,
+      isActive: true,
+    },
+    {
+      name: "Bid Analysis",
+      icon: <MdVerified className="text-xl" />,
+      link: "bid-analysis",
+      permissionKey: "requisitionPermission",
       isActive: true,
     },
     {

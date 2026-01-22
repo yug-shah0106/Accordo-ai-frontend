@@ -36,6 +36,7 @@ import type {
   DealMode,
   DealContext,
   QualityCertification,
+  ScenarioSuggestions,
 } from "../types";
 
 // Re-export DealContext for convenience
@@ -439,27 +440,31 @@ export const chatbotService = {
   },
 
   /**
-   * Get AI-generated counter suggestions
+   * Get AI-generated counter suggestions with structured offer data
    * POST /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/suggestions
+   *
+   * Returns structured suggestions including:
+   * - message: Human-like message text
+   * - price: Unit price value
+   * - paymentTerms: e.g., "Net 30", "Net 60"
+   * - deliveryDate: ISO date string
+   * - deliveryDays: Days from today
+   * - emphasis: What the message emphasizes (price, terms, delivery, value)
+   *
+   * @param ctx - Deal context (rfqId, vendorId, dealId)
+   * @param emphases - Optional emphasis filter (price, terms, delivery, value)
+   *                   When provided, suggestions prioritize selected emphases
+   *                   Multiple emphases result in weighted blend
    */
   getSuggestedCounters: async (
-    ctx: DealContext
-  ): Promise<{
-    data: {
-      HARD: string[];
-      MEDIUM: string[];
-      SOFT: string[];
-      WALK_AWAY: string[];
-    };
-  }> => {
-    const res = await authApi.post<{
-      data: {
-        HARD: string[];
-        MEDIUM: string[];
-        SOFT: string[];
-        WALK_AWAY: string[];
-      };
-    }>(buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'suggestions'));
+    ctx: DealContext,
+    emphases?: Array<'price' | 'terms' | 'delivery' | 'value'>
+  ): Promise<{ data: ScenarioSuggestions }> => {
+    const url = buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'suggestions');
+    const params = emphases && emphases.length > 0
+      ? { emphasis: emphases.join(',') }
+      : undefined;
+    const res = await authApi.post<{ data: ScenarioSuggestions }>(url, null, { params });
     return res.data;
   },
 
@@ -579,6 +584,167 @@ export const chatbotService = {
       buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'resume')
     );
     return res.data;
+  },
+
+  // ==================== TWO-PHASE MESSAGING (Instant Vendor + Async PM) ====================
+  // These endpoints enable instant display of vendor messages with background PM response generation:
+  // - Phase 1: Save vendor message instantly (appears immediately in UI)
+  // - Phase 2: Generate PM response asynchronously (with typing indicator)
+  // - Fallback: Get quick fallback response if LLM is slow (5 second timeout)
+
+  /**
+   * Save vendor message instantly (Phase 1 of two-phase messaging)
+   * POST /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/vendor-message-instant
+   *
+   * Saves the vendor message to database immediately without waiting for PM response.
+   * Returns the saved message so it can be displayed instantly in UI.
+   */
+  saveVendorMessageInstant: async (
+    ctx: DealContext,
+    content: string
+  ): Promise<{
+    data: {
+      vendorMessage: Message;
+      deal: Deal;
+    };
+  }> => {
+    const res = await authApi.post<{
+      message: string;
+      data: {
+        vendorMessage: Message;
+        deal: Deal;
+      };
+    }>(
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'vendor-message-instant'),
+      { content }
+    );
+    return { data: res.data.data };
+  },
+
+  /**
+   * Generate PM response asynchronously (Phase 2 of two-phase messaging)
+   * POST /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/pm-response-async
+   *
+   * Generates the AI PM response using LLM for human-like, context-aware responses.
+   * Call this after saveVendorMessageInstant while showing typing indicator.
+   * Has a 5 second timeout - if it takes longer, use generatePMResponseFallback.
+   *
+   * @param ctx - Deal context
+   * @param vendorMessageId - ID of the vendor message from Phase 1 (required)
+   */
+  generatePMResponseAsync: async (
+    ctx: DealContext,
+    vendorMessageId: string
+  ): Promise<{
+    data: {
+      pmMessage: Message;
+      decision: {
+        action: 'ACCEPT' | 'COUNTER' | 'ESCALATE' | 'WALK_AWAY';
+        utilityScore: number;
+        counterOffer?: {
+          unit_price: number | null;
+          payment_terms: string | null;
+          delivery_date?: string | null;
+          delivery_days?: number | null;
+        } | null;
+        reasons: string[];
+      };
+      utility: {
+        totalUtility: number;
+        totalUtilityPercent: number;
+        parameterUtilities: Record<string, unknown>;
+        thresholds: { accept: number; escalate: number; walkAway: number };
+        recommendation: string;
+        recommendationReason: string;
+      };
+      deal: Deal;
+    };
+  }> => {
+    const res = await authApi.post<{
+      message: string;
+      data: {
+        pmMessage: Message;
+        decision: {
+          action: 'ACCEPT' | 'COUNTER' | 'ESCALATE' | 'WALK_AWAY';
+          utilityScore: number;
+          counterOffer?: {
+            unit_price: number | null;
+            payment_terms: string | null;
+            delivery_date?: string | null;
+            delivery_days?: number | null;
+          } | null;
+          reasons: string[];
+        };
+        utility: {
+          totalUtility: number;
+          totalUtilityPercent: number;
+          parameterUtilities: Record<string, unknown>;
+          thresholds: { accept: number; escalate: number; walkAway: number };
+          recommendation: string;
+          recommendationReason: string;
+        };
+        deal: Deal;
+      };
+    }>(
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'pm-response-async'),
+      { vendorMessageId }
+    );
+    return { data: res.data.data };
+  },
+
+  /**
+   * Generate PM fallback response (Timeout Handler)
+   * POST /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/pm-response-fallback
+   *
+   * Generates a quick deterministic PM response using fallback templates.
+   * Use this if generatePMResponseAsync times out (>5 seconds).
+   * Provides instant response without LLM dependency.
+   *
+   * @param ctx - Deal context
+   * @param vendorMessageId - ID of the vendor message from Phase 1 (required)
+   */
+  generatePMResponseFallback: async (
+    ctx: DealContext,
+    vendorMessageId: string
+  ): Promise<{
+    data: {
+      pmMessage: Message;
+      decision: {
+        action: 'ACCEPT' | 'COUNTER' | 'ESCALATE' | 'WALK_AWAY';
+        utilityScore: number;
+        counterOffer?: {
+          unit_price: number | null;
+          payment_terms: string | null;
+          delivery_date?: string | null;
+          delivery_days?: number | null;
+        } | null;
+        reasons: string[];
+      };
+      deal: Deal;
+    };
+  }> => {
+    const res = await authApi.post<{
+      message: string;
+      data: {
+        pmMessage: Message;
+        decision: {
+          action: 'ACCEPT' | 'COUNTER' | 'ESCALATE' | 'WALK_AWAY';
+          utilityScore: number;
+          counterOffer?: {
+            unit_price: number | null;
+            payment_terms: string | null;
+            delivery_date?: string | null;
+            delivery_days?: number | null;
+          } | null;
+          reasons: string[];
+        };
+        deal: Deal;
+      };
+    }>(
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'pm-response-fallback'),
+      { vendorMessageId }
+    );
+    return { data: res.data.data };
   },
 
   // ==================== VENDOR NEGOTIATION (AI-PM MODE) ====================

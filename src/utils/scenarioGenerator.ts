@@ -121,15 +121,28 @@ function generateNegotiationText(
 /**
  * Generate all scenario messages based on wizard config
  *
- * Scenarios use the following logic:
- * - HARD: Target values (what we want)
- * - MEDIUM: 30% toward max acceptable
- * - SOFT: 60% toward max acceptable
+ * VENDOR PERSPECTIVE (January 2026 Update):
+ * These Quick Offers represent the vendor's position in negotiations.
+ * Vendors want HIGHER prices (profit maximization).
  *
- * For payment terms:
- * - HARD: Max days (longest terms, best for buyer)
+ * Scenarios use the following logic:
+ * - HARD (Strong Position): HIGHEST price - aggressive vendor stance, maximum profit
+ * - MEDIUM (Balanced Offer): MID-RANGE price - fair deal, moderate profit
+ * - SOFT (Flexible Offer): LOWEST price - near PM's target, quick close
+ *
+ * Price calculation from PM's perspective:
+ * - targetUnitPrice = PM's ideal price (what PM wants to pay)
+ * - maxAcceptablePrice = PM's ceiling (PM walks away above this)
+ *
+ * Vendor pricing (relative to PM's range):
+ * - HARD: 15% above PM's max (aggressive, risks rejection)
+ * - MEDIUM: At PM's max (competitive but profitable)
+ * - SOFT: Near PM's target (quick close, lower profit)
+ *
+ * For payment terms (vendor prefers shorter terms = faster payment):
+ * - HARD: Min days (shortest terms, best for vendor cash flow)
  * - MEDIUM: Average of min and max
- * - SOFT: Min days (shortest terms)
+ * - SOFT: Max days (longest terms, more flexible for buyer)
  */
 export function generateScenarioMessages(
   wizardConfig: WizardConfig | null | undefined,
@@ -157,16 +170,29 @@ export function generateScenarioMessages(
     return getDefaultScenarios();
   }
 
-  // Calculate scenario prices (adjust based on current round for variety)
-  const roundAdjustment = currentRound * 0.02; // 2% adjustment per round
-  const hardPrice = targetPrice;
-  const mediumPrice = targetPrice + (maxPrice - targetPrice) * (0.3 + roundAdjustment);
-  const softPrice = targetPrice + (maxPrice - targetPrice) * (0.6 + roundAdjustment);
+  // Calculate the price range between PM's target and max
+  const priceRange = maxPrice - targetPrice;
 
-  // Calculate payment terms
-  const hardPayment = paymentMax; // Longest terms (best for buyer)
+  // VENDOR PERSPECTIVE: Higher prices = better for vendor
+  // Adjust slightly per round for variety
+  const roundAdjustment = currentRound * 0.01; // 1% adjustment per round
+
+  // HARD (Strong Position): 15% above PM's max - aggressive vendor stance
+  // Example: If PM's max is $100, HARD price is ~$115
+  const hardPrice = Math.round((maxPrice * (1.15 - roundAdjustment)) * 100) / 100;
+
+  // MEDIUM (Balanced Offer): At or slightly above PM's max - fair middle ground
+  // Example: If PM's max is $100 and target is $90, MEDIUM is ~$97.50 (75% of range)
+  const mediumPrice = Math.round((targetPrice + priceRange * (0.75 - roundAdjustment)) * 100) / 100;
+
+  // SOFT (Flexible Offer): Near PM's target - quick close, lower vendor profit
+  // Example: If PM's target is $90 and max is $100, SOFT is ~$92.50 (25% of range)
+  const softPrice = Math.round((targetPrice + priceRange * (0.25 - roundAdjustment)) * 100) / 100;
+
+  // VENDOR PERSPECTIVE: Shorter payment terms = better for vendor (faster cash)
+  const hardPayment = paymentMin; // Shortest terms (best for vendor cash flow)
   const mediumPayment = Math.round((paymentMin + paymentMax) / 2);
-  const softPayment = paymentMin; // Shortest terms
+  const softPayment = paymentMax; // Longest terms (more flexible for buyer)
 
   // Format delivery dates
   const deliveryDate = formatDate(deliveryPreferred || deliveryRequired);
@@ -180,7 +206,7 @@ export function generateScenarioMessages(
       messages: [
         generateNegotiationText(hardPrice, hardPayment, deliveryDate, 'hard'),
         generateNegotiationText(hardPrice * 0.98, hardPayment, deliveryDate, 'hard'),
-        generateNegotiationText(hardPrice * 1.02, hardPayment - 5, deliveryDate, 'hard'),
+        generateNegotiationText(hardPrice * 1.02, hardPayment + 5, deliveryDate, 'hard'),
       ],
     },
     {
@@ -353,54 +379,413 @@ export function getVendorScenarioDescription(
  *
  * Uses PM's last offer (if available) to calculate vendor counter-offers
  */
+// ==================== EMPHASIS-AWARE INSTANT FALLBACK ====================
+
+/**
+ * Structured suggestion type for emphasis-specific suggestions
+ */
+export interface StructuredFallbackSuggestion {
+  message: string;
+  price: number;
+  paymentTerms: string;
+  deliveryDate: string;
+  deliveryDays: number;
+  emphasis: 'price' | 'terms' | 'delivery' | 'value';
+}
+
+/**
+ * Scenario suggestions for all scenarios
+ */
+export interface ScenarioFallbackSuggestions {
+  HARD: StructuredFallbackSuggestion[];
+  MEDIUM: StructuredFallbackSuggestion[];
+  SOFT: StructuredFallbackSuggestion[];
+  WALK_AWAY: StructuredFallbackSuggestion[];
+}
+
+/**
+ * Generate emphasis-aware instant fallback suggestions
+ *
+ * VENDOR PERSPECTIVE (January 2026 Update):
+ * These Quick Offers represent vendor pricing - vendors want HIGHER prices.
+ *
+ * When emphasis is selected:
+ * - Price: 4 variations with different price points (vendor prices ABOVE PM's target)
+ * - Terms: 4 variations with different payment terms (vendor prefers shorter terms)
+ * - Delivery: 4 variations with different delivery options
+ * - Multi-select: 4 variations blending all selected emphases
+ *
+ * Scenario pricing (vendor perspective):
+ * - HARD: 15% above PM's max (highest price - maximum profit)
+ * - MEDIUM: 75% of range from target to max (balanced deal)
+ * - SOFT: 25% of range from target to max (quick close - near PM's target)
+ *
+ * @param wizardConfig - The wizard config for price/terms/delivery ranges
+ * @param emphases - Selected emphases (price, terms, delivery)
+ * @returns ScenarioFallbackSuggestions - Structured suggestions for instant display
+ */
+export function generateEmphasisAwareFallback(
+  wizardConfig: WizardConfig | null | undefined,
+  emphases: Set<'price' | 'terms' | 'delivery'>
+): ScenarioFallbackSuggestions {
+  // Extract values with fallbacks
+  const priceTarget = wizardConfig?.priceQuantity?.targetUnitPrice || 90;
+  const priceMax = wizardConfig?.priceQuantity?.maxAcceptablePrice || priceTarget * 1.3;
+
+  // Calculate price range for vendor perspective pricing
+  const priceRange = priceMax - priceTarget;
+
+  // VENDOR PERSPECTIVE: Calculate scenario base prices
+  // HARD: 15% above PM's max (highest price - maximum profit for vendor)
+  const hardBasePrice = Math.round(priceMax * 1.15 * 100) / 100;
+  // MEDIUM: 75% of range from target (near PM's max - balanced deal)
+  const mediumBasePrice = Math.round((priceTarget + priceRange * 0.75) * 100) / 100;
+  // SOFT: 25% of range from target (near PM's target - quick close)
+  const softBasePrice = Math.round((priceTarget + priceRange * 0.25) * 100) / 100;
+
+  const paymentMin = wizardConfig?.paymentTerms?.minDays || 30;
+  const paymentMax = wizardConfig?.paymentTerms?.maxDays || 60;
+
+  const deliveryRequired = wizardConfig?.delivery?.requiredDate;
+  const deliveryPreferred = wizardConfig?.delivery?.preferredDate;
+  const deliveryDate = deliveryPreferred || deliveryRequired ||
+    new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+  // Calculate delivery days from today
+  const today = new Date();
+  const deliveryDateObj = new Date(deliveryDate);
+  const deliveryDays = Math.max(7, Math.ceil((deliveryDateObj.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
+
+  // VENDOR PERSPECTIVE: Shorter terms = better for vendor (faster cash flow)
+  const idealTerms = `Net ${paymentMin}`; // Shortest terms - best for vendor
+  const acceptableTerms = `Net ${Math.round((paymentMin + paymentMax) / 2)}`;
+  const flexibleTerms = `Net ${paymentMax}`; // Longest terms - most flexible for buyer
+
+  // Determine emphasis type
+  const emphasisArray = Array.from(emphases);
+  const hasEmphasis = emphasisArray.length > 0;
+  const primaryEmphasis = hasEmphasis ? emphasisArray[0] : null;
+  const isMultiEmphasis = emphasisArray.length > 1;
+
+  // Helper: Generate 4 PRICE-focused variations
+  const generatePriceVariations = (
+    basePrice: number,
+    terms: string,
+    scenarioType: 'HARD' | 'MEDIUM' | 'SOFT' | 'WALK_AWAY'
+  ): StructuredFallbackSuggestion[] => {
+    const offsets = scenarioType === 'HARD' ? [0, 2, 4, 6] :
+                   scenarioType === 'MEDIUM' ? [0, 3, 6, 9] :
+                   scenarioType === 'SOFT' ? [0, 2, 4, 6] :
+                   [0, 3, 6, 10];
+    const termsArray = [idealTerms, idealTerms, acceptableTerms, flexibleTerms];
+
+    return [
+      {
+        message: `Our best price: $${basePrice.toFixed(2)} per unit with ${terms} terms and ${deliveryDays}-day delivery.`,
+        price: basePrice,
+        paymentTerms: terms,
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'price',
+      },
+      {
+        message: `At $${(basePrice + offsets[1]).toFixed(2)} per unit with ${termsArray[1]} terms and ${deliveryDays}-day delivery.`,
+        price: basePrice + offsets[1],
+        paymentTerms: termsArray[1],
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'price',
+      },
+      {
+        message: `For $${(basePrice + offsets[2]).toFixed(2)} per unit with ${termsArray[2]} terms, ${deliveryDays}-day delivery guaranteed.`,
+        price: basePrice + offsets[2],
+        paymentTerms: termsArray[2],
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'price',
+      },
+      {
+        message: `Value option: $${(basePrice + offsets[3]).toFixed(2)} per unit, ${termsArray[3]} terms, ${deliveryDays}-day delivery.`,
+        price: basePrice + offsets[3],
+        paymentTerms: termsArray[3],
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'price',
+      },
+    ];
+  };
+
+  // Helper: Generate 4 TERMS-focused variations
+  const generateTermsVariations = (
+    basePrice: number,
+    scenarioType: 'HARD' | 'MEDIUM' | 'SOFT' | 'WALK_AWAY'
+  ): StructuredFallbackSuggestion[] => {
+    const priceAdjust = scenarioType === 'HARD' ? 3 : scenarioType === 'MEDIUM' ? 5 : scenarioType === 'SOFT' ? 4 : 8;
+
+    return [
+      {
+        message: `Best terms: ${idealTerms} payment at $${basePrice.toFixed(2)} per unit with ${deliveryDays}-day delivery.`,
+        price: basePrice,
+        paymentTerms: idealTerms,
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'terms',
+      },
+      {
+        message: `Extended ${acceptableTerms} terms at $${(basePrice + priceAdjust).toFixed(2)} per unit with ${deliveryDays}-day delivery.`,
+        price: basePrice + priceAdjust,
+        paymentTerms: acceptableTerms,
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'terms',
+      },
+      {
+        message: `Maximum flexibility: ${flexibleTerms} terms at $${(basePrice + priceAdjust * 1.5).toFixed(2)} per unit.`,
+        price: basePrice + priceAdjust * 1.5,
+        paymentTerms: flexibleTerms,
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'terms',
+      },
+      {
+        message: `Custom terms: ${acceptableTerms} at $${(basePrice + priceAdjust * 0.5).toFixed(2)} per unit, ${deliveryDays}-day delivery.`,
+        price: basePrice + priceAdjust * 0.5,
+        paymentTerms: acceptableTerms,
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'terms',
+      },
+    ];
+  };
+
+  // Helper: Generate 4 DELIVERY-focused variations
+  const generateDeliveryVariations = (
+    basePrice: number,
+    terms: string,
+    scenarioType: 'HARD' | 'MEDIUM' | 'SOFT' | 'WALK_AWAY'
+  ): StructuredFallbackSuggestion[] => {
+    const priceAdjust = scenarioType === 'HARD' ? 4 : scenarioType === 'MEDIUM' ? 6 : scenarioType === 'SOFT' ? 5 : 10;
+    const expeditedDays = Math.max(deliveryDays - 5, 7);
+    const flexDays = deliveryDays + 3;
+
+    return [
+      {
+        message: `Express: ${expeditedDays} days at $${(basePrice + priceAdjust).toFixed(2)} per unit with ${terms} terms.`,
+        price: basePrice + priceAdjust,
+        paymentTerms: terms,
+        deliveryDate,
+        deliveryDays: expeditedDays,
+        emphasis: 'delivery',
+      },
+      {
+        message: `Priority: ${deliveryDays} days guaranteed at $${basePrice.toFixed(2)} per unit with ${terms} terms.`,
+        price: basePrice,
+        paymentTerms: terms,
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'delivery',
+      },
+      {
+        message: `Flexible: ${deliveryDays}-${flexDays} days at $${(basePrice - priceAdjust * 0.5).toFixed(2)} per unit.`,
+        price: basePrice - priceAdjust * 0.5,
+        paymentTerms: acceptableTerms,
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'delivery',
+      },
+      {
+        message: `Standard: ${deliveryDays} days with ${terms} terms at $${(basePrice - priceAdjust * 0.3).toFixed(2)} per unit.`,
+        price: basePrice - priceAdjust * 0.3,
+        paymentTerms: terms,
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'delivery',
+      },
+    ];
+  };
+
+  // Helper: Generate 4 MULTI-EMPHASIS (blended) variations
+  const generateMultiEmphasisVariations = (
+    basePrice: number,
+    terms: string,
+    scenarioType: 'HARD' | 'MEDIUM' | 'SOFT' | 'WALK_AWAY'
+  ): StructuredFallbackSuggestion[] => {
+    const emphasisList = emphasisArray.join(' + ');
+    const priceAdjust = scenarioType === 'HARD' ? 2 : scenarioType === 'MEDIUM' ? 4 : scenarioType === 'SOFT' ? 3 : 6;
+
+    return [
+      {
+        message: `Balanced ${emphasisList}: $${basePrice.toFixed(2)} per unit, ${idealTerms} terms, ${deliveryDays}-day delivery.`,
+        price: basePrice,
+        paymentTerms: idealTerms,
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'value',
+      },
+      {
+        message: `${emphasisList} focused: $${(basePrice + priceAdjust).toFixed(2)} with ${acceptableTerms} terms, ${deliveryDays}-day delivery.`,
+        price: basePrice + priceAdjust,
+        paymentTerms: acceptableTerms,
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'value',
+      },
+      {
+        message: `Premium ${emphasisList}: $${(basePrice + priceAdjust * 1.5).toFixed(2)}, ${acceptableTerms} terms, ${Math.max(deliveryDays - 3, 7)}-day delivery.`,
+        price: basePrice + priceAdjust * 1.5,
+        paymentTerms: acceptableTerms,
+        deliveryDate,
+        deliveryDays: Math.max(deliveryDays - 3, 7),
+        emphasis: 'value',
+      },
+      {
+        message: `Flexible ${emphasisList}: $${(basePrice + priceAdjust * 0.5).toFixed(2)} per unit, ${flexibleTerms} terms, ${deliveryDays}-day delivery.`,
+        price: basePrice + priceAdjust * 0.5,
+        paymentTerms: flexibleTerms,
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'value',
+      },
+    ];
+  };
+
+  // Helper: Generate default (mixed emphasis) variations
+  const generateDefaultVariations = (
+    basePrice: number,
+    defaultTerms: string
+  ): StructuredFallbackSuggestion[] => {
+    return [
+      {
+        message: `Our best offer: $${basePrice.toFixed(2)} per unit with ${defaultTerms} terms and ${deliveryDays}-day delivery.`,
+        price: basePrice,
+        paymentTerms: defaultTerms,
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'price',
+      },
+      {
+        message: `We can work with ${defaultTerms} terms at $${(basePrice + 2).toFixed(2)} per unit, ${deliveryDays}-day delivery.`,
+        price: basePrice + 2,
+        paymentTerms: defaultTerms,
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'terms',
+      },
+      {
+        message: `To meet your ${deliveryDays}-day delivery: $${(basePrice + 5).toFixed(2)} per unit with ${acceptableTerms} terms.`,
+        price: basePrice + 5,
+        paymentTerms: acceptableTerms,
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'delivery',
+      },
+      {
+        message: `Complete package: $${(basePrice + 8).toFixed(2)}, ${flexibleTerms} terms, ${deliveryDays}-day delivery.`,
+        price: basePrice + 8,
+        paymentTerms: flexibleTerms,
+        deliveryDate,
+        deliveryDays,
+        emphasis: 'value',
+      },
+    ];
+  };
+
+  // Main generator function
+  const generateForScenario = (
+    scenarioType: 'HARD' | 'MEDIUM' | 'SOFT' | 'WALK_AWAY',
+    basePrice: number,
+    defaultTerms: string
+  ): StructuredFallbackSuggestion[] => {
+    if (isMultiEmphasis) {
+      return generateMultiEmphasisVariations(basePrice, defaultTerms, scenarioType);
+    }
+    if (primaryEmphasis === 'price') {
+      return generatePriceVariations(basePrice, defaultTerms, scenarioType);
+    }
+    if (primaryEmphasis === 'terms') {
+      return generateTermsVariations(basePrice, scenarioType);
+    }
+    if (primaryEmphasis === 'delivery') {
+      return generateDeliveryVariations(basePrice, defaultTerms, scenarioType);
+    }
+    return generateDefaultVariations(basePrice, defaultTerms);
+  };
+
+  // VENDOR PERSPECTIVE: Use calculated vendor prices
+  // HARD = highest price (aggressive), MEDIUM = mid-range, SOFT = lowest (quick close)
+  return {
+    HARD: generateForScenario('HARD', hardBasePrice, idealTerms),
+    MEDIUM: generateForScenario('MEDIUM', mediumBasePrice, acceptableTerms),
+    SOFT: generateForScenario('SOFT', softBasePrice, flexibleTerms),
+    WALK_AWAY: generateForScenario('WALK_AWAY', priceMax * 1.25, idealTerms), // 25% above max - walk away price
+  };
+}
+
+/**
+ * Generate vendor fallback scenarios based on PM's wizard config prices
+ *
+ * UPDATED January 2026: Now accepts wizard config to calculate vendor prices
+ * based on PM's target and max acceptable prices.
+ *
+ * Vendor scenarios are ABOVE PM's max price (vendors want profit):
+ * - HARD: 10-25% above PM's max (aggressive, risks rejection)
+ * - MEDIUM: 5-15% above PM's max (competitive but profitable)
+ * - SOFT: At or near PM's max (quick close, likely to be accepted)
+ *
+ * User's expected behavior (for Target=$90, Max=$100):
+ * - HARD: $110-$125 (above PM's max, high profit margin)
+ * - MEDIUM: $95-$100 (near PM's max, balanced)
+ * - SOFT: $90-$95 (near PM's target, quick close)
+ */
 export function generateVendorFallbackScenarios(
   pmLastOffer: {
     price: number;
     paymentTerms: string;
     deliveryDate: string;
-  } | null
+  } | null,
+  wizardConfig?: WizardConfig | null
 ): ScenarioConfig[] {
-  if (!pmLastOffer) {
-    // No PM offer yet, use generic messages
-    return [
-      {
-        type: 'HARD',
-        label: 'Maximum Profit',
-        color: 'red',
-        messages: [
-          'I appreciate your interest. Based on our costs and market conditions, I need to propose a higher price point.',
-          'Considering our quality standards and reliability, my pricing reflects the value we provide.',
-          'Our pricing is competitive for the quality level we deliver. Let me share our offer.',
-        ],
-      },
-      {
-        type: 'MEDIUM',
-        label: 'Balanced Deal',
-        color: 'orange',
-        messages: [
-          "Let's find a middle ground that works for both of us. I can be somewhat flexible on terms.",
-          "I'm open to negotiation on the terms while maintaining fair margins for our business.",
-          "We value this partnership opportunity. Here's a proposal that balances both our needs.",
-        ],
-      },
-      {
-        type: 'SOFT',
-        label: 'Quick Close',
-        color: 'green',
-        messages: [
-          "To expedite this deal, I'm willing to offer more favorable terms.",
-          "I want to build a long-term relationship. Here's a competitive offer to get us started.",
-          "We're flexible and eager to close this deal. Let me make a compelling offer.",
-        ],
-      },
-    ];
-  }
+  // Extract PM's price range from wizard config
+  const pmTargetPrice = wizardConfig?.priceQuantity?.targetUnitPrice || 90;
+  const pmMaxPrice = wizardConfig?.priceQuantity?.maxAcceptablePrice || pmTargetPrice * 1.1;
 
-  // Calculate counter-offer prices based on PM's offer
-  const pmPrice = pmLastOffer.price;
-  const hardPrice = pmPrice * 1.15; // 15% higher (maximum profit)
-  const mediumPrice = pmPrice * 1.08; // 8% higher (balanced)
-  const softPrice = pmPrice * 1.03; // 3% higher (quick close)
+  // Payment terms from wizard config
+  const paymentMin = wizardConfig?.paymentTerms?.minDays || 30;
+  const paymentMax = wizardConfig?.paymentTerms?.maxDays || 60;
+
+  // Delivery from wizard config
+  const deliveryDate = wizardConfig?.delivery?.preferredDate ||
+                       wizardConfig?.delivery?.requiredDate ||
+                       new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+  // Calculate the range between target and max
+  const priceRange = pmMaxPrice - pmTargetPrice;
+
+  // Calculate vendor scenario prices based on PM's target/max
+  // HARD: 10-25% above PM's max - aggressive vendor position
+  // For Target=$90, Max=$100 -> HARD ~ $117.50 (17.5% above max)
+  const hardPrice = Math.round(pmMaxPrice * 1.175 * 100) / 100;
+
+  // MEDIUM: At or near PM's max - balanced approach
+  // For Target=$90, Max=$100 -> MEDIUM ~ $97.50 (75% of range from target)
+  const mediumPrice = Math.round((pmTargetPrice + priceRange * 0.75) * 100) / 100;
+
+  // SOFT: Near PM's target - quick close
+  // For Target=$90, Max=$100 -> SOFT ~ $92.50 (25% of range from target)
+  const softPrice = Math.round((pmTargetPrice + priceRange * 0.25) * 100) / 100;
+
+  // Use PM's last offer if available, otherwise use wizard config values
+  const useDelivery = pmLastOffer?.deliveryDate || deliveryDate;
+  const hardTerms = `Net ${paymentMin}`; // Vendor prefers shorter terms
+  const mediumTerms = `Net ${Math.round((paymentMin + paymentMax) / 2)}`;
+  const softTerms = pmLastOffer?.paymentTerms || `Net ${paymentMax}`; // More flexible for quick close
+
+  // Generate chips for UI display
+  const generateChips = (price: number, terms: string): OfferChip[] => [
+    { label: 'Price', value: formatCurrency(price), type: 'price' },
+    { label: 'Terms', value: terms, type: 'terms' },
+    { label: 'Delivery', value: formatDate(useDelivery), type: 'delivery' },
+  ];
 
   return [
     {
@@ -408,30 +793,33 @@ export function generateVendorFallbackScenarios(
       label: 'Maximum Profit',
       color: 'red',
       messages: [
-        `Given our quality and service level, I propose ${formatCurrency(hardPrice)} per unit with ${pmLastOffer.paymentTerms} terms and delivery by ${pmLastOffer.deliveryDate}.`,
+        `Given our quality and service level, I propose ${formatCurrency(hardPrice)} per unit with ${hardTerms} terms and delivery by ${formatDate(useDelivery)}.`,
         `Based on current market conditions and our costs, ${formatCurrency(hardPrice)} per unit is our best offer.`,
-        `To maintain our quality standards, we need ${formatCurrency(hardPrice)} per unit with the stated terms.`,
+        `To maintain our quality standards, we need ${formatCurrency(hardPrice)} per unit with ${hardTerms} payment terms.`,
       ],
+      chips: generateChips(hardPrice, hardTerms),
     },
     {
       type: 'MEDIUM',
       label: 'Balanced Deal',
       color: 'orange',
       messages: [
-        `I can work with ${formatCurrency(mediumPrice)} per unit while keeping the terms flexible. This is a fair middle ground.`,
-        `Let's meet in the middle - ${formatCurrency(mediumPrice)} per unit with ${pmLastOffer.paymentTerms} payment terms.`,
-        `I'm willing to come down to ${formatCurrency(mediumPrice)} per unit for a mutually beneficial deal.`,
+        `I can work with ${formatCurrency(mediumPrice)} per unit with ${mediumTerms} terms. This is a fair middle ground.`,
+        `Let's meet in the middle - ${formatCurrency(mediumPrice)} per unit with ${mediumTerms} payment terms.`,
+        `I'm willing to offer ${formatCurrency(mediumPrice)} per unit for a mutually beneficial deal.`,
       ],
+      chips: generateChips(mediumPrice, mediumTerms),
     },
     {
       type: 'SOFT',
       label: 'Quick Close',
       color: 'green',
       messages: [
-        `To close this deal quickly, I can offer ${formatCurrency(softPrice)} per unit with your preferred terms.`,
+        `To close this deal quickly, I can offer ${formatCurrency(softPrice)} per unit with ${softTerms} terms.`,
         `I want to make this work - ${formatCurrency(softPrice)} per unit is very competitive for our quality level.`,
-        `For a quick close, I'll accept ${formatCurrency(softPrice)} per unit with delivery by ${pmLastOffer.deliveryDate}.`,
+        `For a quick close, I'll accept ${formatCurrency(softPrice)} per unit with delivery by ${formatDate(useDelivery)}.`,
       ],
+      chips: generateChips(softPrice, softTerms),
     },
   ];
 }

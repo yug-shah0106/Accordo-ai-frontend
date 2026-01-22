@@ -8,7 +8,7 @@ import { ChatTranscript, Composer } from "../../components/chatbot/chat";
 import { exportDealAsPDF, exportDealAsCSV } from "../../utils/exportDeal";
 import chatbotService from "../../services/chatbot.service";
 import type { DealSummaryResponse, ExtendedNegotiationConfig } from "../../types/chatbot";
-import { FiMessageSquare, FiFileText, FiTrendingUp, FiClock, FiCheckCircle, FiXCircle, FiDollarSign, FiCreditCard, FiTruck, FiClipboard, FiSettings, FiActivity } from "react-icons/fi";
+import { FiMessageSquare, FiFileText, FiTrendingUp, FiClock, FiCheckCircle, FiXCircle, FiDollarSign, FiCreditCard, FiTruck, FiClipboard, FiSettings, FiActivity, FiRefreshCw } from "react-icons/fi";
 import {
   CollapsibleSection,
   ParameterRow,
@@ -87,7 +87,9 @@ export default function NegotiationRoom() {
     resetLoading,
     canSend,
     canReset,
+    pmTyping,
     sendVendorMessage,
+    sendVendorMessageTwoPhase,
     reset,
     reload,
   } = useDealActions(dealId);
@@ -104,7 +106,8 @@ export default function NegotiationRoom() {
   const handleSend = async (text: string): Promise<void> => {
     if (!text.trim()) return;
     try {
-      await sendVendorMessage(text);
+      // Use two-phase messaging for instant vendor message display + async PM response
+      await sendVendorMessageTwoPhase(text);
       setInputText(""); // Clear input after successful send
     } catch (err) {
       console.error("Failed to send message:", err);
@@ -675,10 +678,18 @@ export default function NegotiationRoom() {
           {/* Right - Actions */}
           <div className="flex gap-2">
             <button
-              onClick={reload}
+              onClick={async () => {
+                try {
+                  await reload();
+                  toast.success("Data refreshed");
+                } catch {
+                  toast.error("Failed to refresh");
+                }
+              }}
               disabled={loading}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
             >
+              <FiRefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </button>
             <button
@@ -729,7 +740,11 @@ export default function NegotiationRoom() {
             <>
               {/* Messages - Scrollable */}
               <div className="flex-1 px-6 py-6 overflow-y-auto">
-                <ChatTranscript messages={messages} isProcessing={sending} />
+                <ChatTranscript
+                  messages={messages}
+                  isProcessing={pmTyping || sending}
+                  processingType={pmTyping ? "analyzing" : "vendor-typing"}
+                />
               </div>
 
               {/* Composer - Fixed at bottom */}
