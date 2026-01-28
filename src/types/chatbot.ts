@@ -660,6 +660,8 @@ export interface SmartDefaults {
   };
   delivery: {
     typicalDeliveryDays: number | null;
+    maxDeliveryDate?: string | null;
+    negotiationClosureDate?: string | null;
   };
   source: 'vendor_history' | 'similar_deals' | 'industry_default' | 'combined';
   confidence: number; // 0-1

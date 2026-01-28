@@ -41,6 +41,7 @@ coverage
 
 # Cache
 .cache
-.eslintcache 
+.eslintcache
 
 CLAUDE.md
+.claude/
