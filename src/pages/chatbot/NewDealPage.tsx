@@ -641,6 +641,23 @@ export default function NewDealPage() {
                   prev.stepTwo.paymentTerms.advancePaymentLimit ??
                   res.data.paymentTerms.advancePaymentLimit,
               },
+              delivery: {
+                ...prev.stepTwo.delivery,
+                requiredDate:
+                  prev.stepTwo.delivery.requiredDate ??
+                  res.data.delivery.maxDeliveryDate ??
+                  '',
+              },
+            },
+            stepThree: {
+              ...prev.stepThree,
+              negotiationControl: {
+                ...prev.stepThree.negotiationControl,
+                deadline:
+                  prev.stepThree.negotiationControl.deadline ??
+                  res.data.delivery.negotiationClosureDate ??
+                  null,
+              },
             },
           }));
         }
