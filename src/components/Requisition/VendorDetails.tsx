@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import SelectField from "../SelectField";
+import { FormSelect, SelectOption } from "../shared";
 import Button from "../Button";
 import useFetchData from "../../hooks/useFetchData";
 import { RiDeleteBinLine } from "react-icons/ri";
@@ -318,6 +318,12 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     return !hasContract && !hasDeal;
   });
 
+  // Format vendors for FormSelect
+  const vendorOptions: SelectOption[] = availableVendors.map((vendor) => ({
+    value: vendor.vendorId,
+    label: vendor.Vendor?.name || vendor.Vendor?.companyName || 'Unknown Vendor',
+  }));
+
   return (
     <div className="border-2 rounded p-4">
       <h3 className="text-lg font-semibold">Vendor Details</h3>
@@ -327,15 +333,14 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex items-center gap-2 justify-between">
           <div className="grow">
-            <SelectField
+            <FormSelect
               name="selectedVendor"
               placeholder="Select Vendor"
-              options={availableVendors}
-              register={register}
-              error={errors.selectedVendor}
-              wholeInputClassName={`my-1`}
-              optionKey="Vendor.name"
-              optionValue="vendorId"
+              options={vendorOptions}
+              value={watch("selectedVendor") || ""}
+              onChange={(e) => setValue("selectedVendor", e.target.value)}
+              error={errors.selectedVendor?.message}
+              className="my-1"
             />
           </div>
           <div className="flex gap-2">

@@ -1,6 +1,5 @@
 import { useForm } from "react-hook-form";
-import InputField from "../InputField";
-import SelectField from "../SelectField";
+import { FormInput, FormSelect, SelectOption } from "../shared";
 import Button from "../Button";
 import { useEffect, useMemo, useState } from "react";
 import useFetchData from "../../hooks/useFetchData";
@@ -363,6 +362,24 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
     setValue("totalPrice", totalPrice);
   }, [totalPrice, setValue]);
 
+  // Format products for FormSelect - filter out already added products
+  const availableProducts = data?.filter(
+    (product) =>
+      !watch("productData")?.find(
+        (p) => p?.productId?.toString() === product?.id?.toString()
+      )
+  ) || [];
+
+  const productOptions: SelectOption[] = availableProducts.map((product) => ({
+    value: product.id,
+    label: product.productName,
+  }));
+
+  // Payment terms options
+  const paymentTermsOptions: SelectOption[] = [
+    { value: "net_payment", label: "Net Payment" },
+    { value: "pre_post_payment", label: "Pre and Post Payment" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -374,21 +391,14 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex items-center gap-2 justify-between">
             <div className="grow">
-              <SelectField
+              <FormSelect
                 name="selectedProduct"
                 placeholder="Select Product"
-                options={data?.filter(
-                  (i) =>
-                    !watch("productData")?.find(
-                      (product) =>
-                        product?.productId?.toString() === i?.id?.toString()
-                    )
-                )}
-                register={register}
-                optionKey={"productName"}
-                optionValue={"id"}
-                error={errors.categoryId}
-                wholeInputClassName={`my-1`}
+                options={productOptions}
+                value={watch("selectedProduct") || ""}
+                onChange={(e) => setValue("selectedProduct", e.target.value)}
+                error={errors.categoryId?.message}
+                className="my-1"
               />
             </div>
             <div className="">
@@ -416,7 +426,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                       {/* Quantity Field */}
                       <div className="flex flex-col">
                         <span className="text-xs text-gray-600 mb-1 font-medium">Quantity</span>
-                        <InputField
+                        <FormInput
                           placeholder="Enter quantity"
                           type="number"
                           name="qty"
@@ -432,14 +442,14 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                               })
                             );
                           }}
-                          wholeInputClassName={`my-1`}
+                          className="my-1"
                         />
                       </div>
 
                       {/* Target Price Field */}
                       <div className="flex flex-col">
                         <span className="text-xs text-gray-600 mb-1 font-medium">Target Price</span>
-                        <InputField
+                        <FormInput
                           placeholder="Enter target Price"
                           type="number"
                           min={0}
@@ -464,15 +474,15 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                               })
                             );
                           }}
-                          wholeInputClassName={`my-1`}
-                          error={errors.productData}
+                          className="my-1"
+                          error={errors.productData?.message}
                         />
                       </div>
 
                       {/* Maximum Price Field */}
                       <div className="flex flex-col">
                         <span className="text-xs text-gray-600 mb-1 font-medium">Max Price</span>
-                        <InputField
+                        <FormInput
                           placeholder="Max Price"
                           type="number"
                           min={0}
@@ -497,7 +507,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                               })
                             );
                           }}
-                          wholeInputClassName={`my-1`}
+                          className="my-1"
                         />
                       </div>
 
@@ -516,14 +526,14 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
           </ul>
 
           <div className="grid grid-cols-2 gap-4 mt-4">
-            <InputField
+            <FormInput
               label="Total Price"
               name="totalPrice"
               disabled={true}
               value={watch("totalPrice") || ''}
               placeholder="Enter Price"
               type="text"
-              wholeInputClassName={`my-1`}
+              className="my-1"
             />
           </div>
 
@@ -620,33 +630,28 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
           </div>
 
           {/* Payment Terms Field */}
-          <SelectField
+          <FormSelect
             label="Payment Terms"
             name="paymentTerms"
             placeholder="Select Payment Terms"
-            options={[
-              { id: "net_payment", paymentName: "Net Payment" },
-              { id: "pre_post_payment", paymentName: "Pre and Post Payment" }
-            ]}
-            register={register}
-            optionKey="paymentName"
-            optionValue="id"
-            error={errors.paymentTerms}
-            wholeInputClassName={`my-1`}
+            options={paymentTermsOptions}
+            value={watch("paymentTerms") || ""}
+            onChange={(e) => setValue("paymentTerms", e.target.value)}
+            error={errors.paymentTerms?.message}
+            className="my-1"
           />
 
           {/* Conditional Net Payment Day Field */}
           {watch("paymentTerms") === "net_payment" && (
-            <InputField
+            <FormInput
               label="Net Payment Day (Optional)"
               name="netPaymentDay"
               placeholder="Enter number of days (optional)"
               type="number"
               value={watch("netPaymentDay") || ''}
               min={0}
-              wholeInputClassName={`my-1`}
-              register={register}
-              onInput={(e) => {
+              className="my-1"
+              onInput={(e: any) => {
                 // Allow empty values and prevent negative input while typing
                 if (e.target.value < 0) {
                   e.target.value = 0;
@@ -669,7 +674,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
           {/* Conditional Pre and Post Payment Fields */}
           {watch("paymentTerms") === "pre_post_payment" && (
             <div className="grid grid-cols-2 gap-4">
-              <InputField
+              <FormInput
                 label="Pre Payment Percentage (Optional)"
                 name="prePaymentPercentage"
                 placeholder="Enter percentage (optional)"
@@ -677,9 +682,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 value={watch("prePaymentPercentage") || ''}
                 min={0}
                 max={100}
-                wholeInputClassName={`my-1`}
-                register={register}
-                onInput={(e) => {
+                className="my-1"
+                onInput={(e: any) => {
                   // Prevent negative input while typing
                   if (e.target.value < 0) {
                     e.target.value = 0;
@@ -698,7 +702,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 }}
               />
 
-              <InputField
+              <FormInput
                 label="Post Payment Percentage (Optional)"
                 name="postPaymentPercentage"
                 placeholder="Enter percentage (optional)"
@@ -706,9 +710,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 value={watch("postPaymentPercentage") || ''}
                 min={0}
                 max={100}
-                wholeInputClassName={`my-1`}
-                register={register}
-                onInput={(e) => {
+                className="my-1"
+                onInput={(e: any) => {
                   // Prevent negative input while typing
                   if (e.target.value < 0) {
                     e.target.value = 0;

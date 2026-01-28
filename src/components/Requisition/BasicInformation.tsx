@@ -1,7 +1,5 @@
 import { useForm } from "react-hook-form";
-import InputField from "../InputField";
-import SelectField from "../SelectField";
-import DateField from "../DateField";
+import { FormInput, FormSelect, SelectOption } from "../shared";
 import Button from "../Button";
 import { authApi, authMultiFormApi } from "../../api";
 import toast from "react-hot-toast";
@@ -73,6 +71,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(step1(tenureInDays)),
@@ -204,6 +203,17 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
     }
   }, [watch("projectId"), projects, watch]);
 
+  // Format projects for FormSelect
+  const projectOptions: SelectOption[] = projects.map((project) => ({
+    value: project.value || String(project.id),
+    label: project.label || project.projectName,
+  }));
+
+  // Currency options
+  const currencyOptions: SelectOption[] = [
+    { value: "INR", label: "INR" },
+  ];
+
   return (
     <div className="border-2 rounded p-4">
       <h3 className="text-lg font-semibold">Basic Information</h3>
@@ -212,130 +222,123 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
       </p>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="grid grid-cols-2 gap-4 mt-4">
-          {requisitionId &&
-            <InputField
+          {requisitionId && (
+            <FormInput
               label="RFQ Id"
               name="rfqId"
               placeholder="Enter RFQ Id"
-              error={errors.rfqId}
-              register={register}
-              value={watch("rfqId")?.slice(-12)}
+              error={errors.rfqId?.message}
+              value={watch("rfqId")?.slice(-12) || ""}
+              onChange={(e) => setValue("rfqId", e.target.value)}
               disabled={true}
+              className="my-1"
             />
-          }
+          )}
 
-          <InputField
+          <FormInput
             label="Requisition Name"
             name="subject"
             placeholder="Enter Requisition Name"
             type="text"
-            register={register}
-            error={errors.subject}
-            wholeInputClassName={`my-1`}
+            value={watch("subject") || ""}
+            onChange={(e) => setValue("subject", e.target.value)}
+            error={errors.subject?.message}
+            required
+            className="my-1"
           />
+
           {projectId === null && (
-            <SelectField
+            <FormSelect
               label="Project"
               name="projectId"
               placeholder="Select Project"
-              options={projects}
-              optionKey="label"
-              optionValue="value"
-              register={register}
-              error={errors.projectId}
-              wholeInputClassName={`my-1`}
+              options={projectOptions}
+              value={watch("projectId") || ""}
+              onChange={(e) => setValue("projectId", e.target.value)}
+              error={errors.projectId?.message}
+              required
+              className="my-1"
             />
           )}
-          {/* <SelectField
-            label="Category"
-            name="category"
-            placeholder="Select Category"
-            options={[
-              {
-                label: "Electronics",
-                value: 1,
-              },
-              {
-                label: "Fashion",
-                value: 2,
-              },
-              {
-                label: "Grocery",
-                value: 3,
-              },
-            ]}
-            register={register}
-            error={errors.category}
-            wholeInputClassName={`my-1`}
-          /> */}
-          <InputField
+
+          <FormInput
             label="Requisition Category"
             name="category"
             placeholder="Enter Requisition Category"
             type="text"
-            register={register}
-            error={errors.category}
-            wholeInputClassName={`my-1`}
+            value={watch("category") || ""}
+            onChange={(e) => setValue("category", e.target.value)}
+            error={errors.category?.message}
+            required
+            className="my-1"
           />
 
-          <DateField
+          <FormInput
             label="Delivery Date"
             name="deliveryDate"
-            register={register}
-            value={watch("deliveryDate")}
-            error={errors.deliveryDate}
+            type="date"
+            value={watch("deliveryDate") || ""}
+            onChange={(e) => setValue("deliveryDate", e.target.value)}
+            error={errors.deliveryDate?.message}
+            required
             className="text-gray-700"
           />
 
-          <DateField
-            label="Maximum Delivery Date (Optional)"
+          <FormInput
+            label="Maximum Delivery Date"
             name="maxDeliveryDate"
-            register={register}
-            value={watch("maxDeliveryDate")}
-            error={errors.maxDeliveryDate}
+            type="date"
+            value={watch("maxDeliveryDate") || ""}
+            onChange={(e) => setValue("maxDeliveryDate", e.target.value)}
+            error={errors.maxDeliveryDate?.message}
+            helpText="Optional"
             className="text-gray-700"
           />
 
           {requisitionId ? (
-            <DateField
+            <FormInput
               label="Benchmarking days"
               name="benchmarkingDate"
-              register={register}
-              value={watch(`benchmarkingDate`)}
-              error={errors.benchmarkingDate}
+              type="date"
+              value={watch("benchmarkingDate") || ""}
+              onChange={(e) => setValue("benchmarkingDate", e.target.value)}
+              error={errors.benchmarkingDate?.message}
+              required
               className="text-gray-700"
             />
           ) : (
-            <InputField
+            <FormInput
               label="Benchmarking days"
-              placeholder={"Enter Benchmarking days"}
               name="benchmarkingDate"
-              register={register}
-              error={errors.benchmarkingDate}
+              type="number"
+              placeholder="Enter Benchmarking days"
+              value={watch("benchmarkingDate") || ""}
+              onChange={(e) => setValue("benchmarkingDate", e.target.value)}
+              error={errors.benchmarkingDate?.message}
+              required
               className="text-gray-700"
             />
           )}
 
-          <DateField
+          <FormInput
             label="Negotiation Closure Date"
             name="negotiationClosureDate"
-            register={register}
-            value={watch("negotiationClosureDate")}
-            error={errors.negotiationClosureDate}
+            type="date"
+            value={watch("negotiationClosureDate") || ""}
+            onChange={(e) => setValue("negotiationClosureDate", e.target.value)}
+            error={errors.negotiationClosureDate?.message}
+            required
             className="text-gray-700"
           />
 
-          <SelectField
+          <FormSelect
             label="Currency"
             name="typeOfCurrency"
-            register={register}
-            value={watch("typeOfCurrency")}
-            options={[
-              {
-                label: "INR",
-                value: "INR",
-              },
-            ] as { label: string; value: string }[]}
+            options={currencyOptions}
+            value={watch("typeOfCurrency") || ""}
+            onChange={(e) => setValue("typeOfCurrency", e.target.value)}
+            error={errors.typeOfCurrency?.message}
+            required
           />
         </div>
         <div className="mt-4 flex justify-start gap-4">
