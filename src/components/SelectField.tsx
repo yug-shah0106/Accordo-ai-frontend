@@ -17,6 +17,7 @@ interface SelectFieldProps {
   wholeInputClassName?: string;
   optionKey?: string;
   optionValue?: string;
+  required?: boolean;
 }
 
 const getNestedValue = (obj: any, path: string): any => {
@@ -39,6 +40,7 @@ const SelectField = ({
   wholeInputClassName,
   optionKey,
   optionValue,
+  required,
 }: SelectFieldProps) => {
   return (
     <div className={`my-4 ${wholeInputClassName}`}>
@@ -49,6 +51,7 @@ const SelectField = ({
             className={`block text-gray-600 font-medium mb-2 ${labelClassName}`}
           >
             {label}
+            {required && <span className="text-red-500 ml-1">*</span>}
           </label>
           {labelSideComponent}
         </div>

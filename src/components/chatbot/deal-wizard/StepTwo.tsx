@@ -422,10 +422,10 @@ const StepTwo: React.FC<StepTwoProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Target Unit Price */}
+          {/* Total Target Price */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Target Unit Price <span className="text-red-500">*</span>
+              Total Target Price <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -449,13 +449,13 @@ const StepTwo: React.FC<StepTwoProps> = ({
                 {errors.targetUnitPrice}
               </p>
             )}
-            <p className="mt-1 text-xs text-gray-500">Ideal price you want to achieve</p>
+            <p className="mt-1 text-xs text-gray-500">Total ideal price for all items (auto-filled from requisition)</p>
           </div>
 
-          {/* Maximum Acceptable Price */}
+          {/* Total Maximum Price */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Maximum Acceptable Price <span className="text-red-500">*</span>
+              Total Maximum Price <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -479,7 +479,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
                 {errors.maxAcceptablePrice}
               </p>
             )}
-            <p className="mt-1 text-xs text-gray-500">Walk-away price ceiling</p>
+            <p className="mt-1 text-xs text-gray-500">Walk-away total price ceiling (auto-filled from requisition)</p>
           </div>
 
           {/* Minimum Order Quantity */}
@@ -507,6 +507,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
                 {errors.minOrderQuantity}
               </p>
             )}
+            <p className="mt-1 text-xs text-gray-500">Total quantity from requisition (auto-filled)</p>
           </div>
 
           {/* Preferred Quantity */}

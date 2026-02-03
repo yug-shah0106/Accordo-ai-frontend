@@ -70,6 +70,17 @@ export interface VendorRow {
   Vendor: Vendor;
 }
 
+export interface Address {
+  id: number;
+  label: string;
+  address: string;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  postalCode: string | null;
+  isDefault: boolean;
+}
+
 export interface Company {
   id: string;
   companyName: string;
@@ -94,7 +105,11 @@ export interface Company {
   accountNumber: string;
   ifscCode: string;
   fullAddress: string;
+  swiftCode?: string;
+  iBanNumber?: string;
+  typeOfCurrency?: string;
   Vendor: Vendor[];
+  Addresses?: Address[];
 }
 
 export interface PurchaseOrder {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { useParams, useNavigate } from "react-router-dom";
 import InputField from "../InputField";
@@ -10,10 +10,11 @@ import { authApi } from "../../api";
 import useFetchData from "../../hooks/useFetchData";
 import projectSchema from "../../schema/project";
 import { FaSquarePlus } from "react-icons/fa6";
-import { BsPlusCircleFill } from "react-icons/bs";
 import toast from "react-hot-toast";
 import img from "../../assets/defaultImage.png";
 import { FiX } from "react-icons/fi";
+import { useAutoSave } from "../../hooks/useAutoSave";
+import AutosaveIndicator from "../AutosaveIndicator";
 
 interface CreateProjectFormProps {
   onSave?: () => void;
@@ -24,6 +25,15 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const companyId = Number(localStorage.getItem("%companyId%"));
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [showDraftDialog, setShowDraftDialog] = useState(false);
+
+  // Generate autosave key based on whether we're editing or creating
+  const autosaveKey = useMemo(() => {
+    return id
+      ? `project_edit_draft_${id}`
+      : `project_create_draft_${companyId || 'new'}`;
+  }, [id, companyId]);
 
   const {
     register,
@@ -49,7 +59,65 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
     mode: "onChange",
   });
 
+  // Watch form values for autosave (exclude selectedPoc as it's just for UI)
+  const formValues = watch();
+  const autosaveData = useMemo(() => ({
+    projectName: formValues.projectName,
+    projectAddress: formValues.projectAddress,
+    typeOfProject: formValues.typeOfProject,
+    tenureInDays: formValues.tenureInDays,
+    pointOfContact: formValues.pointOfContact,
+  }), [
+    formValues.projectName,
+    formValues.projectAddress,
+    formValues.typeOfProject,
+    formValues.tenureInDays,
+    formValues.pointOfContact,
+  ]);
+
+  // Autosave hook - saves 2 seconds after last change
+  const { lastSaved, isSaving, hasDraft, clearSaved, loadSaved } = useAutoSave({
+    key: autosaveKey,
+    data: autosaveData,
+    interval: 2000, // 2 seconds debounce
+    enabled: isDataLoaded, // Only enable after initial data is loaded
+  });
+
   const { data, loading, error } = useFetchData("/customer/get-all");
+
+  // Check for existing draft on mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem(autosaveKey);
+    if (savedDraft && !id) {
+      // For new projects, show dialog to restore draft
+      setShowDraftDialog(true);
+    } else if (savedDraft && id) {
+      // For edit mode, show dialog to restore draft
+      setShowDraftDialog(true);
+    }
+  }, [autosaveKey, id]);
+
+  // Function to restore draft
+  const restoreDraft = () => {
+    const savedData = loadSaved();
+    if (savedData) {
+      setValue("projectName", savedData.projectName || "");
+      setValue("projectAddress", savedData.projectAddress || "");
+      setValue("typeOfProject", savedData.typeOfProject || "");
+      setValue("tenureInDays", savedData.tenureInDays || "");
+      setValue("pointOfContact", savedData.pointOfContact || []);
+      toast.success("Draft restored successfully");
+    }
+    setShowDraftDialog(false);
+    setIsDataLoaded(true);
+  };
+
+  // Function to discard draft
+  const discardDraft = () => {
+    clearSaved();
+    setShowDraftDialog(false);
+    setIsDataLoaded(true);
+  };
 
   const fetchProductData = async (productId) => {
     try {
@@ -61,16 +129,30 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
         selectedPoc: "",
         pointOfContact: data?.ProjectPoc?.map((i) => i.userId),
       });
+      // Check for draft after loading project data
+      const savedDraft = localStorage.getItem(autosaveKey);
+      if (savedDraft) {
+        setShowDraftDialog(true);
+      } else {
+        setIsDataLoaded(true);
+      }
     } catch (error) {
       console.error(error.message || "Something went wrong");
+      setIsDataLoaded(true);
     }
   };
 
   useEffect(() => {
     if (id) {
       fetchProductData(id);
+    } else {
+      // For new projects, check draft immediately
+      const savedDraft = localStorage.getItem(autosaveKey);
+      if (!savedDraft) {
+        setIsDataLoaded(true);
+      }
     }
-  }, [id]);
+  }, [id, autosaveKey]);
 
   const onSubmit = async (data) => {
     try {
@@ -83,11 +165,13 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
       delete data.selectedPoc;
       if (!id) {
         const response = await authApi.post("/project/create", data);
+        clearSaved(); // Clear draft on successful creation
         toast.success("Project created successfully");
         navigate("/project-management");
       } else {
         delete data.id;
         const response = await authApi.put(`/project/update/${id}`, data);
+        clearSaved(); // Clear draft on successful update
         toast.success("Project updated successfully");
         navigate("/project-management");
       }
@@ -107,17 +191,50 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
+      {/* Draft Restore Dialog */}
+      {showDraftDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Restore Draft?
+            </h3>
+            <p className="text-gray-600 mb-4">
+              You have an unsaved draft from a previous session. Would you like to restore it?
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                type="button"
+                className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg font-medium transition-all"
+                onClick={discardDraft}
+              >
+                Discard
+              </Button>
+              <Button
+                type="button"
+                className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium transition-all"
+                onClick={restoreDraft}
+              >
+                Restore Draft
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sticky Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-16 pb-4 flex-shrink-0">
-        <h2 className="flex items-center gap-2 text-xl font-medium">
-          <IoArrowBackOutline
-            onClick={() => {
-              navigate(-1);
-            }}
-            className="cursor-pointer"
-          />
-          {id ? "Edit Project" : "Create Project"}
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="flex items-center gap-2 text-xl font-medium">
+            <IoArrowBackOutline
+              onClick={() => {
+                navigate(-1);
+              }}
+              className="cursor-pointer"
+            />
+            {id ? "Edit Project" : "Create Project"}
+          </h2>
+          <AutosaveIndicator lastSaved={lastSaved} isSaving={isSaving} />
+        </div>
       </div>
 
       {/* Scrollable Form Content */}

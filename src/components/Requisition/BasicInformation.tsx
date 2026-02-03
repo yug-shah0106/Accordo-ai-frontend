@@ -5,8 +5,10 @@ import { authApi, authMultiFormApi } from "../../api";
 import toast from "react-hot-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { step1 } from "../../schema/requisition";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAutoSave } from "../../hooks/useAutoSave";
+import AutosaveIndicator from "../AutosaveIndicator";
 
 interface Project {
   id: string;
@@ -22,7 +24,8 @@ interface Requisition {
   subject?: string;
   category?: string;
   deliveryDate?: string;
-  maximumDeliveryDate?: string;
+  maxDeliveryDate?: string; // Backend uses this name
+  maximumDeliveryDate?: string; // Keep for backward compatibility
   negotiationClosureDate?: string;
   typeOfCurrency?: string;
   rfqId?: string;
@@ -66,37 +69,122 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
   const [projects, setProjects] = useState<Project[]>([]);
   const [tenureInDays, setTenureInDays] = useState<number | undefined>(undefined);
 
+  // Create the schema - will be used for manual validation in onSubmit
+  const getSchema = () => step1(tenureInDays);
+
   const {
     register,
     handleSubmit,
     reset,
     watch,
     setValue,
+    setError,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
-    resolver: zodResolver(step1(tenureInDays)),
+    // Don't use zodResolver here since tenureInDays can change
+    // We'll validate manually in onSubmit
   });
+
+  // Watch all form values for autosave
+  const formValues = watch();
+
+  // Autosave hook - enabled for both new and edit requisitions
+  const autosaveKey = requisitionId ? `requisition_step1_${requisitionId}` : "requisition_step1_new";
+  const { lastSaved, isSaving, hasDraft, clearSaved, loadSaved } = useAutoSave({
+    key: autosaveKey,
+    data: formValues,
+    interval: 2000, // Save 2 seconds after last change
+    enabled: true, // Enable autosave for both create and edit
+  });
+
+  // Automatically restore draft on mount (no popup)
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  useEffect(() => {
+    if (hasDraft && !draftRestored) {
+      setDraftRestored(true);
+      const savedData = loadSaved();
+      if (savedData && savedData.subject) {
+        // Silently restore draft data
+        reset(savedData);
+      }
+    }
+  }, [hasDraft, draftRestored, loadSaved, reset]);
+
+  // Backend autosave - periodically save to server for edit mode
+  const backendAutosaveRef = useRef<NodeJS.Timeout | null>(null);
+  const lastBackendSaveRef = useRef<string>("");
+
+  const saveToBackend = useCallback(async (data: FormData) => {
+    if (!requisitionId) return; // Only save to backend when editing
+
+    try {
+      const cleanData = {
+        subject: data.subject,
+        category: data.category,
+        deliveryDate: data.deliveryDate,
+        maxDeliveryDate: data.maxDeliveryDate || null,
+        negotiationClosureDate: data.negotiationClosureDate,
+        typeOfCurrency: data.typeOfCurrency,
+        benchmarkingDate: data.benchmarkingDate,
+      };
+
+      await authMultiFormApi.put(`/requisition/update/${requisitionId}`, cleanData);
+    } catch (error) {
+      // Silent fail for autosave - don't interrupt user
+      console.error("Backend autosave failed:", error);
+    }
+  }, [requisitionId]);
+
+  // Debounced backend autosave effect
+  useEffect(() => {
+    if (!requisitionId) return; // Only for edit mode
+
+    const currentDataString = JSON.stringify(formValues);
+    if (currentDataString === lastBackendSaveRef.current) return;
+
+    // Clear existing timeout
+    if (backendAutosaveRef.current) {
+      clearTimeout(backendAutosaveRef.current);
+    }
+
+    // Set new timeout for backend save (5 seconds after last change)
+    backendAutosaveRef.current = setTimeout(() => {
+      lastBackendSaveRef.current = currentDataString;
+      saveToBackend(formValues);
+    }, 5000);
+
+    return () => {
+      if (backendAutosaveRef.current) {
+        clearTimeout(backendAutosaveRef.current);
+      }
+    };
+  }, [formValues, requisitionId, saveToBackend]);
 
   useEffect(() => {
     if (projectId) {
       setTenureInDays(projectId.tenureInDays ?? undefined);
     }
-    const formData: FormData = {
-      projectId: projectId?.id || requisition?.projectId || "",
-      benchmarkingDate: requisition?.benchmarkingDate
-        ? requisition?.benchmarkingDate?.split("T")[0]
-        : "",
-      subject: requisition?.subject || "",
-      category: requisition?.category || "",
-      deliveryDate: requisition?.deliveryDate?.split("T")[0] || "",
-      maxDeliveryDate: requisition?.maximumDeliveryDate?.split("T")[0] || "",
-      negotiationClosureDate:
-        requisition?.negotiationClosureDate?.split("T")[0] || "",
-      typeOfCurrency: requisition?.typeOfCurrency || "",
-      rfqId: requisition?.rfqId,
-    };
-    reset(formData);
-  }, [requisition, projectId, reset]);
+    // Only reset form from requisition data if we're editing (not creating new)
+    if (requisition || requisitionId) {
+      const formData: FormData = {
+        projectId: projectId?.id || requisition?.projectId || "",
+        benchmarkingDate: requisition?.benchmarkingDate
+          ? requisition?.benchmarkingDate?.split("T")[0]
+          : "",
+        subject: requisition?.subject || "",
+        category: requisition?.category || "",
+        deliveryDate: requisition?.deliveryDate?.split("T")[0] || "",
+        maxDeliveryDate: (requisition?.maxDeliveryDate || requisition?.maximumDeliveryDate)?.split("T")[0] || "",
+        negotiationClosureDate:
+          requisition?.negotiationClosureDate?.split("T")[0] || "",
+        typeOfCurrency: requisition?.typeOfCurrency || "",
+        rfqId: requisition?.rfqId,
+      };
+      reset(formData);
+    }
+  }, [requisition, projectId, reset, requisitionId]);
 
   const calculateISTBenchmarkingDate = (daysToAdd: number): Date => {
     const now = new Date();
@@ -105,8 +193,21 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
   };
 
   const onSubmit = async (data: FormData): Promise<void> => {
-    // Check if there are any validation errors
-    if (Object.keys(errors).length > 0) {
+    // Clear previous errors
+    clearErrors();
+
+    // Validate with the current schema (includes current tenureInDays)
+    const schema = getSchema();
+    const validationResult = schema.safeParse(data);
+
+    if (!validationResult.success) {
+      // Set errors from Zod validation
+      validationResult.error.errors.forEach((err) => {
+        const path = err.path[0] as keyof FormData;
+        if (path) {
+          setError(path, { type: "manual", message: err.message });
+        }
+      });
       toast.error("Please fix the form errors before submitting");
       return;
     }
@@ -122,11 +223,22 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
           return;
         }
 
+        // Ensure all values are properly serialized for multipart form data
+        // projectId comes either from form selection or from passed projectId prop
+        const effectiveProjectId = data.projectId || projectId?.id;
+
         const payload = {
-          ...data,
-          benchmarkingDate,
-          maximum_delivery_date: data.maxDeliveryDate || null,
+          subject: data.subject,
+          category: data.category,
+          projectId: effectiveProjectId,
+          deliveryDate: data.deliveryDate, // Already a string in YYYY-MM-DD format
+          negotiationClosureDate: data.negotiationClosureDate,
+          typeOfCurrency: data.typeOfCurrency,
+          benchmarkingDate: benchmarkingDate.toISOString(), // Convert Date to ISO string
+          maxDeliveryDate: data.maxDeliveryDate || null,
         };
+
+        console.log("Creating requisition with payload:", payload);
 
         const response = await authMultiFormApi.post<{ data: { id: string } }>(
           "/requisition/create",
@@ -136,6 +248,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
           `/requisition-management/edit-requisition/${response.data.data.id}`
         );
         toast.success("Created Successfully");
+        clearSaved(); // Clear autosaved draft on successful creation
         nextStep();
       } else {
         const deliveryDate = new Date(data.deliveryDate || requisition?.deliveryDate || "");
@@ -152,9 +265,15 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
           return; // Stop submission if condition fails
         }
 
+        // Ensure all values are properly serialized for multipart form data
         const payload = {
-          ...data,
-          maximum_delivery_date: data.maxDeliveryDate || null,
+          subject: data.subject,
+          category: data.category,
+          deliveryDate: data.deliveryDate,
+          negotiationClosureDate: data.negotiationClosureDate,
+          typeOfCurrency: data.typeOfCurrency,
+          benchmarkingDate: data.benchmarkingDate,
+          maxDeliveryDate: data.maxDeliveryDate || null,
         };
 
         await authMultiFormApi.put(
@@ -162,10 +281,13 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
           payload
         );
         toast.success("Edited Successfully");
+        clearSaved(); // Clear autosaved draft on successful edit
         nextStep();
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || error.message || "Something went wrong");
+      console.error("Requisition error:", error.response?.data || error);
+      const errorMessage = error.response?.data?.message || error.message || "Something went wrong";
+      toast.error(errorMessage);
     }
   };
 
@@ -212,14 +334,23 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
   // Currency options
   const currencyOptions: SelectOption[] = [
     { value: "INR", label: "INR" },
+    { value: "USD", label: "USD" },
+    { value: "EUR", label: "EUR" },
+    { value: "GBP", label: "GBP" },
+    { value: "AUD", label: "AUD" },
   ];
 
   return (
     <div className="border-2 rounded p-4">
-      <h3 className="text-lg font-semibold">Basic Information</h3>
-      <p className="font-normal text-[#46403E] py-2">
-        Your details will be used for Basic information
-      </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h3 className="text-lg font-semibold">Basic Information</h3>
+          <p className="font-normal text-[#46403E] py-2">
+            Your details will be used for Basic information
+          </p>
+        </div>
+        <AutosaveIndicator lastSaved={lastSaved} isSaving={isSaving} />
+      </div>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="grid grid-cols-2 gap-4 mt-4">
           {requisitionId && (
@@ -291,7 +422,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
             value={watch("maxDeliveryDate") || ""}
             onChange={(e) => setValue("maxDeliveryDate", e.target.value)}
             error={errors.maxDeliveryDate?.message}
-            helpText="Optional"
+            required
             className="text-gray-700"
           />
 

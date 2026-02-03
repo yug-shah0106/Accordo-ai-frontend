@@ -13,7 +13,6 @@ import Button from "../Button";
 const CreateProductForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const companyId = localStorage.getItem("%companyId%")
 
   useEffect(() => {
     if (id) {
@@ -38,7 +37,6 @@ const CreateProductForm = () => {
       type: "",
       UOM: "",
       gstPercentage: null,
-      companyId: companyId,
     },
   });
   const gstTypeValue = watch("gstType");
@@ -127,7 +125,7 @@ const CreateProductForm = () => {
               label="GST Percentage"
               name="gstType"
               // options={["0%", "5%", "12%", "18%", "28%"]}
-              options={["GST", "Non-Gst"]}
+              options={["GST", "Non-GST"]}
               register={register}
               error={errors.gstType}
               className="custom-class"
@@ -146,11 +144,10 @@ const CreateProductForm = () => {
               />
             )}
             <InputField
-              label="HSN Code"
+              label="HSN/SAC Code"
               name="tds"
               type="number"
-              placeholder="Enter HSN Code"
-              max={10}
+              placeholder="Enter HSN/SAC Code"
               register={register}
               error={errors.tds}
               wholeInputClassName={`!my-0`}
@@ -166,7 +163,7 @@ const CreateProductForm = () => {
             <SelectField
               label="UOM"
               name="UOM"
-              options={["kg", "liters", "pieces"]}
+              options={["unit", "kg", "liters", "pieces", "box", "pack", "ton", "sheet", "roll", "license"]}
               register={register}
               error={errors.UOM}
               wholeInputClassName={`!my-0`}

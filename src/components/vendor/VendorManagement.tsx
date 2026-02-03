@@ -8,12 +8,14 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 import { FaArrowLeft, FaRegEye } from "react-icons/fa";
 import {
   MdOutlineKeyboardArrowDown,
+  MdOutlineKeyboardArrowUp,
 } from "react-icons/md";
 import useFetchData from "../../hooks/useFetchData";
 import useDebounce from "../../hooks/useDebounce";
 import { authApi } from "../../api";
 import Modal from "../Modal";
 import { FiGitBranch } from "react-icons/fi";
+import Filter from "../Filter";
 import type {
   VendorRow,
   Company,
@@ -27,9 +29,25 @@ const VendorManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<VendorRow | null>(null);
   const [companyData, setCompanyData] = useState<Company | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [isModal, setIsModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  // Collapsible section states
+  const [expandedSections, setExpandedSections] = useState({
+    basicInfo: true,
+    locationDetails: true,
+    financialBanking: true,
+    contactDocuments: true,
+  });
+
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
   const [selectedFilters, setSelectedFilters] = useState<FilterOption[]>([
     {
       moduleName: "Vendors",
@@ -113,7 +131,7 @@ const VendorManagement = () => {
       type: "link",
       label: "Edit Details",
       icon: <VscEdit />,
-      link: (row: VendorRow) => `/vendor-management/edit-vendor/${row.companyId}`,
+      link: (row: VendorRow) => `/vendor-management/edit-vendor/${row.Vendor?.Company?.id || row.Vendor?.companyId || row.companyId}`,
     },
     {
       type: "button",
@@ -173,14 +191,28 @@ const VendorManagement = () => {
   }, [selectedProject]);
 
   const fetchCompanyData = async () => {
+    if (!selectedProject) return;
+
+    // Get companyId from various possible locations in the data structure
+    const companyId = selectedProject?.Vendor?.companyId ||
+                      selectedProject?.Vendor?.Company?.id ||
+                      selectedProject?.companyId;
+
+    if (!companyId) {
+      console.error("No companyId found for vendor");
+      return;
+    }
+
+    setIsLoadingDetails(true);
     try {
-      const response = await authApi.get(
-        `/company/get/${selectedProject.companyId}`
-      );
+      const response = await authApi.get(`/company/get/${companyId}`);
       setCompanyData(response.data.data);
-      // console.log({response});
+      console.log("Company data loaded:", response.data.data);
     } catch (error) {
       console.error("Error fetching company details:", error);
+      setCompanyData(null);
+    } finally {
+      setIsLoadingDetails(false);
     }
   };
 
@@ -371,200 +403,297 @@ const VendorManagement = () => {
 
       <div
         ref={menuRef}
-        className={`fixed top-0 right-0 w-[33%] p-6 bg-white shadow-lg h-full z-10 transition-transform transform ${
+        className={`fixed top-0 right-0 w-[33%] bg-white shadow-lg h-full z-10 transition-transform transform overflow-y-auto ${
           isSidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="">
-          {companyData && (
-            <div className="flex justify-between mt-4  items-center">
-              <p className="text-md font-semibold flex items-center gap-2">
-                <button onClick={closeSidebar}>
-                  <FaArrowLeft />
-                </button>
-                {companyData?.Vendor[0]?.name || ""}
-                <span>{companyData?.Vendor[0]?.id || ""}</span>
-              </p>
-            </div>
-          )}
-
-          <div className="flex justify-between">
-            <h3 className="text-lg font-medium mt-4">Basic Information</h3>
-            <MdOutlineKeyboardArrowDown />
-          </div>
-          {companyData && (
-            <div className="grid grid-cols-3 text-sm gap-8">
-              <div className="space-y-2">
-                <p className="font-semibold">Name</p>
-                <p>{companyData?.Vendor[0]?.name || ""}</p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-semibold">Phone</p>
-                <p>{companyData?.Vendor[0]?.phone || ""}</p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-semibold">Email</p>
-                <p>{companyData?.Vendor[0]?.email || ""}</p>
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-between pt-2 pb-0">
-            <h3 className="text-lg font-medium mt-4">General Information</h3>
-            <MdOutlineKeyboardArrowDown />
-          </div>
-          {companyData && (
-            <div className="grid grid-cols-3 text-sm gap-8">
-              <div className="space-y-2">
-                <p className="font-semibold">Company Name</p>
-                <p>{companyData?.companyName || ""}</p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-semibold">Establishment Date</p>
-                <p>{companyData?.establishmentDate?.split("T")[0] || ""}</p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-semibold">Type</p>
-                <p>{companyData?.nature || ""}</p>
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-between pt-2 pb-0">
-            <h3 className="text-lg font-medium mt-4">Vendor Details</h3>
-            <MdOutlineKeyboardArrowDown />
-          </div>
-          {companyData && (
-            <div className="grid grid-cols-3 text-sm gap-8">
-              <div className="space-y-2">
-                <p className="font-semibold">GST No</p>
-                <p>
-                  {companyData?.gstNumber || ""}{" "}
-                  <span className="text-blue-800">
-                    <a
-                      href={`${import.meta.env.VITE_ASSEST_URL}/uploads/${
-                        companyData.gstFileUrl
-                      }`}
-                      target="_blank"
-                    >
-                      View
-                    </a>
+        <div className="p-6">
+          {/* Header */}
+          <div className="flex justify-between items-center border-b pb-4 mb-4">
+            <p className="text-lg font-semibold flex items-center gap-3">
+              <button onClick={closeSidebar} className="hover:bg-gray-100 p-1 rounded">
+                <FaArrowLeft />
+              </button>
+              <span>
+                {companyData?.Vendor?.[0]?.name || selectedProject?.Vendor?.name || "Vendor Details"}
+                {(companyData?.Vendor?.[0]?.id || selectedProject?.Vendor?.id) && (
+                  <span className="text-gray-500 text-sm ml-2">
+                    #{companyData?.Vendor?.[0]?.id || selectedProject?.Vendor?.id}
                   </span>
-                </p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-semibold">Pan No</p>
-                <p>
-                  {companyData?.panNumber || ""}{" "}
-                  <span className="text-blue-800">
-                    <a
-                      href={`${import.meta.env.VITE_ASSEST_URL}/uploads/${
-                        companyData.panFileUrl
-                      }`}
-                      target="_blank"
-                    >
-                      View
-                    </a>
-                  </span>
-                </p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-semibold">MSME No</p>
-                <p>
-                  {companyData?.msmeNumber || ""}{" "}
-                  <span className="text-blue-800">
-                    <a
-                      href={`${import.meta.env.VITE_ASSEST_URL}/uploads/${
-                        companyData.msmeFileUrl
-                      }`}
-                      target="_blank"
-                    >
-                      View
-                    </a>
-                  </span>
-                </p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-semibold">Certificate</p>
-                <p>
-                  {companyData?.ciNumber || ""}{" "}
-                  <span className="text-blue-800">
-                    <a
-                      href={`${import.meta.env.VITE_ASSEST_URL}/uploads/${
-                        companyData.ciFileUrl
-                      }`}
-                      target="_blank"
-                    >
-                      View
-                    </a>
-                  </span>
-                </p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-semibold"> Type</p>
-                <p>{companyData?.type || ""}</p>
-              </div>
+                )}
+              </span>
+            </p>
+          </div>
+
+          {/* Loading State */}
+          {isLoadingDetails && (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <span className="ml-3 text-gray-600">Loading vendor details...</span>
             </div>
           )}
 
-          <div className="flex justify-between pt-2 pb-0">
-            <h3 className="text-lg font-medium mt-4">
-              Point of Contact Details
-            </h3>
-            <MdOutlineKeyboardArrowDown />
-          </div>
-          {companyData && (
-            <div className="grid grid-cols-3 text-sm gap-8">
-              <div className="space-y-2">
-                <p className="font-semibold">Name</p>
-                <p>{companyData?.pocName || ""}</p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-semibold">Designation</p>
-                <p>{companyData?.pocDesignation || ""}</p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-semibold">Email</p>
-                <p>{companyData?.pocEmail || ""}</p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-semibold">Phone</p>
-                <p>{companyData?.pocPhone || ""}</p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-semibold">Website</p>
-                <p>{companyData?.pocWebsite || ""}</p>
-              </div>
+          {/* No Data State */}
+          {!isLoadingDetails && !companyData && (
+            <div className="text-center py-12 text-gray-500">
+              <p>No vendor details available</p>
             </div>
           )}
 
-          <div className="flex justify-between pt-2 pb-0">
-            <h3 className="text-lg font-medium mt-4">Bank Details</h3>
-            <MdOutlineKeyboardArrowDown />
-          </div>
-          {companyData && (
-            <div className="grid grid-cols-3 text-sm gap-8">
-              <div className="space-y-2">
-                <p className="font-semibold">Bank Name</p>
-                <p>{companyData?.bankName || ""}</p>
+          {/* Content */}
+          {!isLoadingDetails && companyData && (
+            <>
+              {/* Step 1: Basic & Company Info */}
+              <div
+                className="flex justify-between items-center pt-2 pb-2 cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2"
+                onClick={() => toggleSection('basicInfo')}
+              >
+                <h3 className="text-md font-semibold text-gray-900">Basic & Company Info</h3>
+                {expandedSections.basicInfo ? (
+                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                ) : (
+                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                )}
               </div>
-              <div className="space-y-2">
-                <p className="font-semibold">Beneficiary Name</p>
-                <p>{companyData?.beneficiaryName || ""}</p>
+              {expandedSections.basicInfo && (
+                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <p className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide">Contact Details</p>
+                  <div className="grid grid-cols-3 text-sm gap-4 mb-4">
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">Name</p>
+                      <p className="text-gray-900 font-medium">{companyData?.Vendor?.[0]?.name || "-"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">Phone</p>
+                      <p className="text-gray-900 font-medium">{companyData?.Vendor?.[0]?.phone || "-"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">Email</p>
+                      <p className="text-gray-900 font-medium break-all">{companyData?.Vendor?.[0]?.email || "-"}</p>
+                    </div>
+                  </div>
+                  <div className="border-t pt-3">
+                    <p className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide">Company Details</p>
+                    <div className="grid grid-cols-3 text-sm gap-4">
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-500">Company Name</p>
+                        <p className="text-gray-900 font-medium">{companyData?.companyName || "-"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-500">Establishment Date</p>
+                        <p className="text-gray-900 font-medium">{companyData?.establishmentDate?.split("T")[0] || "-"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-500">Type/Nature</p>
+                        <p className="text-gray-900 font-medium">{companyData?.nature || "-"}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Location Details */}
+              <div
+                className="flex justify-between items-center pt-2 pb-2 cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2"
+                onClick={() => toggleSection('locationDetails')}
+              >
+                <h3 className="text-md font-semibold text-gray-900">Location Details</h3>
+                {expandedSections.locationDetails ? (
+                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                ) : (
+                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                )}
               </div>
-              <div className="space-y-2">
-                <p className="font-semibold">Account No</p>
-                <p>{companyData?.accountNumber || ""}</p>
+              {expandedSections.locationDetails && (
+                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <div className="grid grid-cols-3 text-sm gap-4">
+                    <div className="space-y-1 col-span-3">
+                      <p className="text-xs text-gray-500">Address</p>
+                      <p className="text-gray-900 font-medium">{companyData?.Addresses?.[0]?.address || "-"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">City</p>
+                      <p className="text-gray-900 font-medium">{companyData?.Addresses?.[0]?.city || "-"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">State</p>
+                      <p className="text-gray-900 font-medium">{companyData?.Addresses?.[0]?.state || "-"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">Zip Code</p>
+                      <p className="text-gray-900 font-medium">{companyData?.Addresses?.[0]?.postalCode || "-"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">Country</p>
+                      <p className="text-gray-900 font-medium">{companyData?.Addresses?.[0]?.country || "-"}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Financial & Banking */}
+              <div
+                className="flex justify-between items-center pt-2 pb-2 cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2"
+                onClick={() => toggleSection('financialBanking')}
+              >
+                <h3 className="text-md font-semibold text-gray-900">Financial & Banking</h3>
+                {expandedSections.financialBanking ? (
+                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                ) : (
+                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                )}
               </div>
-              <div className="space-y-2">
-                <p className="font-semibold">IFSC Code</p>
-                <p>{companyData?.ifscCode || ""}</p>
+              {expandedSections.financialBanking && (
+                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <p className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide">Currency & Banking</p>
+                  <div className="grid grid-cols-3 text-sm gap-4 mb-4">
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">Currency</p>
+                      <p className="text-gray-900 font-medium">{companyData?.typeOfCurrency || "-"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">Bank Name</p>
+                      <p className="text-gray-900 font-medium">{companyData?.bankName || "-"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">Beneficiary Name</p>
+                      <p className="text-gray-900 font-medium">{companyData?.beneficiaryName || "-"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">Account No</p>
+                      <p className="text-gray-900 font-medium">{companyData?.accountNumber || "-"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">IFSC Code</p>
+                      <p className="text-gray-900 font-medium">{companyData?.ifscCode || "-"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">Swift Code</p>
+                      <p className="text-gray-900 font-medium">{companyData?.swiftCode || "-"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">IBAN</p>
+                      <p className="text-gray-900 font-medium">{companyData?.iBanNumber || "-"}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 text-sm gap-4 mt-4">
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">Bank Address</p>
+                      <p className="text-gray-900 font-medium">{companyData?.fullAddress || "-"}</p>
+                    </div>
+                  </div>
+                  <div className="border-t pt-3">
+                    <p className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide">Compliance Documents</p>
+                    <div className="grid grid-cols-2 text-sm gap-4">
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-500">GST Number</p>
+                        <p className="text-gray-900 font-medium">
+                          {companyData?.gstNumber || "-"}
+                          {companyData?.gstFileUrl && (
+                            <a
+                              href={`${import.meta.env.VITE_ASSEST_URL}/uploads/${companyData.gstFileUrl}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 ml-2 text-xs hover:underline"
+                            >
+                              View
+                            </a>
+                          )}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-500">PAN Number</p>
+                        <p className="text-gray-900 font-medium">
+                          {companyData?.panNumber || "-"}
+                          {companyData?.panFileUrl && (
+                            <a
+                              href={`${import.meta.env.VITE_ASSEST_URL}/uploads/${companyData.panFileUrl}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 ml-2 text-xs hover:underline"
+                            >
+                              View
+                            </a>
+                          )}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-500">MSME Number</p>
+                        <p className="text-gray-900 font-medium">
+                          {companyData?.msmeNumber || "-"}
+                          {companyData?.msmeFileUrl && (
+                            <a
+                              href={`${import.meta.env.VITE_ASSEST_URL}/uploads/${companyData.msmeFileUrl}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 ml-2 text-xs hover:underline"
+                            >
+                              View
+                            </a>
+                          )}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-500">CI Number</p>
+                        <p className="text-gray-900 font-medium">
+                          {companyData?.ciNumber || "-"}
+                          {companyData?.ciFileUrl && (
+                            <a
+                              href={`${import.meta.env.VITE_ASSEST_URL}/uploads/${companyData.ciFileUrl}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 ml-2 text-xs hover:underline"
+                            >
+                              View
+                            </a>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4: Contact & Documents */}
+              <div
+                className="flex justify-between items-center pt-2 pb-2 cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2"
+                onClick={() => toggleSection('contactDocuments')}
+              >
+                <h3 className="text-md font-semibold text-gray-900">Contact & Documents</h3>
+                {expandedSections.contactDocuments ? (
+                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                ) : (
+                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                )}
               </div>
-              <div className="space-y-2">
-                <p className="font-semibold">Bank Address</p>
-                <p>{companyData?.fullAddress || ""}</p>
-              </div>
-            </div>
+              {expandedSections.contactDocuments && (
+                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <p className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide">Point of Contact</p>
+                  <div className="grid grid-cols-3 text-sm gap-4">
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">Name</p>
+                      <p className="text-gray-900 font-medium">{companyData?.pocName || "-"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">Designation</p>
+                      <p className="text-gray-900 font-medium">{companyData?.pocDesignation || "-"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">Email</p>
+                      <p className="text-gray-900 font-medium break-all">{companyData?.pocEmail || "-"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">Phone</p>
+                      <p className="text-gray-900 font-medium">{companyData?.pocPhone || "-"}</p>
+                    </div>
+                    <div className="space-y-1 col-span-2">
+                      <p className="text-xs text-gray-500">Website</p>
+                      <p className="text-gray-900 font-medium">{companyData?.pocWebsite || "-"}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

@@ -22,6 +22,7 @@ import {
   StepThree,
   StepFour,
   ReviewStep,
+  CHART_COLORS,
 } from '../../components/chatbot/deal-wizard';
 console.log('[NewDealPage] Wizard components imported');
 
@@ -36,6 +37,7 @@ import type {
   DeliveryAddress,
   QualityCertification,
   SmartDefaults,
+  ParameterWeight,
 } from '../../types';
 console.log('[NewDealPage] Types imported');
 
@@ -62,6 +64,110 @@ const getDraftKey = (rfqId: number | null, vendorId: number | null): string => {
   }
   // Fallback to a session-based temp key for when no RFQ/vendor selected yet
   return `${DRAFT_KEY_PREFIX}_temp`;
+};
+
+// Parameter definitions for Step 4 (must match StepFour.tsx)
+const STEP2_PARAMETERS = [
+  { id: 'targetUnitPrice', name: 'Target Unit Price', source: 'step2' as const, category: 'price' },
+  { id: 'maxAcceptablePrice', name: 'Max Acceptable Price', source: 'step2' as const, category: 'price' },
+  { id: 'volumeDiscountExpectation', name: 'Volume Discount', source: 'step2' as const, category: 'price' },
+  { id: 'paymentTermsRange', name: 'Payment Terms Range', source: 'step2' as const, category: 'payment' },
+  { id: 'advancePaymentLimit', name: 'Advance Payment Limit', source: 'step2' as const, category: 'payment' },
+  { id: 'deliveryDate', name: 'Delivery Date', source: 'step2' as const, category: 'delivery' },
+  { id: 'partialDelivery', name: 'Partial Delivery', source: 'step2' as const, category: 'delivery' },
+];
+
+const STEP3_PARAMETERS = [
+  { id: 'warrantyPeriod', name: 'Warranty Period', source: 'step3' as const, category: 'contract' },
+  { id: 'lateDeliveryPenalty', name: 'Late Delivery Penalty', source: 'step3' as const, category: 'contract' },
+  { id: 'qualityStandards', name: 'Quality Standards', source: 'step3' as const, category: 'contract' },
+  { id: 'maxRounds', name: 'Max Negotiation Rounds', source: 'step3' as const, category: 'control' },
+  { id: 'walkawayThreshold', name: 'Walkaway Threshold', source: 'step3' as const, category: 'control' },
+];
+
+/**
+ * Build Step 4 weights from requisition priorities
+ * Maps pricePriority, deliveryPriority, paymentTermsPriority to individual parameter weights
+ */
+const buildWeightsFromPriorities = (
+  pricePriority: number | null,
+  deliveryPriority: number | null,
+  paymentTermsPriority: number | null
+): ParameterWeight[] => {
+  const allParameters = [...STEP2_PARAMETERS, ...STEP3_PARAMETERS];
+
+  // If no priorities provided, return empty (will use default initialization)
+  if (pricePriority === null && deliveryPriority === null && paymentTermsPriority === null) {
+    return [];
+  }
+
+  // Normalize priorities to ensure they sum to 100
+  const rawPriceWeight = pricePriority || 40;
+  const rawDeliveryWeight = deliveryPriority || 30;
+  const rawPaymentWeight = paymentTermsPriority || 30;
+  const total = rawPriceWeight + rawDeliveryWeight + rawPaymentWeight;
+
+  const priceWeight = Math.round((rawPriceWeight / total) * 100);
+  const deliveryWeight = Math.round((rawDeliveryWeight / total) * 100);
+  const paymentWeight = 100 - priceWeight - deliveryWeight; // Ensure exactly 100
+
+  // Count parameters in each category
+  const priceParams = allParameters.filter(p => p.category === 'price');
+  const deliveryParams = allParameters.filter(p => p.category === 'delivery');
+  const paymentParams = allParameters.filter(p => p.category === 'payment');
+  const otherParams = allParameters.filter(p => !['price', 'delivery', 'payment'].includes(p.category));
+
+  // Allocate weights to categories
+  // Reserve 15% for contract/control parameters
+  const reservedForOther = 15;
+  const availableForMain = 100 - reservedForOther;
+
+  const allocatedPrice = Math.round((priceWeight / 100) * availableForMain);
+  const allocatedDelivery = Math.round((deliveryWeight / 100) * availableForMain);
+  const allocatedPayment = availableForMain - allocatedPrice - allocatedDelivery;
+
+  // Distribute within categories
+  const weights: ParameterWeight[] = allParameters.map((param, index) => {
+    let weight = 0;
+
+    if (param.category === 'price' && priceParams.length > 0) {
+      // Distribute price weight: 50% to targetUnitPrice, 30% to maxAcceptable, 20% to volumeDiscount
+      if (param.id === 'targetUnitPrice') weight = Math.round(allocatedPrice * 0.5);
+      else if (param.id === 'maxAcceptablePrice') weight = Math.round(allocatedPrice * 0.3);
+      else weight = Math.round(allocatedPrice * 0.2);
+    } else if (param.category === 'delivery' && deliveryParams.length > 0) {
+      // Distribute delivery weight: 70% to date, 30% to partial
+      if (param.id === 'deliveryDate') weight = Math.round(allocatedDelivery * 0.7);
+      else weight = Math.round(allocatedDelivery * 0.3);
+    } else if (param.category === 'payment' && paymentParams.length > 0) {
+      // Distribute payment weight: 60% to range, 40% to advance limit
+      if (param.id === 'paymentTermsRange') weight = Math.round(allocatedPayment * 0.6);
+      else weight = Math.round(allocatedPayment * 0.4);
+    } else if (otherParams.length > 0) {
+      // Distribute remaining weight equally among contract/control parameters
+      weight = Math.round(reservedForOther / otherParams.length);
+    }
+
+    return {
+      parameterId: param.id,
+      parameterName: param.name,
+      weight,
+      source: param.source,
+      color: CHART_COLORS[index % CHART_COLORS.length],
+    };
+  });
+
+  // Adjust to ensure exactly 100%
+  const currentTotal = weights.reduce((sum, w) => sum + w.weight, 0);
+  if (currentTotal !== 100 && weights.length > 0) {
+    const diff = 100 - currentTotal;
+    // Add difference to the largest weight parameter
+    const maxWeightIdx = weights.reduce((maxIdx, w, idx, arr) =>
+      w.weight > arr[maxIdx].weight ? idx : maxIdx, 0);
+    weights[maxWeightIdx].weight += diff;
+  }
+
+  return weights;
 };
 
 /**
@@ -187,9 +293,8 @@ export default function NewDealPage() {
         }
         setLoadingRequisitions(false);
 
-        // Note: Addresses are now loaded per vendor, not globally
-        // They will be loaded when a vendor is selected
-        setLoadingAddresses(false);
+        // Note: Buyer company addresses are loaded in a separate useEffect
+        // (not dependent on vendor selection)
 
         // Load certifications
         try {
@@ -349,6 +454,7 @@ export default function NewDealPage() {
           requisitionId: prefilledRequisition.id,
           vendorId: prefilledVendor.id,
           title: prefilledRequisition.title || prev.stepOne.title,
+          vendorLocked: true, // Locked when coming from router state with lockedFields
         }
       }));
 
@@ -561,7 +667,7 @@ export default function NewDealPage() {
     initFromUrlParams();
   }, [urlRfqId, urlVendorId, urlVendorName, routerStateInitialized, isLockedMode]);
 
-  // Auto-populate requisition from URL query param
+  // Auto-populate requisition from URL query param (requisitionId=X scenario - NOT locked)
   useEffect(() => {
     if (preselectedRequisitionId && requisitions.length > 0) {
       const rfqId = parseInt(preselectedRequisitionId);
@@ -576,6 +682,7 @@ export default function NewDealPage() {
               requisitionId: rfqId,
               vendorId: null, // Reset vendor when RFQ is pre-selected
               title: rfq.title || prev.stepOne.title,
+              vendorLocked: false, // Explicitly NOT locked for requisitionId param
             }
           }));
         }
@@ -613,25 +720,48 @@ export default function NewDealPage() {
 
       try {
         const res = await chatbotService.getSmartDefaults(requisitionId, vendorId);
+        console.log('[SmartDefaults] Raw response:', res);
+        console.log('[SmartDefaults] res.data:', res.data);
+        console.log('[SmartDefaults] priceQuantity:', res.data?.priceQuantity);
+        console.log('[SmartDefaults] delivery:', res.data?.delivery);
         setSmartDefaults(res.data);
 
         // Apply smart defaults to form data if available
         if (res.data) {
-          setFormData((prev) => ({
+          console.log('[SmartDefaults] Applying to form. totalTargetPrice:', res.data.priceQuantity?.totalTargetPrice);
+          console.log('[SmartDefaults] Applying to form. totalMaxPrice:', res.data.priceQuantity?.totalMaxPrice);
+          console.log('[SmartDefaults] Applying to form. totalQuantity:', res.data.priceQuantity?.totalQuantity);
+          console.log('[SmartDefaults] Applying to form. maxDeliveryDate:', res.data.delivery?.maxDeliveryDate);
+          setFormData((prev) => {
+            console.log('[SmartDefaults] Previous targetUnitPrice:', prev.stepTwo.priceQuantity.targetUnitPrice);
+            console.log('[SmartDefaults] Previous maxAcceptablePrice:', prev.stepTwo.priceQuantity.maxAcceptablePrice);
+            console.log('[SmartDefaults] Previous minOrderQuantity:', prev.stepTwo.priceQuantity.minOrderQuantity);
+            console.log('[SmartDefaults] Previous requiredDate:', prev.stepTwo.delivery.requiredDate);
+
+            // Helper to check if a value is empty (null, undefined, 0, or empty string)
+            const isEmpty = (val: unknown): boolean => val === null || val === undefined || val === 0 || val === '';
+
+            return {
             ...prev,
             stepTwo: {
               ...prev.stepTwo,
               priceQuantity: {
                 ...prev.stepTwo.priceQuantity,
-                targetUnitPrice:
-                  prev.stepTwo.priceQuantity.targetUnitPrice ??
-                  res.data.priceQuantity.targetUnitPrice,
-                maxAcceptablePrice:
-                  prev.stepTwo.priceQuantity.maxAcceptablePrice ??
-                  res.data.priceQuantity.maxAcceptablePrice,
-                volumeDiscountExpectation:
-                  prev.stepTwo.priceQuantity.volumeDiscountExpectation ??
-                  res.data.priceQuantity.volumeDiscountExpectation,
+                // Use total values from requisition (new behavior)
+                // Use isEmpty check instead of ?? to also apply defaults when value is 0
+                targetUnitPrice: isEmpty(prev.stepTwo.priceQuantity.targetUnitPrice)
+                  ? (res.data.priceQuantity.totalTargetPrice ?? res.data.priceQuantity.targetUnitPrice)
+                  : prev.stepTwo.priceQuantity.targetUnitPrice,
+                maxAcceptablePrice: isEmpty(prev.stepTwo.priceQuantity.maxAcceptablePrice)
+                  ? (res.data.priceQuantity.totalMaxPrice ?? res.data.priceQuantity.maxAcceptablePrice)
+                  : prev.stepTwo.priceQuantity.maxAcceptablePrice,
+                // Auto-populate minimum order quantity from total quantity
+                minOrderQuantity: isEmpty(prev.stepTwo.priceQuantity.minOrderQuantity)
+                  ? res.data.priceQuantity.totalQuantity
+                  : prev.stepTwo.priceQuantity.minOrderQuantity,
+                volumeDiscountExpectation: isEmpty(prev.stepTwo.priceQuantity.volumeDiscountExpectation)
+                  ? res.data.priceQuantity.volumeDiscountExpectation
+                  : prev.stepTwo.priceQuantity.volumeDiscountExpectation,
               },
               paymentTerms: {
                 ...prev.stepTwo.paymentTerms,
@@ -643,23 +773,54 @@ export default function NewDealPage() {
               },
               delivery: {
                 ...prev.stepTwo.delivery,
-                requiredDate:
-                  prev.stepTwo.delivery.requiredDate ??
-                  res.data.delivery.maxDeliveryDate ??
-                  '',
+                // deliveryDate from requisition -> preferredDate in wizard
+                preferredDate: isEmpty(prev.stepTwo.delivery.preferredDate)
+                  ? (res.data.delivery.deliveryDate ?? '')
+                  : prev.stepTwo.delivery.preferredDate,
+                // maxDeliveryDate from requisition -> requiredDate in wizard
+                requiredDate: isEmpty(prev.stepTwo.delivery.requiredDate)
+                  ? (res.data.delivery.maxDeliveryDate ?? '')
+                  : prev.stepTwo.delivery.requiredDate,
               },
             },
             stepThree: {
               ...prev.stepThree,
               negotiationControl: {
                 ...prev.stepThree.negotiationControl,
-                deadline:
-                  prev.stepThree.negotiationControl.deadline ??
-                  res.data.delivery.negotiationClosureDate ??
-                  null,
+                deadline: isEmpty(prev.stepThree.negotiationControl.deadline)
+                  ? (res.data.delivery.negotiationClosureDate ?? null)
+                  : prev.stepThree.negotiationControl.deadline,
+                // Auto-populate walkaway threshold from BATNA if available
+                walkawayThreshold: isEmpty(prev.stepThree.negotiationControl.walkawayThreshold)
+                  ? (res.data.negotiationLimits?.batna ?? prev.stepThree.negotiationControl.walkawayThreshold)
+                  : prev.stepThree.negotiationControl.walkawayThreshold,
               },
             },
-          }));
+            // Auto-populate Step 4 weights from requisition priorities
+            stepFour: prev.stepFour.weights.length === 0 && res.data.priorities
+              ? (() => {
+                  const priorityWeights = buildWeightsFromPriorities(
+                    res.data.priorities.pricePriority,
+                    res.data.priorities.deliveryPriority,
+                    res.data.priorities.paymentTermsPriority
+                  );
+                  if (priorityWeights.length > 0) {
+                    console.log('[SmartDefaults] Auto-populating Step 4 weights from requisition priorities:', {
+                      pricePriority: res.data.priorities.pricePriority,
+                      deliveryPriority: res.data.priorities.deliveryPriority,
+                      paymentTermsPriority: res.data.priorities.paymentTermsPriority,
+                    });
+                    return {
+                      weights: priorityWeights,
+                      aiSuggested: true, // Mark as AI suggested since they come from requisition
+                      totalWeight: priorityWeights.reduce((sum, w) => sum + w.weight, 0),
+                    };
+                  }
+                  return prev.stepFour;
+                })()
+              : prev.stepFour,
+          };
+          });
         }
       } catch (err) {
         console.warn('Failed to load smart defaults:', err);
@@ -669,51 +830,45 @@ export default function NewDealPage() {
     loadSmartDefaults();
   }, [formData.stepOne.requisitionId, formData.stepOne.vendorId]);
 
-  // Load vendor addresses when vendor changes
-  // Addresses come directly from the vendors array (loaded with getRequisitionVendors)
+  // Load buyer's company addresses (procurement manager's office address)
+  // This is loaded once when the component mounts, not dependent on vendor selection
   useEffect(() => {
-    const { vendorId } = formData.stepOne;
+    const loadBuyerAddresses = async () => {
+      setLoadingAddresses(true);
+      try {
+        // Fetch the buyer's (procurement manager's) company addresses
+        const res = await chatbotService.getDeliveryAddresses();
+        const buyerAddresses = res.data || [];
+        setAddresses(buyerAddresses);
 
-    // Reset delivery location when vendor changes
-    setFormData((prev) => ({
-      ...prev,
-      stepTwo: {
-        ...prev.stepTwo,
-        delivery: {
-          ...prev.stepTwo.delivery,
-          locationId: null,
-          locationAddress: null,
-        },
-      },
-    }));
+        // Auto-populate with default address if available and no address is selected yet
+        if (buyerAddresses.length > 0 && !formData.stepTwo.delivery.locationId) {
+          // Find the default address or use the first one
+          const defaultAddr = buyerAddresses.find((addr) => addr.isDefault) || buyerAddresses[0];
+          if (defaultAddr) {
+            setFormData((prev) => ({
+              ...prev,
+              stepTwo: {
+                ...prev.stepTwo,
+                delivery: {
+                  ...prev.stepTwo.delivery,
+                  locationId: defaultAddr.id,
+                  locationAddress: defaultAddr.address,
+                },
+              },
+            }));
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load buyer addresses:', err);
+        setAddresses([]);
+      } finally {
+        setLoadingAddresses(false);
+      }
+    };
 
-    if (!vendorId) {
-      setAddresses([]);
-      setLoadingAddresses(false);
-      return;
-    }
-
-    // Find the selected vendor and get their addresses
-    const selectedVendor = vendors.find((v) => v.id === vendorId);
-    if (selectedVendor && selectedVendor.addresses) {
-      // Convert VendorAddress to DeliveryAddress format
-      const deliveryAddresses: DeliveryAddress[] = selectedVendor.addresses.map((addr) => ({
-        id: `vendor-${addr.id}`,
-        name: addr.label,
-        address: addr.address,
-        city: addr.city || undefined,
-        state: addr.state || undefined,
-        country: addr.country || undefined,
-        zipCode: addr.postalCode || undefined,
-        type: 'company' as const,
-        isDefault: addr.isDefault,
-      }));
-      setAddresses(deliveryAddresses);
-    } else {
-      setAddresses([]);
-    }
-    setLoadingAddresses(false);
-  }, [formData.stepOne.vendorId, vendors]);
+    loadBuyerAddresses();
+  }, []); // Load once on mount
 
   // Step update handlers
   const handleStepOneChange = (data: DealWizardStepOne) => {

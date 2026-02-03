@@ -445,11 +445,79 @@ const Contracts = () => {
             additionalClasses="w-6/12 max-w-4xl"
             showCancelButton={false}
             isDeleteIcon={false}
+            onClose={() => {
+              setContractModal(false);
+            }}
             handleClose={() => {
               setContractModal(false);
             }}
             body={
               (() => {
+                // Check if contractDetails exists and is not empty
+                if (!contractModel?.contractDetails || contractModel.contractDetails === "null" || contractModel.contractDetails === "{}") {
+                  return (
+                    <div className="space-y-6">
+                      {/* Vendor Information */}
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-800">
+                              {contractModel?.Vendor?.name || "Vendor Name"}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              Contract ID: {contractModel?.id}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                              contractModel?.status === "Accepted" ? "bg-green-100 text-green-800" :
+                              contractModel?.status === "Rejected" ? "bg-red-100 text-red-800" :
+                              contractModel?.status === "InitialQuotation" ? "bg-blue-100 text-blue-800" :
+                              contractModel?.status === "Created" ? "bg-yellow-100 text-yellow-800" :
+                              "bg-gray-100 text-gray-800"
+                            }`}>
+                              {contractModel?.status || "Unknown"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* No Data Message */}
+                      <div className="bg-gray-50 rounded-lg p-8 border border-gray-200 text-center">
+                        <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <h4 className="text-lg font-medium text-gray-700 mb-2">No Quotation Submitted Yet</h4>
+                        <p className="text-sm text-gray-500">
+                          The vendor has not submitted their quotation for this contract.
+                          Product details, payment terms, and pricing will appear here once the vendor completes their submission.
+                        </p>
+                      </div>
+
+                      {/* Contract Info */}
+                      <div className="bg-white rounded-lg border border-gray-200 p-4">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p className="text-gray-500">Created On</p>
+                            <p className="font-medium">{contractModel?.createdAt ? new Date(contractModel.createdAt).toLocaleDateString() : "N/A"}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Contract Link</p>
+                            <a
+                              href={`${import.meta.env.VITE_FRONTEND_URL}/vendor-contract/${contractModel?.uniqueToken}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-medium text-blue-600 hover:underline"
+                            >
+                              View Portal Link
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
                 let contractDetails = {};
 
                 try {
@@ -502,6 +570,74 @@ const Contracts = () => {
                   products = Array.from(productMap.values());
                 }
 
+                // Check if we have any meaningful data to display
+                const hasProducts = products.length > 0;
+                const hasPaymentTerms = paymentTerms && paymentTerms !== "N/A";
+
+                // If no products and no payment terms, show empty state
+                if (!hasProducts && !hasPaymentTerms && !additionalNotes) {
+                  return (
+                    <div className="space-y-6">
+                      {/* Vendor Information */}
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-800">
+                              {contractModel?.Vendor?.name || "Vendor Name"}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              Contract ID: {contractModel?.id}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                              contractModel?.status === "Accepted" ? "bg-green-100 text-green-800" :
+                              contractModel?.status === "Rejected" ? "bg-red-100 text-red-800" :
+                              contractModel?.status === "InitialQuotation" ? "bg-blue-100 text-blue-800" :
+                              contractModel?.status === "Created" ? "bg-yellow-100 text-yellow-800" :
+                              "bg-gray-100 text-gray-800"
+                            }`}>
+                              {contractModel?.status || "Unknown"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* No Data Message */}
+                      <div className="bg-gray-50 rounded-lg p-8 border border-gray-200 text-center">
+                        <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <h4 className="text-lg font-medium text-gray-700 mb-2">No Quotation Details Available</h4>
+                        <p className="text-sm text-gray-500">
+                          The vendor has not submitted detailed quotation information for this contract yet.
+                        </p>
+                      </div>
+
+                      {/* Contract Info */}
+                      <div className="bg-white rounded-lg border border-gray-200 p-4">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p className="text-gray-500">Created On</p>
+                            <p className="font-medium">{contractModel?.createdAt ? new Date(contractModel.createdAt).toLocaleDateString() : "N/A"}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Contract Link</p>
+                            <a
+                              href={`${import.meta.env.VITE_FRONTEND_URL}/vendor-contract/${contractModel?.uniqueToken}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-medium text-blue-600 hover:underline"
+                            >
+                              View Portal Link
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
                 // Format payment terms display
                 let formattedPaymentTerms = paymentTerms;
                 if (paymentTerms === "net_payment" && netPaymentDay) {
@@ -527,7 +663,7 @@ const Contracts = () => {
                 return (
                   <div className="space-y-6">
                     {/* Vendor Information */}
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg pt-4 px-4 pb-0 border border-blue-100">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
                       <div className="flex items-center justify-between">
                         <div>
                           <h3 className="text-lg font-semibold text-gray-800">
@@ -538,7 +674,7 @@ const Contracts = () => {
                           </p>
                         </div>
                         <div className="text-right">
-                          <span className={`inline-flex items-center px-3 pt-1 pb-0 rounded-full text-xs font-medium ${
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                             contractModel?.status === "Accepted" ? "bg-green-100 text-green-800" :
                             contractModel?.status === "Rejected" ? "bg-red-100 text-red-800" :
                             contractModel?.status === "InitialQuotation" ? "bg-blue-100 text-blue-800" :
@@ -552,7 +688,7 @@ const Contracts = () => {
 
                     {/* Products Table */}
                     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-                      <div className="bg-gray-50 px-6 pt-4 pb-0 border-b border-gray-200">
+                      <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
                         <h4 className="text-lg font-semibold text-gray-800 flex items-center">
                           <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -564,19 +700,19 @@ const Contracts = () => {
                         <table className="w-full">
                           <thead className="bg-gray-50">
                             <tr>
-                              <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Product
                               </th>
-                              <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Quantity
                               </th>
-                              <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Quoted Price
                               </th>
-                              <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Total Value
                               </th>
-                              <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Delivery Date
                               </th>
                             </tr>
@@ -586,30 +722,30 @@ const Contracts = () => {
                               const quantity = parseInt(product.quantity) || 1;
                               const price = parseFloat(product.quotedPrice) || 0;
                               const totalValue = price * quantity;
-                              
+
                               return (
                                 <tr key={i} className="hover:bg-gray-50 transition-colors">
-                                  <td className="px-6 pt-4 pb-0 whitespace-nowrap">
+                                  <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="text-sm font-medium text-gray-900">
                                       {product?.productName || "N/A"}
                                     </div>
                                   </td>
-                                  <td className="px-6 pt-4 pb-0 whitespace-nowrap">
+                                  <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="text-sm text-gray-900">
                                       {quantity}
                                     </div>
                                   </td>
-                                  <td className="px-6 pt-4 pb-0 whitespace-nowrap">
+                                  <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="text-sm text-gray-900 font-semibold">
                                       {product?.quotedPrice ? `₹${product.quotedPrice}` : "N/A"}
                                     </div>
                                   </td>
-                                  <td className="px-6 pt-4 pb-0 whitespace-nowrap">
+                                  <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="text-sm text-gray-900 font-semibold text-green-600">
                                       {totalValue > 0 ? `₹${totalValue.toLocaleString()}` : "N/A"}
                                     </div>
                                   </td>
-                                  <td className="px-6 pt-4 pb-0 whitespace-nowrap">
+                                  <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="text-sm text-gray-900">
                                       {product?.deliveryDate ? new Date(product.deliveryDate).toLocaleDateString() : "N/A"}
                                     </div>
@@ -623,14 +759,14 @@ const Contracts = () => {
                     </div>
 
                     {/* Payment Terms Section */}
-                    <div className="bg-white rounded-lg border border-gray-200 pt-6 px-6 pb-0 shadow-sm">
+                    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
                       <div className="flex items-center mb-4">
                         <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                         </svg>
                         <h4 className="text-lg font-semibold text-gray-800">Payment Terms</h4>
                       </div>
-                      <div className="bg-blue-50 rounded-lg pt-4 px-4 pb-0 border border-blue-100">
+                      <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
                         <p className="text-sm font-medium text-blue-900">
                           {formattedPaymentTerms}
                         </p>
@@ -639,14 +775,14 @@ const Contracts = () => {
 
                     {/* Additional Notes Section */}
                     {additionalNotes && (
-                      <div className="bg-white rounded-lg border border-gray-200 pt-6 px-6 pb-0 shadow-sm">
+                      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
                         <div className="flex items-center mb-4">
                           <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
                           <h4 className="text-lg font-semibold text-gray-800">Additional Notes</h4>
                         </div>
-                        <div className="bg-gray-50 rounded-lg pt-4 px-4 pb-0 border border-gray-100">
+                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
                           <p className="text-sm text-gray-700 leading-relaxed">
                             {additionalNotes}
                           </p>
@@ -655,12 +791,12 @@ const Contracts = () => {
                     )}
 
                     {/* Contract Summary */}
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg pt-6 px-6 pb-0 border border-green-100">
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 border border-green-100">
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="text-lg font-semibold text-gray-800 mb-2">Contract Summary</h4>
                           <p className="text-sm text-gray-600">
-                            Total Products: {products.length} | 
+                            Total Products: {products.length} |
                             Created: {new Date(contractModel?.createdAt).toLocaleDateString()}
                           </p>
                         </div>

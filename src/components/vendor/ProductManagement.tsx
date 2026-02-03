@@ -75,7 +75,7 @@ const ProductManagement = () => {
       
     },
     {
-      header: "TDS",
+      header: "HSN/SAC Code",
       accessor: "tds",
     },
     {

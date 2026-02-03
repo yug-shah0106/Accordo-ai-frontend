@@ -497,6 +497,7 @@ export interface DealWizardStepOne {
   title: string;
   mode: DealMode;
   priority: NegotiationPriority;
+  vendorLocked?: boolean; // When true, vendor dropdown is disabled (pre-selected from URL params)
 }
 
 /**
@@ -652,16 +653,39 @@ export interface SmartDefaults {
     targetUnitPrice: number | null;
     maxAcceptablePrice: number | null;
     volumeDiscountExpectation: number | null;
+    // New fields for auto-populating from requisition totals
+    totalQuantity: number | null;
+    totalTargetPrice: number | null;
+    totalMaxPrice: number | null;
   };
   paymentTerms: {
     minDays: number;
     maxDays: number;
     advancePaymentLimit: number | null;
+    // Additional payment fields from requisition
+    paymentTermsText?: string | null;      // e.g., "Net 30", "Net 60"
+    netPaymentDay?: number | null;         // Parsed net payment day
+    prePaymentPercentage?: number | null;  // Pre-payment percentage
+    postPaymentPercentage?: number | null; // Post-payment percentage
   };
   delivery: {
     typicalDeliveryDays: number | null;
-    maxDeliveryDate?: string | null;
-    negotiationClosureDate?: string | null;
+    // Date fields from requisition for auto-populating wizard
+    deliveryDate?: string | null;         // Maps to preferredDate in wizard
+    maxDeliveryDate?: string | null;      // Maps to requiredDate in wizard
+    negotiationClosureDate?: string | null; // Maps to deadline in wizard Step 3
+  };
+  // Requisition priorities for auto-populating Step 4 weights
+  priorities?: {
+    pricePriority: number | null;         // 0-100, weight for price parameters
+    deliveryPriority: number | null;      // 0-100, weight for delivery parameters
+    paymentTermsPriority: number | null;  // 0-100, weight for payment terms
+  };
+  // BATNA and discount limits from requisition
+  negotiationLimits?: {
+    batna: number | null;                 // Best Alternative to Negotiated Agreement
+    maxDiscount: number | null;           // Maximum discount allowed
+    discountedValue: number | null;       // Discounted value calculation
   };
   source: 'vendor_history' | 'similar_deals' | 'industry_default' | 'combined';
   confidence: number; // 0-1
@@ -931,6 +955,7 @@ export const DEFAULT_WIZARD_FORM_DATA: DealWizardFormData = {
     title: '',
     mode: 'CONVERSATION',
     priority: 'MEDIUM',
+    vendorLocked: false,  // Only true when locked=true is in URL
   },
   stepTwo: {
     priceQuantity: {

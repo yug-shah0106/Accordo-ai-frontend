@@ -13,7 +13,8 @@ interface Requisition {
   subject?: string;
   category?: string;
   deliveryDate?: string;
-  maximumDeliveryDate?: string;
+  maxDeliveryDate?: string; // Backend uses maxDeliveryDate
+  maximumDeliveryDate?: string; // Keep for backward compatibility
   negotiationClosureDate?: string;
   typeOfCurrency?: string;
   rfqId?: string;
@@ -42,11 +43,32 @@ interface ProjectState {
 const AddRequisition: React.FC = () => {
   const queryParams = new URLSearchParams(window.location.search);
   const redirect = queryParams.get("redirect");
-  const [currentStep, setCurrentStep] = useState<number>(redirect === "3" ? 3 : 1);
+  const { id } = useParams<{ id: string }>();
+
+  // Persist current step in localStorage to survive page refresh
+  const getInitialStep = (): number => {
+    if (redirect === "3") return 3;
+    if (id) {
+      const savedStep = localStorage.getItem(`requisition_step_${id}`);
+      if (savedStep) {
+        const step = parseInt(savedStep, 10);
+        if (step >= 1 && step <= 3) return step;
+      }
+    }
+    return 1;
+  };
+
+  const [currentStep, setCurrentStep] = useState<number>(getInitialStep());
   const [requisition, setRequisition] = useState<Requisition | null>(null);
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
   const { state } = useLocation() as { state: ProjectState };
+
+  // Save current step to localStorage whenever it changes (only for edit mode)
+  useEffect(() => {
+    if (id) {
+      localStorage.setItem(`requisition_step_${id}`, String(currentStep));
+    }
+  }, [currentStep, id]);
 
   const nextStep = () => {
     if (currentStep < 3) setCurrentStep(currentStep + 1);

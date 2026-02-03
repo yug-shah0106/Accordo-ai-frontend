@@ -20,6 +20,7 @@ interface InputFieldProps {
   max?: string | number;
   min?: string | number;
   disabled?: boolean;
+  required?: boolean;
 }
 
 export default function InputField({
@@ -40,6 +41,7 @@ export default function InputField({
   max,
   min,
   disabled,
+  required,
 }: InputFieldProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
 
@@ -57,6 +59,7 @@ export default function InputField({
             className={`block text-sm text-gray-600 font-medium mb-2 ${labelClassName || ""}`}
           >
             {label}
+            {required && <span className="text-red-500 ml-1">*</span>}
           </label>
           {labelSideComponent}
         </div>

@@ -43,11 +43,16 @@ interface Company {
   panFileUrl?: string;
   msmeFileUrl?: string;
   ciFileUrl?: string;
-  Vendor?: Array<{
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
+  VendorCompanies?: Array<{
+    id: number;
+    vendorId: number;
+    companyId: number;
+    Vendor?: {
+      id: string;
+      name: string;
+      email: string;
+      phone: string;
+    };
   }>;
 }
 
@@ -80,6 +85,13 @@ const AddVendor: React.FC = () => {
       const {
         data: { data },
       } = await authApi.get<{ data: Company }>(`/company/get/${companyId}`);
+
+      console.log('=== FETCHED COMPANY DATA ===');
+      console.log('Company Name:', data.companyName);
+      console.log('GST Number:', data.gstNumber);
+      console.log('Bank Name:', data.bankName);
+      console.log('Vendor array:', (data as any).Vendor);
+      console.log('VendorCompanies array:', (data as any).VendorCompanies);
 
       setCompany(data);
     } catch (error) {

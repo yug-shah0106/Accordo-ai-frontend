@@ -7,10 +7,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 npm install          # Install dependencies
 npm run dev          # Start dev server on port 5001
-npm run build        # Production build (outputs to dist/)
+npm run build        # Production build (tsc + vite, outputs to dist/)
+npm run type-check   # TypeScript type checking without emit
 npm run lint         # Run ESLint
 npm run preview      # Preview production build
 ```
+
+### Testing
+
+```bash
+npm run test              # Run all tests with Vitest
+npm run test:ui           # Run tests with Vitest UI
+npm run test:coverage     # Run tests with coverage report
+npx vitest path/to/file   # Run a single test file
+npx vitest -t "test name" # Run tests matching a pattern
+```
+
+Tests use Vitest with jsdom environment. Test files are in `tests/` directory. Coverage thresholds are set to 80% for lines, functions, branches, and statements.
 
 ### Docker
 
@@ -49,14 +62,18 @@ All services are configured to run on sequential ports starting from 5001:
 ## Architecture
 
 ### Tech Stack
-- React 18 + Vite + TypeScript
+- React 19 + Vite + TypeScript
 - React Router v7 for routing
 - Tailwind CSS for styling
-- MUI (Material-UI) components
+- MUI (Material-UI) v6 components
 - Axios for API calls
 - react-hook-form + yup/zod for form validation
 - Chart.js for data visualization
 - react-hot-toast for notifications
+
+### Path Aliases
+
+The `@/` alias resolves to `./src/` (configured in vitest.config.ts for tests).
 
 ### Project Structure
 
@@ -186,59 +203,6 @@ The Negotiation Chatbot is a utility-based AI decision engine for procurement ne
 
 - **INSIGHTS Mode**: Deterministic decision engine with utility scoring (default)
 - **CONVERSATION Mode**: LLM-driven conversational negotiation
-
-### File Structure
-
-```
-src/
-├── services/chatbot.service.ts              # API client (47+ methods)
-├── types/chatbot.ts                         # Comprehensive types (900+ lines)
-├── hooks/chatbot/
-│   ├── useDealActions.ts                    # Deal operations with permissions
-│   ├── useConversation.ts                   # Conversation mode hook
-│   └── useHistoryTracking.ts                # History tracking
-├── components/chatbot/
-│   ├── chat/
-│   │   ├── ChatTranscript.tsx               # Smart auto-scroll message list
-│   │   ├── Composer.tsx                     # Input with AI suggestions
-│   │   ├── MessageBubble.tsx                # Role-based message display
-│   │   ├── DecisionBadge.tsx                # Color-coded action badges
-│   │   ├── ChatErrorBoundary.tsx            # Error handling wrapper
-│   │   └── OutcomeBanner.tsx                # Deal completion banner
-│   ├── common/
-│   │   ├── ConfirmDialog.tsx                # Reusable confirmation modal
-│   │   └── ArchiveFilterDropdown.tsx        # Archive filter selector
-│   ├── deal-wizard/
-│   │   ├── StepOne.tsx                      # Basic info (RFQ, Vendor, Mode)
-│   │   ├── StepTwo.tsx                      # Commercial params (Price, Payment, Delivery)
-│   │   ├── StepThree.tsx                    # Contract & SLA (Warranty, Penalties)
-│   │   ├── StepFour.tsx                     # Parameter weights
-│   │   ├── ReviewStep.tsx                   # Final review before creation
-│   │   ├── StepProgress.tsx                 # Step indicator
-│   │   └── DonutChart.tsx                   # Weight visualization
-│   ├── requisition-view/
-│   │   ├── RequisitionCard.tsx              # Requisition list card
-│   │   ├── VendorDealCard.tsx               # Vendor deal card
-│   │   └── DealSummaryModal.tsx             # Deal summary overlay
-│   └── sidebar/
-│       ├── WeightedUtilityBar.tsx           # Parameter utility breakdown
-│       ├── UnifiedUtilityBar.tsx            # Combined utility display
-│       ├── DecisionThresholdZones.tsx       # Accept/Walk-away zones
-│       ├── CollapsibleSection.tsx           # Collapsible config sections
-│       ├── CollapsibleParameterCard.tsx     # Parameter detail card
-│       └── parameterFormatter.ts            # Parameter display utilities
-└── pages/chatbot/
-    ├── RequisitionListPage.tsx              # Main requisition list
-    ├── RequisitionDealsPage.tsx             # Deals for specific requisition
-    ├── NewDealPage.tsx                      # 4-step wizard
-    ├── NewDealPageWrapper.tsx               # Wrapper for route params
-    ├── NegotiationRoom.tsx                  # Main negotiation interface
-    ├── NegotiationSummary.tsx               # Deal summary page
-    ├── ArchivedRequisitionsPage.tsx         # Archived requisitions
-    ├── ArchivedDealsForRequisitionPage.tsx  # Archived deals
-    ├── AboutPage.tsx                        # About the chatbot
-    └── DemoScenarios.tsx                    # Demo scenario management
-```
 
 ### API Service (`chatbot.service.ts`)
 
@@ -623,21 +587,6 @@ useEffect(() => {
 - User stays near bottom -> smooth auto-scroll to new messages
 - 100px threshold for "near bottom" detection
 
-### Testing
-
-Manual testing checklist:
-- [ ] Create new deal via 4-step wizard
-- [ ] Send vendor messages in INSIGHTS mode
-- [ ] View weighted utility breakdown
-- [ ] Test parameter weight adjustments
-- [ ] View decision badges and utility scores
-- [ ] Reset deal (should go back to round 0)
-- [ ] Filter requisitions by archive status
-- [ ] Filter deals by status
-- [ ] Archive/unarchive requisitions and deals
-- [ ] Navigate between requisition list, deals list, and negotiation room
-- [ ] Test smart auto-scroll in chat
-
 ## Bid Analysis Module (January 2026)
 
 ### Overview
@@ -673,14 +622,3 @@ src/
 
 - `/bid-analysis` - Requisitions with bid analysis
 - `/bid-analysis/:rfqId` - Detailed bid comparison view
-
-### Future Enhancements
-
-- CONVERSATION mode with full LLM integration
-- Vendor auto-reply simulation
-- Explainability modal/drawer
-- Deal comparison across vendors
-- Bulk deal operations
-- Real-time WebSocket updates
-- Deal export (PDF/CSV)
-- Deal cloning from templates

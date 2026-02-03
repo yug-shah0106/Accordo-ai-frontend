@@ -104,6 +104,18 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
   };
 
   useEffect(() => {
+    console.log('=== STEP 3 - VENDOR DETAILS ===');
+    console.log('Company object:', company);
+    console.log('GST Number:', company?.gstNumber);
+    console.log('PAN Number:', company?.panNumber);
+    console.log('Resetting form with:', {
+      gstNumber: company?.gstNumber || "",
+      panNumber: company?.panNumber || "",
+      msmeNumber: company?.msmeNumber || "",
+      ciNumber: company?.ciNumber || "",
+      type: company?.type || "",
+    });
+
     reset({
       gstNumber: company?.gstNumber || "",
       panNumber: company?.panNumber || "",

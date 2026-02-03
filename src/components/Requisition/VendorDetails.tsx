@@ -130,9 +130,9 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
       return;
     }
     try {
-      toast.success("Edited Successfully");
+      toast.success("Requisition saved successfully");
       submitRequisition();
-      navigate(-1);
+      navigate("/requisition-management");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Something went wrong";
       toast.error(errorMessage);
@@ -203,7 +203,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     }
   };
 
-  // Legacy: Add Contract (keeping for backwards compatibility)
+  // Add vendor to requisition (creates contract without starting negotiation)
   const handleAddContract = async (): Promise<void> => {
     try {
       if (!watch("selectedVendor")) {
@@ -213,14 +213,17 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
       const {
         data: { data: contractResponse },
       } = await authApi.post<{ data: Contract }>("/contract/create", {
-        requisitionId: requisitionId,
-        vendorId: watch("selectedVendor"),
+        requisitionId: parseInt(requisitionId, 10),
+        vendorId: parseInt(watch("selectedVendor"), 10),
+        skipEmail: true,      // Don't send email - just adding vendor
+        skipChatbot: true,    // Don't auto-create deal - user can start negotiation later
       });
 
       setValue("contractData", [...(watch("contractData") || []), contractResponse]);
       setValue("selectedVendor", "");
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Something went wrong";
+      toast.success("Vendor added successfully");
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || "Something went wrong";
       toast.error(errorMessage);
     }
   };
@@ -346,9 +349,17 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
           <div className="flex gap-2">
             <Button
               className="px-4 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleAddContract}
+              type="button"
+              disabled={!watch("selectedVendor")}
+            >
+              Add Vendor
+            </Button>
+            <Button
+              className="px-4 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleStartNegotiation}
               type="button"
-              disabled={creatingContract}
+              disabled={creatingContract || !watch("selectedVendor")}
             >
               {creatingContract ? (
                 <>
