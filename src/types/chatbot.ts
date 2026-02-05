@@ -101,7 +101,7 @@ export interface SendMessageInput {
 // ============================================================================
 
 export interface Offer {
-  unit_price: number | null;
+  total_price: number | null;
   payment_terms: string | null;
   delivery_date?: string | null;
   delivery_days?: number | null;
@@ -109,6 +109,8 @@ export interface Offer {
     raw_terms_days?: number;
     non_standard_terms?: boolean;
   };
+  // Legacy support - kept for backwards compatibility
+  unit_price?: number | null;
 }
 
 // ============================================================================
@@ -135,7 +137,7 @@ export interface Explainability {
   configSnapshot: {
     weights: { price: number; terms: number };
     thresholds: { accept: number; walkaway: number };
-    unitPrice: { anchor: number; target: number; max: number; step: number };
+    totalPrice: { anchor: number; target: number; max: number; step: number };
     termOptions: string[];
   };
 }
@@ -158,10 +160,11 @@ export type ScenarioType = 'HARD' | 'MEDIUM' | 'SOFT' | 'WALK_AWAY';
 /**
  * Structured suggestion with price, terms, and delivery
  * Replaces the old string-only suggestion format
+ * UPDATED Feb 2026: price now represents total price
  */
 export interface StructuredSuggestion {
   message: string;              // Human-like message text including all terms
-  price: number;                // Unit price value
+  price: number;                // Total price value (not per-unit)
   paymentTerms: string;         // e.g., "Net 30", "Net 60", "Net 90"
   deliveryDate: string;         // ISO date string (YYYY-MM-DD)
   deliveryDays: number;         // Days from today

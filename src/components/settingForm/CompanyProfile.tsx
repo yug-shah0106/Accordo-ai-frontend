@@ -1,11 +1,40 @@
-import { useForm } from "react-hook-form";
 import InputField from "../InputField";
 import Button from "../Button";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { authApi } from "../../api";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import SelectField from "../SelectField";
 import DateField from "../DateField";
+import toast from "react-hot-toast";
+import { CiEdit } from "react-icons/ci";
+import { RiDeleteBin6Line } from "react-icons/ri";
+import { BsBuilding } from "react-icons/bs";
+import Modal from "../Modal";
+import ComplianceDocumentField from "../ComplianceDocumentField";
+
+interface SettingsFormData {
+  profileData?: any;
+  companyData?: {
+    companyName?: string;
+    establishmentDate?: string;
+    nature?: string;
+    type?: string;
+    numberOfEmployees?: string;
+    annualTurnover?: string;
+    industryType?: string;
+  };
+}
+
+interface CompanyProfileProps {
+  currentStep: number;
+  nextStep: () => void;
+  prevStep: () => void;
+  companyId?: string | null;
+  company?: any;
+  formData?: SettingsFormData;
+  updateFormData?: (data: Partial<SettingsFormData>) => void;
+  clearSaved?: () => void;
+}
 
 const CompanyProfile = ({
   currentStep,
@@ -13,27 +42,31 @@ const CompanyProfile = ({
   prevStep,
   companyId,
   company,
-}) => {
+  formData: parentFormData,
+  updateFormData,
+  clearSaved,
+}: CompanyProfileProps) => {
   const id = localStorage.getItem("%companyId%");
   const navigate = useNavigate();
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     companyName: "",
-    companyLogo:"",
+    companyLogo: "",
     establishmentDate: "",
     nature: "",
     type: "",
     numberOfEmployees: "",
     annualTurnover: "",
-    industryType: " ",
+    industryType: "",
     gstNumber: "",
-    gstFile: null,
+    gstFile: null as File | null,
     panNumber: "",
-    panFile: null,
+    panFile: null as File | null,
     msmeNumber: "",
-    msmeFile: null,
+    msmeFile: null as File | null,
     ciNumber: "",
-    ciFile: null,
+    ciFile: null as File | null,
     pocName: "",
     pocDesignation: "",
     pocEmail: "",
@@ -46,36 +79,43 @@ const CompanyProfile = ({
     swiftCode: "",
     bankAccountType: "",
     cancelledCheque: "",
-    cancelledChequeURL: null,
+    cancelledChequeURL: null as File | null,
     ifscCode: "",
     fullAddress: "",
+    escalationName: "",
+    escalationDesignation: "",
+    escalationEmail: "",
+    escalationPhone: "",
+    typeOfCurrency: "",
   });
-  const [imagePreviews, setImagePreviews] = useState({
+  const [imagePreviews, setImagePreviews] = useState<Record<string, string | null>>({
     gstFile: null,
     panFile: null,
     msmeFile: null,
     ciFile: null,
     cancelledChequeURL: null,
-    companyLogo:null
+    companyLogo: null,
   });
+  const [showDeleteLogoModal, setShowDeleteLogoModal] = useState(false);
+  const [isDeletingLogo, setIsDeletingLogo] = useState(false);
+  const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const getCompanyData = async () => {
       try {
         const response = await authApi(`company/get/${id}`);
-        console.log(response.data.data);
-  
         const companyData = response.data.data;
-        console.log({companyData});
-        
-  
-        const formattedEstablishmentDate = new Date(companyData.establishmentDate).toISOString().split("T")[0];
-  
+
+        const formattedEstablishmentDate = companyData.establishmentDate
+          ? new Date(companyData.establishmentDate).toISOString().split("T")[0]
+          : "";
+
         setFormData({
           ...companyData,
           establishmentDate: formattedEstablishmentDate,
         });
-  
+
         setImagePreviews({
           gstFile: companyData.gstFileUrl
             ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${companyData.gstFileUrl}`
@@ -92,7 +132,7 @@ const CompanyProfile = ({
           cancelledChequeURL: companyData.cancelledChequeURL
             ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${companyData.cancelledChequeURL}`
             : null,
-            companyLogo: companyData.cancelledChequeURL
+          companyLogo: companyData.companyLogo
             ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${companyData.companyLogo}`
             : null,
         });
@@ -100,45 +140,50 @@ const CompanyProfile = ({
         console.error(error);
       }
     };
-  
+
     if (id) {
       getCompanyData();
     }
   }, [id]);
-  ;
 
-  const onSubmit = async (e) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(formData);
+    setIsSubmitting(true);
 
     try {
       const dataToSend = new FormData();
 
       for (const key in formData) {
-        if (formData[key] instanceof File) {
-          dataToSend.append(key, formData[key]);
-        } else {
-          dataToSend.append(key, formData[key]);
+        const value = (formData as any)[key];
+        if (value instanceof File) {
+          dataToSend.append(key, value);
+        } else if (value !== null && value !== undefined) {
+          dataToSend.append(key, value);
         }
       }
 
-      dataToSend.append("companyId", companyId);
+      dataToSend.append("companyId", companyId || "");
       dataToSend.append("userType", "vendor");
 
-      const response = await authApi.put(`/company/update/${id}`, dataToSend, {
+      await authApi.put(`/company/update/${id}`, dataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      console.log("Response from API: ", response.data);
+      toast.success("Company details updated successfully");
       nextStep();
     } catch (error) {
       console.error("API call failed: ", error);
+      toast.error("Failed to update company details");
+    } finally {
+      setIsSubmitting(false);
     }
   };
-  const handleChange = (e) => {
-    const { name, value, type, files } = e.target;
 
-    if (type === "file") {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const files = (e.target as HTMLInputElement).files;
+
+    if (type === "file" && files) {
       const file = files[0];
       const previewURL = file ? URL.createObjectURL(file) : null;
 
@@ -156,88 +201,196 @@ const CompanyProfile = ({
     }
   };
 
+  // Handle logo upload
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedLogoFile(file);
+      setFormData({ ...formData, companyLogo: file as any });
+      setImagePreviews((prev) => ({
+        ...prev,
+        companyLogo: URL.createObjectURL(file),
+      }));
+    }
+  };
+
+  // Handle logo change button click
+  const handleLogoChangeClick = () => {
+    logoInputRef.current?.click();
+  };
+
+  // Handle logo delete
+  const handleDeleteLogo = async () => {
+    setIsDeletingLogo(true);
+    try {
+      // Call API to remove company logo
+      const dataToSend = new FormData();
+      dataToSend.append("removeCompanyLogo", "true");
+
+      await authApi.put(`/company/update/${id}`, dataToSend, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setImagePreviews((prev) => ({ ...prev, companyLogo: null }));
+      setFormData({ ...formData, companyLogo: "" });
+      setSelectedLogoFile(null);
+      if (logoInputRef.current) {
+        logoInputRef.current.value = "";
+      }
+      toast.success("Company logo removed");
+    } catch (error) {
+      console.error("Failed to remove company logo:", error);
+      toast.error("Failed to remove company logo");
+    } finally {
+      setIsDeletingLogo(false);
+      setShowDeleteLogoModal(false);
+    }
+  };
+
+  // Sync form data with parent for auto-save
+  useEffect(() => {
+    if (updateFormData && formData.companyName) {
+      updateFormData({
+        companyData: {
+          companyName: formData.companyName,
+          establishmentDate: formData.establishmentDate,
+          nature: formData.nature,
+          type: formData.type,
+          numberOfEmployees: formData.numberOfEmployees,
+          annualTurnover: formData.annualTurnover,
+          industryType: formData.industryType,
+        },
+      });
+    }
+  }, [
+    formData.companyName,
+    formData.establishmentDate,
+    formData.nature,
+    formData.type,
+    formData.numberOfEmployees,
+    formData.annualTurnover,
+    formData.industryType,
+    updateFormData,
+  ]);
+
   return (
-    <div className="border-2 rounded pt-6 px-6 pb-0">
-      <div className="my-4 mx-2">
-        <h3 className="text-lg font-semibold ">General Information</h3>
-        <p className="font-normal text-[#46403E] pt-2 pb-0">
-          Your details will be used for general information
-        </p>
+    <div className="p-6">
+      {/* Centered Company Logo Section */}
+      <div className="flex flex-col items-center mb-8">
+        {/* Hidden file input */}
+        <input
+          ref={logoInputRef}
+          type="file"
+          name="companyLogo"
+          accept="image/*"
+          onChange={handleLogoUpload}
+          className="hidden"
+        />
+
+        {/* Company Logo Preview */}
+        <div className="mb-3">
+          {imagePreviews.companyLogo ? (
+            <div className="w-24 h-24 rounded-lg overflow-hidden border-2 border-gray-200 shadow-sm">
+              <img
+                src={imagePreviews.companyLogo}
+                alt="Company Logo"
+                className="w-full h-full object-contain bg-white"
+              />
+            </div>
+          ) : (
+            <div className="w-24 h-24 rounded-lg bg-gray-100 border-2 border-gray-200 flex items-center justify-center shadow-sm">
+              <BsBuilding className="w-10 h-10 text-gray-400" />
+            </div>
+          )}
+        </div>
+
+        {/* Change / Delete Buttons */}
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={handleLogoChangeClick}
+            className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+          >
+            <CiEdit className="w-4 h-4" />
+            Change
+          </button>
+          {imagePreviews.companyLogo && (
+            <button
+              type="button"
+              onClick={() => setShowDeleteLogoModal(true)}
+              className="inline-flex items-center gap-1.5 text-sm text-red-600 hover:text-red-700 font-medium transition-colors"
+            >
+              <RiDeleteBin6Line className="w-4 h-4" />
+              Delete
+            </button>
+          )}
+        </div>
       </div>
 
       <form onSubmit={onSubmit}>
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          <InputField
-            label="Company Name"
-            name="companyName"
-            placeholder="Enter Company Name"
-            type="text"
-            value={formData.companyName}
-            onChange={handleChange}
-            error={errors.companyName}
-            wholeInputClassName="my-1"
-          />
+        {/* General Information Section */}
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-gray-900">General Information</h3>
+          <p className="text-sm text-gray-600 mt-1 mb-6">
+            Basic company details and registration information
+          </p>
 
-          <DateField
-            label="Establishment Date"
-            name="establishmentDate"
-            value={formData.establishmentDate}
-            error={errors.establishmentDate}
-            className="text-gray-700"
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <InputField
+              label="Company Name"
+              name="companyName"
+              placeholder="Enter Company Name"
+              type="text"
+              value={formData.companyName}
+              onChange={handleChange}
+              error={errors.companyName}
+              className="text-sm text-gray-900"
+            />
 
-          
-          <SelectField
-              label="Nature of operation of business"
+            <DateField
+              label="Establishment Date"
+              name="establishmentDate"
+              value={formData.establishmentDate}
+              onChange={handleChange}
+              error={errors.establishmentDate}
+              className="text-sm text-gray-900"
+            />
+
+            <SelectField
+              label="Nature of Business"
               name="nature"
               value={formData.nature}
               onChange={handleChange}
               options={[
                 { label: "Domestic", value: "Domestic" },
-                { label: "Interational", value: "Interational" },
+                { label: "International", value: "Interational" },
               ]}
               error={errors.nature}
             />
-              <InputField
-              label="Type /Nature of Business"
+
+            <InputField
+              label="Type of Business"
               name="type"
-                placeholder="Enter Type /Nature of Business"
-                type="text"
+              placeholder="Enter Type of Business"
+              type="text"
               value={formData.type}
               onChange={handleChange}
               error={errors.type}
-                wholeInputClassName="my-1"
+              className="text-sm text-gray-900"
             />
-             <div className="mt-8">
-              <label htmlFor="" className="block text-gray-600 font-medium mb-2">Company Logo</label>
-              <input
-                id="file-upload-gst"
-                type="file"
-                name="companyLogo"
-                className="block text-sm text-gray-700 border border-gray-300 rounded shadow-sm file:border-0 file:px-3 file:py-2.5"
-                onChange={handleChange}
-              />
-            </div>
-            {imagePreviews.companyLogo && (
-              <img
-                src={imagePreviews.companyLogo}
-                alt="GST Preview"
-                className="w-[40%] h-auto"
-              />
-            )}
-       
+          </div>
         </div>
 
-        <div>
-          <div className="my-4 mx-2">
-            <h3 className="text-lg font-semibold">Buyer Details</h3>
-            <p className="font-normal text-[#46403E] pt-2 pb-0">
-              Your details will be used for Buyer Details
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mt-4">
-          <SelectField
-              label="Number of employees"
+        {/* Business Details Section */}
+        <div className="mb-8 pt-6 border-t border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900">Business Details</h3>
+          <p className="text-sm text-gray-600 mt-1 mb-6">
+            Employee count, turnover, and compliance documents
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <SelectField
+              label="Number of Employees"
               name="numberOfEmployees"
               value={formData.numberOfEmployees}
               onChange={handleChange}
@@ -247,160 +400,129 @@ const CompanyProfile = ({
                 { label: "100-1000", value: "100-1000" },
                 { label: "1000+", value: "1000+" },
               ]}
-              error={errors.type}
+              error={errors.numberOfEmployees}
             />
 
             <InputField
               label="Annual Turnover"
               name="annualTurnover"
-              placeholder="EnterAnnual Turnover"
+              placeholder="Enter Annual Turnover"
               type="text"
               value={formData.annualTurnover}
               onChange={handleChange}
               error={errors.annualTurnover}
-              wholeInputClassName="my-1"
+              className="text-sm text-gray-900"
             />
 
-            <div>
-              <SelectField
-                label="Industry Type"
-                name="industryType"
-                onChange={handleChange}
-                value={formData.industryType}
-                error={errors.industryType}
-                options={[
-                  { label: "Industry1", value: "Industry1" },
-                  { label: "Industry2", value: "Industry2" },
-                 
-                ]}
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-4 justify-start">
-            <InputField
-              label="GST No"
-              name="gstNumber"
-              placeholder="Enter GST No"
-              type="text"
-              value={formData.gstNumber}
+            <SelectField
+              label="Industry Type"
+              name="industryType"
               onChange={handleChange}
-              error={errors.gstNumber}
-              wholeInputClassName="my-1"
+              value={formData.industryType}
+              error={errors.industryType}
+              options={[
+                { label: "Industry 1", value: "Industry1" },
+                { label: "Industry 2", value: "Industry2" },
+              ]}
             />
-            <div className="mt-8">
-              <input
-                id="file-upload-gst"
-                type="file"
-                name="gstFile"
-                className="block text-sm text-gray-700 border border-gray-300 rounded shadow-sm file:border-0 file:px-3 file:py-2.5"
-                onChange={handleChange}
-              />
-            </div>
-            {imagePreviews.gstFile && (
-              <img
-                src={imagePreviews.gstFile}
-                alt="GST Preview"
-                className="w-[10%] h-auto"
-              />
-            )}
+
+            <SelectField
+              label="Type of Currency"
+              name="typeOfCurrency"
+              value={formData.typeOfCurrency}
+              onChange={handleChange}
+              options={[
+                { label: "INR", value: "INR" },
+                { label: "USD", value: "USD" },
+                { label: "EUR", value: "EUR" },
+              ]}
+              error={errors.typeOfCurrency}
+            />
           </div>
 
-          <div className="flex items-center gap-4 justify-start">
-            <InputField
-              label="PAN No"
-              name="panNumber"
-              placeholder="Enter PAN No"
-              type="text"
-              value={formData.panNumber}
-              onChange={handleChange}
-              error={errors.panNumber}
-              wholeInputClassName={`my-1`}
-            />
-            <div className="mt-8">
-              <input
-                id="file-upload-pan"
-                type="file"
-                name="panFile"
-                className="block text-sm text-gray-700 border border-gray-300 rounded shadow-sm file:border-0 file:px-3 file:py-2.5"
-                onChange={handleChange}
-              />
-            </div>
-            {imagePreviews.panFile && (
-              <img
-                src={imagePreviews.panFile}
-                alt="PAN Preview"
-                className="w-[10%] h-auto"
-              />
-            )}
-          </div>
+          {/* Compliance Documents */}
+          <div className="mt-6 space-y-4">
+            <h4 className="text-sm font-medium text-gray-700">Compliance Documents</h4>
+            <p className="text-xs text-gray-500">
+              Enter the number manually or upload a document to auto-extract
+            </p>
 
-          <div className="flex items-center gap-4 justify-start">
-            <InputField
-              label="MSME No"
-              name="msmeNumber"
-              placeholder="Enter MSME No"
-              type="text"
-              value={formData.msmeNumber}
-              onChange={handleChange}
-              error={errors.msmeNumber}
-              wholeInputClassName={`my-1`}
-            />
-            <div className="mt-8">
-              <input
-                id="file-upload-msme"
-                type="file"
-                name="msmeFile"
-                className="block text-sm text-gray-700 border border-gray-300 rounded shadow-sm file:border-0 file:px-3 file:py-2.5"
-                onChange={handleChange}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ComplianceDocumentField
+                label="GST Number"
+                name="gstNumber"
+                placeholder="Enter GST No or upload document"
+                value={formData.gstNumber}
+                onChange={(value) => setFormData({ ...formData, gstNumber: value })}
+                onFileChange={(file, fileName) => {
+                  if (file) {
+                    setFormData({ ...formData, gstFile: file });
+                  }
+                }}
+                documentType="GST"
+                error={errors.gstNumber}
+                existingFileName={imagePreviews.gstFile ? "GST Document" : null}
               />
-            </div>
-            {imagePreviews.msmeFile && (
-              <img
-                src={imagePreviews.msmeFile}
-                alt="MSME Preview"
-                className="w-[10%] h-auto"
-              />
-            )}
-          </div>
 
-          <div className="flex items-center gap-4 justify-start">
-            <InputField
-              label="Certificate of Incorporation"
-              name="ciNumber"
-              placeholder="Enter Certificate No"
-              type="text"
-              value={formData.ciNumber}
-              onChange={handleChange}
-              error={errors.ciNumber}
-              wholeInputClassName={`my-1`}
-            />
-            <div className="mt-8">
-              <input
-                id="file-upload-ci"
-                type="file"
-                name="ciFile"
-                className="block text-sm text-gray-700 border border-gray-300 rounded shadow-sm file:border-0 file:px-3 file:py-2.5"
-                onChange={handleChange}
+              <ComplianceDocumentField
+                label="PAN Number"
+                name="panNumber"
+                placeholder="Enter PAN No or upload document"
+                value={formData.panNumber}
+                onChange={(value) => setFormData({ ...formData, panNumber: value })}
+                onFileChange={(file, fileName) => {
+                  if (file) {
+                    setFormData({ ...formData, panFile: file });
+                  }
+                }}
+                documentType="PAN"
+                error={errors.panNumber}
+                existingFileName={imagePreviews.panFile ? "PAN Document" : null}
+              />
+
+              <ComplianceDocumentField
+                label="MSME Number"
+                name="msmeNumber"
+                placeholder="Enter MSME/Udyam No or upload document"
+                value={formData.msmeNumber}
+                onChange={(value) => setFormData({ ...formData, msmeNumber: value })}
+                onFileChange={(file, fileName) => {
+                  if (file) {
+                    setFormData({ ...formData, msmeFile: file });
+                  }
+                }}
+                documentType="MSME"
+                error={errors.msmeNumber}
+                existingFileName={imagePreviews.msmeFile ? "MSME Document" : null}
+              />
+
+              <ComplianceDocumentField
+                label="Certificate of Incorporation"
+                name="ciNumber"
+                placeholder="Enter CIN/LLPIN or upload document"
+                value={formData.ciNumber}
+                onChange={(value) => setFormData({ ...formData, ciNumber: value })}
+                onFileChange={(file, fileName) => {
+                  if (file) {
+                    setFormData({ ...formData, ciFile: file });
+                  }
+                }}
+                documentType="CI"
+                error={errors.ciNumber}
+                existingFileName={imagePreviews.ciFile ? "CI Document" : null}
               />
             </div>
-            {imagePreviews.ciFile && (
-              <img
-                src={imagePreviews.ciFile}
-                alt="CI Preview"
-                className="w-[10%] h-auto"
-              />
-            )}
           </div>
         </div>
-        <div>
-          <div className="mt-10 mb-4 mx-2">
-            <h3 className="text-lg font-semibold">Point of Contact details</h3>
-            <p className="font-normal text-[#46403E] pt-2 pb-0">
-              Your details will be used for Contact Details
-            </p>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4 ">
+        {/* Point of Contact Section */}
+        <div className="mb-8 pt-6 border-t border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900">Point of Contact</h3>
+          <p className="text-sm text-gray-600 mt-1 mb-6">
+            Primary contact person details
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputField
               label="Name"
               name="pocName"
@@ -408,10 +530,8 @@ const CompanyProfile = ({
               type="text"
               value={formData.pocName}
               onChange={handleChange}
-              // register={register}
               error={errors.pocName}
-              // validation={{ required: validationSchema.name.required }}
-              wholeInputClassName="my-1"
+              className="text-sm text-gray-900"
             />
 
             <InputField
@@ -421,9 +541,8 @@ const CompanyProfile = ({
               type="text"
               value={formData.pocDesignation}
               onChange={handleChange}
-              // register={register}
               error={errors.pocDesignation}
-              wholeInputClassName="my-1"
+              className="text-sm text-gray-900"
             />
 
             <InputField
@@ -433,45 +552,42 @@ const CompanyProfile = ({
               type="email"
               value={formData.pocEmail}
               onChange={handleChange}
-              // register={register}
               error={errors.pocEmail}
-              wholeInputClassName="my-1"
+              className="text-sm text-gray-900"
             />
 
             <InputField
-              label="Phone No"
-              placeholder={"+91"}
+              label="Phone Number"
+              placeholder="Enter Phone Number"
               name="pocPhone"
-              type="number"
+              type="tel"
               value={formData.pocPhone}
               onChange={handleChange}
-              // register={register}
               error={errors.pocPhone}
-              className="text-gray-700"
+              className="text-sm text-gray-900"
+            />
+
+            <InputField
+              label="Website"
+              name="pocWebsite"
+              placeholder="Enter Website URL"
+              type="text"
+              value={formData.pocWebsite}
+              onChange={handleChange}
+              error={errors.pocWebsite}
+              className="text-sm text-gray-900"
             />
           </div>
-
-          <InputField
-            label="Website"
-            name="pocWebsite"
-            placeholder="Enter Website"
-            type="text"
-            value={formData.pocWebsite}
-            onChange={handleChange}
-            // register={register}
-            error={errors.pocWebsite}
-            wholeInputClassName="my-1"
-          />
         </div>
 
-        <div className="">
-          <div className="mt-10 mx-4">
-            <h3 className="text-lg font-semibold">Bank Details</h3>
-            <p className="font-normal text-[#46403E] pt-2 pb-0">
-              Your details will be used for Bank details
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mt-4 pt-3 px-3 pb-0">
+        {/* Bank Details Section */}
+        <div className="mb-8 pt-6 border-t border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900">Bank Details</h3>
+          <p className="text-sm text-gray-600 mt-1 mb-6">
+            Banking and payment information
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputField
               label="Bank Name"
               name="bankName"
@@ -479,9 +595,8 @@ const CompanyProfile = ({
               onChange={handleChange}
               placeholder="Enter Bank Name"
               type="text"
-              // register={register}
               error={errors.bankName}
-              wholeInputClassName={`my-1`}
+              className="text-sm text-gray-900"
             />
 
             <InputField
@@ -491,21 +606,19 @@ const CompanyProfile = ({
               onChange={handleChange}
               placeholder="Enter Beneficiary Name"
               type="text"
-              // register={register}
               error={errors.beneficiaryName}
-              wholeInputClassName={`my-1`}
+              className="text-sm text-gray-900"
             />
 
             <InputField
-              label="Account No"
+              label="Account Number"
               name="accountNumber"
               value={formData.accountNumber}
               onChange={handleChange}
               placeholder="Enter Account No"
-              type="number"
-              // register={register}
+              type="text"
               error={errors.accountNumber}
-              wholeInputClassName={`my-1`}
+              className="text-sm text-gray-900"
             />
 
             <InputField
@@ -514,21 +627,19 @@ const CompanyProfile = ({
               value={formData.iBanNumber}
               onChange={handleChange}
               name="iBanNumber"
-              // register={register}
               error={errors.iBanNumber}
-              className="text-gray-700"
+              className="text-sm text-gray-900"
             />
 
             <InputField
-              label="Swift/ BIC Code"
+              label="Swift/BIC Code"
               name="swiftCode"
-              placeholder="Enter Swift/ BIC Code"
+              placeholder="Enter Swift/BIC Code"
               value={formData.swiftCode}
               onChange={handleChange}
               type="text"
-              // register={register}
               error={errors.swiftCode}
-              wholeInputClassName={`my-1`}
+              className="text-sm text-gray-900"
             />
 
             <InputField
@@ -538,57 +649,19 @@ const CompanyProfile = ({
               onChange={handleChange}
               placeholder="Enter Bank Account Type"
               type="text"
-              // register={register}
               error={errors.bankAccountType}
-              wholeInputClassName={`my-1`}
+              className="text-sm text-gray-900"
             />
-
-            {/* <InputField
-              label="Copy of cancelled cheque"
-              name="cancelledCheque"
-              value={formData.cancelledCheque}
-              onChange={handleChange}
-              placeholder="Enter Code"
-              type="number"
-              // register={register}
-              error={errors.cancelledChequeURL}
-              wholeInputClassName={`my-1`}
-            /> */}
-<div className="grid col-span-2 gap-3">
-
-            <div className="flex gap-10 mt-12">
-              <div className="">
-                <label className="block text-gray-600 font-medium mb-2 ">Upload cancelled cheque</label>
-                <input
-                  id="file-upload"
-                  type="file"
-                  name="cancelledChequeURL"
-                  onChange={handleChange}
-                  className="block text-sm text-gray-700 border border-gray-300 rounded shadow-sm
-                    file:border-0  file:px-3 file:py-2.5"
-                />
-              </div>
-              {imagePreviews.cancelledChequeURL && (
-              <img
-                src={imagePreviews.cancelledChequeURL}
-                alt="CI Preview"
-                className="w-[20%] h-auto"
-              />
-            )}
-            </div>
-</div>
-
 
             <InputField
               label="IFSC Code"
               name="ifscCode"
-              placeholder="Enter Code"
+              placeholder="Enter IFSC Code"
               type="text"
               value={formData.ifscCode}
               onChange={handleChange}
-              // register={register}
               error={errors.ifscCode}
-              wholeInputClassName={`my-1`}
+              className="text-sm text-gray-900"
             />
 
             <InputField
@@ -596,26 +669,42 @@ const CompanyProfile = ({
               name="fullAddress"
               placeholder="Enter Bank Address"
               type="text"
-              // register={register}
               value={formData.fullAddress}
               onChange={handleChange}
               error={errors.fullAddress}
-              wholeInputClassName={`my-1`}
+              className="text-sm text-gray-900"
             />
+
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Cancelled Cheque
+              </label>
+              <input
+                type="file"
+                name="cancelledChequeURL"
+                accept="image/*,.pdf"
+                onChange={handleChange}
+                className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-blue-50 file:text-blue-600 file:font-medium hover:file:bg-blue-100"
+              />
+              {imagePreviews.cancelledChequeURL && (
+                <img
+                  src={imagePreviews.cancelledChequeURL}
+                  alt="Cancelled Cheque"
+                  className="mt-2 w-48 h-auto border rounded"
+                />
+              )}
+            </div>
           </div>
         </div>
-        <div>
-          <div className="mt-10 mb-4 mx-2">
-            <h3 className="text-lg font-semibold">
-              Escalation matrix
-            </h3>
-            <p className="font-normal text-[#46403E] pt-2 pb-0">
-              Your details will be used for Escalation matrix
-            </p>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            {/* Name Input */}
+        {/* Escalation Matrix Section */}
+        <div className="mb-8 pt-6 border-t border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900">Escalation Matrix</h3>
+          <p className="text-sm text-gray-600 mt-1 mb-6">
+            Secondary contact for escalations
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputField
               label="Name"
               name="escalationName"
@@ -623,22 +712,21 @@ const CompanyProfile = ({
               onChange={handleChange}
               placeholder="Enter Name"
               type="text"
-              // register={register}
               error={errors.escalationName}
-              wholeInputClassName="my-1"
+              className="text-sm text-gray-900"
             />
 
             <InputField
-              label="Phone No"
-              placeholder={"+91"}
+              label="Phone Number"
+              placeholder="Enter Phone Number"
               value={formData.escalationPhone}
               onChange={handleChange}
               name="escalationPhone"
-              type="number"
+              type="tel"
               error={errors.escalationPhone}
-            
-              className="text-gray-700"
+              className="text-sm text-gray-900"
             />
+
             <InputField
               label="Designation"
               value={formData.escalationDesignation}
@@ -647,8 +735,7 @@ const CompanyProfile = ({
               placeholder="Enter Designation"
               type="text"
               error={errors.escalationDesignation}
-             
-              wholeInputClassName="my-1"
+              className="text-sm text-gray-900"
             />
 
             <InputField
@@ -659,55 +746,47 @@ const CompanyProfile = ({
               placeholder="Enter Email"
               type="email"
               error={errors.escalationEmail}
-            
-              wholeInputClassName="my-1"
-            />
-          </div>
-        </div>
-        <div>
-          <div className="mt-10 mb-4 mx-2">
-            <h3 className="text-lg font-semibold">Currency Details</h3>
-            <p className="font-normal text-[#46403E] pt-2 pb-0">
-              Your details will be used for Escalation matrix
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4  mt-2">
-            <SelectField
-              label="Type of Currency"
-              name="typeOfCurrency"
-              // register={register}
-              value={formData.typeOfCurrency}
-              onChange={handleChange}
-              options={[
-                { label: "INR", value: "INR" },
-                { label: "USD", value: "USD" },
-                { label: "EURO", value: "EURO" },
-              ]}
-              error={errors.typeOfCurrency}
+              className="text-sm text-gray-900"
             />
           </div>
         </div>
 
-        <div className="mt-4 flex justify-start gap-4">
+        {/* Form Actions */}
+        <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
           <Button
-            className="px-4 py-2 !bg-[white] !text-[black] border rounded !w-fit"
             type="button"
+            className="!w-auto px-6 py-3 !bg-white border-2 border-gray-300 !text-gray-700 hover:!bg-gray-50 hover:border-gray-400 rounded-lg font-medium transition-all duration-200 min-w-[100px]"
             onClick={() => prevStep()}
-            // disabled={isSubmitting || currentStep === 1}
+            disabled={isSubmitting}
           >
             Previous
           </Button>
-
           <Button
             type="submit"
-            // disabled={isSubmitting || currentStep === 7}
-            className="px-4 py-2 bg-blue-500 text-white rounded !w-fit"
+            disabled={isSubmitting}
+            loading={isSubmitting}
+            className={`!w-auto px-6 py-3 rounded-lg font-medium transition-all duration-200 min-w-[100px]
+              ${isSubmitting
+                ? '!bg-gray-300 !text-gray-500 cursor-not-allowed'
+                : '!bg-blue-600 !text-white hover:!bg-blue-700'
+              }`}
           >
-            Next
+            Save & Continue
           </Button>
         </div>
       </form>
+
+      {/* Delete Logo Confirmation Modal */}
+      {showDeleteLogoModal && (
+        <Modal
+          heading="Delete Company Logo"
+          body="Are you sure you want to delete the company logo? This action cannot be undone."
+          onClose={() => setShowDeleteLogoModal(false)}
+          onAction={handleDeleteLogo}
+          actionText={isDeletingLogo ? "Deleting..." : "Delete"}
+          cancelText="Cancel"
+        />
+      )}
     </div>
   );
 };

@@ -482,10 +482,10 @@ const StepTwo: React.FC<StepTwoProps> = ({
             <p className="mt-1 text-xs text-gray-500">Walk-away total price ceiling (auto-filled from requisition)</p>
           </div>
 
-          {/* Minimum Order Quantity */}
+          {/* Total Order Quantity */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Minimum Order Quantity <span className="text-red-500">*</span>
+              Total Order Quantity <span className="text-red-500">*</span>
             </label>
             <input
               type="number"

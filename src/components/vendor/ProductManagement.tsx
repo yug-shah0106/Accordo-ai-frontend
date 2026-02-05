@@ -1,6 +1,5 @@
-import { useDebugValue, useEffect, useState } from "react";
-import { AiFillProduct } from "react-icons/ai";
-import { IoSearchOutline } from "react-icons/io5";
+import { useEffect, useState } from "react";
+import { IoSearchOutline, IoCloseCircle } from "react-icons/io5";
 import { LuArrowUpDown } from "react-icons/lu";
 import { VscEdit, VscSettings } from "react-icons/vsc";
 import { PiPlusSquareBold } from "react-icons/pi";
@@ -17,6 +16,7 @@ import toast from "react-hot-toast";
 
 const ProductManagement = () => {
   const [isModal, setIsModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const {
     data: products,
@@ -41,6 +41,16 @@ const ProductManagement = () => {
 
   
   const debounce = useDebounce(setSearch, 600);
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    debounce(value);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    setSearch("");
+  };
 
   const columns = [
     // {
@@ -136,14 +146,25 @@ console.log({products});
         </div>
 
         <div className="flex justify-between gap-2">
-          <div className="relative w-[30%]">
+          <div className="relative flex-1 max-w-md">
             <input
-              onChange={(e) => debounce(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => handleSearchChange(e.target.value)}
               type="text"
-              placeholder=" Search by name "
-              className="border border-gray-300 rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full px-4"
+              placeholder="Search by category, name, brand, HSN/SAC..."
+              className="w-full border border-gray-300 rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 px-4"
             />
-            <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            {searchTerm ? (
+              <button
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                title="Clear search"
+              >
+                <IoCloseCircle className="text-lg" />
+              </button>
+            ) : (
+              <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            )}
           </div>
           <div className="flex gap-6">
 

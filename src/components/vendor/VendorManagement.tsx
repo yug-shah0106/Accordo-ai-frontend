@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { IoSearchOutline, IoCloseCircle } from "react-icons/io5";
 import { VscEdit } from "react-icons/vsc";
 import { PiPlusSquareBold } from "react-icons/pi";
 import { Link } from "react-router-dom";
@@ -31,6 +32,7 @@ const VendorManagement = () => {
   const [companyData, setCompanyData] = useState<Company | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [isModal, setIsModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
@@ -116,6 +118,16 @@ const VendorManagement = () => {
     additionalData,
   } = useFetchData("/vendor/get-all", 10) as UseFetchDataReturn<VendorRow>;
   const debounce = useDebounce(setSearch, 600);
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    debounce(value);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    setSearch("");
+  };
 
   const data = [
     { title: " Total Vendor ", count: additionalData.totalVendors },
@@ -332,14 +344,25 @@ const VendorManagement = () => {
         </div> */}
 
         <div className="flex justify-between gap-3">
-          <div className="relative flex gap-3">
+          <div className="relative flex-1 max-w-md">
             <input
-              onChange={(e) => debounce(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => handleSearchChange(e.target.value)}
               type="text"
-              placeholder=" Search by Name"
-              className="border border-gray-300 rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full px-4"
+              placeholder="Search by ID, name, email..."
+              className="w-full border border-gray-300 rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 px-4"
             />
-
+            {searchTerm ? (
+              <button
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                title="Clear search"
+              >
+                <IoCloseCircle className="text-lg" />
+              </button>
+            ) : (
+              <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            )}
           </div>
           <div className="flex gap-3">
           {/* <button

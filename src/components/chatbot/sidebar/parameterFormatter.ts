@@ -165,10 +165,12 @@ export function formatNumber(
 
 /**
  * Get the display name for a parameter ID
+ * UPDATED Feb 2026: Changed unit_price to total_price
  */
 export function getParameterDisplayName(parameterId: string): string {
   const displayNames: Record<string, string> = {
-    unit_price: "Unit Price",
+    total_price: "Total Price",
+    unit_price: "Total Price",  // Legacy support - map to Total Price
     target_price: "Target Price",
     max_acceptable_price: "Max Acceptable Price",
     anchor_price: "Anchor Price",

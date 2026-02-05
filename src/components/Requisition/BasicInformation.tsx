@@ -5,8 +5,8 @@ import { authApi, authMultiFormApi } from "../../api";
 import toast from "react-hot-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { step1 } from "../../schema/requisition";
-import { useEffect, useState, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAutoSave } from "../../hooks/useAutoSave";
 import AutosaveIndicator from "../AutosaveIndicator";
 
@@ -66,8 +66,14 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
   requisition,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [projects, setProjects] = useState<Project[]>([]);
   const [tenureInDays, setTenureInDays] = useState<number | undefined>(undefined);
+  const [showDraftDialog, setShowDraftDialog] = useState(false);
+  const [isFormReady, setIsFormReady] = useState(false);
+
+  // Check if we're creating a new requisition (no requisitionId means new)
+  const isNewRequisition = !requisitionId;
 
   // Create the schema - will be used for manual validation in onSubmit
   const getSchema = () => step1(tenureInDays);
@@ -90,27 +96,76 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
   const formValues = watch();
 
   // Autosave hook - enabled for both new and edit requisitions
-  const autosaveKey = requisitionId ? `requisition_step1_${requisitionId}` : "requisition_step1_new";
+  // For new requisitions, include projectId in key to separate drafts per project
+  const autosaveKey = useMemo(() => {
+    if (requisitionId) {
+      return `requisition_step1_${requisitionId}`;
+    }
+    // For new requisitions, use project-specific key if projectId is provided
+    const projectKey = projectId?.id || 'new';
+    return `requisition_step1_new_project_${projectKey}`;
+  }, [requisitionId, projectId?.id]);
+
   const { lastSaved, isSaving, hasDraft, clearSaved, loadSaved } = useAutoSave({
     key: autosaveKey,
     data: formValues,
     interval: 2000, // Save 2 seconds after last change
-    enabled: true, // Enable autosave for both create and edit
+    enabled: isFormReady, // Only enable after form is ready (draft decision made)
   });
 
-  // Automatically restore draft on mount (no popup)
-  const [draftRestored, setDraftRestored] = useState(false);
-
+  // Check for existing draft on mount and show dialog for new requisitions
   useEffect(() => {
-    if (hasDraft && !draftRestored) {
-      setDraftRestored(true);
-      const savedData = loadSaved();
-      if (savedData && savedData.subject) {
-        // Silently restore draft data
-        reset(savedData);
+    if (isNewRequisition) {
+      const savedDraft = localStorage.getItem(autosaveKey);
+      if (savedDraft) {
+        try {
+          const parsedDraft = JSON.parse(savedDraft);
+          // Only show dialog if draft has meaningful data
+          if (parsedDraft && parsedDraft.subject) {
+            setShowDraftDialog(true);
+            return;
+          }
+        } catch (e) {
+          // Invalid draft, clear it
+          localStorage.removeItem(autosaveKey);
+        }
       }
+      // No valid draft, form is ready
+      setIsFormReady(true);
+    } else {
+      // Edit mode - form is ready immediately
+      setIsFormReady(true);
     }
-  }, [hasDraft, draftRestored, loadSaved, reset]);
+  }, [isNewRequisition, autosaveKey]);
+
+  // Function to restore draft
+  const restoreDraft = () => {
+    const savedData = loadSaved();
+    if (savedData) {
+      reset(savedData);
+      toast.success("Draft restored successfully");
+    }
+    setShowDraftDialog(false);
+    setIsFormReady(true);
+  };
+
+  // Function to discard draft and start fresh
+  const discardDraft = () => {
+    clearSaved();
+    // Reset form to clean state with only projectId pre-filled
+    reset({
+      projectId: projectId?.id || "",
+      benchmarkingDate: "",
+      subject: "",
+      category: "",
+      deliveryDate: "",
+      maxDeliveryDate: "",
+      negotiationClosureDate: "",
+      typeOfCurrency: "",
+    });
+    setShowDraftDialog(false);
+    setIsFormReady(true);
+  };
 
   // Backend autosave - periodically save to server for edit mode
   const backendAutosaveRef = useRef<NodeJS.Timeout | null>(null);
@@ -341,7 +396,38 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
   ];
 
   return (
-    <div className="border-2 rounded p-4">
+    <>
+      {/* Draft Restore Dialog */}
+      {showDraftDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Restore Draft?
+            </h3>
+            <p className="text-gray-600 mb-4">
+              You have an unsaved requisition draft from a previous session. Would you like to restore it or start fresh?
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                type="button"
+                className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg font-medium transition-all"
+                onClick={discardDraft}
+              >
+                Start Fresh
+              </Button>
+              <Button
+                type="button"
+                className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium transition-all"
+                onClick={restoreDraft}
+              >
+                Restore Draft
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="border-2 rounded p-4">
       <div className="flex justify-between items-start">
         <div>
           <h3 className="text-lg font-semibold">Basic Information</h3>
@@ -490,6 +576,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
         </div>
       </form>
     </div>
+    </>
   );
 };
 

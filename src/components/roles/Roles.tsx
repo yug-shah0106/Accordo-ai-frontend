@@ -30,7 +30,7 @@ function Roles() {
     },
     {
       header: "Created By",
-      accessor: "creator",
+      accessor: "Creator",
       width: "200px",
       Cell: ({ value }) => value?.name || "N/A",
     },
@@ -209,6 +209,7 @@ function Roles() {
             setEditRole(null);
           }}
           edit_role={edit_role}
+          onSuccess={getAllRoles}
         />
       )}
     </div>
