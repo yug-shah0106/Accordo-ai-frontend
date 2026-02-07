@@ -353,13 +353,19 @@ const RequisitionsManagement = () => {
   const editDetails = (row) => {
     console.log({ row });
 
-    if (
-      row.Contract &&
-      row.Contract.some((contract) => contract.status !== "Created")
-    ) {
-      toast.error(
-        "Editing is not allowed because a contract has 'InitialQuotation' status."
-      );
+    // Only block editing for Cancelled requisitions
+    if (row.status === "Cancelled") {
+      toast.error("Editing is not allowed for cancelled requisitions.");
+      return;
+    }
+
+    // Permission check: Admin can edit any; PM can only edit their own
+    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+    const userId = userData?.id;
+    const userType = userData?.userType;
+
+    if (userType !== "admin" && row.createdBy !== userId) {
+      toast.error("You can only edit requisitions you created.");
       return;
     }
 

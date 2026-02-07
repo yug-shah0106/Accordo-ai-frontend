@@ -2,8 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
 import SuccessMessage from "./components/vendor/SuccessMessage";
 import VerifyOtp from "./components/vendor/VerifyOtp";
-import Wireframe from "./pages/wireframe";
 import SignUp from "./pages/Auth/SignUp";
+import VendorChat from "./pages/vendorChat/VendorChat";
 import Layout from "./Layout/Auth";
 import DashBoardLayout from "./Layout/DashBoardLayout";
 import logo from "./assets/logo.png";
@@ -58,7 +58,8 @@ function App() {
       <Toaster />
       <BrowserRouter>
         <Routes>
-          <Route path="/vendor-chat" element={<Wireframe />} />
+          {/* Public vendor chat route (no auth required) */}
+          <Route path="/vendor-chat/:uniqueToken" element={<VendorChat />} />
           <Route path="/" element={<HomePage />} />
 
           <Route

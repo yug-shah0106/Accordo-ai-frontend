@@ -5,15 +5,17 @@ import Button from "../../components/Button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterSchema } from "../../schema/auth";
 import toast from "react-hot-toast";
-import api, { authApi } from "../../api";
-import { useEffect, useState } from "react";
+import api from "../../api";
+import { useEffect, useState, useCallback } from "react";
 import DateField from "../../components/DateField";
 import SelectField from "../../components/SelectField";
 
 const VendorContact = () => {
   const { id } = useParams();
-  const [contracts, setContracts] = useState({});
-  const navigate = useNavigate()
+  const [contracts, setContracts] = useState<any>({});
+  const navigate = useNavigate();
+  const [showCountdown, setShowCountdown] = useState(false);
+  const [countdown, setCountdown] = useState(10);
 
   const {
     register,
@@ -24,13 +26,13 @@ const VendorContact = () => {
     resolver: zodResolver(RegisterSchema),
   });
 
-  const fetchVendorContract = async (id) => {
+  const fetchVendorContract = async (uniqueToken: string) => {
     try {
       const {
         data: { data },
-      } = await api.get(`/contract/get-contract-details?uniquetoken=${id}`);
+      } = await api.get(`/contract/get-contract-details?uniquetoken=${uniqueToken}`);
       setContracts(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching vendor contract:", error);
       toast.error(error.message || "Something went wrong while fetching data");
     }
@@ -41,18 +43,35 @@ const VendorContact = () => {
     fetchVendorContract(id);
   }, [id]);
 
-  const onSubmit = async (event) => {
+  // Countdown effect
+  useEffect(() => {
+    if (!showCountdown) return;
+
+    if (countdown <= 0) {
+      // Navigate to vendor chat
+      navigate(`/vendor-chat/${id}`);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [showCountdown, countdown, navigate, id]);
+
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const formData = new FormData(event.target);
-    const today = new Date().setHours(0, 0, 0, 0); // Get today's date without time
+    const formData = new FormData(event.currentTarget);
+    const today = new Date().setHours(0, 0, 0, 0);
 
     // Validate delivery dates
-    const invalidDates = contracts?.Requisition?.RequisitionProduct?.some((product) => {
+    const invalidDates = contracts?.Requisition?.RequisitionProduct?.some((product: any) => {
       const deliveryDate = formData.get(`deliveryDate_${product.id}`);
       if (!deliveryDate) return false;
-      const selectedDate = new Date(deliveryDate);
-      return selectedDate < today;
+      const selectedDate = new Date(deliveryDate as string);
+      return selectedDate.getTime() < today;
     });
 
     if (invalidDates) {
@@ -62,7 +81,7 @@ const VendorContact = () => {
 
     try {
       // Build product quotations
-      const productQuotations = contracts?.Requisition?.RequisitionProduct?.map((product) => ({
+      const productQuotations = contracts?.Requisition?.RequisitionProduct?.map((product: any) => ({
         productId: product.id,
         productName: product.Product.productName,
         quantity: product.qty || 0,
@@ -78,7 +97,7 @@ const VendorContact = () => {
       const additionalNotes = formData.get('additionalNotes') || "";
 
       const contractDetails = {
-        products: productQuotations.map((quotation) => ({
+        products: productQuotations.map((quotation: any) => ({
           productId: quotation.productId,
           productName: quotation.productName,
           quantity: quotation.quantity,
@@ -94,74 +113,78 @@ const VendorContact = () => {
         }
       };
 
-      const payload = {
+      // Use public vendor-chat API endpoint (no auth required)
+      const response = await api.post('/vendor-chat/quote', {
+        uniqueToken: id,
         contractDetails: contractDetails,
-        status: "InitialQuotation",
-      };
-
-      console.log("Payload to Send:", payload);
-
-      const response = await authApi.put(`/contract/update/${contracts?.id}`, payload);
+      });
 
       console.log("API Response:", response.data);
 
-      // Also update the requisition status if we have access to it
-      if (contracts?.Requisition?.id) {
-        try {
-          await authApi.put(`/requisition/update/${contracts.Requisition.id}`, {
-            status: "InitialQuotation"
-          });
-          console.log("Requisition status updated successfully");
-        } catch (reqError) {
-          console.error("Error updating requisition status:", reqError);
-          // Don't fail the whole operation if requisition update fails
-        }
-      }
-
       // Update local state
-      setContracts((prev) => ({
+      setContracts((prev: any) => ({
         ...prev,
         status: "InitialQuotation",
       }));
 
       toast.success("Quotation submitted successfully!");
-      
-      // Show success message and redirect to refresh the page
-      toast.success("Redirecting to show updated status...");
-      
-      // Redirect to refresh the data and show updated status
-      setTimeout(() => {
-        window.location.href = window.location.href;
-      }, 2000);
-    } catch (error) {
+
+      // Show countdown and redirect to vendor chat
+      setShowCountdown(true);
+    } catch (error: any) {
       console.error("Error in onSubmit:", error);
-      toast.error(error.message || "Something went wrong");
+      toast.error(error.response?.data?.message || error.message || "Something went wrong");
     }
   };
 
-
-  console.log({ contracts })
-  console.log(contracts);
-
-
+  // Redirect if negotiation has already started
   if (
     contracts?.Requisition?.status === "NegotiationStarted" ||
     contracts?.Requisition?.status === "Benchmarked"
-    // contracts?.status === "InitialQuotation"
   ) {
-    // window.location.href = `https://accordochat-nalzcdsp9smtzxwgzc6ebq.streamlit.app/?uniqueToken=${contracts.uniqueToken}`;
-    navigate(`/chat`, { state: contracts })
+    navigate(`/vendor-chat/${id}`);
+  }
+
+  // Show countdown overlay
+  if (showCountdown) {
+    return (
+      <div className="w-full max-w-md mt-8">
+        <div className="p-8 bg-white rounded-lg shadow-lg border border-gray-200 text-center">
+          <div className="mb-6">
+            <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Quote Submitted!</h2>
+          <p className="text-gray-600 mb-6">
+            Your quotation has been submitted successfully. You will be redirected to the negotiation chat.
+          </p>
+          <div className="text-center">
+            <div className="text-5xl font-bold text-blue-600 mb-2">{countdown}</div>
+            <p className="text-sm text-gray-500">Redirecting to chat...</p>
+          </div>
+          <button
+            onClick={() => navigate(`/vendor-chat/${id}`)}
+            className="mt-6 text-blue-600 hover:text-blue-800 underline"
+          >
+            Go to chat now
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="w-max  mt-8">
+    <div className="w-max mt-8">
       {contracts?.Requisition?.status === "Draft" || contracts?.status === "Created" ? (
         <>
           <h2 className="text-2xl font-bold text-center text-gray-800">
             Vendor Contract
           </h2>
 
-          <form className="mt-6 w-full " onSubmit={onSubmit}>
+          <form className="mt-6 w-full" onSubmit={onSubmit}>
             {/* Products Quotation Section */}
             {contracts?.Requisition?.RequisitionProduct && (
               <div className="mb-6">
@@ -176,7 +199,7 @@ const VendorContact = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {contracts?.Requisition?.RequisitionProduct?.map((product, idx) => (
+                    {contracts?.Requisition?.RequisitionProduct?.map((product: any) => (
                       <tr key={product.id}>
                         <td className="border border-gray-300 px-4 pt-2 pb-0">
                           {product.Product.productName}
@@ -242,21 +265,17 @@ const VendorContact = () => {
                     min={0}
                     wholeInputClassName="my-1"
                     register={register}
-                    onInput={(e) => {
-                      // Allow empty values and prevent negative input while typing
+                    onInput={(e: any) => {
                       if (e.target.value < 0) {
                         e.target.value = 0;
                       }
                     }}
-                    onChange={(e) => {
+                    onChange={(e: any) => {
                       const newValue = e.target.value === "" ? "" : parseInt(e.target.value);
-
-                      // Allow empty values and prevent negative values
-                      if (newValue < 0) {
+                      if (typeof newValue === 'number' && newValue < 0) {
                         toast.error("Net payment day cannot be negative!");
                         return;
                       }
-
                       setValue("netPaymentDay", newValue);
                     }}
                   />
@@ -275,21 +294,17 @@ const VendorContact = () => {
                       max={100}
                       wholeInputClassName="my-1"
                       register={register}
-                      onInput={(e) => {
-                        // Prevent negative input while typing
+                      onInput={(e: any) => {
                         if (e.target.value < 0) {
                           e.target.value = 0;
                         }
                       }}
-                      onChange={(e) => {
+                      onChange={(e: any) => {
                         const newValue = e.target.value === "" ? "" : parseFloat(e.target.value);
-
-                        // Prevent exceeding 100%
-                        if (newValue > 100) {
+                        if (typeof newValue === 'number' && newValue > 100) {
                           toast.error("Pre payment percentage cannot exceed 100%!");
                           return;
                         }
-
                         setValue("prePaymentPercentage", newValue);
                       }}
                     />
@@ -304,21 +319,17 @@ const VendorContact = () => {
                       max={100}
                       wholeInputClassName="my-1"
                       register={register}
-                      onInput={(e) => {
-                        // Prevent negative input while typing
+                      onInput={(e: any) => {
                         if (e.target.value < 0) {
                           e.target.value = 0;
                         }
                       }}
-                      onChange={(e) => {
+                      onChange={(e: any) => {
                         const newValue = e.target.value === "" ? "" : parseFloat(e.target.value);
-
-                        // Prevent exceeding 100%
-                        if (newValue > 100) {
+                        if (typeof newValue === 'number' && newValue > 100) {
                           toast.error("Post payment percentage cannot exceed 100%!");
                           return;
                         }
-
                         setValue("postPaymentPercentage", newValue);
                       }}
                     />
@@ -343,7 +354,7 @@ const VendorContact = () => {
               loading={isSubmitting}
               className="mt-4"
             >
-              Save
+              Submit Quote
             </Button>
           </form>
         </>
@@ -354,6 +365,14 @@ const VendorContact = () => {
             Your contract is under review. We appreciate your patience and
             will notify you as soon as the review process is completed.
           </p>
+          {contracts?.status === "InitialQuotation" && (
+            <button
+              onClick={() => navigate(`/vendor-chat/${id}`)}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Go to Negotiation Chat
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -361,6 +380,3 @@ const VendorContact = () => {
 };
 
 export default VendorContact;
-
-
-

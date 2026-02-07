@@ -22,6 +22,7 @@ interface SettingsFormData {
     numberOfEmployees?: string;
     annualTurnover?: string;
     industryType?: string;
+    customIndustryType?: string;
   };
 }
 
@@ -87,6 +88,7 @@ const CompanyProfile = ({
     escalationEmail: "",
     escalationPhone: "",
     typeOfCurrency: "",
+    customIndustryType: "",
   });
   const [imagePreviews, setImagePreviews] = useState<Record<string, string | null>>({
     gstFile: null,
@@ -259,6 +261,7 @@ const CompanyProfile = ({
           numberOfEmployees: formData.numberOfEmployees,
           annualTurnover: formData.annualTurnover,
           industryType: formData.industryType,
+          customIndustryType: formData.customIndustryType,
         },
       });
     }
@@ -270,6 +273,7 @@ const CompanyProfile = ({
     formData.numberOfEmployees,
     formData.annualTurnover,
     formData.industryType,
+    formData.customIndustryType,
     updateFormData,
   ]);
 
@@ -421,10 +425,31 @@ const CompanyProfile = ({
               value={formData.industryType}
               error={errors.industryType}
               options={[
-                { label: "Industry 1", value: "Industry1" },
-                { label: "Industry 2", value: "Industry2" },
+                { label: "Construction", value: "Construction" },
+                { label: "Healthcare", value: "Healthcare" },
+                { label: "Transportation", value: "Transportation" },
+                { label: "Information Technology", value: "Information Technology" },
+                { label: "Oil and Gas", value: "Oil and Gas" },
+                { label: "Defence", value: "Defence" },
+                { label: "Renewable Energy", value: "Renewable Energy" },
+                { label: "Telecommunication", value: "Telecommunication" },
+                { label: "Agriculture", value: "Agriculture" },
+                { label: "Other", value: "Other" },
               ]}
             />
+
+            {formData.industryType === "Other" && (
+              <InputField
+                label="Specify Industry"
+                name="customIndustryType"
+                placeholder="Enter your industry type"
+                type="text"
+                value={formData.customIndustryType}
+                onChange={handleChange}
+                error={errors.customIndustryType}
+                className="text-sm text-gray-900"
+              />
+            )}
 
             <SelectField
               label="Type of Currency"

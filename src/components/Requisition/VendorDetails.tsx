@@ -5,7 +5,7 @@ import useFetchData from "../../hooks/useFetchData";
 import { RiDeleteBinLine } from "react-icons/ri";
 import toast from "react-hot-toast";
 import { authApi } from "../../api";
-import { FiCopy, FiExternalLink, FiPlay } from "react-icons/fi";
+import { FiExternalLink, FiPlay } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Modal from "../Modal";
@@ -142,67 +142,6 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
   const { data, loading, error } = useFetchData<Vendor>("/vendor/get-all");
   const contractData = watch("contractData") || [];
 
-  // State for tracking contract creation
-  const [creatingContract, setCreatingContract] = useState<boolean>(false);
-
-  // Navigate to Deal Wizard with pre-filled context
-  // Creates a Contract record IMMEDIATELY to link vendor to requisition
-  const handleStartNegotiation = async (): Promise<void> => {
-    const selectedVendorId = watch("selectedVendor");
-
-    if (!selectedVendorId) {
-      toast.error("Select a vendor first");
-      return;
-    }
-
-    // Find the vendor data - convert to string for comparison since form values are strings
-    const selectedVendor = data?.find(v => v.vendorId?.toString() === selectedVendorId?.toString());
-
-    if (!selectedVendor) {
-      toast.error("Vendor not found");
-      return;
-    }
-
-    setCreatingContract(true);
-
-    try {
-      // Step 1: Create Contract record IMMEDIATELY (auto-add vendor to requisition)
-      // This ensures the vendor is linked to the requisition before navigating
-      // Skip email and chatbot deal creation - we'll create the deal in the Deal Wizard
-      // IMPORTANT: Convert IDs to numbers - backend expects number types
-      const {
-        data: { data: contractResponse },
-      } = await authApi.post<{ data: Contract }>("/contract/create", {
-        requisitionId: parseInt(requisitionId, 10),
-        vendorId: parseInt(selectedVendorId, 10),
-        skipEmail: true,      // Don't send email - user is navigating to Deal Wizard
-        skipChatbot: true,    // Don't auto-create deal - Deal Wizard will create it
-      });
-
-      // Update local contractData state to reflect the new contract
-      setValue("contractData", [...(watch("contractData") || []), contractResponse]);
-      setValue("selectedVendor", "");
-
-      // Step 2: Navigate with correct vendor ID and name for robust matching
-      // The vendorId from contract is the User.id which the chatbot API expects
-      // Also pass vendorName as fallback for matching
-      const searchParams = new URLSearchParams({
-        rfqId: requisitionId,
-        vendorId: contractResponse.vendorId?.toString() || selectedVendorId,
-        vendorName: selectedVendor.Vendor?.name || '',
-        locked: 'true',
-        returnTo: `/requisition-management/edit/${requisitionId}`,
-      });
-
-      navigate(`/chatbot/requisitions/deals/new?${searchParams.toString()}`);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to attach vendor";
-      toast.error(errorMessage);
-    } finally {
-      setCreatingContract(false);
-    }
-  };
-
   // Add vendor to requisition (creates contract without starting negotiation)
   const handleAddContract = async (): Promise<void> => {
     try {
@@ -244,16 +183,28 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     }
   };
 
-  const handleCopy = (contract: Contract): void => {
+  // Open contract link in new window
+  const handleOpenContractLink = (contract: Contract): void => {
     const link = `${import.meta.env.VITE_FRONTEND_URL}/vendor-contract/${contract?.uniqueToken}`;
-    navigator.clipboard
-      .writeText(link)
-      .then(() => {
-        toast.success("Link copied to clipboard!");
-      })
-      .catch((error: Error) => {
-        console.error("Failed to copy the link:", error);
-      });
+    window.open(link, '_blank');
+  };
+
+  // Start negotiation for a vendor from Legacy Portal contract list
+  const handleStartNegotiationForContract = (contract: Contract): void => {
+    // Find the vendor data for this contract
+    const matchedVendor = data?.find(
+      (v) => v?.vendorId?.toString() === contract?.vendorId?.toString()
+    );
+
+    const searchParams = new URLSearchParams({
+      rfqId: requisitionId,
+      vendorId: contract.vendorId?.toString() || '',
+      vendorName: matchedVendor?.Vendor?.name || '',
+      locked: 'true',
+      returnTo: `/requisition-management/edit-requisition/${requisitionId}`,
+    });
+
+    navigate(`/chatbot/requisitions/deals/new?${searchParams.toString()}`);
   };
 
   const handleModalConfirm = (): void => {
@@ -355,24 +306,6 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
             >
               Add Vendor
             </Button>
-            <Button
-              className="px-4 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleStartNegotiation}
-              type="button"
-              disabled={creatingContract || !watch("selectedVendor")}
-            >
-              {creatingContract ? (
-                <>
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Starting...
-                </>
-              ) : (
-                <>
-                  <FiPlay className="w-4 h-4" />
-                  Start Negotiation
-                </>
-              )}
-            </Button>
           </div>
         </div>
 
@@ -443,18 +376,36 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                       </span>
                     </div>
                     <span className="flex items-center gap-3 flex-grow">
-                      <div className="flex items-center justify-between px-[10px] py-[5px] bg-white w-full">
-                        <div className="cursor-pointer break-all text-xs">{`${import.meta.env.VITE_FRONTEND_URL
+                      <div className="flex items-center px-[10px] py-[5px] bg-white min-w-[400px]">
+                        <div className="cursor-pointer text-xs whitespace-nowrap overflow-x-auto">{`${import.meta.env.VITE_FRONTEND_URL
                           }/vendor-contract/${contract?.uniqueToken}`}</div>
                       </div>
-                      <FiCopy
-                        className="w-5 h-5 cursor-pointer text-gray-600 hover:text-gray-900"
-                        onClick={() => handleCopy(contract)}
-                      />
-                      <RiDeleteBinLine
-                        onClick={() => handleDeleteContract(contract?.id)}
-                        className="cursor-pointer text-[#EF2D2E] w-5 h-5"
-                      />
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenContractLink(contract)}
+                          className="p-2 rounded border border-gray-300 bg-white hover:bg-gray-100 transition-colors"
+                          title="Open contract link in new window"
+                        >
+                          <FiExternalLink className="w-4 h-4 text-gray-700" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteContract(contract?.id)}
+                          className="p-2 rounded border border-red-300 bg-white hover:bg-red-50 transition-colors"
+                          title="Delete contract"
+                        >
+                          <RiDeleteBinLine className="w-4 h-4 text-red-600" />
+                        </button>
+                      </div>
+                      <Button
+                        className="px-1 py-1 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center gap-1 text-xs whitespace-nowrap"
+                        onClick={() => handleStartNegotiationForContract(contract)}
+                        type="button"
+                      >
+                        <FiPlay className="w-3 h-3" />
+                        Start Negotiation
+                      </Button>
                     </span>
                   </li>
                 );

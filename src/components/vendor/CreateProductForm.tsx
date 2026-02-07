@@ -163,7 +163,7 @@ const CreateProductForm = () => {
             <SelectField
               label="UOM"
               name="UOM"
-              options={["unit", "kg", "liters", "pieces", "box", "pack", "ton", "sheet", "roll", "license"]}
+              options={["units", "kgs", "liters", "boxes", "packs", "tons", "meters", "lots", "license"]}
               register={register}
               error={errors.UOM}
               wholeInputClassName={`!my-0`}

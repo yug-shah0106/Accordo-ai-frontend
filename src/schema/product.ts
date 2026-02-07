@@ -29,8 +29,8 @@ const productSchema = z.object({
   type: z.enum(["Goods", "Services"], {
     errorMap: () => ({ message: 'Type must be either "Goods" or "Services"' }),
   }),
-  UOM: z.enum(["unit", "kg", "liters", "pieces", "box", "pack", "ton", "sheet", "roll", "license"], {
-    errorMap: () => ({ message: 'UOM must be one of: "unit", "kg", "liters", "pieces", "box", "pack", "ton", "sheet", "roll", "license"' }),
+  UOM: z.enum(["units", "kgs", "liters", "boxes", "packs", "tons", "meters", "lots", "license"], {
+    errorMap: () => ({ message: 'UOM must be one of: "units", "kgs", "liters", "boxes", "packs", "tons", "meters", "lots", "license"' }),
   }),
 }).refine((data) => {
   if (data.gstType === "GST" && (data.gstPercentage === null || data.gstPercentage === undefined)) {
