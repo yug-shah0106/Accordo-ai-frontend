@@ -3,6 +3,8 @@ import "./App.css";
 import SuccessMessage from "./components/vendor/SuccessMessage";
 import VerifyOtp from "./components/vendor/VerifyOtp";
 import SignUp from "./pages/Auth/SignUp";
+import AuthPage from "./pages/Auth/AuthPage";
+import { OnboardingPage } from "./pages/Onboarding";
 import VendorChat from "./pages/vendorChat/VendorChat";
 import Layout from "./Layout/Auth";
 import DashBoardLayout from "./Layout/DashBoardLayout";
@@ -70,6 +72,16 @@ function App() {
               </Layout>
             }
           />
+          <Route
+            path="/auth"
+            element={
+              <Layout logo={logo}>
+                <AuthPage />
+              </Layout>
+            }
+          />
+          <Route path="/onboarding" element={<OnboardingPage />} />
+          {/* Legacy routes - redirect to /auth */}
           <Route
             path="/sign-in"
             element={

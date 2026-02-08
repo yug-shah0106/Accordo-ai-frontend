@@ -214,7 +214,11 @@ const Composer = ({
   const [input, setInput] = useState("");
   const [selectedScenario, setSelectedScenario] = useState<VendorScenarioType>("BALANCED");
   const [selectedEmphases, setSelectedEmphases] = useState<Set<VendorSuggestionEmphasis>>(new Set());
-  const [suggestions, setSuggestions] = useState<VendorStructuredSuggestion[]>([]);
+  const [suggestions, setSuggestions] = useState<Record<VendorScenarioType, VendorStructuredSuggestion[]>>({
+    STRONG: [],
+    BALANCED: [],
+    FLEXIBLE: [],
+  });
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [hasPMCounterOffer, setHasPMCounterOffer] = useState(false);
   const [priceInfo, setPriceInfo] = useState<{ vendorQuotePrice: number | null; pmCounterPrice: number | null }>({
@@ -231,8 +235,18 @@ const Composer = ({
       const emphases = selectedEmphases.size > 0 ? Array.from(selectedEmphases) : undefined;
       const response = await vendorChatService.getSuggestions(uniqueToken, emphases);
 
-      setSuggestions(response.data.suggestions);
-      setHasPMCounterOffer(response.data.hasPMCounterOffer);
+      // Backend returns suggestions as { STRONG: [...], BALANCED: [...], FLEXIBLE: [...] }
+      const suggestionsData = response.data.suggestions;
+      if (suggestionsData && typeof suggestionsData === 'object' && !Array.isArray(suggestionsData)) {
+        setSuggestions({
+          STRONG: Array.isArray(suggestionsData.STRONG) ? suggestionsData.STRONG : [],
+          BALANCED: Array.isArray(suggestionsData.BALANCED) ? suggestionsData.BALANCED : [],
+          FLEXIBLE: Array.isArray(suggestionsData.FLEXIBLE) ? suggestionsData.FLEXIBLE : [],
+        });
+      } else {
+        setSuggestions({ STRONG: [], BALANCED: [], FLEXIBLE: [] });
+      }
+      setHasPMCounterOffer(response.data.hasPMCounterOffer ?? false);
       setPriceInfo({
         vendorQuotePrice: response.data.vendorQuotePrice,
         pmCounterPrice: response.data.pmCounterPrice,
@@ -261,9 +275,10 @@ const Composer = ({
     });
   };
 
-  // Filter suggestions by selected scenario
+  // Get suggestions for selected scenario
   const filteredSuggestions = useMemo(() => {
-    return suggestions.filter((s) => s.scenario === selectedScenario);
+    const scenarioSuggestions = suggestions[selectedScenario];
+    return Array.isArray(scenarioSuggestions) ? scenarioSuggestions : [];
   }, [suggestions, selectedScenario]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -501,7 +516,11 @@ export default function VendorChat() {
 
   // Fetch deal data
   const fetchDeal = useCallback(async () => {
-    if (!uniqueToken) return;
+    if (!uniqueToken) {
+      setLoading(false);
+      setError("Invalid or missing negotiation token");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -518,8 +537,44 @@ export default function VendorChat() {
       // Fetch deal data
       const response = await vendorChatService.getDeal(uniqueToken);
       setData(response.data);
-      setMessages(response.data.messages);
+      const currentMessages = response.data.messages || [];
+      setMessages(currentMessages);
       setDeal(response.data.deal);
+
+      // Check if we need to auto-generate PM response
+      // Condition: There's a vendor message but no PM (ACCORDO) response yet
+      const hasVendorMessage = currentMessages.some((m: VendorChatMessage) => m.role === "VENDOR");
+      const hasPMMessage = currentMessages.some((m: VendorChatMessage) => m.role === "ACCORDO");
+      const openingVendorMessage = currentMessages.find((m: VendorChatMessage) => m.role === "VENDOR");
+
+      if (hasVendorMessage && !hasPMMessage && openingVendorMessage && response.data.deal.status === "NEGOTIATING") {
+        // Auto-trigger PM response for the opening message
+        try {
+          setPmTyping(true);
+          const pmResponse = await vendorChatService.getPMResponse(
+            uniqueToken,
+            openingVendorMessage.id
+          );
+
+          // Add PM message to messages
+          setMessages((prev) => [...prev, pmResponse.data.pmMessage]);
+          setDeal(pmResponse.data.deal);
+
+          // Show notification based on decision
+          if (pmResponse.data.decision.action === "ACCEPT") {
+            toast.success("Your offer has been accepted!");
+          } else if (pmResponse.data.decision.action === "WALK_AWAY") {
+            toast.error("The procurement manager has walked away from this negotiation.");
+          } else if (pmResponse.data.decision.action === "ESCALATE") {
+            toast("This negotiation has been escalated for review.", { icon: "⚠️" });
+          }
+        } catch (pmError) {
+          console.error("Failed to get PM response:", pmError);
+          // Don't fail the whole page - vendor can still see their message
+        } finally {
+          setPmTyping(false);
+        }
+      }
     } catch (err: any) {
       console.error("Error fetching deal:", err);
       setError(err.response?.data?.message || "Failed to load negotiation");

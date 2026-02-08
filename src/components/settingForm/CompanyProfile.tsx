@@ -1,6 +1,5 @@
 import InputField from "../InputField";
 import Button from "../Button";
-import { useNavigate } from "react-router-dom";
 import { authApi } from "../../api";
 import { useEffect, useState, useRef } from "react";
 import SelectField from "../SelectField";
@@ -11,6 +10,15 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { BsBuilding } from "react-icons/bs";
 import Modal from "../Modal";
 import ComplianceDocumentField from "../ComplianceDocumentField";
+import AddressSection from "./AddressSection";
+import { AddressData } from "../../types/address";
+import { FieldError } from "react-hook-form";
+
+// Helper to convert string error to FieldError format
+const toFieldError = (error: string | undefined): FieldError | undefined => {
+  if (!error) return undefined;
+  return { type: "manual", message: error };
+};
 
 interface SettingsFormData {
   profileData?: any;
@@ -38,17 +46,12 @@ interface CompanyProfileProps {
 }
 
 const CompanyProfile = ({
-  currentStep,
   nextStep,
   prevStep,
   companyId,
-  company,
-  formData: parentFormData,
   updateFormData,
-  clearSaved,
 }: CompanyProfileProps) => {
   const id = localStorage.getItem("%companyId%");
-  const navigate = useNavigate();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -100,8 +103,8 @@ const CompanyProfile = ({
   });
   const [showDeleteLogoModal, setShowDeleteLogoModal] = useState(false);
   const [isDeletingLogo, setIsDeletingLogo] = useState(false);
-  const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const [addresses, setAddresses] = useState<AddressData[]>([]);
 
   useEffect(() => {
     const getCompanyData = async () => {
@@ -138,6 +141,22 @@ const CompanyProfile = ({
             ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${companyData.companyLogo}`
             : null,
         });
+
+        // Load addresses from API response
+        if (companyData.Addresses && Array.isArray(companyData.Addresses)) {
+          setAddresses(
+            companyData.Addresses.map((addr: any) => ({
+              id: addr.id,
+              label: addr.label || "Head Office",
+              address: addr.address || "",
+              city: addr.city || "",
+              state: addr.state || "",
+              country: addr.country || "India",
+              postalCode: addr.postalCode || "",
+              isDefault: addr.isDefault || false,
+            }))
+          );
+        }
       } catch (error) {
         console.error(error);
       }
@@ -150,6 +169,36 @@ const CompanyProfile = ({
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate addresses
+    const activeAddresses = addresses.filter((a) => !a._delete);
+    if (activeAddresses.length === 0) {
+      setErrors({ ...errors, addresses: "At least one address is required" });
+      toast.error("Please add at least one company address");
+      return;
+    }
+
+    // Validate required fields in addresses
+    const invalidAddresses = activeAddresses.filter((addr) => !addr.address.trim());
+    if (invalidAddresses.length > 0) {
+      setErrors({ ...errors, addresses: "Street address is required for all addresses" });
+      toast.error("Please fill in the street address for all addresses");
+      return;
+    }
+
+    // Validate at least one primary address
+    const hasPrimary = activeAddresses.some((addr) => addr.isDefault);
+    if (!hasPrimary && activeAddresses.length > 0) {
+      // Auto-set first address as primary
+      const updatedAddresses = addresses.map((addr, i) => {
+        if (i === 0 && !addr._delete) {
+          return { ...addr, isDefault: true };
+        }
+        return addr;
+      });
+      setAddresses(updatedAddresses);
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -166,6 +215,22 @@ const CompanyProfile = ({
 
       dataToSend.append("companyId", companyId || "");
       dataToSend.append("userType", "vendor");
+
+      // Include addresses as JSON string
+      if (addresses.length > 0) {
+        const addressesToSend = addresses.map((addr) => ({
+          id: addr.id,
+          label: addr.label === "Custom" && addr.customLabel ? addr.customLabel : addr.label,
+          address: addr.address,
+          city: addr.city,
+          state: addr.state,
+          country: addr.country,
+          postalCode: addr.postalCode,
+          isDefault: addr.isDefault,
+          _delete: addr._delete,
+        }));
+        dataToSend.append("addresses", JSON.stringify(addressesToSend));
+      }
 
       await authApi.put(`/company/update/${id}`, dataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -207,7 +272,6 @@ const CompanyProfile = ({
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedLogoFile(file);
       setFormData({ ...formData, companyLogo: file as any });
       setImagePreviews((prev) => ({
         ...prev,
@@ -235,7 +299,6 @@ const CompanyProfile = ({
 
       setImagePreviews((prev) => ({ ...prev, companyLogo: null }));
       setFormData({ ...formData, companyLogo: "" });
-      setSelectedLogoFile(null);
       if (logoInputRef.current) {
         logoInputRef.current.value = "";
       }
@@ -347,7 +410,7 @@ const CompanyProfile = ({
               type="text"
               value={formData.companyName}
               onChange={handleChange}
-              error={errors.companyName}
+              error={toFieldError(errors.companyName)}
               className="text-sm text-gray-900"
             />
 
@@ -356,7 +419,7 @@ const CompanyProfile = ({
               name="establishmentDate"
               value={formData.establishmentDate}
               onChange={handleChange}
-              error={errors.establishmentDate}
+              error={toFieldError(errors.establishmentDate)}
               className="text-sm text-gray-900"
             />
 
@@ -369,7 +432,7 @@ const CompanyProfile = ({
                 { label: "Domestic", value: "Domestic" },
                 { label: "International", value: "Interational" },
               ]}
-              error={errors.nature}
+              error={toFieldError(errors.nature)}
             />
 
             <InputField
@@ -379,11 +442,18 @@ const CompanyProfile = ({
               type="text"
               value={formData.type}
               onChange={handleChange}
-              error={errors.type}
+              error={toFieldError(errors.type)}
               className="text-sm text-gray-900"
             />
           </div>
         </div>
+
+        {/* Company Addresses Section */}
+        <AddressSection
+          addresses={addresses}
+          onChange={setAddresses}
+          errors={errors}
+        />
 
         {/* Business Details Section */}
         <div className="mb-8 pt-6 border-t border-gray-200">
@@ -404,7 +474,7 @@ const CompanyProfile = ({
                 { label: "100-1000", value: "100-1000" },
                 { label: "1000+", value: "1000+" },
               ]}
-              error={errors.numberOfEmployees}
+              error={toFieldError(errors.numberOfEmployees)}
             />
 
             <InputField
@@ -414,7 +484,7 @@ const CompanyProfile = ({
               type="text"
               value={formData.annualTurnover}
               onChange={handleChange}
-              error={errors.annualTurnover}
+              error={toFieldError(errors.annualTurnover)}
               className="text-sm text-gray-900"
             />
 
@@ -423,7 +493,7 @@ const CompanyProfile = ({
               name="industryType"
               onChange={handleChange}
               value={formData.industryType}
-              error={errors.industryType}
+              error={toFieldError(errors.industryType)}
               options={[
                 { label: "Construction", value: "Construction" },
                 { label: "Healthcare", value: "Healthcare" },
@@ -446,7 +516,7 @@ const CompanyProfile = ({
                 type="text"
                 value={formData.customIndustryType}
                 onChange={handleChange}
-                error={errors.customIndustryType}
+                error={toFieldError(errors.customIndustryType)}
                 className="text-sm text-gray-900"
               />
             )}
@@ -461,7 +531,7 @@ const CompanyProfile = ({
                 { label: "USD", value: "USD" },
                 { label: "EUR", value: "EUR" },
               ]}
-              error={errors.typeOfCurrency}
+              error={toFieldError(errors.typeOfCurrency)}
             />
           </div>
 
@@ -479,7 +549,7 @@ const CompanyProfile = ({
                 placeholder="Enter GST No or upload document"
                 value={formData.gstNumber}
                 onChange={(value) => setFormData({ ...formData, gstNumber: value })}
-                onFileChange={(file, fileName) => {
+                onFileChange={(file) => {
                   if (file) {
                     setFormData({ ...formData, gstFile: file });
                   }
@@ -495,7 +565,7 @@ const CompanyProfile = ({
                 placeholder="Enter PAN No or upload document"
                 value={formData.panNumber}
                 onChange={(value) => setFormData({ ...formData, panNumber: value })}
-                onFileChange={(file, fileName) => {
+                onFileChange={(file) => {
                   if (file) {
                     setFormData({ ...formData, panFile: file });
                   }
@@ -511,7 +581,7 @@ const CompanyProfile = ({
                 placeholder="Enter MSME/Udyam No or upload document"
                 value={formData.msmeNumber}
                 onChange={(value) => setFormData({ ...formData, msmeNumber: value })}
-                onFileChange={(file, fileName) => {
+                onFileChange={(file) => {
                   if (file) {
                     setFormData({ ...formData, msmeFile: file });
                   }
@@ -527,7 +597,7 @@ const CompanyProfile = ({
                 placeholder="Enter CIN/LLPIN or upload document"
                 value={formData.ciNumber}
                 onChange={(value) => setFormData({ ...formData, ciNumber: value })}
-                onFileChange={(file, fileName) => {
+                onFileChange={(file) => {
                   if (file) {
                     setFormData({ ...formData, ciFile: file });
                   }
@@ -555,7 +625,7 @@ const CompanyProfile = ({
               type="text"
               value={formData.pocName}
               onChange={handleChange}
-              error={errors.pocName}
+              error={toFieldError(errors.pocName)}
               className="text-sm text-gray-900"
             />
 
@@ -566,7 +636,7 @@ const CompanyProfile = ({
               type="text"
               value={formData.pocDesignation}
               onChange={handleChange}
-              error={errors.pocDesignation}
+              error={toFieldError(errors.pocDesignation)}
               className="text-sm text-gray-900"
             />
 
@@ -577,7 +647,7 @@ const CompanyProfile = ({
               type="email"
               value={formData.pocEmail}
               onChange={handleChange}
-              error={errors.pocEmail}
+              error={toFieldError(errors.pocEmail)}
               className="text-sm text-gray-900"
             />
 
@@ -588,7 +658,7 @@ const CompanyProfile = ({
               type="tel"
               value={formData.pocPhone}
               onChange={handleChange}
-              error={errors.pocPhone}
+              error={toFieldError(errors.pocPhone)}
               className="text-sm text-gray-900"
             />
 
@@ -599,7 +669,7 @@ const CompanyProfile = ({
               type="text"
               value={formData.pocWebsite}
               onChange={handleChange}
-              error={errors.pocWebsite}
+              error={toFieldError(errors.pocWebsite)}
               className="text-sm text-gray-900"
             />
           </div>
@@ -620,7 +690,7 @@ const CompanyProfile = ({
               onChange={handleChange}
               placeholder="Enter Bank Name"
               type="text"
-              error={errors.bankName}
+              error={toFieldError(errors.bankName)}
               className="text-sm text-gray-900"
             />
 
@@ -631,7 +701,7 @@ const CompanyProfile = ({
               onChange={handleChange}
               placeholder="Enter Beneficiary Name"
               type="text"
-              error={errors.beneficiaryName}
+              error={toFieldError(errors.beneficiaryName)}
               className="text-sm text-gray-900"
             />
 
@@ -642,7 +712,7 @@ const CompanyProfile = ({
               onChange={handleChange}
               placeholder="Enter Account No"
               type="text"
-              error={errors.accountNumber}
+              error={toFieldError(errors.accountNumber)}
               className="text-sm text-gray-900"
             />
 
@@ -652,7 +722,7 @@ const CompanyProfile = ({
               value={formData.iBanNumber}
               onChange={handleChange}
               name="iBanNumber"
-              error={errors.iBanNumber}
+              error={toFieldError(errors.iBanNumber)}
               className="text-sm text-gray-900"
             />
 
@@ -663,7 +733,7 @@ const CompanyProfile = ({
               value={formData.swiftCode}
               onChange={handleChange}
               type="text"
-              error={errors.swiftCode}
+              error={toFieldError(errors.swiftCode)}
               className="text-sm text-gray-900"
             />
 
@@ -674,7 +744,7 @@ const CompanyProfile = ({
               onChange={handleChange}
               placeholder="Enter Bank Account Type"
               type="text"
-              error={errors.bankAccountType}
+              error={toFieldError(errors.bankAccountType)}
               className="text-sm text-gray-900"
             />
 
@@ -685,7 +755,7 @@ const CompanyProfile = ({
               type="text"
               value={formData.ifscCode}
               onChange={handleChange}
-              error={errors.ifscCode}
+              error={toFieldError(errors.ifscCode)}
               className="text-sm text-gray-900"
             />
 
@@ -696,7 +766,7 @@ const CompanyProfile = ({
               type="text"
               value={formData.fullAddress}
               onChange={handleChange}
-              error={errors.fullAddress}
+              error={toFieldError(errors.fullAddress)}
               className="text-sm text-gray-900"
             />
 
@@ -737,7 +807,7 @@ const CompanyProfile = ({
               onChange={handleChange}
               placeholder="Enter Name"
               type="text"
-              error={errors.escalationName}
+              error={toFieldError(errors.escalationName)}
               className="text-sm text-gray-900"
             />
 
@@ -748,7 +818,7 @@ const CompanyProfile = ({
               onChange={handleChange}
               name="escalationPhone"
               type="tel"
-              error={errors.escalationPhone}
+              error={toFieldError(errors.escalationPhone)}
               className="text-sm text-gray-900"
             />
 
@@ -759,7 +829,7 @@ const CompanyProfile = ({
               name="escalationDesignation"
               placeholder="Enter Designation"
               type="text"
-              error={errors.escalationDesignation}
+              error={toFieldError(errors.escalationDesignation)}
               className="text-sm text-gray-900"
             />
 
@@ -770,7 +840,7 @@ const CompanyProfile = ({
               onChange={handleChange}
               placeholder="Enter Email"
               type="email"
-              error={errors.escalationEmail}
+              error={toFieldError(errors.escalationEmail)}
               className="text-sm text-gray-900"
             />
           </div>

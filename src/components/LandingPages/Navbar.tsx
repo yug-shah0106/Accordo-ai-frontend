@@ -126,17 +126,11 @@ const Navbar = () => {
           </div>
           <div className="hidden md:flex gap-5 md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
             <Link
-              to="/sign-in"
+              to="/auth"
               className="text-white bg-[#234BF3] font-medium rounded-lg text-sm px-4 pt-2 pb-0 text-center"
             >
-              Login
+              Get Started
             </Link>
-            {/* <Link
-              to="/sign-up"
-              className="text-white bg-[#234BF3] font-medium rounded-lg text-sm px-4 pt-2 pb-0 text-center"
-            >
-              Register
-            </Link> */}
           </div>
         </div>
 
@@ -199,17 +193,11 @@ const Navbar = () => {
 
             <div className="flex justify-end gap-6 pt-2 pb-0">
               <Link
-                to="/sign-in"
-                className="text-black font-semibold rounded-lg text-sm  pt-2 pb-0 text-center"
-              >
-                Login
-              </Link>
-              {/* <Link
-                to="/sign-up"
+                to="/auth"
                 className="text-white bg-[#234BF3] font-medium rounded-lg text-sm px-4 pt-2 pb-0 text-center"
               >
-                Register
-              </Link> */}
+                Get Started
+              </Link>
             </div>
           </ul>
         </div>

@@ -212,6 +212,7 @@ import { authApi } from "../../api";
 import { tokenStorage } from "../../utils/tokenStorage";
 import toast from "react-hot-toast";
 import { useTheme } from "../../context/ThemeContext";
+import { useOnboardingStatus } from "../OnboardingReminder";
 
 const Sidebar = ({ logo }) => {
   const [activeItem, setActiveItem] = useState("");
@@ -222,6 +223,7 @@ const Sidebar = ({ logo }) => {
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
   const { theme, toggleTheme, isDark } = useTheme();
+  const { showBadge: showOnboardingBadge } = useOnboardingStatus();
 
   // List of paths where forms exist
   const formPaths = [
@@ -486,8 +488,22 @@ const Sidebar = ({ logo }) => {
                     : "text-gray-700 hover:bg-gray-100"
                     }`}
                 >
-                  <span className="mr-2">{item.icon}</span>
-                  {sidebarOpen && item.name}
+                  <span className="mr-2 relative">
+                    {item.icon}
+                    {/* Onboarding badge on Settings */}
+                    {item.link === "setting" && showOnboardingBadge && (
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                    )}
+                  </span>
+                  {sidebarOpen && (
+                    <span className="flex items-center gap-2">
+                      {item.name}
+                      {/* Onboarding badge text when sidebar is open */}
+                      {item.link === "setting" && showOnboardingBadge && (
+                        <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-full">!</span>
+                      )}
+                    </span>
+                  )}
                 </div>
               </li>
             );
