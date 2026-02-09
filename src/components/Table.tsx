@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import TableShimmer from "./shimmerTable/tableShimmer";
 import Badge from "./badge";
 import toast from "react-hot-toast";
-import { FiCopy } from "react-icons/fi";
+import { FiExternalLink } from "react-icons/fi";
 import { formatDate } from "../utils/utils";
 import { Menu, MenuItem, IconButton } from "@mui/material";
 import type { TableProps } from "./Table.types";
@@ -34,15 +34,8 @@ const Table = ({
     setMenuRow(null);
   };
 
-  const handleCopy = (link: string) => {
-    navigator.clipboard
-      .writeText(link)
-      .then(() => {
-        toast.success("Link copied to clipboard!");
-      })
-      .catch((error) => {
-        console.error("Failed to copy the link:", error);
-      });
+  const handleOpenLink = (link: string) => {
+    window.open(link, '_blank', 'noopener,noreferrer');
   };
 
   // in case of coping is not wroking in https:// use below function
@@ -102,20 +95,23 @@ const Table = ({
                 <tr
                   key={index}
                   className="text-[#18100E] border-t hover:bg-gray-50 cursor-pointer"
-                  onClick={() => onRowClick(row)}
+                  onClick={() => onRowClick?.(row)}
                 >
                   <td className="px-4 py-2 text-justify">
                     {index + 1 + (currentPage - 1) * itemsPerPage}
                   </td>
-                  {columns.map((col, colIndex) => (
+                  {columns.map((col, colIndex) => {
+                    const accessor = col?.accessor || '';
+                    const accessorKey = col?.accessorKey || '';
+                    return (
                     <td key={colIndex} className="px-4 py-2">
                       {col?.header === "Project ID" ||
                       col?.header === "RFQ ID" ? (
-                        typeof row[col?.accessor ?? col] === "string" ? (
-                          row[col?.accessor ?? col]?.slice(-12)
-                        ) : typeof row[col?.accessor ?? col] === "object" &&
-                          !Array.isArray(row[col?.accessor ?? col]) ? (
-                          row?.[col?.accessor]?.[col?.accessorKey]?.slice(-12)
+                        typeof row[accessor] === "string" ? (
+                          row[accessor]?.slice(-12)
+                        ) : typeof row[accessor] === "object" &&
+                          !Array.isArray(row[accessor]) ? (
+                          row?.[accessor]?.[accessorKey]?.slice(-12)
                         ) : (
                           "-"
                         )
@@ -136,17 +132,17 @@ const Table = ({
                             : col.isRating(index)
                         } / 10`
                       ) : col?.isLink ? (
-                        <div className="flex  gap-x-3">
-                          <p className="truncate  w-[10rem]">
+                        <div className="flex gap-x-3 items-center">
+                          <p className="truncate w-[10rem]">
                             {`${col?.isLink}${row[col?.accessor ?? col]}`}
                           </p>
-                          <FiCopy
-                            className="w-4 h-4 cursor-pointer"
-                            onClick={() =>
-                              handleCopy(
-                                `${col?.isLink}${row[col?.accessor ?? col]}`
-                              )
-                            }
+                          <FiExternalLink
+                            className="w-4 h-4 cursor-pointer text-blue-600 hover:text-blue-800"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenLink(`${col?.isLink}${row[col?.accessor ?? col]}`);
+                            }}
+                            title="Open in new tab"
                           />
                         </div>
                       ) : col.isBadge ? (
@@ -171,9 +167,9 @@ const Table = ({
                       ) : typeof row[col?.accessor ?? col] === "string" &&
                         !isNaN(Date.parse(row[col?.accessor ?? col])) ? (
                         formatDate(row[col?.accessor ?? col]?.split("T")?.[0])
-                      ) : typeof row[col?.accessor ?? col] === "object" &&
-                        !Array.isArray(row[col?.accessor ?? col]) ? (
-                        row?.[col?.accessor]?.[col?.accessorKey]
+                      ) : typeof row[accessor] === "object" &&
+                        !Array.isArray(row[accessor]) ? (
+                        row?.[accessor]?.[accessorKey]
                       ) : (
                         <ul>
                           {row[col?.accessor ?? col]?.length > 1 ? (
@@ -194,9 +190,9 @@ const Table = ({
                                     others
                                   </p>
                                   <div className="absolute left-0 mt-1 w-max max-w-xs z-10 hidden group-hover:block bg-white border border-gray-200 shadow-md rounded-md text-sm pt-2 px-2 pb-0">
-                                    {row[col?.accessor ?? col]
+                                    {(row as any)[col?.accessor ?? col]
                                       .slice(1)
-                                      .map((i, vendorIndex) => (
+                                      .map((i: Record<string, any>, vendorIndex: number) => (
                                         <p
                                           key={vendorIndex}
                                           className="text-gray-700 truncate"
@@ -215,7 +211,7 @@ const Table = ({
                               )}
                             </li>
                           ) : (
-                            row[col?.accessor ?? col]?.map((i) => (
+                            (row as any)[col?.accessor ?? col]?.map((i: any) => (
                               <li className="" key={i?.userId || colIndex}>
                                 {
                                   i?.[`${col?.accessorKey}` || "User"]?.[
@@ -228,11 +224,11 @@ const Table = ({
                         </ul>
                       )}
                     </td>
-                  ))}
+                  )})}
                   <td className="px-4 py-2">
                     <div className="relative">
                       <IconButton
-                        onClick={(evnt) => {
+                        onClick={(evnt: any) => {
                           evnt.stopPropagation();
                           handleMenuOpen(evnt, row);
                         }}
@@ -262,10 +258,10 @@ const Table = ({
                           return (
                             <MenuItem
                               key={actionIndex}
-                              onClick={(evnt) => {
+                              onClick={(evnt: any) => {
                                 evnt.stopPropagation(); // Prevent row click after selecting an option
                                 if (action.type === "button") {
-                                  action.onClick(row); // Perform button action
+                                  action.onClick?.(row); // Perform button action
                                 }
                                 handleMenuClose(evnt); // Close the menu after selection
                               }}
@@ -275,7 +271,7 @@ const Table = ({
                               }
                               to={
                                 action.type === "link"
-                                  ? action.link(row)
+                                  ? action.link?.(row)
                                   : undefined
                               }
                               state={

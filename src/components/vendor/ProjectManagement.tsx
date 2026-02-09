@@ -7,6 +7,7 @@ import Table from "../Table";
 import Pagination from "../Pagination";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { FaArrowLeft, FaPlus, FaRegEye } from "react-icons/fa";
+import { MdOutlineKeyboardArrowDown, MdOutlineKeyboardArrowUp } from "react-icons/md";
 import useFetchData from "../../hooks/useFetchData";
 import useDebounce from "../../hooks/useDebounce";
 import { authApi } from "../../api";
@@ -50,11 +51,22 @@ class ErrorBoundary extends React.Component<
 
 const ProjectManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<any>(false);
   const [searchTerm, setSearchTerm] = useState("");
   const menuRef = useRef(null);
   const navigate = useNavigate();
+  const [expandedSections, setExpandedSections] = useState({
+    basicInfo: true,
+    pocInfo: true,
+  });
+
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
 
   const columns = [
     { header: "Project Id", accessor: "projectId" },
@@ -72,7 +84,7 @@ const ProjectManagement = () => {
   const {
     data: projects,
     loading,
-    error,
+    error: _error,
     totalCount,
     page,
     setPage,
@@ -96,67 +108,66 @@ const ProjectManagement = () => {
 
   const actions = [
     {
-      type: "button",
+      type: "button" as const,
       label: "View Requisition",
       icon: <FaRegEye />,
       // link: (row) => ({
       //   pathname: `/requisition-management`,
       //   state: row,
       // }),
-      onClick: (row) => handleViewRequisition(row),
+      onClick: (row: any) => handleViewRequisition(row),
       state: "whole",
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "View Details",
       icon: <FaRegEye />,
-      onClick: (row) => handleViewDetails(row),
+      onClick: (row: any) => handleViewDetails(row),
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "Add Requisition",
       icon: <FaPlus />,
       // link: () => `/project-management/create-requisition`,
-      onClick: (row) => addRequisition(row),
+      onClick: (row: any) => addRequisition(row),
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "Edit Details",
       icon: <VscEdit />,
       // link: (row) => `/project-management/editprojectform/${row.id}`,
-      onClick: (row) => editProject(row),
+      onClick: (row: any) => editProject(row),
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "Delete",
       icon: <RiDeleteBin5Line />,
-      onClick: (row) => setIsDeleteModalOpen(row.id),
+      onClick: (row: any) => setIsDeleteModalOpen(row.id),
     },
   ];
 
-  const handleRowClick = (project) => {
+  const handleRowClick = (project: any) => {
     navigate("/requisition-management", { state: project });
 
     // setSelectedProject(project);
     // setIsSidebarOpen(true);
   };
 
-  const handleViewDetails = (project) => {
+  const handleViewDetails = (project: any) => {
     setSelectedProject(project);
     setIsSidebarOpen(true);
   };
-  const handleViewRequisition = (row) => {
+  const handleViewRequisition = (row: any) => {
     navigate("/requisition-management", {
-      id: row.id,
-      tenureInDays: row.tenureInDays,
+      state: { id: row.id, tenureInDays: row.tenureInDays },
     });
   };
-  const addRequisition = (row) => {
+  const addRequisition = (row: any) => {
     navigate(`/requisition-management/create-requisition`, {
       state: { id: row.id, tenureInDays: row.tenureInDays },
     });
   };
-  const editProject = (row) => {
+  const editProject = (row: any) => {
     navigate(`/project-management/editprojectform/${row.id}`);
   };
 
@@ -169,12 +180,12 @@ const ProjectManagement = () => {
     setIsDeleteModalOpen(false);
   };
 
-  const confirmDelete = async (id) => {
+  const confirmDelete = async (id: any) => {
     try {
       await authApi.delete(`/project/delete/${id}`);
       await refetch();
       toast.success("Project deleted successfully.");
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message || "An error occurred while deleting.");
     } finally {
       setIsDeleteModalOpen(false);
@@ -182,10 +193,10 @@ const ProjectManagement = () => {
   };
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !(menuRef.current as HTMLElement).contains(event.target as Node)) {
         setSelectedProject(null);
-        setIsSidebarOpen(null);
+        setIsSidebarOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -303,7 +314,7 @@ const ProjectManagement = () => {
             <div className="h-full overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-3">
-                  <button 
+                  <button
                     onClick={closeSidebar}
                     className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
                   >
@@ -311,44 +322,74 @@ const ProjectManagement = () => {
                   </button>
                   <h2 className="text-xl font-semibold text-gray-800">Project Details</h2>
                 </div>
-                <span className="text-sm text-gray-500">ID: {selectedProject.Id}</span>
+                <span className="text-sm text-gray-500">ID: {selectedProject.projectId}</span>
               </div>
 
-              <div className="space-y-6">
-                <div className="bg-gray-50 rounded-lg pt-4 px-4 pb-0">
-                  <h3 className="text-lg font-medium text-gray-800 mb-4">Basic Information</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Project Name</p>
-                      <p className="font-medium text-gray-900">{selectedProject.projectName}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Project Type</p>
-                      <p className="font-medium text-gray-900">{selectedProject.typeOfProject}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Address</p>
-                      <p className="font-medium text-gray-900">{selectedProject.projectAddress}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Tenure</p>
-                      <p className="font-medium text-gray-900">
-                        {selectedProject.tenureInDays} Day{selectedProject.tenureInDays > 1 && "s"}
-                      </p>
-                    </div>
+              <div className="space-y-4">
+                {/* Basic Information Section */}
+                <div className="bg-gray-50 rounded-lg px-4 py-2">
+                  <div
+                    className="flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded px-2 -mx-2 py-2"
+                    onClick={() => toggleSection('basicInfo')}
+                  >
+                    <h3 className="text-lg font-medium text-gray-800">Basic Information</h3>
+                    {expandedSections.basicInfo ? (
+                      <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                    ) : (
+                      <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                    )}
                   </div>
+                  {expandedSections.basicInfo && (
+                    <div className="grid grid-cols-2 gap-4 mt-4 pb-4">
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-500">Project Name</p>
+                        <p className="font-medium text-gray-900">{selectedProject.projectName}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-500">Project Type</p>
+                        <p className="font-medium text-gray-900">{selectedProject.typeOfProject}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-500">Address</p>
+                        <p className="font-medium text-gray-900">{selectedProject.projectAddress}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-500">Tenure</p>
+                        <p className="font-medium text-gray-900">
+                          {selectedProject.tenureInDays} Day{selectedProject.tenureInDays > 1 && "s"}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="bg-gray-50 rounded-lg pt-4 px-4 pb-0">
-                  <h3 className="text-lg font-medium text-gray-800 mb-4">Point of Contact</h3>
-                  <div className="space-y-2">
-                    {selectedProject?.ProjectPoc?.map((poc) => (
-                      <div key={poc?.userId} className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-[#234BF3] rounded-full"></div>
-                        <span className="text-gray-900">{poc?.User?.name}</span>
-                      </div>
-                    ))}
+                {/* Point of Contact Section */}
+                <div className="bg-gray-50 rounded-lg px-4 py-2">
+                  <div
+                    className="flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded px-2 -mx-2 py-2"
+                    onClick={() => toggleSection('pocInfo')}
+                  >
+                    <h3 className="text-lg font-medium text-gray-800">Point of Contact</h3>
+                    {expandedSections.pocInfo ? (
+                      <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                    ) : (
+                      <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                    )}
                   </div>
+                  {expandedSections.pocInfo && (
+                    <div className="space-y-2 mt-4 pb-4">
+                      {selectedProject?.ProjectPoc?.length > 0 ? (
+                        selectedProject.ProjectPoc.map((poc: any) => (
+                          <div key={poc?.userId} className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-[#234BF3] rounded-full"></div>
+                            <span className="text-gray-900">{poc?.User?.name}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-gray-500 text-sm">No POC assigned</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -365,13 +406,14 @@ const ProjectManagement = () => {
             isDeleteIcon
             btnsStyle="justify-center"
             onAction={() => confirmDelete(isDeleteModalOpen)}
-            handleClose={closeDeleteModal}
-          >
-            <div className="py-4">
-              <p className="text-gray-600 mb-2">Are you sure you want to delete this project?</p>
-              <p className="text-sm text-gray-500">This action cannot be undone.</p>
-            </div>
-          </Modal>
+            onClose={closeDeleteModal}
+            body={
+              <div className="py-4">
+                <p className="text-gray-600 mb-2">Are you sure you want to delete this project?</p>
+                <p className="text-sm text-gray-500">This action cannot be undone.</p>
+              </div>
+            }
+          />
         )}
     </ErrorBoundary>
   );

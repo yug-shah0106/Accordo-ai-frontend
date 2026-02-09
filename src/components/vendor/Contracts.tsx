@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { IoCheckmarkCircleOutline, IoSearchOutline } from "react-icons/io5";
 import { VscSettings } from "react-icons/vsc";
-import { PiDownloadSimpleBold, PiPlusSquareBold } from "react-icons/pi";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { PiPlusSquareBold } from "react-icons/pi";
+// import { PiDownloadSimpleBold } from "react-icons/pi"; // Unused
+import { useLocation, useNavigate } from "react-router-dom";
+// import { Link } from "react-router-dom"; // Unused
 import Table from "../Table";
 import Pagination from "../Pagination";
 import { RiDeleteBin5Line } from "react-icons/ri";
-import { FaArrowLeft, FaCaretDown, FaPlus, FaRegEye } from "react-icons/fa";
+import { FaArrowLeft, FaCaretDown, FaRegEye } from "react-icons/fa";
+// import { FaPlus } from "react-icons/fa"; // Unused
 import useFetchData from "../../hooks/useFetchData";
 import useDebounce from "../../hooks/useDebounce";
 import { authApi } from "../../api";
@@ -19,11 +22,12 @@ const Contracts = () => {
   const { state } = useLocation();
 
   const navigate = useNavigate();
-  const [selectedContract, setSelectedContract] = useState();
+  const [_selectedContract, setSelectedContract] = useState<unknown>();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentRow, setCurrentRow] = useState(null);
+  const [currentRow, setCurrentRow] = useState<any>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [contractModel, setContractModal] = useState(false)
+  const [contractModel, setContractModal] = useState<any>(false)
+  const [deleteModal, setDeleteModal] = useState<any>(false)
   const [selectedFilters, setSelectedFilters] = useState([
     {
       moduleName: "Contracts",
@@ -49,18 +53,18 @@ const Contracts = () => {
   const {
     data: contract,
     loading,
-    error,
+    error: _error,
     totalCount,
     page,
     setPage,
     limit,
-    setLimit,
-    search,
+    setLimit: _setLimit,
+    search: _search,
     setSearch,
-    filter,
+    // filter, // Not returned by hook
     setFilters,
     totalDoc,
-    setTotalDoc,
+    setTotalDoc: _setTotalDoc,
     refetch,
   } = useFetchData("/contract/get-all", 10, undefined, undefined, {
     requisitionid: state.id,
@@ -84,7 +88,7 @@ const Contracts = () => {
       header: "Rating",
       accessor: "vendorId",
 
-      isRating: (id) => {
+      isRating: (id: number) => {
         // Ensure benchmarkResponse exists and is parsed properly
         const benchmarkData = state?.benchmarkResponse
           ? JSON.parse(state.benchmarkResponse)
@@ -102,13 +106,13 @@ const Contracts = () => {
         let totalRatingSum = 0;
         let validProductCount = 0;
 
-        vendor.Products.forEach((product) => {
+        vendor.Products.forEach((product: { ContractDetails?: Array<{ rating?: number }> }) => {
           if (!product?.ContractDetails || !Array.isArray(product.ContractDetails)) return;
 
           let productRatingSum = 0;
           let validContractCount = 0;
 
-          product.ContractDetails.forEach((contract) => {
+          product.ContractDetails.forEach((contract: { rating?: number }) => {
             if (typeof contract.rating === "number") {
               productRatingSum += contract.rating;
               validContractCount++;
@@ -143,7 +147,7 @@ const Contracts = () => {
     },
   ];
 
-  const handleContractApproved = async (row) => {
+  const handleContractApproved = async (row: { id: number; requisitionId: number; contractDetails: string }) => {
     try {
       const {
         data: { data },
@@ -155,9 +159,10 @@ const Contracts = () => {
       );
       const requisitionData = response.data.data;
 
-      const detailsArray = JSON.parse(row.contractDetails);
+      // Parse contract details (used for reference)
+JSON.parse(row.contractDetails);
 
-      const lineItems = requisitionData.RequisitionProduct.map((product) => ({
+      const lineItems = requisitionData.RequisitionProduct.map((product: any) => ({
         productId: product.productId,
         qty: product.qty,
         price: product.price || 0,
@@ -166,7 +171,7 @@ const Contracts = () => {
       const payload = {
         contractId: row.id,
         requisitionId: row.requisitionId,
-        vendorId: row.Vendor.id,
+        vendorId: (row as any).Vendor.id,
         lineItems,
         // poUrl: "https://www.google.com/",
       };
@@ -177,10 +182,22 @@ const Contracts = () => {
       console.log("PO Created:", po.data);
 
       refetch();
-    } catch (error) {
+    } catch (error: any) {
       console.error(error.message || "Something went wrong");
     } finally {
       setIsModalOpen(false);
+    }
+  };
+
+  const handleDeleteContract = async (id: number) => {
+    try {
+      await authApi.delete(`/contract/delete/${id}`);
+      toast.success("Contract deleted successfully");
+      refetch();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to delete contract");
+    } finally {
+      setDeleteModal(false);
     }
   };
 
@@ -189,13 +206,13 @@ const Contracts = () => {
       type: "button",
       label: "Approve Contract",
       icon: <IoCheckmarkCircleOutline />,
-      condition: (row) => {
+      condition: (row: any) => {
         if (row.status === "Accepted" || row.status === "Rejected" || row.status === "Created" || row.status === "InitialQuotation") {
           return false;
         }
         return true;
       },
-      onClick: (row) => {
+      onClick: (row: any) => {
         setCurrentRow(row);
         setIsModalOpen(true);
       },
@@ -209,22 +226,34 @@ const Contracts = () => {
       type: "button",
       label: "View Contracts",
       icon: <FaRegEye />,
-      onClick: (row) => {
+      onClick: (row: any) => {
         console.log({ row: JSON.parse(row.contractDetails) });
         setContractModal(row);
       },
     },
+    {
+      type: "button",
+      label: "Delete Contract",
+      icon: <RiDeleteBin5Line />,
+      condition: () => {
+        const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+        return userData?.userType === "admin";
+      },
+      onClick: (row: any) => {
+        setDeleteModal(row);
+      },
+    },
   ];
 
-  const handleRowClick = (contract) => {
+  const handleRowClick = (contract: any) => {
     setSelectedContract(contract);
   };
 
-  const applyFilters = (filters) => {
+  const applyFilters = (filters: any) => {
 
     if (filters === null) {
-      const clearedFilters = Object.keys(selectedFilters).reduce((acc, key) => {
-        const filter = selectedFilters[key];
+      const clearedFilters = Object.keys(selectedFilters).reduce((acc: any, key) => {
+        const filter = (selectedFilters as any)[key];
 
         if (filter.controlType === "rangeNumeric") {
           acc[key] = { ...filter, value: [filter.range[0], filter.range[1]] };
@@ -238,17 +267,17 @@ const Contracts = () => {
         return acc;
       }, {});
       setSelectedFilters(clearedFilters)
-      setFilters(null)
+      setFilters(undefined)
       setIsFilterModalOpen((prev) => (!prev))
       return;
     }
-    const transformedFilters = Object.keys(filters).reduce((acc, key) => {
+    const transformedFilters = Object.keys(filters).reduce((acc: any, key) => {
       const filter = filters[key];
 
       if (filter.controlType === "checkbox" && typeof filter.selected === "object") {
         acc[key] = {
           ...filter,
-          value: Object.keys(filter.selected).filter((key) => filter.selected[key]),
+          value: Object.keys(filter.selected).filter((k) => filter.selected[k]),
         };
       } else {
         acc[key] = filter;
@@ -256,11 +285,11 @@ const Contracts = () => {
 
       return acc;
     }, {});
-    const apiFilters = Object.values(filters).map(filter => {
+    const apiFilters = Object.values(filters).map((filter: any) => {
       if (filter.controlType === "checkbox" && typeof filter.selected === "object") {
         return {
           ...filter,
-          value: Object.keys(filter.selected).filter(key => filter.selected[key]),
+          value: Object.keys(filter.selected).filter((k: string) => filter.selected[k]),
           selected: undefined,
         };
       }
@@ -301,7 +330,7 @@ const Contracts = () => {
       onClick: () => navigate(-1),
     });
   }
-  const handleNavigation = (e) => {
+  const handleNavigation = (e: React.MouseEvent<HTMLButtonElement>) => {
     const hasDraft = contract.some(
       (cnt) => cnt.Requisition?.status === "Draft"
     );
@@ -350,7 +379,7 @@ const Contracts = () => {
             )} */}
             <Breadcrumb breadcrumbItems={breadcrumbItems} />
           </div>
-          {console.log({ state })}
+          {(() => { console.log({ state }); return null; })()}
 
 
           <div className="flex justify-between gap-2 mb-4">
@@ -358,7 +387,7 @@ const Contracts = () => {
               <input
                 onChange={(e) => debounce(e.target.value)}
                 type="text"
-                placeholder="Search Product"
+                placeholder="Search by Contract ID or Vendor Name"
                 className="border pt-2 px-2 pb-0 border-gray-300 rounded-md pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full"
               />
               <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
@@ -384,7 +413,7 @@ const Contracts = () => {
                     <Filter
                       onClose={closeFilterModal}
                       onApply={applyFilters}
-                      filtersData={selectedFilters}
+                      filtersData={selectedFilters as any}
                     />
                   </div>
                 )}
@@ -395,8 +424,8 @@ const Contracts = () => {
         <div className="border rounded-md overflow-auto h-[70vh]">
           <Table
             data={contract}
-            columns={columns}
-            actions={actions}
+            columns={columns as any}
+            actions={actions as any}
             loading={loading}
             currentPage={page}
             style={'bg-gray-100 '}
@@ -518,7 +547,7 @@ const Contracts = () => {
                   );
                 }
 
-                let contractDetails = {};
+                let contractDetails: any = {};
 
                 try {
                   contractDetails = JSON.parse(contractModel?.contractDetails || "{}");
@@ -529,7 +558,7 @@ const Contracts = () => {
                 }
 
                 // Handle both old flat structure and new nested structure
-                let products = [];
+                let products: any[] = [];
                 let paymentTerms = "N/A";
                 let netPaymentDay = "";
                 let prePaymentPercentage = "";
@@ -718,7 +747,7 @@ const Contracts = () => {
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
-                            {products.map((product, i) => {
+                            {products.map((product: any, i: number) => {
                               const quantity = parseInt(product.quantity) || 1;
                               const price = parseFloat(product.quotedPrice) || 0;
                               const totalValue = price * quantity;
@@ -802,7 +831,7 @@ const Contracts = () => {
                         </div>
                         <div className="text-right">
                           <div className="text-2xl font-bold text-green-600">
-                            ₹{products.reduce((total, product) => {
+                            ₹{products.reduce((total: number, product: any) => {
                               const price = parseFloat(product.quotedPrice) || 0;
                               const quantity = parseInt(product.quantity) || 1; // Default to 1 if quantity not available
                               return total + (price * quantity);
@@ -819,6 +848,19 @@ const Contracts = () => {
           ></Modal>
         )}
 
+        {deleteModal && (
+          <Modal
+            wholeModalStyle="text-center"
+            heading="Delete Contract"
+            cancelText="Cancel"
+            actionText="Delete"
+            isDeleteIcon={true}
+            btnsStyle="justify-center"
+            onAction={() => handleDeleteContract(deleteModal.id)}
+            onClose={() => setDeleteModal(false)}
+            body={`Are you sure you want to delete contract #${deleteModal.id} for vendor "${deleteModal?.Vendor?.name}"? This action cannot be undone.`}
+          />
+        )}
 
       </div>
     </div>
