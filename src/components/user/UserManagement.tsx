@@ -204,7 +204,7 @@ const UserManagement = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {users?.map((row, rowIndex) => (
+              {users?.map((row, _rowIndex) => (
                 <tr
                   key={row.id}
                   className="hover:bg-gray-50 transition-colors"
@@ -216,13 +216,12 @@ const UserManagement = () => {
                     >
                       {column.isBadge ? (
                         <Badge
-                          status={row[column.accessor]}
-                          className="text-xs"
+                          status={(row as any)[column.accessor]}
                         />
                       ) : column.accessorKey ? (
-                        row[column.accessor]?.[column.accessorKey]
+                        (row as any)[column.accessor]?.[column.accessorKey]
                       ) : (
-                        row[column.accessor]
+                        (row as any)[column.accessor]
                       )}
                     </td>
                   ))}
@@ -230,7 +229,7 @@ const UserManagement = () => {
                     <div className="relative">
                       <PiDotsThreeBold
                         className="text-xl cursor-pointer hover:text-blue-500 transition-colors"
-                        onClick={(event) => setSelectedRow({ element: event.currentTarget as HTMLElement, user: row })}
+                        onClick={(event) => setSelectedRow({ element: event.currentTarget as unknown as HTMLElement, user: row })}
                       />
                       <Menu
                         anchorEl={selectedRow.element}

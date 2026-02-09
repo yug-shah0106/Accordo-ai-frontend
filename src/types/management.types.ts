@@ -62,6 +62,7 @@ export interface Vendor {
   companyId: string;
   approvedContractCount?: number;
   contractCount?: number;
+  Company?: Company;
 }
 
 export interface VendorRow {

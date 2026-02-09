@@ -161,8 +161,8 @@ const AddRequisition: React.FC = () => {
                 nextStep={nextStep}
                 projectId={state}
                 requisitionId={id ?? requisition?.id ?? ""}
-                requisition={requisition}
-                setRequisition={setRequisition}
+                requisition={requisition as any}
+                setRequisition={setRequisition as any}
               />
             )}
             {currentStep === 2 && (
@@ -171,8 +171,8 @@ const AddRequisition: React.FC = () => {
                 prevStep={prevStep}
                 nextStep={nextStep}
                 requisitionId={id ?? requisition?.id ?? ""}
-                requisition={requisition}
-                setRequisition={setRequisition}
+                requisition={requisition as any}
+                setRequisition={setRequisition as any}
               />
             )}
             {currentStep === 3 && (

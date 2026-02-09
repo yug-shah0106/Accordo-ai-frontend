@@ -5,7 +5,7 @@ import useFetchData from "../../hooks/useFetchData";
 import { RiDeleteBinLine } from "react-icons/ri";
 import toast from "react-hot-toast";
 import { authApi } from "../../api";
-import { FiExternalLink, FiPlay, FiClock, FiUser, FiCopy } from "react-icons/fi";
+import { FiExternalLink, FiPlay, FiUser, FiCopy } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import Modal from "../Modal";
@@ -197,7 +197,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     fetchDeals();
   }, [requisitionId]);
 
-  const { data, loading } = useFetchData<Vendor>("/vendor/get-all");
+  const { data, loading: _loading } = useFetchData<Vendor>("/vendor/get-all");
   const contractData = watch("contractData") || [];
 
   // Build vendor groups with timeline items
@@ -715,13 +715,15 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
         <Modal
           wholeModalStyle="text-center"
           heading="Are you sure you want to proceed without adding any vendor?"
+          body=""
           cancelText="No"
           actionText="Yes"
           isDeleteIcon={true}
           btnsStyle="justify-center"
           onAction={handleModalConfirm}
+          onClose={handleModalClose}
           handleClose={handleModalClose}
-        ></Modal>
+        />
       )}
     </div>
   );

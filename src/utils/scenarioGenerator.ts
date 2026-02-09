@@ -607,7 +607,7 @@ export function generateEmphasisAwareFallback(
   // Helper: Generate 4 MULTI-EMPHASIS (blended) variations
   const generateMultiEmphasisVariations = (
     basePrice: number,
-    terms: string,
+    _terms: string,
     scenarioType: 'HARD' | 'MEDIUM' | 'SOFT' | 'WALK_AWAY'
   ): StructuredFallbackSuggestion[] => {
     const emphasisList = emphasisArray.join(' + ');

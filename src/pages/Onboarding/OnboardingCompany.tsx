@@ -43,13 +43,13 @@ interface OnboardingCompanyProps {
 }
 
 const OnboardingCompany = ({
-  currentStep,
-  nextStep,
+  currentStep: _currentStep,
+  nextStep: _nextStep,
   prevStep,
   companyId,
-  formData: parentFormData,
+  formData: _parentFormData,
   updateFormData,
-  clearSaved,
+  clearSaved: _clearSaved,
   onComplete,
   onSkip,
 }: OnboardingCompanyProps) => {
@@ -58,7 +58,7 @@ const OnboardingCompany = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     companyName: "",
-    companyLogo: "",
+    companyLogo: "" as string | File,
     establishmentDate: "",
     nature: "",
     type: "",
@@ -73,7 +73,7 @@ const OnboardingCompany = ({
   });
   const [showDeleteLogoModal, setShowDeleteLogoModal] = useState(false);
   const [isDeletingLogo, setIsDeletingLogo] = useState(false);
-  const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
+  const [_selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [addresses, setAddresses] = useState<AddressData[]>([
     {
@@ -391,7 +391,7 @@ const OnboardingCompany = ({
               type="text"
               value={formData.companyName}
               onChange={handleChange}
-              error={errors.companyName}
+              error={errors.companyName ? { message: errors.companyName, type: 'manual' } : undefined}
               className="text-sm text-gray-900"
               required
             />
@@ -401,7 +401,7 @@ const OnboardingCompany = ({
               name="establishmentDate"
               value={formData.establishmentDate}
               onChange={handleChange}
-              error={errors.establishmentDate}
+              error={errors.establishmentDate ? { message: errors.establishmentDate, type: 'manual' } : undefined}
               className="text-sm text-gray-900"
             />
 
@@ -414,7 +414,7 @@ const OnboardingCompany = ({
                 { label: "Domestic", value: "Domestic" },
                 { label: "International", value: "International" },
               ]}
-              error={errors.nature}
+              error={errors.nature ? { message: errors.nature, type: 'manual' } : undefined}
             />
 
             <InputField
@@ -424,7 +424,7 @@ const OnboardingCompany = ({
               type="text"
               value={formData.type}
               onChange={handleChange}
-              error={errors.type}
+              error={errors.type ? { message: errors.type, type: 'manual' } : undefined}
               className="text-sm text-gray-900"
             />
           </div>
@@ -456,7 +456,7 @@ const OnboardingCompany = ({
                 { label: "100-1000", value: "100-1000" },
                 { label: "1000+", value: "1000+" },
               ]}
-              error={errors.numberOfEmployees}
+              error={errors.numberOfEmployees ? { message: errors.numberOfEmployees, type: 'manual' } : undefined}
             />
 
             <InputField
@@ -466,7 +466,7 @@ const OnboardingCompany = ({
               type="text"
               value={formData.annualTurnover}
               onChange={handleChange}
-              error={errors.annualTurnover}
+              error={errors.annualTurnover ? { message: errors.annualTurnover, type: 'manual' } : undefined}
               className="text-sm text-gray-900"
             />
 
@@ -475,7 +475,7 @@ const OnboardingCompany = ({
               name="industryType"
               onChange={handleChange}
               value={formData.industryType}
-              error={errors.industryType}
+              error={errors.industryType ? { message: errors.industryType, type: 'manual' } : undefined}
               options={[
                 { label: "Construction", value: "Construction" },
                 { label: "Healthcare", value: "Healthcare" },
@@ -498,7 +498,7 @@ const OnboardingCompany = ({
                 type="text"
                 value={formData.customIndustryType}
                 onChange={handleChange}
-                error={errors.customIndustryType}
+                error={errors.customIndustryType ? { message: errors.customIndustryType, type: 'manual' } : undefined}
                 className="text-sm text-gray-900"
               />
             )}
@@ -513,7 +513,7 @@ const OnboardingCompany = ({
                 { label: "USD", value: "USD" },
                 { label: "EUR", value: "EUR" },
               ]}
-              error={errors.typeOfCurrency}
+              error={errors.typeOfCurrency ? { message: errors.typeOfCurrency, type: 'manual' } : undefined}
             />
           </div>
         </div>

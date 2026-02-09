@@ -21,7 +21,7 @@ interface CreateProjectFormProps {
   onClose?: () => void;
 }
 
-const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
+const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProjectFormProps) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const companyId = Number(localStorage.getItem("%companyId%"));
@@ -76,14 +76,14 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
   ]);
 
   // Autosave hook - saves 2 seconds after last change
-  const { lastSaved, isSaving, hasDraft, clearSaved, loadSaved } = useAutoSave({
+  const { lastSaved, isSaving, hasDraft: _hasDraft, clearSaved, loadSaved } = useAutoSave({
     key: autosaveKey,
     data: autosaveData,
     interval: 2000, // 2 seconds debounce
     enabled: isDataLoaded, // Only enable after initial data is loaded
   });
 
-  const { data, loading, error } = useFetchData("/customer/get-all");
+  const { data, loading: _loading, error: _dataError } = useFetchData("/customer/get-all");
 
   // Check for existing draft on mount
   useEffect(() => {
@@ -119,15 +119,15 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
     setIsDataLoaded(true);
   };
 
-  const fetchProductData = async (productId) => {
+  const fetchProductData = async (productId: any) => {
     try {
       const {
-        data: { data },
+        data: { data: projectData },
       } = await authApi.get(`/project/get/${productId}`);
       reset({
-        ...data,
+        ...projectData,
         selectedPoc: "",
-        pointOfContact: data?.ProjectPoc?.map((i) => i.userId),
+        pointOfContact: projectData?.ProjectPoc?.map((i: any) => i.userId),
       });
       // Check for draft after loading project data
       const savedDraft = localStorage.getItem(autosaveKey);
@@ -136,7 +136,7 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
       } else {
         setIsDataLoaded(true);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error.message || "Something went wrong");
       setIsDataLoaded(true);
     }
@@ -154,33 +154,33 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
     }
   }, [id, autosaveKey]);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (formSubmitData: any) => {
     try {
-      const isValid = await trigger();
-      if (!isValid) {
+      const isFormValid = await trigger();
+      if (!isFormValid) {
         toast.error("Please fix the validation errors before submitting");
         return;
       }
 
-      delete data.selectedPoc;
+      delete formSubmitData.selectedPoc;
       if (!id) {
-        const response = await authApi.post("/project/create", data);
+        await authApi.post("/project/create", formSubmitData);
         clearSaved(); // Clear draft on successful creation
         toast.success("Project created successfully");
         navigate("/project-management");
       } else {
-        delete data.id;
-        const response = await authApi.put(`/project/update/${id}`, data);
+        delete formSubmitData.id;
+        await authApi.put(`/project/update/${id}`, formSubmitData);
         clearSaved(); // Clear draft on successful update
         toast.success("Project updated successfully");
         navigate("/project-management");
       }
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message || "Something went wrong");
     }
   };
 
-  const handleTenureChange = (e) => {
+  const handleTenureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (!/^\d*$/.test(value)) {
       return;
@@ -260,7 +260,6 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
               register={register}
               error={errors.projectName}
               wholeInputClassName={`!my-0`}
-              readOnly
             />
             <InputField
               label="Address"
@@ -298,14 +297,14 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
                 label="POC"
                 name="selectedPoc"
                 options={data?.filter(
-                  (i) =>
+                  (i: any) =>
                     !watch("pointOfContact")?.map(String).includes(String(i.id))
                 )}
                 register={register}
                 optionKey={"name"}
                 optionValue={"id"}
                 wholeInputClassName={`!my-0`}
-                error={errors.pointOfContact}
+                error={errors.pointOfContact as any}
               />
             </div>
             <div className="self-end cursor-pointer">
@@ -322,8 +321,8 @@ const CreateProjectForm = ({ onSave, onClose }: CreateProjectFormProps) => {
                     ...(watch("pointOfContact") || []),
                     selectedPoc,
                   ];
-                  
-                  setValue("pointOfContact", newPointOfContact);
+
+                  setValue("pointOfContact", newPointOfContact as any);
                   setValue("selectedPoc", "");
                   
                   await trigger("pointOfContact");

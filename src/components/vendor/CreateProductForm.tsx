@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { useParams, useNavigate } from "react-router-dom";
 import InputField from "../InputField";
@@ -43,7 +43,7 @@ const CreateProductForm = () => {
   
 
 
-  const fetchProductData = async (productId) => {
+  const fetchProductData = async (productId: string) => {
     try {
       const {
         data: { data },
@@ -51,25 +51,25 @@ const CreateProductForm = () => {
       reset({ ...data });
       console.log(data);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(error.message || "Something went wrong");
     }
   };
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: any) => {
    
     try {
       if (!id) {
-        const response = await authApi.post("/product/create", data);
+        await authApi.post("/product/create", data);
         toast.success("Created Successfully");
         navigate("/product-management");
       } else {
         delete data.id;
-        const response = await authApi.put(`/product/update/${id}`, data);
+        await authApi.put(`/product/update/${id}`, data);
         toast.success("Edited Successfully");
         navigate("/product-management");
       }
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message || "Something went wrong");
     }
   };

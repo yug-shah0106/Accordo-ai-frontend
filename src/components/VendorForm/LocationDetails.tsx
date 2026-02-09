@@ -65,7 +65,7 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
   updateFormData,
   onStepSubmit,
   isSubmitting: parentIsSubmitting = false,
-  projectId,
+  projectId: _projectId,
 }) => {
   const {
     register,

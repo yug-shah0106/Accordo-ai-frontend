@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import Table from "../Table";
+import React, { useState, useEffect } from "react";
+// Table component available if needed
+// import Table from "../Table";
 import { PiDotsThreeBold, PiPlusSquareBold } from "react-icons/pi";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import RoleSelectionModal from "../user/RoleSelection";
 import { authApi } from "../../api";
 import { Menu, MenuItem } from "@mui/material";
@@ -10,12 +11,26 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 import { format } from "date-fns";
 import { IoArrowBackOutline } from "react-icons/io5";
 
+interface Role {
+  id: number;
+  name: string;
+  Creator?: { name?: string } | null;
+  updatedAt: string;
+  permissions?: number[];
+}
+
+interface TableRow extends Role {
+  index: number;
+  actions: React.ReactElement;
+  [key: string]: string | number | number[] | React.ReactElement | { name?: string } | null | undefined;
+}
+
 function Roles() {
   const navigate = useNavigate();
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
-  const [roles, setRoles] = useState([]);
-  const [selectedRow, setSelectedRow] = useState({ element: null, user: null });
-  const [edit_role, setEditRole] = useState(null);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [selectedRow, setSelectedRow] = useState<{ element: HTMLElement | null; user: Role | null }>({ element: null, user: null });
+  const [edit_role, setEditRole] = useState<Role | null>(null);
 
   const columns = [
     {
@@ -32,13 +47,13 @@ function Roles() {
       header: "Created By",
       accessor: "Creator",
       width: "200px",
-      Cell: ({ value }) => value?.name || "N/A",
+      Cell: ({ value }: { value: { name?: string } | null }) => value?.name || "N/A",
     },
     {
       header: "Last Updated",
       accessor: "updatedAt",
       width: "200px",
-      Cell: ({ value }) => format(new Date(value), "MMM dd, yyyy HH:mm"),
+      Cell: ({ value }: { value: string }) => format(new Date(value), "MMM dd, yyyy HH:mm"),
     },
     {
       header: "Actions",
@@ -62,7 +77,7 @@ function Roles() {
     getAllRoles();
   }, []);
 
-  const handleDelete = async (deleteId) => {
+  const handleDelete = async (deleteId: number) => {
     try {
       const result = await authApi.delete(`/role/delete/${deleteId}`);
       if (result.status === 201) {
@@ -73,19 +88,19 @@ function Roles() {
     }
   };
 
-  const handleEdit = (user) => {
+  const handleEdit = (user: Role | null) => {
     setEditRole(user);
     setIsRoleModalOpen(true);
   };
 
-  const tableData = roles.map((role, index) => ({
+  const tableData: TableRow[] = roles.map((role, index) => ({
     ...role,
     index: index + 1,
     actions: (
       <div className="relative">
-        <PiDotsThreeBold 
-          className="text-xl cursor-pointer hover:text-blue-500 transition-colors" 
-          onClick={(event) => setSelectedRow({ element: event.currentTarget, user: role })}
+        <PiDotsThreeBold
+          className="text-xl cursor-pointer hover:text-blue-500 transition-colors"
+          onClick={(event: React.MouseEvent<SVGElement>) => setSelectedRow({ element: event.currentTarget as unknown as HTMLElement, user: role })}
         />
         <Menu
           anchorEl={selectedRow.element}
@@ -118,7 +133,7 @@ function Roles() {
           </MenuItem>
           <MenuItem
             onClick={() => {
-              handleDelete(selectedRow.user.id);
+              if (selectedRow.user) handleDelete(selectedRow.user.id);
               setSelectedRow({ element: null, user: null });
             }}
             className="flex items-center gap-2 text-gray-700 hover:bg-red-50"
@@ -181,7 +196,7 @@ function Roles() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {tableData.map((row, rowIndex) => (
+                {tableData.map((row, _rowIndex) => (
                   <tr
                     key={row.id}
                     className="hover:bg-gray-50 transition-colors"
@@ -191,7 +206,7 @@ function Roles() {
                         key={colIndex}
                         className="px-6 pt-4 pb-0 whitespace-nowrap text-sm text-gray-900"
                       >
-                        {column.Cell ? column.Cell({ value: row[column.accessor] }) : row[column.accessor]}
+                        {column.Cell ? column.Cell({ value: row[column.accessor] as any }) : (row[column.accessor] as React.ReactNode)}
                       </td>
                     ))}
                   </tr>

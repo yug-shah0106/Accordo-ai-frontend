@@ -72,9 +72,9 @@ const FormSelect: React.FC<FormSelectProps> = ({
   `.trim().replace(/\s+/g, ' ');
 
   // Normalize value to string or empty string for single select
-  // For multiple, keep as array
-  const normalizedValue = multiple
-    ? value || []
+  // For multiple, convert to string array
+  const normalizedValue: string | readonly string[] = multiple
+    ? (Array.isArray(value) ? value.map(String) : [])
     : value === null || value === undefined
     ? ''
     : String(value);

@@ -112,14 +112,14 @@ interface VendorReviewProps {
 }
 
 const VendorReview: React.FC<VendorReviewProps> = ({
-  currentStep,
-  nextStep,
+  currentStep: _currentStep,
+  nextStep: _nextStep,
   prevStep,
   companyId,
-  company: propCompany,
+  company: _propCompany,
   isCreateMode = false,
   formData,
-  updateFormData,
+  updateFormData: _updateFormData,
   onSubmit,
   isSubmitting = false,
 }) => {
@@ -172,9 +172,6 @@ const VendorReview: React.FC<VendorReviewProps> = ({
       </div>
     );
   }
-
-  // For create mode, use formData; for edit mode, use companyData
-  const displayData = isCreateMode ? formData : companyData;
 
   // Get address info - handles both legacy format and step=5 endpoint format
   const getAddressInfo = () => {

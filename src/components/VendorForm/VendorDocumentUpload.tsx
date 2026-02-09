@@ -10,12 +10,12 @@ interface VendorDocumentUploadProps {
 }
 
 const VendorDocumentUpload: React.FC<VendorDocumentUploadProps> = ({
-  currentStep,
-  nextStep,
-  prevStep,
-  projectId,
-  companyId,
-  company,
+  currentStep: _currentStep,
+  nextStep: _nextStep,
+  prevStep: _prevStep,
+  projectId: _projectId,
+  companyId: _companyId,
+  company: _company,
 }) => {
   return (
     <div>

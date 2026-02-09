@@ -4,8 +4,7 @@ import SelectField from "../SelectField";
 import Button from "../Button";
 import DateField from "../DateField";
 import { authApi } from "../../api";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
 
 interface Company {
@@ -36,7 +35,7 @@ interface VendorFormData {
   email?: string;
   companyName?: string;
   establishmentDate?: string;
-  nature?: 'Domestic' | 'International';
+  nature?: string;
   [key: string]: any;
 }
 
@@ -71,22 +70,15 @@ const BasicAndCompanyInfo: React.FC<BasicAndCompanyInfoProps> = ({
   currentStep,
   nextStep,
   prevStep,
-  projectId,
-  companyId,
+  projectId: _projectId,
+  companyId: _companyId,
   company,
   isCreateMode = false,
   formData: parentFormData,
-  updateFormData,
+  updateFormData: _updateFormData,
   onStepSubmit,
   isSubmitting: parentIsSubmitting = false,
 }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const apicall = location.pathname.split("/")[2];
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const {
     register,
     handleSubmit,
@@ -141,8 +133,7 @@ const BasicAndCompanyInfo: React.FC<BasicAndCompanyInfoProps> = ({
         email: data.email,
         companyName: data.companyName,
         establishmentDate: data.establishmentDate,
-        nature: data.nature as 'Domestic' | 'International',
-        companyLogo: selectedImage || undefined,
+        nature: data.nature,
       };
 
       // If we have a step submit handler (progressive save mode), use it
@@ -168,9 +159,6 @@ const BasicAndCompanyInfo: React.FC<BasicAndCompanyInfoProps> = ({
         formDataObj.append("companyName", data.companyName);
         formDataObj.append("establishmentDate", data.establishmentDate);
         formDataObj.append("nature", data.nature);
-        if (selectedImage) {
-          formDataObj.append("companyLogo", selectedImage);
-        }
 
         await authApi.put(
           `/company/update/${company.id}`,
@@ -211,31 +199,8 @@ const BasicAndCompanyInfo: React.FC<BasicAndCompanyInfoProps> = ({
         establishmentDate: company?.establishmentDate?.split("T")?.[0] || "",
         nature: company?.nature || "",
       });
-
-      if (company?.companyLogo) {
-        setPreview(
-          `${import.meta.env.VITE_ASSEST_URL}/uploads/${company.companyLogo}`
-        );
-      }
     }
   }, [company, reset, isCreateMode, parentFormData]);
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedImage(file);
-      setPreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handleRemoveImage = (): void => {
-    setPreview(null);
-    setSelectedImage(null);
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
 
   return (
     <div>

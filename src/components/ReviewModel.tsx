@@ -1,8 +1,17 @@
+interface ReviewModalProps {
+  show: boolean;
+  rating: number;
+  setRating: (rating: number) => void;
+  review: string;
+  setReview: (review: string) => void;
+  onClose: () => void;
+  onSubmit: () => void;
+}
 
-const ReviewModal = ({ show, rating, setRating, review, setReview, onClose, onSubmit }) => {
+const ReviewModal = ({ show, rating, setRating, review, setReview, onClose, onSubmit }: ReviewModalProps) => {
     if (!show) return null;
-    const handleBackdropClick = (e) => {
-        if (e.target.id === "modal-backdrop") {
+    const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if ((e.target as HTMLDivElement).id === "modal-backdrop") {
             onClose(); 
         }
     };

@@ -16,8 +16,8 @@ interface RoleSelectionModalProps {
 
 const RoleSelectionModal = ({ onClose, edit_role, onSuccess }: RoleSelectionModalProps) => {
   const [roleName, setRoleName] = useState("");
-  const [selectedModules, setSelectedModules] = useState<Record<string, boolean>>({});
-  const [selectedPermissions, setSelectedPermissions] = useState<Record<string, number[]>>({});
+  const [_selectedModules, _setSelectedModules] = useState<Record<string, boolean>>({});
+  const [_selectedPermissions, _setSelectedPermissions] = useState<Record<string, number[]>>({});
   const [given_permissions, setGiven_permissions] = useState([0, 0, 0, 0, 0, 0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 

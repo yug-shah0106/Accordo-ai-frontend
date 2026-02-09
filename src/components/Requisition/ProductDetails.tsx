@@ -5,12 +5,12 @@ import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import useFetchData from "../../hooks/useFetchData";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
-import { authApi, authMultiFormApi } from "../../api";
+import { authMultiFormApi } from "../../api";
 import toast from "react-hot-toast";
 import { BsPlusCircleFill } from "react-icons/bs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { step2 } from "../../schema/requisition";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom"; // Unused - commented out
 import { useAutoSave } from "../../hooks/useAutoSave";
 import AutosaveIndicator from "../AutosaveIndicator";
 
@@ -65,7 +65,7 @@ interface ProductDetailsProps {
   requisitionId: string;
   projectId?: any;
   requisition: Requisition | null;
-  setRequisition: React.Dispatch<React.SetStateAction<Requisition | null>>;
+  setRequisition: (value: React.SetStateAction<Requisition | null>) => void;
 }
 
 interface FormData {
@@ -90,11 +90,11 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   nextStep,
   prevStep,
   requisitionId,
-  projectId,
+  projectId: _projectId,
   requisition,
   setRequisition,
 }) => {
-  const navigate = useNavigate();
+  // Note: navigation is available via useNavigate if needed in future
   const {
     register,
     handleSubmit,
@@ -121,7 +121,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       paymentTerms: "",
     },
   });
-  const { data, loading, error } = useFetchData<Product>("/product/getall");
+  const { data, loading: _loading, error: _error } = useFetchData<Product>("/product/getall");
 
   // Watch all form values for autosave
   const formValues = watch();
@@ -207,7 +207,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
     };
   }, [formValues, requisitionId, saveToBackend]);
 
-  const [requisitionData, setRequisitionData] = useState<{
+  const [_requisitionData, _setRequisitionData] = useState<{
     id?: string;
     delivery_date?: string;
     negotiation_closure_date?: string;
@@ -285,23 +285,24 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
     );
   };
 
-  const handleQtyProduct = (productId: string, method: "increment" | "decrement"): void => {
-    setValue(
-      "productData",
-      watch("productData")
-        .map((i) => {
-          if (i.productId === productId) {
-            if (method === "increment") {
-              return { ...i, qty: i.qty + 1 };
-            } else if (method === "decrement") {
-              return { ...i, qty: i.qty - 1 };
-            }
-          }
-          return i;
-        })
-        .filter((i) => i.qty > 0)
-    );
-  };
+  // Commented out: unused quantity adjustment handler
+  // const handleQtyProduct = (productId: string, method: "increment" | "decrement"): void => {
+  //   setValue(
+  //     "productData",
+  //     watch("productData")
+  //       .map((i) => {
+  //         if (i.productId === productId) {
+  //           if (method === "increment") {
+  //             return { ...i, qty: i.qty + 1 };
+  //           } else if (method === "decrement") {
+  //             return { ...i, qty: i.qty - 1 };
+  //           }
+  //         }
+  //         return i;
+  //       })
+  //       .filter((i) => i.qty > 0)
+  //   );
+  // };
 
   // Modify the handleDirectInput function for 1-5 scale
   const handleDirectInput = (
@@ -369,16 +370,16 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       return;
     }
     
-    setRequisitionData((prevData) => ({
+    _setRequisitionData((prevData: typeof _requisitionData) => ({
       ...prevData,
       payment_terms: data.paymentTerms,
-      total_price: data.totalPrice,
+      total_price: String(data.totalPrice),
       products: data.productData.map((product) => {
         const matchedProduct = productData.find(
-          (item) => item.id === product.productId
+          (item) => item.productId === product.productId
         );
         return {
-          product_name: matchedProduct ? matchedProduct.product_name : "Unknown",
+          product_name: matchedProduct ? (matchedProduct as any).product_name : "Unknown",
           quantity: product.qty,
           target_price: product.targetPrice,
         };
@@ -549,7 +550,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 options={productOptions}
                 value={watch("selectedProduct") || ""}
                 onChange={(e) => setValue("selectedProduct", e.target.value)}
-                error={errors.categoryId?.message}
+                error={(errors as any).categoryId?.message}
                 className="my-1"
               />
             </div>
@@ -588,10 +589,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                               "productData",
                               watch("productData").map((i) => {
                                 if (i.productId === product?.productId) {
-                                  return { ...i, qty: e.target.value };
+                                  return { ...i, qty: Number(e.target.value) || 0 };
                                 }
                                 return i;
-                              })
+                              }) as ProductData[]
                             );
                           }}
                           className="my-1"
@@ -611,7 +612,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                             const newValue = e.target.value === "" ? "" : parseFloat(e.target.value);
 
                             // Allow null/empty but prevent negative values
-                            if (newValue < 0) {
+                            if (typeof newValue === 'number' && newValue < 0) {
                               toast.error("Target price cannot be negative!");
                               return;
                             }
@@ -644,7 +645,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                             const newValue = e.target.value === "" ? "" : parseFloat(e.target.value);
 
                             // Allow null/empty but prevent negative values
-                            if (newValue < 0) {
+                            if (typeof newValue === 'number' && newValue < 0) {
                               toast.error("Maximum price cannot be negative!");
                               return;
                             }
@@ -827,17 +828,11 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               value={watch("netPaymentDay") || ''}
               min={0}
               className="my-1"
-              onInput={(e: any) => {
-                // Allow empty values and prevent negative input while typing
-                if (e.target.value < 0) {
-                  e.target.value = 0;
-                }
-              }}
               onChange={(e) => {
                 const newValue = e.target.value === "" ? "" : parseInt(e.target.value);
 
                 // Allow empty values and prevent negative values
-                if (newValue < 0) {
+                if (typeof newValue === 'number' && newValue < 0) {
                   toast.error("Net payment day cannot be negative!");
                   return;
                 }
@@ -859,17 +854,11 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 min={0}
                 max={100}
                 className="my-1"
-                onInput={(e: any) => {
-                  // Prevent negative input while typing
-                  if (e.target.value < 0) {
-                    e.target.value = 0;
-                  }
-                }}
                 onChange={(e) => {
                   const newValue = e.target.value === "" ? "" : parseFloat(e.target.value);
 
                   // Prevent exceeding 100%
-                  if (newValue > 100) {
+                  if (typeof newValue === 'number' && newValue > 100) {
                     toast.error("Pre payment percentage cannot exceed 100%!");
                     return;
                   }
@@ -887,17 +876,11 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 min={0}
                 max={100}
                 className="my-1"
-                onInput={(e: any) => {
-                  // Prevent negative input while typing
-                  if (e.target.value < 0) {
-                    e.target.value = 0;
-                  }
-                }}
                 onChange={(e) => {
                   const newValue = e.target.value === "" ? "" : parseFloat(e.target.value);
 
                   // Prevent exceeding 100%
-                  if (newValue > 100) {
+                  if (typeof newValue === 'number' && newValue > 100) {
                     toast.error("Post payment percentage cannot exceed 100%!");
                     return;
                   }
@@ -952,24 +935,27 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
           <div className="flex gap-6 my-3">
             {watch("files") &&
-              Object.keys(watch("files")).map((file, index) => {
+              Object.keys(watch("files")).map((fileKey, index) => {
+                const files = watch("files");
+                const file = (files as any)[fileKey];
                 return (
-                  <div key={`${file.name}-${index}`} className="relative w-fit">
+                  <div key={`${fileKey}-${index}`} className="relative w-fit">
                     <img
                       src={
-                        watch("files")?.[file]?.attachmentUrl
-                          ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${watch("files")?.[file]?.attachmentUrl
-                          }`
-                          : URL.createObjectURL(watch("files")?.[file])
+                        file?.attachmentUrl
+                          ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${file?.attachmentUrl}`
+                          : URL.createObjectURL(file)
                       }
                       className="w-12 h-12"
                     />
                     <BsPlusCircleFill
                       className="rotate-45 cursor-pointer ml-2 text-red-500 hover:text-red-700 absolute -right-1 top-0"
                       onClick={() => {
+                        const currentFiles = watch("files");
+                        const filesArray = Array.isArray(currentFiles) ? currentFiles : Array.from(currentFiles as FileList);
                         setValue(
                           "files",
-                          watch("files").filter((_, idx) => idx !== index)
+                          filesArray.filter((_: any, idx: number) => idx !== index) as any
                         );
                       }}
                     />

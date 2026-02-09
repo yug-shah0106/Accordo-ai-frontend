@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import InputField from "../InputField";
 import Button from "../Button";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { authApi } from "../../api";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
@@ -35,12 +35,10 @@ const VendorBasicInformation: React.FC<VendorBasicInformationProps> = ({
   currentStep,
   nextStep,
   prevStep,
-  projectId,
+  projectId: _projectId,
   companyId,
   company
 }) => {
-  const navigate = useNavigate();
-  
   const {
     register,
     handleSubmit,

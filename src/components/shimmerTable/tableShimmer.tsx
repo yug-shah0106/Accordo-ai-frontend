@@ -1,6 +1,10 @@
 import "./shimmer.css"
 
-const TableShimmer = ({span}) => {
+interface TableShimmerProps {
+  span: number;
+}
+
+const TableShimmer = ({ span }: TableShimmerProps) => {
   return (
     <td className="line loading-shimmer" colSpan={span}></td>
   )

@@ -35,14 +35,14 @@ interface OnboardingProfileProps {
 }
 
 const OnboardingProfile = ({
-  currentStep,
+  currentStep: _currentStep,
   nextStep,
-  prevStep,
-  companyId,
+  prevStep: _prevStep,
+  companyId: _companyId,
   userId,
-  formData: parentFormData,
+  formData: _parentFormData,
   updateFormData,
-  clearSaved,
+  clearSaved: _clearSaved,
   onSkip,
   prefilledName,
   prefilledEmail,

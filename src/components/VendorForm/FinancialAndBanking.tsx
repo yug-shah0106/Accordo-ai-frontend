@@ -72,7 +72,7 @@ const FinancialAndBanking: React.FC<FinancialAndBankingProps> = ({
   updateFormData,
   onStepSubmit,
   isSubmitting: parentIsSubmitting = false,
-  projectId,
+  projectId: _projectId,
 }) => {
   const {
     register,

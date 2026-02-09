@@ -115,7 +115,7 @@ const VendorManagement = () => {
     totalDoc,
     setFilters,
     refetch,
-    additionalData,
+    additionalData: _additionalData,
   } = useFetchData("/vendor/get-all", 10) as UseFetchDataReturn<VendorRow>;
   const debounce = useDebounce(setSearch, 600);
 
@@ -129,14 +129,15 @@ const VendorManagement = () => {
     setSearch("");
   };
 
-  const data = [
-    { title: " Total Vendor ", count: additionalData.totalVendors },
-    {
-      title: "Active Vendor",
-      count: additionalData.totalVendors - additionalData.inactiveVendors,
-    },
-    { title: "Inactive Vendor", count: additionalData.inactiveVendors },
-  ];
+  // Vendor stats data (used for future stats display)
+  // const _data = [
+  //   { title: " Total Vendor ", count: additionalData.totalVendors },
+  //   {
+  //     title: "Active Vendor",
+  //     count: Number(additionalData.totalVendors) - Number(additionalData.inactiveVendors),
+  //   },
+  //   { title: "Inactive Vendor", count: additionalData.inactiveVendors },
+  // ];
 
   const actions: TableAction[] = [
     {
@@ -392,7 +393,10 @@ const VendorManagement = () => {
             <Filter
               onClose={closeFilterModal}
               onApply={applyFilters}
-              filtersData={selectedFilters}
+              filtersData={selectedFilters.reduce((acc, filter) => {
+                acc[filter.filterBy] = filter;
+                return acc;
+              }, {} as Record<string, any>)}
             />
           </div>
         )}

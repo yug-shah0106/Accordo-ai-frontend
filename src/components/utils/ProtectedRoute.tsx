@@ -1,7 +1,12 @@
 import { Navigate } from "react-router-dom";
 import { tokenStorage } from "../../utils/tokenStorage";
 
-const ProtectedRoute = ({ element, permission }) => {
+interface ProtectedRouteProps {
+  element: React.ReactNode;
+  permission?: string;
+}
+
+const ProtectedRoute = ({ element, permission: _permission }: ProtectedRouteProps) => {
     // Check if user has tokens (is authenticated)
     if (!tokenStorage.hasTokens()) {
         return <Navigate to="/sign-in" replace />;

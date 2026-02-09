@@ -302,7 +302,7 @@ export default function UnifiedUtilityBar({
  */
 export function CompactUnifiedUtilityBar({
   percentage,
-  recommendation,
+  recommendation: _recommendation,
   dealStatus = "NEGOTIATING",
 }: Pick<UnifiedUtilityBarProps, "percentage" | "recommendation" | "dealStatus">) {
   const [showTooltip, setShowTooltip] = useState(false);

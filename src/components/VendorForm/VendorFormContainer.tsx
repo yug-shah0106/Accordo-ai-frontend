@@ -6,7 +6,7 @@ import LocationDetails from './LocationDetails';
 import FinancialAndBanking from './FinancialAndBanking';
 import ContactAndDocuments from './ContactAndDocuments';
 import VendorReview from './VendorReview';
-import { ArrowLeft, ArrowRight, Check, Save } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { useAutoSave } from '../../hooks/useAutoSave';
 import toast from 'react-hot-toast';
 import { authApi } from '../../api';
@@ -37,7 +37,7 @@ export interface VendorFormData {
   // Step 1: Company Information
   companyName?: string;
   establishmentDate?: string;
-  nature?: 'Domestic' | 'International';
+  nature?: string;
   type?: string;
   numberOfEmployees?: string;
   annualTurnover?: string;
@@ -129,7 +129,7 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
     initialStep >= 1 && initialStep <= 5 ? initialStep : 1
   );
   const [formData, setFormData] = useState<VendorFormData>({});
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [_errors, _setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [isLoadingCompany, setIsLoadingCompany] = useState(isEditMode && !!companyId);
@@ -484,7 +484,13 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
           />
         );
       default:
-        return <BasicAndCompanyInfo {...commonProps} />;
+        return (
+          <BasicAndCompanyInfo
+            {...commonProps}
+            onStepSubmit={isCreateMode ? handleStep1Submit : undefined}
+            isSubmitting={isSubmitting}
+          />
+        );
     }
   };
 

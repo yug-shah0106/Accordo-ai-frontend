@@ -8,19 +8,20 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { chatbotService } from '../../services/chatbot.service';
-import { Message, Deal, Explainability, ConversationState } from '../../types';
+import { Message, Deal, Explainability, DealContext } from '../../types';
 
 export default function ConversationDealPage() {
   const { dealId } = useParams<{ dealId: string }>();
   const navigate = useNavigate();
   const [deal, setDeal] = useState<Deal | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [_conversationState, setConversationState] = useState<ConversationState | null>(null);
+  // Note: conversationState is tracked on the deal's convoStateJson property, not in separate state
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [explainOpen, setExplainOpen] = useState(false);
   const [explainability, setExplainability] = useState<Explainability | null>(null);
+  const [ctx, setCtx] = useState<DealContext | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
 
@@ -38,12 +39,17 @@ export default function ConversationDealPage() {
         startedRef.current = true;
         setLoading(true);
 
+        // Lookup the deal to get context
+        const lookupRes = await chatbotService.lookupDeal(dealId);
+        const dealContext = lookupRes.data.context;
+        setCtx(dealContext);
+
         // Get the deal first
-        const dealResponse = await chatbotService.getDeal(dealId);
+        const dealResponse = await chatbotService.getDeal(dealContext);
         setDeal(dealResponse.data.deal);
 
         // Start the conversation (auto-sends greeting)
-        const response = await chatbotService.startConversation(dealId);
+        const response = await chatbotService.startConversation(dealContext);
 
         // Build messages array from conversation response
         const msgs: Message[] = [];
@@ -51,7 +57,8 @@ export default function ConversationDealPage() {
         if (response.data.accordoMessage) msgs.push(response.data.accordoMessage);
 
         setMessages(msgs);
-        setConversationState(response.data.conversationState);
+        // Note: ConversationStartResponse doesn't include conversationState
+        // State is tracked on the deal's convoStateJson property
       } catch (error: any) {
         console.error('Error starting conversation:', error);
         toast.error(error.response?.data?.error || 'Failed to start conversation');
@@ -66,25 +73,27 @@ export default function ConversationDealPage() {
 
   // Send vendor message
   const handleSend = async () => {
-    if (!input.trim() || !dealId || sending) return;
+    if (!input.trim() || !ctx || sending) return;
 
     const message = input.trim();
     setInput('');
     setSending(true);
 
     try {
-      const response = await chatbotService.sendConversationMessage(dealId, message);
+      const response = await chatbotService.sendMessage(ctx, message, 'VENDOR', 'CONVERSATION');
 
       // Add new messages to the list
       const newMessages: Message[] = [...messages];
-      if (response.data.vendorMessage) newMessages.push(response.data.vendorMessage);
-      if (response.data.accordoMessage) newMessages.push(response.data.accordoMessage);
+      if (response.messages) {
+        newMessages.push(...response.messages);
+      }
 
       setMessages(newMessages);
-      setConversationState(response.data.conversationState);
+      // Note: SendMessageResponse doesn't include conversationState
+      // State is tracked on the deal's convoStateJson property
 
       // Refresh deal to get updated status
-      const dealResponse = await chatbotService.getDeal(dealId);
+      const dealResponse = await chatbotService.getDeal(ctx);
       setDeal(dealResponse.data.deal);
     } catch (error: any) {
       console.error('Error sending message:', error);
@@ -96,10 +105,10 @@ export default function ConversationDealPage() {
 
   // Get explainability
   const handleExplain = async () => {
-    if (!dealId) return;
+    if (!ctx) return;
 
     try {
-      const response = await chatbotService.getConversationExplainability(dealId);
+      const response = await chatbotService.getExplainability(ctx);
       setExplainability(response.data.explainability);
       setExplainOpen(true);
     } catch (error: any) {

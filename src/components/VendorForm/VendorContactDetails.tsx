@@ -2,7 +2,6 @@ import { useForm } from "react-hook-form";
 import InputField from "../InputField";
 import Button from "../Button";
 import { authApi } from "../../api";
-import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 
@@ -38,12 +37,11 @@ const VendorContactDetails: React.FC<VendorContactDetailsProps> = ({
   companyId,
   company
 }) => {
-  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
     reset,
-    watch,
+    watch: _watch,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     defaultValues: {

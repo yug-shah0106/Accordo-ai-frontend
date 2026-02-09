@@ -1,18 +1,39 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import Button from '../components/Button';
+import { useLocation } from 'react-router-dom';
 import { FiChevronDown, FiChevronUp, FiFilter, FiSearch, FiFileText, FiRefreshCw } from 'react-icons/fi';
 import { FaMedal, FaCrown, FaGem, FaAward, FaStar, FaCheckCircle } from 'react-icons/fa';
 import { authApi } from '../api';
 import toast from 'react-hot-toast';
 
+interface CompanyData {
+  id: string;
+  companyName: string;
+  totalAmount: number;
+  agreedAmount: number;
+  status: string;
+  savings: number;
+  savingsPercentage: number;
+  items: number;
+  lastUpdated: string;
+  vendorId: string;
+  contractStatus: string;
+  rank?: number;
+}
+
+interface ProcurementData {
+  companies: CompanyData[];
+  filters: {
+    status: string[];
+    dateRange: string[];
+  };
+}
+
 const GroupSummary = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   const [sortConfig, setSortConfig] = useState({ key: 'agreedAmount', direction: 'asc' });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [procurementData, setProcurementData] = useState({
+  const [error, setError] = useState<string | null>(null);
+  const [procurementData, setProcurementData] = useState<ProcurementData>({
     companies: [],
     filters: {
       status: ['All', 'In Progress', 'Completed', 'Pending'],
@@ -43,7 +64,7 @@ const GroupSummary = () => {
       const requisition = response.data.data;
 
       // Get contracts that have finalContractDetails object values and status is Accepted or Rejected
-      const contractsWithFinalDetails = requisition.Contract?.filter(contract => 
+      const contractsWithFinalDetails = requisition.Contract?.filter((contract: any) =>
         contract.finalContractDetails && 
         contract.finalContractDetails.trim() !== '' &&
         contract.finalContractDetails !== 'null' &&
@@ -58,23 +79,23 @@ const GroupSummary = () => {
       }
 
       // Transform contract data to match the expected format
-      const transformedCompanies = contractsWithFinalDetails.map((contract, index) => {
+      const transformedCompanies = contractsWithFinalDetails.map((contract: any, _index: number) => {
         // Use requisition's totalPrice for totalAmount
         const totalAmount = parseFloat(requisition.totalPrice) || 0;
         
         // Calculate amounts from final contract details
         const finalContractDetails = contract.finalContractDetails ? JSON.parse(contract.finalContractDetails) : {};
         const products = finalContractDetails.products || [];
-        
+
         // Get agreed amount directly from finalContractDetails
-        const agreedAmount = parseFloat(finalContractDetails.price) || 
-                           parseFloat(finalContractDetails.totalPrice) || 
+        const agreedAmount = parseFloat(finalContractDetails.price) ||
+                           parseFloat(finalContractDetails.totalPrice) ||
                            parseFloat(finalContractDetails.agreedAmount) ||
-                           products.reduce((sum, product) => 
+                           products.reduce((sum: number, product: any) =>
                              sum + (parseFloat(product.quotedPrice) * parseFloat(product.quantity)), 0) || 0;
         
-        const savings = parseFloat(totalAmount) - parseFloat(agreedAmount);
-        const savingsPercentage = parseFloat(totalAmount) > 0 ? ((parseFloat(savings) / parseFloat(totalAmount)) * 100) : 0;
+        const savings = totalAmount - agreedAmount;
+        const savingsPercentage = totalAmount > 0 ? ((savings / totalAmount) * 100) : 0;
 
         // Debug logging
         console.log('Contract calculation:', {
@@ -113,7 +134,7 @@ const GroupSummary = () => {
         companies: transformedCompanies
       }));
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching requisition data:', error);
       const errorMessage = error.response?.data?.message || 'Failed to fetch requisition data';
       setError(errorMessage);
@@ -127,7 +148,7 @@ const GroupSummary = () => {
     fetchRequisitionData();
   }, [location.search]);
 
-  const handleSort = (key) => {
+  const handleSort = (key: string) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
@@ -157,7 +178,7 @@ const GroupSummary = () => {
     }));
   }, [procurementData.companies, sortConfig]);
 
-  const getRankIcon = (rank) => {
+  const getRankIcon = (rank: number) => {
     // Top 3 ranks get special medals
     if (rank === 1) {
       return <FaCrown className="text-yellow-500 w-8 h-8 opacity-20" />;
@@ -183,7 +204,7 @@ const GroupSummary = () => {
     return <FaCheckCircle className="text-gray-400 w-8 h-8 opacity-20" />;
   };
 
-  const getRankColor = (rank) => {
+  const getRankColor = (rank: number) => {
     if (rank === 1) return "text-yellow-500";
     if (rank === 2) return "text-blue-500";
     if (rank === 3) return "text-amber-700";

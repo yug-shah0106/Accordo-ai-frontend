@@ -204,7 +204,7 @@ import { MdVerified } from "react-icons/md";
 import { useLocation, useNavigate } from "react-router-dom";
 import { RiBox3Line } from "react-icons/ri";
 import { SlSettings } from "react-icons/sl";
-import { PiFramerLogo } from "react-icons/pi";
+// import { PiFramerLogo } from "react-icons/pi"; // Unused
 import { LuGitPullRequest, LuTwitch } from "react-icons/lu";
 import { CiLogout } from "react-icons/ci";
 import Modal from "../Modal";
@@ -214,7 +214,11 @@ import toast from "react-hot-toast";
 import { useTheme } from "../../context/ThemeContext";
 import { useOnboardingStatus } from "../OnboardingReminder";
 
-const Sidebar = ({ logo }) => {
+interface SidebarProps {
+  logo: string;
+}
+
+const Sidebar = ({ logo }: SidebarProps) => {
   const [activeItem, setActiveItem] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -222,7 +226,7 @@ const Sidebar = ({ logo }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
-  const { theme, toggleTheme, isDark } = useTheme();
+  const { theme: _theme, toggleTheme, isDark } = useTheme();
   const { showBadge: showOnboardingBadge } = useOnboardingStatus();
 
   // List of paths where forms exist
@@ -234,25 +238,21 @@ const Sidebar = ({ logo }) => {
     "/create-user",
   ];
 
-  // ✅ Check if user has permission for a given module
-  const hasPermission = (module) => {
-    // Get all permissions from localStorage
-    const permissions = {
-      contractPermission: JSON.parse(localStorage.getItem("contractPermission")),
-      poPermission: JSON.parse(localStorage.getItem("poPermission")),
-      productPermission: JSON.parse(localStorage.getItem("productPermission")),
-      projectPermission: JSON.parse(localStorage.getItem("projectPermission")),
-      requisitionPermission: JSON.parse(localStorage.getItem("requisitionPermission")),
-      userPermission: JSON.parse(localStorage.getItem("userPermission")),
-      vendorPermission: JSON.parse(localStorage.getItem("vendorPermission")),
-    };
-
-    // Get the module-specific permission
-    const modulePermission = permissions[module];
-
-    // Check if the module permission is valid and includes "R"
-    return modulePermission !== null && Array.isArray(modulePermission) && modulePermission.includes("R");
-  };
+  // Note: hasPermission function commented out - permission filtering is disabled
+  // type PermissionModule = 'contractPermission' | 'poPermission' | 'productPermission' | 'projectPermission' | 'requisitionPermission' | 'userPermission' | 'vendorPermission';
+  // const hasPermission = (module: PermissionModule): boolean => {
+  //   const permissions: Record<PermissionModule, string[] | null> = {
+  //     contractPermission: JSON.parse(localStorage.getItem("contractPermission") || 'null'),
+  //     poPermission: JSON.parse(localStorage.getItem("poPermission") || 'null'),
+  //     productPermission: JSON.parse(localStorage.getItem("productPermission") || 'null'),
+  //     projectPermission: JSON.parse(localStorage.getItem("projectPermission") || 'null'),
+  //     requisitionPermission: JSON.parse(localStorage.getItem("requisitionPermission") || 'null'),
+  //     userPermission: JSON.parse(localStorage.getItem("userPermission") || 'null'),
+  //     vendorPermission: JSON.parse(localStorage.getItem("vendorPermission") || 'null'),
+  //   };
+  //   const modulePermission = permissions[module];
+  //   return modulePermission !== null && Array.isArray(modulePermission) && modulePermission.includes("R");
+  // };
 
   // Menu items with associated permissions
   const menuItems = [
@@ -339,7 +339,7 @@ const Sidebar = ({ logo }) => {
   }, [location.pathname]);
 
   // Handle navigation
-  const handleNavigation = (path) => {
+  const handleNavigation = (path: string) => {
     const fullPath = `/${path}`;
     const currentPath = location.pathname.split("/").pop(); // Get last part of path
 
@@ -360,15 +360,16 @@ const Sidebar = ({ logo }) => {
   };
 
   // Handle actual navigation
-  const navigateToPath = async (fullPath, path) => {
+  const navigateToPath = async (fullPath: string, path: string) => {
     if (path === "logout") {
       try {
         // Call logout endpoint to invalidate refresh tokens on server
         await authApi.post("/auth/logout");
-      } catch (error) {
+      } catch (error: unknown) {
         console.error("Logout error:", error);
         // Continue with local cleanup even if API call fails
-        toast.error(error.response?.data?.message || "Logout failed");
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        toast.error(axiosError.response?.data?.message || "Logout failed");
       } finally {
         // Always clear local tokens and user data
         tokenStorage.clearTokens();
@@ -398,10 +399,10 @@ const Sidebar = ({ logo }) => {
 
   // Detect click outside the sidebar
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (
         sidebarRef.current &&
-        !sidebarRef.current.contains(event.target) &&
+        !(sidebarRef.current as HTMLElement).contains(event.target as Node) &&
         window.innerWidth < 992
       ) {
         setSidebarOpen(false);
@@ -415,16 +416,11 @@ const Sidebar = ({ logo }) => {
     };
   }, []);
 
-  // ✅ Filter only the menu items with valid permissions
-  const visibleMenuItems = menuItems.filter((item) => {
-    true
-    // if (item.permissionKey === null) {
-    //   return true; // Always show if no permission is required
-    // }
-    // const hasPerm = hasPermission(item.permissionKey);
-    // console.log(`Checking ${item.name}:`, hasPerm);
-    // return hasPerm;
-  });
+  // Note: Permission filtering is disabled - all menu items are visible
+  // const visibleMenuItems = menuItems.filter((item) => {
+  //   if (item.permissionKey === null) return true;
+  //   return hasPermission(item.permissionKey);
+  // });
 
 
   return (

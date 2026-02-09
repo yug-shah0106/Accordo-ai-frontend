@@ -17,10 +17,10 @@ interface CreateUserFormProps {
   onClose?: () => void;
 }
 
-const CreateUserForm = ({ onClose }: CreateUserFormProps) => {
+const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [preview, setPreview] = useState<string | null>(null);
+  const [_preview, setPreview] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState("");
   const [userRoles, setUserRoles] = useState<Role[]>([]);
   const [rolesLoading, setRolesLoading] = useState(true);
@@ -29,8 +29,8 @@ const CreateUserForm = ({ onClose }: CreateUserFormProps) => {
     register,
     handleSubmit,
     reset,
-    watch,
-    formState: { errors, isSubmitting, isValid },
+    watch: _watch,
+    formState: { errors, isSubmitting, isValid: _isValid },
   } = useForm({
     defaultValues: {
       name: "",
@@ -171,7 +171,6 @@ const CreateUserForm = ({ onClose }: CreateUserFormProps) => {
                     type="text"
                     register={register}
                     error={errors.name}
-                    icon={<BiUserCheck className="text-gray-400" />}
                     className="text-sm text-gray-900"
                   />
                   <InputField

@@ -5,7 +5,7 @@ import Button from "../Button";
 import DateField from "../DateField";
 import { authApi } from "../../api";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
 
 interface Company {
@@ -36,10 +36,7 @@ const VendorGeneralInformation: React.FC<VendorGeneralInformationProps> = ({
   company,
 }) => {
   const navigate = useNavigate();
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const {
     register,
     handleSubmit,
@@ -73,9 +70,6 @@ const VendorGeneralInformation: React.FC<VendorGeneralInformationProps> = ({
       formData.append("companyName", data.companyName);
       formData.append("establishmentDate", data.establishmentDate);
       formData.append("nature", data.nature);
-      if (selectedImage) {
-        formData.append("companyLogo", selectedImage);
-      }
 
       if (company?.id) {
         await authApi.put(
@@ -107,30 +101,8 @@ const VendorGeneralInformation: React.FC<VendorGeneralInformationProps> = ({
       establishmentDate: company?.establishmentDate?.split("T")?.[0] || "",
       nature: company?.nature || "",
     });
-    if (company?.companyLogo) {
-      setPreview(
-        `${import.meta.env.VITE_ASSEST_URL}/uploads/${company.companyLogo}`
-      );
-    }
   }, [company, reset]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedImage(file);
-      setPreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handleRemoveImage = (): void => {
-    setPreview(null);
-    setSelectedImage(null);
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-  
   return (
     <div className="border-2 rounded p-4">
       <h3 className="text-lg font-semibold">General Information</h3>
@@ -196,7 +168,7 @@ const VendorGeneralInformation: React.FC<VendorGeneralInformationProps> = ({
           {/* Previous Button */}
           <Button
             className="px-4 py-2 bg-[white] text-[black] border rounded !w-fit"
-            onClick={() => prevStep()}
+            onClick={() => prevStep?.()}
             type="button"
             disabled={isSubmitting || currentStep === 1}
           >

@@ -1,7 +1,8 @@
 import { useForm } from "react-hook-form";
 import InputField from "../InputField";
 import Button from "../Button";
-import { useNavigate } from "react-router-dom";
+// useNavigate available if needed
+// import { useNavigate } from "react-router-dom";
 import { authApi } from "../../api";
 import { useEffect, useRef, useState } from "react";
 import { CiEdit } from "react-icons/ci";
@@ -36,14 +37,13 @@ const UpdateProfile = ({
   currentStep,
   nextStep,
   prevStep,
-  companyId,
-  company,
+  companyId: _companyId,
+  company: _company,
   userId,
-  formData: parentFormData,
+  formData: _parentFormData,
   updateFormData,
-  clearSaved,
+  clearSaved: _clearSaved,
 }: UpdateProfileProps) => {
-  const navigate = useNavigate();
   const {
     register,
     handleSubmit,

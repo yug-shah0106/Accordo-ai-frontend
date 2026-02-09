@@ -109,7 +109,7 @@ const buildWeightsFromPriorities = (
 
   const priceWeight = Math.round((rawPriceWeight / total) * 100);
   const deliveryWeight = Math.round((rawDeliveryWeight / total) * 100);
-  const paymentWeight = 100 - priceWeight - deliveryWeight; // Ensure exactly 100
+  // const _paymentWeight = 100 - priceWeight - deliveryWeight; // Ensure exactly 100
 
   // Count parameters in each category
   const priceParams = allParameters.filter(p => p.category === 'price');

@@ -391,7 +391,7 @@ export function CompactUtilityBar({
       <div className="flex-1">
         <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
           <div
-            className={`${colors.bar} h-full rounded-full transition-all duration-500`}
+            className={`bg-gradient-to-r ${colors.gradient} h-full rounded-full transition-all duration-500`}
             style={{ width: `${percentage}%` }}
           />
         </div>

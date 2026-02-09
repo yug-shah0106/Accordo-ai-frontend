@@ -26,17 +26,35 @@ yarn-debug.log*
 yarn-error.log*
 
 # Test files
+tests
 coverage
-*.test.js
-*.spec.js
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
 
 # Documentation
 README.md
+CLAUDE.md
 CHANGELOG.md
 LICENSE
+*.md
 
 # Docker files (prevent recursive copy)
 Dockerfile
 docker-compose*.yml
 .dockerignore
+
+# Environment files (passed as build args instead)
+.env
+.env.*
+!.env.example
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Temporary files
+tmp
+temp
+.tmp
 

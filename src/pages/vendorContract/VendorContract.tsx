@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterSchema } from "../../schema/auth";
 import toast from "react-hot-toast";
 import api from "../../api";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import DateField from "../../components/DateField";
 import SelectField from "../../components/SelectField";
 
@@ -215,7 +215,7 @@ const VendorContact = () => {
                             name={`quotedPrice_${product.id}`}
                             placeholder="Enter your price"
                             register={register}
-                            error={errors[`quotedPrice_${product.id}`]}
+                            error={errors[`quotedPrice_${product.id}`] as import("react-hook-form").FieldError | undefined}
                             wholeInputClassName="w-full"
                           />
                         </td>
@@ -224,7 +224,7 @@ const VendorContact = () => {
                             name={`deliveryDate_${product.id}`}
                             register={register}
                             value={watch(`deliveryDate_${product.id}`)}
-                            error={errors[`deliveryDate_${product.id}`]}
+                            error={errors[`deliveryDate_${product.id}`] as import("react-hook-form").FieldError | undefined}
                             className="w-full"
                           />
                         </td>
@@ -250,7 +250,7 @@ const VendorContact = () => {
                   register={register}
                   optionKey="paymentName"
                   optionValue="id"
-                  error={errors.paymentTerms}
+                  error={errors.paymentTerms as import("react-hook-form").FieldError | undefined}
                   wholeInputClassName="my-1"
                 />
 
@@ -342,7 +342,7 @@ const VendorContact = () => {
                   placeholder="Any additional terms or conditions"
                   type="text"
                   register={register}
-                  error={errors.additionalNotes}
+                  error={errors.additionalNotes as import("react-hook-form").FieldError | undefined}
                   wholeInputClassName="my-1"
                 />
               </div>

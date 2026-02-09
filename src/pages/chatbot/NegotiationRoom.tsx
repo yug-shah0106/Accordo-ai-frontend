@@ -13,7 +13,7 @@ import {
   CollapsibleSection,
   ParameterRow,
   UnifiedUtilityBar,
-  type RecommendationAction,
+  type UnifiedRecommendationAction as RecommendationAction,
 } from "../../components/chatbot/sidebar";
 
 // Type for weighted utility data from API
@@ -394,8 +394,9 @@ export default function NegotiationRoom() {
 
       if (vendorPrices.length > 0 && accordoPrices.length > 0) {
         // Calculate convergence - are we getting closer?
-        const _latestVendorPrice = vendorPrices[vendorPrices.length - 1];
-        const _latestAccordoPrice = accordoPrices[accordoPrices.length - 1];
+        // These values used for debugging convergence
+        // const _latestVendorPrice = vendorPrices[vendorPrices.length - 1];
+        // const _latestAccordoPrice = accordoPrices[accordoPrices.length - 1];
 
         // Adjust anchor based on convergence (getting more flexible)
         const convergenceFactor = Math.min(round / (config.max_rounds || 10), 1);

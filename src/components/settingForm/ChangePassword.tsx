@@ -38,10 +38,10 @@ interface ChangePasswordProps {
 }
 
 const ChangePassword = ({
-  currentStep,
-  nextStep,
+  currentStep: _currentStep,
+  nextStep: _nextStep,
   prevStep,
-  companyId,
+  companyId: _companyId,
   onSuccess,
 }: ChangePasswordProps) => {
   const navigate = useNavigate();
@@ -96,7 +96,7 @@ const ChangePassword = ({
             placeholder="Enter current password"
             type="password"
             register={register}
-            error={errors.oldPassword?.message}
+            error={errors.oldPassword}
             className="text-sm text-gray-900"
           />
 
@@ -108,7 +108,7 @@ const ChangePassword = ({
             placeholder="Enter new password"
             type="password"
             register={register}
-            error={errors.newPassword?.message}
+            error={errors.newPassword}
             className="text-sm text-gray-900"
           />
 
@@ -118,7 +118,7 @@ const ChangePassword = ({
             placeholder="Confirm new password"
             type="password"
             register={register}
-            error={errors.confirmPassword?.message}
+            error={errors.confirmPassword}
             className="text-sm text-gray-900"
           />
         </div>

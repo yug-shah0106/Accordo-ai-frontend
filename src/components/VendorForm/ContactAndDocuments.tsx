@@ -58,7 +58,7 @@ const ContactAndDocuments: React.FC<ContactAndDocumentsProps> = ({
   updateFormData,
   onStepSubmit,
   isSubmitting: parentIsSubmitting = false,
-  projectId,
+  projectId: _projectId,
 }) => {
   const [documents, setDocuments] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);

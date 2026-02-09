@@ -215,9 +215,9 @@ const Composer = ({
   const [selectedScenario, setSelectedScenario] = useState<VendorScenarioType>("BALANCED");
   const [selectedEmphases, setSelectedEmphases] = useState<Set<VendorSuggestionEmphasis>>(new Set());
   const [suggestions, setSuggestions] = useState<Record<VendorScenarioType, VendorStructuredSuggestion[]>>({
-    STRONG: [],
-    BALANCED: [],
-    FLEXIBLE: [],
+    STRONG: [] as VendorStructuredSuggestion[],
+    BALANCED: [] as VendorStructuredSuggestion[],
+    FLEXIBLE: [] as VendorStructuredSuggestion[],
   });
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [hasPMCounterOffer, setHasPMCounterOffer] = useState(false);
@@ -236,7 +236,7 @@ const Composer = ({
       const response = await vendorChatService.getSuggestions(uniqueToken, emphases);
 
       // Backend returns suggestions as { STRONG: [...], BALANCED: [...], FLEXIBLE: [...] }
-      const suggestionsData = response.data.suggestions;
+      const suggestionsData = (response.data as any).suggestions;
       if (suggestionsData && typeof suggestionsData === 'object' && !Array.isArray(suggestionsData)) {
         setSuggestions({
           STRONG: Array.isArray(suggestionsData.STRONG) ? suggestionsData.STRONG : [],

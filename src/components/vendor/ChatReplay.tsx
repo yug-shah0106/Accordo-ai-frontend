@@ -1,8 +1,13 @@
 import { useState } from "react";
 import chatLogo from "../../assets/chatLogo.png";
 
-function ChatReplay({ isOpen, toggleMenu }) {
-  const [chat, setChat] = useState({
+interface ChatReplayProps {
+  isOpen: boolean;
+  toggleMenu: () => void;
+}
+
+function ChatReplay({ isOpen, toggleMenu }: ChatReplayProps) {
+  const [chat, _setChat] = useState({
     chatId: "123",
     participants: [
       {

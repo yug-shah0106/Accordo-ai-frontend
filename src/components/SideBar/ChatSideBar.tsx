@@ -2,19 +2,40 @@ import { Card, CardContent } from "@mui/material";
 import sideBarLogo from "../../assets/sideBarLogo.png";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Menu, X, Calendar, Package, FileText, ChevronRight } from "lucide-react";
+import { Menu, X, Calendar, Package, FileText } from "lucide-react";
 import { authApi } from "../../api";
 
 interface ChatSidebarProps {
     logo?: string;
 }
 
-export default function ChatSidebar({ logo }: ChatSidebarProps) {
+interface RequisitionProduct {
+    id?: number;
+    qty?: number;
+    Product?: {
+        productName?: string;
+    };
+}
+
+interface RequisitionData {
+    rfqId?: string;
+    projectId?: number;
+    deliveryDate?: string;
+    negotiationClosureDate?: string;
+    RequisitionProduct?: RequisitionProduct[];
+}
+
+interface ProjectData {
+    projectId?: string;
+    projectName?: string;
+}
+
+export default function ChatSidebar({ logo: _logo }: ChatSidebarProps) {
     const { state } = useLocation();
     const [searchParams] = useSearchParams();
     const [isOpen, setIsOpen] = useState(false);
-    const [projectDataa, setProjectDataa] = useState(null);
-    const [requisitionData, setRequisitionData] = useState(null);
+    const [projectDataa, setProjectDataa] = useState<ProjectData | null>(null);
+    const [requisitionData, setRequisitionData] = useState<RequisitionData | null>(null);
     const [loading, setLoading] = useState(true);
 
     const toggleSidebar = () => {
@@ -58,7 +79,7 @@ export default function ChatSidebar({ logo }: ChatSidebarProps) {
         }
     };
 
-    const getProjectDetails = async (projectId) => {
+    const getProjectDetails = async (projectId: number) => {
         if (!projectId) {
             return;
         }
@@ -174,7 +195,7 @@ export default function ChatSidebar({ logo }: ChatSidebarProps) {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
-                                                {projectData.products.map((product, index) => (
+                                                {projectData.products.map((product: RequisitionProduct, index: number) => (
                                                     <tr
                                                         key={index}
                                                         className="hover:bg-blue-50/50 transition-colors duration-200"

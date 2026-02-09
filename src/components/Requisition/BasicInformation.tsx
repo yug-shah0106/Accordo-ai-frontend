@@ -3,10 +3,11 @@ import { FormInput, FormSelect, SelectOption } from "../shared";
 import Button from "../Button";
 import { authApi, authMultiFormApi } from "../../api";
 import toast from "react-hot-toast";
-import { zodResolver } from "@hookform/resolvers/zod";
+// zodResolver available if needed for form validation
+// import { zodResolver } from "@hookform/resolvers/zod";
 import { step1 } from "../../schema/requisition";
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAutoSave } from "../../hooks/useAutoSave";
 import AutosaveIndicator from "../AutosaveIndicator";
 
@@ -43,7 +44,7 @@ interface BasicInformationProps {
   requisitionId: string;
   projectId: ProjectState | null;
   requisition: Requisition | null;
-  setRequisition: React.Dispatch<React.SetStateAction<Requisition | null>>;
+  setRequisition: (value: React.SetStateAction<Requisition | null>) => void;
 }
 
 interface FormData {
@@ -66,7 +67,6 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
   requisition,
 }) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [projects, setProjects] = useState<Project[]>([]);
   const [tenureInDays, setTenureInDays] = useState<number | undefined>(undefined);
   const [showDraftDialog, setShowDraftDialog] = useState(false);
@@ -79,7 +79,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
   const getSchema = () => step1(tenureInDays);
 
   const {
-    register,
+    register: _register,
     handleSubmit,
     reset,
     watch,
@@ -106,7 +106,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
     return `requisition_step1_new_project_${projectKey}`;
   }, [requisitionId, projectId?.id]);
 
-  const { lastSaved, isSaving, hasDraft, clearSaved, loadSaved } = useAutoSave({
+  const { lastSaved, isSaving, hasDraft: _hasDraft, clearSaved, loadSaved } = useAutoSave({
     key: autosaveKey,
     data: formValues,
     interval: 2000, // Save 2 seconds after last change
