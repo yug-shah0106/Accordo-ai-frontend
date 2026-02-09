@@ -191,8 +191,11 @@ export default function NewDealPage() {
   const urlVendorName = searchParams.get('vendorName');  // Fallback for vendor matching
   const urlLocked = searchParams.get('locked') === 'true';
   const urlReturnTo = searchParams.get('returnTo');
+  // Optional: contractId from "Start Negotiation" on existing contract
+  // When provided, the deal will be linked to this existing contract
+  const urlContractId = searchParams.get('contractId');
 
-  console.log('[NewDealPage] URL params:', { urlRfqId, urlVendorId, urlVendorName, urlLocked, urlReturnTo });
+  console.log('[NewDealPage] URL params:', { urlRfqId, urlVendorId, urlVendorName, urlLocked, urlReturnTo, urlContractId });
 
   // Handle router state from VendorDetails "Start Negotiation" flow
   const routerState = location.state as {
@@ -1098,6 +1101,8 @@ export default function NewDealPage() {
         negotiationControl: formData.stepThree.negotiationControl,
         customParameters: formData.stepThree.customParameters,
         parameterWeights,
+        // Include contractId if starting from existing contract (from VendorDetails "Start Negotiation")
+        ...(urlContractId ? { contractId: parseInt(urlContractId, 10) } : {}),
       };
 
       const response = await chatbotService.createDealWithConfig(rfqId, vendorId, createInput);

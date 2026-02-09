@@ -10,15 +10,20 @@ import type { Message } from '../../../types';
  * Updated January 2026: Added vendorMode support for AI-PM perspective
  * - In vendorMode: VENDOR = "You", ACCORDO = "AI Buyer"
  * - Normal mode: VENDOR = "Vendor", ACCORDO = "Procurement Manager"
+ *
+ * Updated February 2026: Added pmMode for PM read-only view
+ * - In pmMode: Layout is FLIPPED - PM/Accordo messages on LEFT, Vendor on RIGHT
+ * - PM sees the conversation from their perspective (AI Negotiator acts on their behalf)
  */
 
 interface MessageBubbleProps {
   message: Message;
   isGrouped?: boolean;
   vendorMode?: boolean;  // When true, shows vendor-perspective labels
+  pmMode?: boolean;      // When true, flips layout for PM perspective (Accordo left, Vendor right)
 }
 
-export default function MessageBubble({ message, isGrouped = false, vendorMode = false }: MessageBubbleProps) {
+export default function MessageBubble({ message, isGrouped = false, vendorMode = false, pmMode = false }: MessageBubbleProps) {
   const [showFull, setShowFull] = useState(false);
 
   // Guard against undefined/null message
@@ -27,6 +32,10 @@ export default function MessageBubble({ message, isGrouped = false, vendorMode =
   const isVendor = message.role === "VENDOR";
   const isAccordo = message.role === "ACCORDO";
   const decision = message.engineDecision;
+
+  // In pmMode, flip the alignment: Accordo (our AI) on left, Vendor on right
+  // In normal/vendorMode: Vendor on left, Accordo on right
+  const alignLeft = pmMode ? isAccordo : isVendor;
 
   // Show first 3 lines, then "Show more" if longer
   const contentLines = (message.content || "").split("\n");
@@ -40,25 +49,35 @@ export default function MessageBubble({ message, isGrouped = false, vendorMode =
   const hasContent = message.content && message.content.trim().length > 0;
   const shouldShowContent = hasContent || isVendor;
 
+  // Determine label based on mode
+  const getLabel = () => {
+    if (pmMode) {
+      // PM perspective: AI Negotiator acts on PM's behalf
+      return isAccordo ? "AI Negotiator (You)" : "Vendor";
+    }
+    if (vendorMode) {
+      return isVendor ? "You (Vendor)" : "AI Buyer";
+    }
+    return isVendor ? "Vendor" : "Procurement Manager";
+  };
+
   return (
     <div
       className={`flex w-full px-4 ${
         isGrouped ? "mb-0.5" : "mb-2"
-      } ${isVendor ? "justify-start" : "justify-end"}`}
+      } ${alignLeft ? "justify-start" : "justify-end"}`}
     >
       <div
         className={`max-w-[70%] rounded-lg pt-6 px-6 pb-6 ${
-          isVendor
-            ? "bg-white border border-gray-200"
-            : "bg-blue-50 border border-blue-200 border-l-2"
+          alignLeft
+            ? (pmMode ? "bg-blue-50 border border-blue-200 border-l-2" : "bg-white border border-gray-200")
+            : (pmMode ? "bg-white border border-gray-200" : "bg-blue-50 border border-blue-200 border-l-2")
         }`}
       >
         {/* Message Header */}
         <div className="flex justify-between items-center mb-2 gap-4">
           <span className="text-xs font-medium text-gray-500">
-            {vendorMode
-              ? (isVendor ? "You (Vendor)" : "AI Buyer")
-              : (isVendor ? "Vendor" : "Procurement Manager")}
+            {getLabel()}
           </span>
           <span className="text-xs text-gray-400">
             {new Date(message.createdAt).toLocaleTimeString([], {

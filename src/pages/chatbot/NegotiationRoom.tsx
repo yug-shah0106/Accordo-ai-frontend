@@ -4,11 +4,11 @@ import toast from "react-hot-toast";
 // @ts-ignore - hooks are JS files without type definitions
 import { useDealActions } from "../../hooks/chatbot";
 // @ts-ignore - components barrel export is a JS file without type definitions
-import { ChatTranscript, Composer } from "../../components/chatbot/chat";
+import { ChatTranscript } from "../../components/chatbot/chat";
 import { exportDealAsPDF, exportDealAsCSV } from "../../utils/exportDeal";
 import chatbotService from "../../services/chatbot.service";
 import type { DealSummaryResponse, ExtendedNegotiationConfig } from "../../types/chatbot";
-import { FiMessageSquare, FiFileText, FiTrendingUp, FiClock, FiCheckCircle, FiXCircle, FiDollarSign, FiCreditCard, FiTruck, FiClipboard, FiSettings, FiActivity, FiRefreshCw } from "react-icons/fi";
+import { FiMessageSquare, FiFileText, FiTrendingUp, FiClock, FiCheckCircle, FiXCircle, FiDollarSign, FiCreditCard, FiTruck, FiClipboard, FiSettings, FiActivity, FiRefreshCw, FiAlertCircle } from "react-icons/fi";
 import {
   CollapsibleSection,
   ParameterRow,
@@ -53,7 +53,6 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 export default function NegotiationRoom() {
   const { dealId } = useParams<{ dealId: string }>();
   const navigate = useNavigate();
-  const [inputText, setInputText] = useState<string>("");
   const [showExportDropdown, setShowExportDropdown] = useState<boolean>(false);
   const exportDropdownRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<TabType>("chat");
@@ -76,6 +75,17 @@ export default function NegotiationRoom() {
   // Accordion state for collapsible sidebar sections
   const [openSection, setOpenSection] = useState<string | null>('price');
 
+  // Status change notification banner
+  const [statusBanner, setStatusBanner] = useState<{
+    show: boolean;
+    status: string;
+    message: string;
+  } | null>(null);
+
+  // Track previous status for change detection
+  const previousStatusRef = useRef<string | null>(null);
+  const previousMessageCountRef = useRef<number>(0);
+
   const {
     deal,
     messages,
@@ -85,11 +95,8 @@ export default function NegotiationRoom() {
     error,
     sending,
     resetLoading,
-    canSend,
     canReset,
     pmTyping,
-    sendVendorMessage,
-    sendVendorMessageTwoPhase,
     reset,
     reload,
   } = useDealActions(dealId);
@@ -103,26 +110,108 @@ export default function NegotiationRoom() {
     return "/chatbot";
   }, [context?.rfqId]);
 
-  const handleSend = async (text: string): Promise<void> => {
-    if (!text.trim()) return;
-    try {
-      // Use two-phase messaging for instant vendor message display + async PM response
-      await sendVendorMessageTwoPhase(text);
-      setInputText(""); // Clear input after successful send
-    } catch (err) {
-      console.error("Failed to send message:", err);
+  // Polling for real-time updates (every 5 seconds)
+  useEffect(() => {
+    // Only poll if deal is active (NEGOTIATING status)
+    if (!deal || deal.status !== 'NEGOTIATING') {
+      return;
     }
-  };
+
+    const pollInterval = setInterval(() => {
+      reload();
+    }, 5000);
+
+    return () => clearInterval(pollInterval);
+  }, [deal?.status, reload]);
+
+  // Detect status changes and show notifications
+  useEffect(() => {
+    if (!deal) return;
+
+    const currentStatus = deal.status;
+    const previousStatus = previousStatusRef.current;
+
+    // Only notify if status changed (not on initial load)
+    if (previousStatus && previousStatus !== currentStatus) {
+      let message = '';
+      let toastType: 'success' | 'error' | 'info' = 'info';
+
+      switch (currentStatus) {
+        case 'ACCEPTED':
+          message = 'The vendor has accepted the deal!';
+          toastType = 'success';
+          break;
+        case 'WALKED_AWAY':
+          message = 'The negotiation has ended - AI Negotiator walked away.';
+          toastType = 'error';
+          break;
+        case 'ESCALATED':
+          message = 'The deal has been escalated for human review.';
+          toastType = 'info';
+          break;
+        default:
+          message = `Status changed to ${currentStatus}`;
+      }
+
+      // Show toast notification
+      if (toastType === 'success') {
+        toast.success(message, { duration: 5000 });
+      } else if (toastType === 'error') {
+        toast.error(message, { duration: 5000 });
+      } else {
+        toast(message, { duration: 5000, icon: '⚠️' });
+      }
+
+      // Show banner
+      setStatusBanner({
+        show: true,
+        status: currentStatus,
+        message,
+      });
+    }
+
+    previousStatusRef.current = currentStatus;
+  }, [deal?.status]);
+
+  // Detect new messages and show subtle notification
+  useEffect(() => {
+    if (!messages) return;
+
+    const currentCount = messages.length;
+    const previousCount = previousMessageCountRef.current;
+
+    // Only notify if new messages arrived (not on initial load)
+    if (previousCount > 0 && currentCount > previousCount) {
+      const newMessageCount = currentCount - previousCount;
+      toast(`${newMessageCount} new message${newMessageCount > 1 ? 's' : ''} received`, {
+        duration: 2000,
+        icon: '💬',
+      });
+    }
+
+    previousMessageCountRef.current = currentCount;
+  }, [messages?.length]);
 
   const handleReset = async (): Promise<void> => {
-    if (
-      window.confirm("Are you sure you want to reset this deal? All messages will be deleted.")
-    ) {
-      try {
-        await reset();
-        setInputText("");
-      } catch (err) {
-        console.error("Failed to reset deal:", err);
+    const confirmMessage =
+      "⚠️ WARNING: This action cannot be undone!\n\n" +
+      "Resetting this deal will:\n" +
+      "• Delete ALL messages in this negotiation\n" +
+      "• Reset the negotiation round to 0\n" +
+      "• Require the vendor to start over\n\n" +
+      "Are you absolutely sure you want to reset this deal?";
+
+    if (window.confirm(confirmMessage)) {
+      // Double confirmation for destructive action
+      if (window.confirm("Final confirmation: Reset the entire negotiation?")) {
+        try {
+          await reset();
+          toast.success("Deal has been reset. Vendor will need to start negotiation again.");
+          setStatusBanner(null); // Clear any status banner
+        } catch (err) {
+          console.error("Failed to reset deal:", err);
+          toast.error("Failed to reset deal. Please try again.");
+        }
       }
     }
   };
@@ -617,7 +706,7 @@ export default function NegotiationRoom() {
               </div>
             </div>
 
-            <ChatTranscript messages={messages} isProcessing={false} />
+            <ChatTranscript messages={messages} isProcessing={false} pmMode={true} />
           </div>
         </div>
       </div>
@@ -738,29 +827,74 @@ export default function NegotiationRoom() {
           {/* Tab Content */}
           {activeTab === "chat" ? (
             <>
-              {/* Messages - Scrollable */}
+              {/* Status Change Banner */}
+              {statusBanner?.show && (
+                <div
+                  className={`flex-shrink-0 px-4 py-3 flex items-center justify-between ${
+                    statusBanner.status === "ACCEPTED"
+                      ? "bg-green-100 border-b border-green-200"
+                      : statusBanner.status === "WALKED_AWAY"
+                      ? "bg-red-100 border-b border-red-200"
+                      : statusBanner.status === "ESCALATED"
+                      ? "bg-orange-100 border-b border-orange-200"
+                      : "bg-blue-100 border-b border-blue-200"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {statusBanner.status === "ACCEPTED" ? (
+                      <FiCheckCircle className="w-5 h-5 text-green-600" />
+                    ) : statusBanner.status === "WALKED_AWAY" ? (
+                      <FiXCircle className="w-5 h-5 text-red-600" />
+                    ) : (
+                      <FiAlertCircle className="w-5 h-5 text-orange-600" />
+                    )}
+                    <span
+                      className={`text-sm font-medium ${
+                        statusBanner.status === "ACCEPTED"
+                          ? "text-green-800"
+                          : statusBanner.status === "WALKED_AWAY"
+                          ? "text-red-800"
+                          : "text-orange-800"
+                      }`}
+                    >
+                      {statusBanner.message}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setStatusBanner(null)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <FiXCircle className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Messages - Scrollable (PM Read-Only View) */}
               <div className="flex-1 px-6 py-6 overflow-y-auto">
                 <ChatTranscript
                   messages={messages}
                   isProcessing={pmTyping || sending}
                   processingType={pmTyping ? "analyzing" : "vendor-typing"}
+                  pmMode={true}
                 />
               </div>
 
-              {/* Composer - Fixed at bottom */}
-              <div className="flex-shrink-0">
-                <Composer
-                  onSend={handleSend}
-                  inputText={inputText}
-                  onInputChange={setInputText}
-                  sending={sending}
-                  dealStatus={deal?.status}
-                  canSend={canSend}
-                  dealId={dealId}
-                  context={context}
-                  wizardConfig={wizardConfig}
-                  currentRound={deal?.round || 0}
-                />
+              {/* Read-Only Notice - Fixed at bottom (replaces Composer) */}
+              <div className="flex-shrink-0 bg-gray-50 dark:bg-dark-surface border-t border-gray-200 dark:border-dark-border px-6 py-3">
+                <div className="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-dark-text-secondary">
+                  <FiMessageSquare className="w-4 h-4" />
+                  <span>
+                    {deal?.status === "NEGOTIATING"
+                      ? "Watching live negotiation. The AI Negotiator is handling this deal on your behalf."
+                      : deal?.status === "ACCEPTED"
+                      ? "This negotiation has been completed successfully."
+                      : deal?.status === "WALKED_AWAY"
+                      ? "This negotiation has ended."
+                      : deal?.status === "ESCALATED"
+                      ? "This deal has been escalated for human review."
+                      : "Viewing negotiation history."}
+                  </span>
+                </div>
               </div>
             </>
           ) : (

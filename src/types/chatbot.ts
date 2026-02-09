@@ -634,6 +634,11 @@ export interface CreateDealWithConfigInput {
   vendorId: number;
   priority: NegotiationPriority;
 
+  // Optional: Use existing contract (from "Start Negotiation" button on existing contract)
+  // When provided, the backend will link the new deal to this contract
+  // When not provided, a new contract will be created (1:1 with deal)
+  contractId?: number;
+
   // Commercial parameters (Step 2)
   priceQuantity: PriceQuantityParams;
   paymentTerms: PaymentTermsParams;

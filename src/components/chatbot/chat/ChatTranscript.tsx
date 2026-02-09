@@ -26,6 +26,9 @@ type TranscriptItem = MessageWithDivider | RoundDivider;
  * ChatTranscript Component
  * Displays chat messages with smart auto-scroll
  * Only scrolls to bottom when user is near the bottom (within 100px)
+ *
+ * Updated February 2026: Added pmMode for PM read-only view
+ * - In pmMode: Layout is FLIPPED - PM/Accordo messages on LEFT, Vendor on RIGHT
  */
 
 interface ChatTranscriptProps {
@@ -33,6 +36,7 @@ interface ChatTranscriptProps {
   isProcessing?: boolean;
   processingType?: ProcessingType;
   vendorMode?: boolean;  // When true, shows vendor-perspective labels
+  pmMode?: boolean;      // When true, flips layout for PM perspective
 }
 
 export default function ChatTranscript({
@@ -40,6 +44,7 @@ export default function ChatTranscript({
   isProcessing = false,
   processingType = "analyzing",
   vendorMode = false,
+  pmMode = false,
 }: ChatTranscriptProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -122,7 +127,9 @@ export default function ChatTranscript({
       {messages.length === 0 ? (
         <div className="flex items-center justify-center h-full">
           <p className="text-gray-500 text-center">
-            No messages yet. Send a message to start the negotiation.
+            {pmMode
+              ? "No messages yet. Waiting for the vendor to start the negotiation."
+              : "No messages yet. Send a message to start the negotiation."}
           </p>
         </div>
       ) : (
@@ -152,27 +159,32 @@ export default function ChatTranscript({
                 message={item.message}
                 isGrouped={item.isGrouped}
                 vendorMode={vendorMode}
+                pmMode={pmMode}
               />
             );
           })}
           {isProcessing && (
             <div
               className={`flex w-full px-4 mb-2 ${
-                processingType === "vendor-typing" ? "justify-start" : "justify-end"
+                pmMode
+                  ? (processingType === "vendor-typing" ? "justify-end" : "justify-start")
+                  : (processingType === "vendor-typing" ? "justify-start" : "justify-end")
               }`}
             >
               <div
                 className={`px-4 pt-3 pb-0 rounded-lg ${
-                  processingType === "vendor-typing"
-                    ? "bg-white border border-gray-200"
-                    : "bg-blue-50 border border-blue-200"
+                  pmMode
+                    ? (processingType === "vendor-typing" ? "bg-white border border-gray-200" : "bg-blue-50 border border-blue-200")
+                    : (processingType === "vendor-typing" ? "bg-white border border-gray-200" : "bg-blue-50 border border-blue-200")
                 }`}
               >
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <span>
-                    {processingType === "vendor-typing"
-                      ? (vendorMode ? "You're typing..." : "Vendor typing...")
-                      : (vendorMode ? "AI Buyer is responding..." : "Accordo is analyzing...")}
+                    {pmMode
+                      ? (processingType === "vendor-typing" ? "Vendor is typing..." : "AI Negotiator is responding...")
+                      : (processingType === "vendor-typing"
+                          ? (vendorMode ? "You're typing..." : "Vendor typing...")
+                          : (vendorMode ? "AI Buyer is responding..." : "Accordo is analyzing..."))}
                   </span>
                   <span className="flex gap-1">
                     <span className="animate-bounce" style={{ animationDelay: "0ms" }}>
