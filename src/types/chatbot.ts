@@ -195,6 +195,49 @@ export interface OfferChip {
 }
 
 // ============================================================================
+// Behavioral Analysis Types (Adaptive Negotiation Engine - February 2026)
+// ============================================================================
+
+/**
+ * Behavioral analysis data from the adaptive negotiation engine.
+ * Returned by the /behavioral API endpoint.
+ */
+export interface BehavioralData {
+  /** Composite momentum score: -1 (losing) to +1 (winning) */
+  momentum: number;
+  /** Current adaptive strategy label */
+  strategy: 'Holding Firm' | 'Accelerating' | 'Matching Pace' | 'Final Push' | string;
+  /** % gap reduction per round (positive = converging) */
+  convergenceRate: number;
+  /** Average price concession per round ($/round) */
+  concessionVelocity: number;
+  /** Same/similar offers for 2+ rounds */
+  isStalling: boolean;
+  /** Gap shrinking consistently */
+  isConverging: boolean;
+  /** Gap growing */
+  isDiverging: boolean;
+  /** Latest detected sentiment */
+  latestSentiment: 'positive' | 'neutral' | 'resistant' | 'urgent' | string;
+  /** Per-round history for convergence chart */
+  roundHistory: Array<{
+    round: number;
+    vendorPrice: number | null;
+    pmCounter: number | null;
+    gap: number | null;
+    utility: number | null;
+  }>;
+  /** Dynamic rounds info (null if not enabled) */
+  dynamicRounds: {
+    softMax: number;
+    hardMax: number;
+    currentRound: number;
+    extendLikely: boolean;
+    reason: string;
+  } | null;
+}
+
+// ============================================================================
 // Negotiation Config Types
 // ============================================================================
 

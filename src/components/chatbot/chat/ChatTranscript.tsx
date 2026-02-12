@@ -15,6 +15,14 @@ interface MessageWithDivider {
   isGrouped: boolean;
 }
 
+interface RoundStrategyInfo {
+  strategy?: string;
+  utility?: number | null;
+  isConverging?: boolean;
+  isStalling?: boolean;
+  isDiverging?: boolean;
+}
+
 interface RoundDivider {
   type: 'divider';
   round: number;
@@ -37,6 +45,7 @@ interface ChatTranscriptProps {
   processingType?: ProcessingType;
   vendorMode?: boolean;  // When true, shows vendor-perspective labels
   pmMode?: boolean;      // When true, flips layout for PM perspective
+  roundStrategyInfo?: Record<number, RoundStrategyInfo>;  // Per-round strategy info from behavioral analysis
 }
 
 export default function ChatTranscript({
@@ -45,6 +54,7 @@ export default function ChatTranscript({
   processingType = "analyzing",
   vendorMode = false,
   pmMode = false,
+  roundStrategyInfo,
 }: ChatTranscriptProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -140,13 +150,45 @@ export default function ChatTranscript({
         >
           {messagesWithDividers.map((item, idx) => {
             if (item.type === "divider") {
+              const strategyInfo = roundStrategyInfo?.[item.round];
+              const hasStrategy = strategyInfo?.strategy;
+              const hasUtility = strategyInfo?.utility != null;
+              const statusColor = strategyInfo?.isConverging
+                ? 'border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/20'
+                : strategyInfo?.isStalling
+                ? 'border-yellow-300 bg-yellow-50 dark:border-yellow-700 dark:bg-yellow-900/20'
+                : strategyInfo?.isDiverging
+                ? 'border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
+                : 'border-gray-200 bg-white dark:border-dark-border dark:bg-dark-surface';
+
               return (
                 <div
                   key={`divider-${item.round}-${idx}`}
                   className="flex items-center justify-center my-4"
                 >
-                  <span className="px-3 pt-1 pb-0 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-full">
+                  <span className={`px-3 pt-1 pb-0 text-xs font-semibold text-gray-600 dark:text-dark-text-secondary border rounded-full ${statusColor}`}>
                     Round {item.round}
+                    {hasStrategy && (
+                      <span className="text-gray-400 dark:text-gray-500"> · </span>
+                    )}
+                    {hasStrategy && (
+                      <span className={
+                        strategyInfo.isConverging ? 'text-green-600 dark:text-green-400'
+                        : strategyInfo.isStalling ? 'text-yellow-600 dark:text-yellow-400'
+                        : strategyInfo.isDiverging ? 'text-red-600 dark:text-red-400'
+                        : 'text-gray-500 dark:text-gray-400'
+                      }>
+                        {strategyInfo.strategy}
+                      </span>
+                    )}
+                    {hasUtility && (
+                      <>
+                        <span className="text-gray-400 dark:text-gray-500"> · </span>
+                        <span className="text-blue-600 dark:text-blue-400">
+                          {Math.round(strategyInfo.utility! * 100)}% Utility
+                        </span>
+                      </>
+                    )}
                   </span>
                 </div>
               );

@@ -12,10 +12,13 @@ import Modal from "../Modal";
 import chatbotService from "../../services/chatbot.service";
 import type { DealStatus, VendorDealSummary } from "../../types/chatbot";
 
+type ContractStatus = 'Created' | 'Active' | 'Opened' | 'Completed' | 'Verified' | 'Accepted' | 'Rejected' | 'Expired' | 'Escalated' | 'InitialQuotation';
+
 interface Contract {
   id: string;
   vendorId: string;
   uniqueToken: string;
+  status?: ContractStatus;
   createdAt?: string;
   chatbotDealId?: string | null;
 }
@@ -117,6 +120,85 @@ const statusConfig: Record<DealStatus, { label: string; bg: string; text: string
     cardBg: 'bg-orange-50',
     cardBorder: 'border-orange-200'
   },
+};
+
+// Contract status configuration with labels and colors
+const contractStatusConfig: Record<ContractStatus, { label: string; bg: string; text: string; cardBg: string; cardBorder: string }> = {
+  Created: {
+    label: 'Pending',
+    bg: 'bg-purple-100',
+    text: 'text-purple-700',
+    cardBg: 'bg-purple-50',
+    cardBorder: 'border-purple-200'
+  },
+  Active: {
+    label: 'Negotiating',
+    bg: 'bg-blue-100',
+    text: 'text-blue-700',
+    cardBg: 'bg-blue-50',
+    cardBorder: 'border-blue-200'
+  },
+  Escalated: {
+    label: 'Escalated',
+    bg: 'bg-orange-100',
+    text: 'text-orange-700',
+    cardBg: 'bg-orange-50',
+    cardBorder: 'border-orange-200'
+  },
+  Accepted: {
+    label: 'Won',
+    bg: 'bg-green-100',
+    text: 'text-green-700',
+    cardBg: 'bg-green-50',
+    cardBorder: 'border-green-200'
+  },
+  Rejected: {
+    label: 'Lost',
+    bg: 'bg-gray-100',
+    text: 'text-gray-700',
+    cardBg: 'bg-gray-50',
+    cardBorder: 'border-gray-200'
+  },
+  Opened: {
+    label: 'Opened',
+    bg: 'bg-cyan-100',
+    text: 'text-cyan-700',
+    cardBg: 'bg-cyan-50',
+    cardBorder: 'border-cyan-200'
+  },
+  Completed: {
+    label: 'Completed',
+    bg: 'bg-green-100',
+    text: 'text-green-700',
+    cardBg: 'bg-green-50',
+    cardBorder: 'border-green-200'
+  },
+  Verified: {
+    label: 'Verified',
+    bg: 'bg-teal-100',
+    text: 'text-teal-700',
+    cardBg: 'bg-teal-50',
+    cardBorder: 'border-teal-200'
+  },
+  Expired: {
+    label: 'Expired',
+    bg: 'bg-red-100',
+    text: 'text-red-700',
+    cardBg: 'bg-red-50',
+    cardBorder: 'border-red-200'
+  },
+  InitialQuotation: {
+    label: 'Quotation',
+    bg: 'bg-indigo-100',
+    text: 'text-indigo-700',
+    cardBg: 'bg-indigo-50',
+    cardBorder: 'border-indigo-200'
+  },
+};
+
+// Helper to get contract status config with fallback
+const getContractStatusConfig = (status?: ContractStatus) => {
+  return contractStatusConfig[status || 'Created'] || contractStatusConfig.Created;
 };
 
 // Helper to get deal counts by status for a vendor
@@ -546,7 +628,15 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                                 : item.deal?.status === 'ESCALATED'
                                 ? 'bg-orange-100 border-orange-500'
                                 : 'bg-gray-100 border-gray-400'
-                              : 'bg-purple-100 border-purple-500'
+                              : item.contract?.status === 'Active'
+                                ? 'bg-blue-100 border-blue-500'
+                                : item.contract?.status === 'Accepted'
+                                ? 'bg-green-100 border-green-500'
+                                : item.contract?.status === 'Rejected'
+                                ? 'bg-gray-100 border-gray-400'
+                                : item.contract?.status === 'Escalated'
+                                ? 'bg-orange-100 border-orange-500'
+                                : 'bg-purple-100 border-purple-500'
                           }`} />
 
                           {/* Item Content */}
@@ -576,42 +666,56 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                             </div>
                           )}
 
-                          {item.type === 'contract' && item.contract && (
-                            <div className="py-2 px-3 rounded-lg border bg-purple-50 border-purple-200">
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-3 min-w-0 flex-1">
-                                  <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 flex-shrink-0">
-                                    Contract
-                                  </span>
-                                  <span className="text-xs text-gray-400 flex-shrink-0">
-                                    {formatDate(item.createdAt)}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2 flex-shrink-0">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleOpenContractLink(item.contract!)}
-                                    className="p-1.5 rounded border border-gray-300 bg-white hover:bg-gray-100 transition-colors"
-                                    title="Open link"
-                                  >
-                                    <FiExternalLink className="w-4 h-4 text-gray-700" />
-                                  </button>
-                                  <Button
-                                    className="px-3 py-1.5 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1 text-sm"
-                                    onClick={() => handleStartNegotiation(
-                                      item.contract!.vendorId,
-                                      getVendorName(item.contract!.vendorId),
-                                      item.contract!.id
+                          {item.type === 'contract' && item.contract && (() => {
+                            const contractStatus = getContractStatusConfig(item.contract.status);
+                            const canStartNegotiation = item.contract.status !== 'Rejected' && item.contract.status !== 'Active' && item.contract.status !== 'Accepted';
+                            const isRejected = item.contract.status === 'Rejected';
+                            const isActive = item.contract.status === 'Active';
+                            return (
+                              <div className={`py-2 px-3 rounded-lg border ${contractStatus.cardBg} ${contractStatus.cardBorder}`}>
+                                <div className="flex items-center justify-between gap-3">
+                                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                                    <span className={`text-xs px-2 py-0.5 rounded-full ${contractStatus.bg} ${contractStatus.text} flex-shrink-0`}>
+                                      {contractStatus.label}
+                                    </span>
+                                    <span className="text-xs text-gray-400 flex-shrink-0">
+                                      {formatDate(item.createdAt)}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenContractLink(item.contract!)}
+                                      className="p-1.5 rounded border border-gray-300 bg-white hover:bg-gray-100 transition-colors"
+                                      title="Open link"
+                                    >
+                                      <FiExternalLink className="w-4 h-4 text-gray-700" />
+                                    </button>
+                                    {canStartNegotiation && (
+                                      <Button
+                                        className="px-3 py-1.5 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1 text-sm"
+                                        onClick={() => handleStartNegotiation(
+                                          item.contract!.vendorId,
+                                          getVendorName(item.contract!.vendorId),
+                                          item.contract!.id
+                                        )}
+                                        type="button"
+                                      >
+                                        <FiPlay className="w-3 h-3" />
+                                        {item.contract.status === 'Escalated' ? 'Re-negotiate' : 'Start'}
+                                      </Button>
                                     )}
-                                    type="button"
-                                  >
-                                    <FiPlay className="w-3 h-3" />
-                                    Start
-                                  </Button>
+                                    {isRejected && (
+                                      <span className="text-xs text-gray-500 italic">Final</span>
+                                    )}
+                                    {isActive && (
+                                      <span className="text-xs text-blue-600 italic">In progress</span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          )}
+                            );
+                          })()}
                         </div>
                       ))}
                     </div>
