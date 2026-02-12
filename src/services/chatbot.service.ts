@@ -36,7 +36,6 @@ import type {
   DealMode,
   DealContext,
   QualityCertification,
-  ScenarioSuggestions,
 } from "../types";
 
 // Re-export DealContext for convenience
@@ -472,35 +471,6 @@ export const chatbotService = {
     const res = await authApi.post<{ data: ConversationMessageResponse }>(
       buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'start')
     );
-    return res.data;
-  },
-
-  /**
-   * Get AI-generated counter suggestions with structured offer data
-   * POST /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/suggestions
-   *
-   * Returns structured suggestions including:
-   * - message: Human-like message text
-   * - price: Unit price value
-   * - paymentTerms: e.g., "Net 30", "Net 60"
-   * - deliveryDate: ISO date string
-   * - deliveryDays: Days from today
-   * - emphasis: What the message emphasizes (price, terms, delivery, value)
-   *
-   * @param ctx - Deal context (rfqId, vendorId, dealId)
-   * @param emphases - Optional emphasis filter (price, terms, delivery, value)
-   *                   When provided, suggestions prioritize selected emphases
-   *                   Multiple emphases result in weighted blend
-   */
-  getSuggestedCounters: async (
-    ctx: DealContext,
-    emphases?: Array<'price' | 'terms' | 'delivery' | 'value'>
-  ): Promise<{ data: ScenarioSuggestions }> => {
-    const url = buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'suggestions');
-    const params = emphases && emphases.length > 0
-      ? { emphasis: emphases.join(',') }
-      : undefined;
-    const res = await authApi.post<{ data: ScenarioSuggestions }>(url, null, { params });
     return res.data;
   },
 
