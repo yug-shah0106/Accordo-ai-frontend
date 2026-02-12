@@ -107,39 +107,6 @@ export interface PMDecision {
 }
 
 /**
- * Vendor suggestion emphasis types
- */
-export type VendorSuggestionEmphasis = "price" | "terms" | "delivery";
-
-/**
- * Vendor suggestion scenario types
- */
-export type VendorScenarioType = "STRONG" | "BALANCED" | "FLEXIBLE";
-
-/**
- * Structured vendor suggestion
- */
-export interface VendorStructuredSuggestion {
-  scenario: VendorScenarioType;
-  message: string;
-  price: number;
-  paymentTerms: string;
-  deliveryDate: string | null;
-  deliveryDays: number | null;
-  emphasis: VendorSuggestionEmphasis;
-}
-
-/**
- * Vendor suggestions response
- */
-export interface VendorSuggestionsResponse {
-  suggestions: VendorStructuredSuggestion[];
-  hasPMCounterOffer: boolean;
-  vendorQuotePrice: number | null;
-  pmCounterPrice: number | null;
-}
-
-/**
  * Vendor Chat Service - All public API methods (no auth)
  */
 export const vendorChatService = {
@@ -317,30 +284,6 @@ export const vendorChatService = {
     return { data: res.data.data };
   },
 
-  /**
-   * Get vendor suggestions based on PM counter-offer
-   * POST /api/vendor-chat/suggestions
-   *
-   * Returns suggestions from VENDOR perspective:
-   * - STRONG: 15% above PM's counter-offer
-   * - BALANCED: 5% above PM's counter-offer
-   * - FLEXIBLE: Match PM's counter-offer
-   *
-   * Only returns suggestions after PM has made at least one counter-offer.
-   */
-  getSuggestions: async (
-    uniqueToken: string,
-    emphases?: VendorSuggestionEmphasis[]
-  ): Promise<{ data: VendorSuggestionsResponse }> => {
-    const res = await api.post<{
-      message: string;
-      data: VendorSuggestionsResponse;
-    }>(`${VENDOR_CHAT_BASE}/suggestions`, {
-      uniqueToken,
-      emphases,
-    });
-    return { data: res.data.data };
-  },
 };
 
 export default vendorChatService;

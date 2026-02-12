@@ -1,13 +1,10 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import vendorChatService, {
   type VendorDealData,
   type VendorChatMessage,
   type VendorDeal,
-  type VendorStructuredSuggestion,
-  type VendorSuggestionEmphasis,
-  type VendorScenarioType,
 } from "../../services/vendorChat.service";
 
 /**
@@ -154,132 +151,31 @@ const ChatTranscript = ({
 };
 
 /**
- * Scenario type labels and colors
- */
-const SCENARIO_CONFIG: Record<VendorScenarioType, { label: string; bgActive: string; bgInactive: string; text: string }> = {
-  STRONG: {
-    label: "Strong Position",
-    bgActive: "bg-red-100 border-red-400 text-red-800",
-    bgInactive: "bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200",
-    text: "text-red-600",
-  },
-  BALANCED: {
-    label: "Balanced Offer",
-    bgActive: "bg-yellow-100 border-yellow-400 text-yellow-800",
-    bgInactive: "bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200",
-    text: "text-yellow-600",
-  },
-  FLEXIBLE: {
-    label: "Flexible Offer",
-    bgActive: "bg-green-100 border-green-400 text-green-800",
-    bgInactive: "bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200",
-    text: "text-green-600",
-  },
-};
-
-/**
- * Emphasis chip colors
- */
-const EMPHASIS_COLORS: Record<VendorSuggestionEmphasis, { base: string; selected: string }> = {
-  price: {
-    base: "bg-green-100 text-green-800 border-green-300",
-    selected: "bg-green-200 text-green-900 border-green-500 ring-2 ring-green-400 scale-105",
-  },
-  terms: {
-    base: "bg-blue-100 text-blue-800 border-blue-300",
-    selected: "bg-blue-200 text-blue-900 border-blue-500 ring-2 ring-blue-400 scale-105",
-  },
-  delivery: {
-    base: "bg-purple-100 text-purple-800 border-purple-300",
-    selected: "bg-purple-200 text-purple-900 border-purple-500 ring-2 ring-purple-400 scale-105",
-  },
-};
-
-/**
- * Composer Component with Vendor Suggestions
+ * Simple Composer Component - Text input and send button only
  */
 const Composer = ({
   onSend,
   disabled,
   sending,
-  uniqueToken,
-  hasPMResponse,
 }: {
   onSend: (content: string) => void;
   disabled: boolean;
   sending: boolean;
-  uniqueToken: string;
-  hasPMResponse: boolean;
 }) => {
   const [input, setInput] = useState("");
-  const [selectedScenario, setSelectedScenario] = useState<VendorScenarioType>("BALANCED");
-  const [selectedEmphases, setSelectedEmphases] = useState<Set<VendorSuggestionEmphasis>>(new Set());
-  const [suggestions, setSuggestions] = useState<Record<VendorScenarioType, VendorStructuredSuggestion[]>>({
-    STRONG: [] as VendorStructuredSuggestion[],
-    BALANCED: [] as VendorStructuredSuggestion[],
-    FLEXIBLE: [] as VendorStructuredSuggestion[],
-  });
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
-  const [hasPMCounterOffer, setHasPMCounterOffer] = useState(false);
-  const [priceInfo, setPriceInfo] = useState<{ vendorQuotePrice: number | null; pmCounterPrice: number | null }>({
-    vendorQuotePrice: null,
-    pmCounterPrice: null,
-  });
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Fetch suggestions when component mounts or emphases change
-  const fetchSuggestions = useCallback(async () => {
-    if (!uniqueToken || !hasPMResponse) return;
-
-    try {
-      setLoadingSuggestions(true);
-      const emphases = selectedEmphases.size > 0 ? Array.from(selectedEmphases) : undefined;
-      const response = await vendorChatService.getSuggestions(uniqueToken, emphases);
-
-      // Backend returns suggestions as { STRONG: [...], BALANCED: [...], FLEXIBLE: [...] }
-      const suggestionsData = (response.data as any).suggestions;
-      if (suggestionsData && typeof suggestionsData === 'object' && !Array.isArray(suggestionsData)) {
-        setSuggestions({
-          STRONG: Array.isArray(suggestionsData.STRONG) ? suggestionsData.STRONG : [],
-          BALANCED: Array.isArray(suggestionsData.BALANCED) ? suggestionsData.BALANCED : [],
-          FLEXIBLE: Array.isArray(suggestionsData.FLEXIBLE) ? suggestionsData.FLEXIBLE : [],
-        });
-      } else {
-        setSuggestions({ STRONG: [], BALANCED: [], FLEXIBLE: [] });
-      }
-      setHasPMCounterOffer(response.data.hasPMCounterOffer ?? false);
-      setPriceInfo({
-        vendorQuotePrice: response.data.vendorQuotePrice,
-        pmCounterPrice: response.data.pmCounterPrice,
-      });
-    } catch (error) {
-      console.error("Error fetching suggestions:", error);
-    } finally {
-      setLoadingSuggestions(false);
-    }
-  }, [uniqueToken, hasPMResponse, selectedEmphases]);
-
+  // Auto-expand textarea
   useEffect(() => {
-    fetchSuggestions();
-  }, [fetchSuggestions]);
-
-  // Toggle emphasis selection
-  const toggleEmphasis = (emphasis: VendorSuggestionEmphasis) => {
-    setSelectedEmphases((prev) => {
-      const next = new Set(prev);
-      if (next.has(emphasis)) {
-        next.delete(emphasis);
-      } else {
-        next.add(emphasis);
-      }
-      return next;
-    });
-  };
-
-  // Get suggestions for selected scenario
-  const filteredSuggestions = useMemo(() => {
-    const scenarioSuggestions = suggestions[selectedScenario];
-    return Array.isArray(scenarioSuggestions) ? scenarioSuggestions : [];
-  }, [suggestions, selectedScenario]);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      const lineHeight = 24;
+      const minHeight = lineHeight * 1;
+      const maxHeight = lineHeight * 5;
+      const newHeight = Math.min(Math.max(textareaRef.current.scrollHeight, minHeight), maxHeight);
+      textareaRef.current.style.height = `${newHeight}px`;
+    }
+  }, [input]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -295,124 +191,20 @@ const Composer = ({
     }
   };
 
-  const handleSuggestionClick = (message: string) => {
-    if (disabled || sending) return;
-    onSend(message);
-  };
-
   return (
     <div className="border-t border-gray-200 p-4 bg-white">
-      {/* Vendor Suggestions Section - Only show if PM has responded */}
-      {hasPMResponse && hasPMCounterOffer && (
-        <div className="mb-4 space-y-3">
-          {/* Price Context */}
-          {priceInfo.vendorQuotePrice && priceInfo.pmCounterPrice && (
-            <div className="text-xs text-gray-500 flex items-center gap-4">
-              <span>Your quote: <strong className="text-gray-700">${priceInfo.vendorQuotePrice.toFixed(2)}</strong></span>
-              <span className="text-gray-300">|</span>
-              <span>PM counter: <strong className="text-blue-600">${priceInfo.pmCounterPrice.toFixed(2)}</strong></span>
-            </div>
-          )}
-
-          {/* Scenario Selector */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-600">Quick Offers:</span>
-            {(Object.keys(SCENARIO_CONFIG) as VendorScenarioType[]).map((scenario) => {
-              const config = SCENARIO_CONFIG[scenario];
-              const isActive = selectedScenario === scenario;
-              return (
-                <button
-                  key={scenario}
-                  onClick={() => setSelectedScenario(scenario)}
-                  disabled={sending}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded border transition-colors ${
-                    isActive ? config.bgActive : config.bgInactive
-                  }`}
-                >
-                  {config.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Emphasis Chips - Interactive */}
-          <div className="flex flex-wrap gap-2">
-            {(["price", "terms", "delivery"] as VendorSuggestionEmphasis[]).map((emphasis) => {
-              const isSelected = selectedEmphases.has(emphasis);
-              const colors = EMPHASIS_COLORS[emphasis];
-              return (
-                <button
-                  key={emphasis}
-                  onClick={() => toggleEmphasis(emphasis)}
-                  className={`px-2.5 py-1 text-xs font-medium rounded-full border cursor-pointer transition-all duration-200 capitalize ${
-                    isSelected ? colors.selected : colors.base
-                  }`}
-                  title={isSelected ? `Remove ${emphasis} filter` : `Prioritize ${emphasis}`}
-                >
-                  {emphasis}
-                </button>
-              );
-            })}
-            {selectedEmphases.size > 0 && (
-              <span className="text-xs text-gray-500 flex items-center ml-2">
-                Filtering by: {Array.from(selectedEmphases).join(", ")}
-              </span>
-            )}
-          </div>
-
-          {/* Suggestion Chips */}
-          <div className="flex flex-wrap gap-2">
-            {loadingSuggestions ? (
-              // Loading skeleton
-              <>
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="px-3 py-1.5 bg-gray-100 border border-gray-200 rounded h-8 min-w-[200px] max-w-[400px]"
-                  >
-                    <div className="h-3 bg-gray-300 rounded animate-pulse w-full" />
-                  </div>
-                ))}
-              </>
-            ) : filteredSuggestions.length > 0 ? (
-              filteredSuggestions.map((suggestion, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSuggestionClick(suggestion.message)}
-                  disabled={sending || disabled}
-                  className="px-3 py-1.5 text-xs border rounded transition-all duration-200 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed h-8 text-left overflow-hidden max-w-[500px]"
-                  title={suggestion.message}
-                >
-                  <span className="block truncate">
-                    {suggestion.message.length > 80 ? suggestion.message.slice(0, 77) + "..." : suggestion.message}
-                  </span>
-                </button>
-              ))
-            ) : (
-              <span className="text-xs text-gray-500">No suggestions available for this scenario</span>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* No PM response yet - show hint */}
-      {hasPMResponse && !hasPMCounterOffer && (
-        <div className="mb-3 text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded">
-          Suggestions will appear after the PM makes a counter-offer.
-        </div>
-      )}
-
-      {/* Input Area */}
       <form onSubmit={handleSubmit}>
         <div className="flex items-end space-x-3">
           <textarea
+            ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={disabled || sending}
-            placeholder={disabled ? "Negotiation has ended" : "Type your message..."}
-            className="flex-1 border border-gray-300 rounded-lg px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-            rows={2}
+            placeholder={disabled ? "Negotiation has ended" : "Type your offer to the buyer..."}
+            className="flex-1 border border-gray-300 rounded-lg px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed overflow-y-auto"
+            rows={1}
+            style={{ minHeight: '24px', maxHeight: '120px' }}
           />
           <button
             type="submit"
@@ -710,8 +502,6 @@ export default function VendorChat() {
             onSend={handleSend}
             disabled={!canNegotiate}
             sending={sending}
-            uniqueToken={uniqueToken || ""}
-            hasPMResponse={messages.some((m) => m.role === "ACCORDO")}
           />
         ) : (
           <DealOutcome status={deal.status} />
