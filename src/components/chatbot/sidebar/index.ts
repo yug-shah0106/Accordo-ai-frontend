@@ -54,6 +54,11 @@ export {
   getParameterColor,
 } from "./ParameterWeightsChart";
 
+// Convergence Chart (Adaptive Negotiation Engine)
+export {
+  default as ConvergenceChart,
+} from "./ConvergenceChart";
+
 // Parameter Formatter Utilities
 export {
   formatParameterValue,

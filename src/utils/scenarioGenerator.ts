@@ -126,7 +126,7 @@ function generateNegotiationText(
  * Vendors want HIGHER prices (profit maximization).
  *
  * Scenarios use the following logic:
- * - HARD (Strong Position): HIGHEST price - aggressive vendor stance, maximum profit
+ * - HARD (Strong Position): HIGHEST price - strong but realistic vendor stance
  * - MEDIUM (Balanced Offer): MID-RANGE price - fair deal, moderate profit
  * - SOFT (Flexible Offer): LOWEST price - near PM's target, quick close
  *
@@ -135,9 +135,9 @@ function generateNegotiationText(
  * - maxAcceptablePrice = PM's ceiling (PM walks away above this)
  *
  * Vendor pricing (relative to PM's range):
- * - HARD: 15% above PM's max (aggressive, risks rejection)
- * - MEDIUM: At PM's max (competitive but profitable)
- * - SOFT: Near PM's target (quick close, lower profit)
+ * - HARD: 10% below PM's max (strong stance, likely to negotiate)
+ * - MEDIUM: 50% of range (midpoint between target and max)
+ * - SOFT: 25% of range (near PM's target, quick close)
  *
  * For payment terms (vendor prefers shorter terms = faster payment):
  * - HARD: Min days (shortest terms, best for vendor cash flow)
@@ -177,16 +177,16 @@ export function generateScenarioMessages(
   // Adjust slightly per round for variety
   const roundAdjustment = currentRound * 0.01; // 1% adjustment per round
 
-  // HARD (Strong Position): 15% above PM's max - aggressive vendor stance
-  // Example: If PM's max is $100, HARD price is ~$115
-  const hardPrice = Math.round((maxPrice * (1.15 - roundAdjustment)) * 100) / 100;
+  // HARD (Strong Position): 10% below PM's max - strong but realistic vendor stance
+  // Example: If PM's max is $100, HARD price is ~$90
+  const hardPrice = Math.round((maxPrice * (0.90 - roundAdjustment)) * 100) / 100;
 
-  // MEDIUM (Balanced Offer): At or slightly above PM's max - fair middle ground
-  // Example: If PM's max is $100 and target is $90, MEDIUM is ~$97.50 (75% of range)
-  const mediumPrice = Math.round((targetPrice + priceRange * (0.75 - roundAdjustment)) * 100) / 100;
+  // MEDIUM (Balanced Offer): 50% of range from target - fair middle ground
+  // Example: If PM's target is $80 and max is $100, MEDIUM is ~$90 (midpoint)
+  const mediumPrice = Math.round((targetPrice + priceRange * (0.50 - roundAdjustment)) * 100) / 100;
 
   // SOFT (Flexible Offer): Near PM's target - quick close, lower vendor profit
-  // Example: If PM's target is $90 and max is $100, SOFT is ~$92.50 (25% of range)
+  // Example: If PM's target is $80 and max is $100, SOFT is ~$85 (25% of range)
   const softPrice = Math.round((targetPrice + priceRange * (0.25 - roundAdjustment)) * 100) / 100;
 
   // VENDOR PERSPECTIVE: Shorter payment terms = better for vendor (faster cash)
@@ -436,10 +436,10 @@ export function generateEmphasisAwareFallback(
   const priceRange = priceMax - priceTarget;
 
   // VENDOR PERSPECTIVE: Calculate scenario base prices
-  // HARD: 15% above PM's max (highest price - maximum profit for vendor)
-  const hardBasePrice = Math.round(priceMax * 1.15 * 100) / 100;
-  // MEDIUM: 75% of range from target (near PM's max - balanced deal)
-  const mediumBasePrice = Math.round((priceTarget + priceRange * 0.75) * 100) / 100;
+  // HARD: 10% below PM's max (highest price - strong but realistic stance)
+  const hardBasePrice = Math.round(priceMax * 0.90 * 100) / 100;
+  // MEDIUM: 50% of range from target (midpoint - balanced deal)
+  const mediumBasePrice = Math.round((priceTarget + priceRange * 0.50) * 100) / 100;
   // SOFT: 25% of range from target (near PM's target - quick close)
   const softBasePrice = Math.round((priceTarget + priceRange * 0.25) * 100) / 100;
 
@@ -607,7 +607,7 @@ export function generateEmphasisAwareFallback(
   // Helper: Generate 4 MULTI-EMPHASIS (blended) variations
   const generateMultiEmphasisVariations = (
     basePrice: number,
-    terms: string,
+    _terms: string,
     scenarioType: 'HARD' | 'MEDIUM' | 'SOFT' | 'WALK_AWAY'
   ): StructuredFallbackSuggestion[] => {
     const emphasisList = emphasisArray.join(' + ');
@@ -712,12 +712,12 @@ export function generateEmphasisAwareFallback(
   };
 
   // VENDOR PERSPECTIVE: Use calculated vendor prices
-  // HARD = highest price (aggressive), MEDIUM = mid-range, SOFT = lowest (quick close)
+  // HARD = highest price (strong stance), MEDIUM = mid-range, SOFT = lowest (quick close)
   return {
     HARD: generateForScenario('HARD', hardBasePrice, idealTerms),
     MEDIUM: generateForScenario('MEDIUM', mediumBasePrice, acceptableTerms),
     SOFT: generateForScenario('SOFT', softBasePrice, flexibleTerms),
-    WALK_AWAY: generateForScenario('WALK_AWAY', priceMax * 1.25, idealTerms), // 25% above max - walk away price
+    WALK_AWAY: generateForScenario('WALK_AWAY', priceMax, idealTerms), // At max - vendor's absolute limit
   };
 }
 
@@ -727,15 +727,15 @@ export function generateEmphasisAwareFallback(
  * UPDATED January 2026: Now accepts wizard config to calculate vendor prices
  * based on PM's target and max acceptable prices.
  *
- * Vendor scenarios are ABOVE PM's max price (vendors want profit):
- * - HARD: 10-25% above PM's max (aggressive, risks rejection)
- * - MEDIUM: 5-15% above PM's max (competitive but profitable)
- * - SOFT: At or near PM's max (quick close, likely to be accepted)
+ * Vendor scenarios relative to PM's price range:
+ * - HARD: 10% below PM's max (strong but realistic stance)
+ * - MEDIUM: 50% of range from target (midpoint, balanced deal)
+ * - SOFT: 25% of range from target (near PM's target, quick close)
  *
- * User's expected behavior (for Target=$90, Max=$100):
- * - HARD: $110-$125 (above PM's max, high profit margin)
- * - MEDIUM: $95-$100 (near PM's max, balanced)
- * - SOFT: $90-$95 (near PM's target, quick close)
+ * User's expected behavior (for Target=$80, Max=$100):
+ * - HARD: $90 (10% below max, strong position)
+ * - MEDIUM: $90 (midpoint of $80-$100 range)
+ * - SOFT: $85 (25% of range from target, quick close)
  */
 export function generateVendorFallbackScenarios(
   pmLastOffer: {
@@ -762,16 +762,16 @@ export function generateVendorFallbackScenarios(
   const priceRange = pmMaxPrice - pmTargetPrice;
 
   // Calculate vendor scenario prices based on PM's target/max
-  // HARD: 10-25% above PM's max - aggressive vendor position
-  // For Target=$90, Max=$100 -> HARD ~ $117.50 (17.5% above max)
-  const hardPrice = Math.round(pmMaxPrice * 1.175 * 100) / 100;
+  // HARD: 10% below PM's max - strong but realistic vendor position
+  // For Target=$80, Max=$100 -> HARD ~ $90 (10% below max)
+  const hardPrice = Math.round(pmMaxPrice * 0.90 * 100) / 100;
 
-  // MEDIUM: At or near PM's max - balanced approach
-  // For Target=$90, Max=$100 -> MEDIUM ~ $97.50 (75% of range from target)
-  const mediumPrice = Math.round((pmTargetPrice + priceRange * 0.75) * 100) / 100;
+  // MEDIUM: 50% of range from target - balanced approach (midpoint)
+  // For Target=$80, Max=$100 -> MEDIUM ~ $90 (midpoint)
+  const mediumPrice = Math.round((pmTargetPrice + priceRange * 0.50) * 100) / 100;
 
   // SOFT: Near PM's target - quick close
-  // For Target=$90, Max=$100 -> SOFT ~ $92.50 (25% of range from target)
+  // For Target=$80, Max=$100 -> SOFT ~ $85 (25% of range from target)
   const softPrice = Math.round((pmTargetPrice + priceRange * 0.25) * 100) / 100;
 
   // Use PM's last offer if available, otherwise use wizard config values

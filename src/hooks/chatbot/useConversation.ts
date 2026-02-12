@@ -290,7 +290,7 @@ export function useConversation(
         const {
           deal: updatedDeal,
           messages: updatedMessages,
-        } = response.data;
+        } = response;
 
         // Update state from response
         if (updatedDeal) {

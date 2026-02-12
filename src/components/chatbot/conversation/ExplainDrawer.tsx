@@ -11,12 +11,16 @@ import chatbotService from '../../../services/chatbot.service';
 import type { Explainability } from '../../../types';
 
 interface ExplainDrawerProps {
+  rfqId: number;
+  vendorId: number;
   dealId: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function ExplainDrawer({ dealId, isOpen, onClose }: ExplainDrawerProps) {
+export default function ExplainDrawer({ rfqId, vendorId, dealId, isOpen, onClose }: ExplainDrawerProps) {
+  // Build DealContext for service calls
+  const ctx = { rfqId, vendorId, dealId };
   const [explainability, setExplainability] = useState<Explainability | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -30,7 +34,7 @@ export default function ExplainDrawer({ dealId, isOpen, onClose }: ExplainDrawer
   const loadExplainability = async (): Promise<void> => {
     try {
       setLoading(true);
-      const res = await chatbotService.getConversationExplainability(dealId);
+      const res = await chatbotService.getExplainability(ctx);
       setExplainability(res.data?.explainability || null);
     } catch (err) {
       // Error loading explainability - component will show empty state

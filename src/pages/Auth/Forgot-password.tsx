@@ -23,7 +23,7 @@ export default function ForgotPassword() {
 
   const onSubmit = async (data: ForgotPasswordFormData): Promise<void> => {
     try {
-      const response = await api.post("/auth/forgot-password", data);
+      await api.post("/auth/forgot-password", data);
 
       navigate("/verifyOtp", {
         state: {

@@ -1,26 +1,24 @@
 import { useState } from "react";
 import { AiFillProject } from "react-icons/ai";
-import { VscEdit, VscSettings } from "react-icons/vsc";
-import { PiPlusSquareBold } from "react-icons/pi";
-import { Link } from "react-router-dom";
+import { VscEdit } from "react-icons/vsc";
 import Pagination from "../Pagination";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { FaCaretDown, FaPlus, FaRegEye } from "react-icons/fa";
 import useFetchData from "../../hooks/useFetchData";
-import toast from "react-hot-toast";
 import Table from "../Table";
 
 const Test = () => {
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [expandedRow, setExpandedRow] = useState(null);
+  const [_isDeleteModalOpen, _setIsDeleteModalOpen] = useState(false);
+  const [expandedRow, setExpandedRow] = useState<number | null>(null);
   const companyId = localStorage.getItem("%companyId%");
 
-  const columns = [
-    { header: "ID", accessor: "projectId" },
-    { header: "Name", accessor: "projectName" },
-    { header: "Type", accessor: "typeOfProject" },
-    { header: "Tenure", accessor: "tenureInDays" },
-  ];
+  // Columns definition (unused but kept for reference)
+  // const _columns = [
+  //   { header: "ID", accessor: "projectId" },
+  //   { header: "Name", accessor: "projectName" },
+  //   { header: "Type", accessor: "typeOfProject" },
+  //   { header: "Tenure", accessor: "tenureInDays" },
+  // ];
 
   const Rcolumns = [
     {
@@ -62,89 +60,89 @@ const Test = () => {
 
   const actions = [
     {
-      type: "link",
+      type: "link" as const,
       label: "View Contracts",
       icon: <FaRegEye />,
-      link: (row) => `/project-management/requisition/contract`,
+      link: (_row: any) => `/project-management/requisition/contract`,
       state: "whole",
     },
     {
-      type: "link",
+      type: "link" as const,
       label: "Add Vendor",
       icon: <FaPlus />,
-      link: (row) => `/add-vendor/${row.Id}`,
+      link: (row: any) => `/add-vendor/${row.Id}`,
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "Create Bench Mark",
       icon: <FaPlus />,
-      condition: (row) => {
+      condition: (row: any) => {
         if (row.status === "Benchmarked") {
           return false;
         }
         return true;
       },
-      onClick: (row) => {
-        handleCreateBenchMark(row);
+      onClick: (_row: any) => {
+        // handleCreateBenchMark(row);
       },
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "View Bench Mark",
       icon: <FaRegEye />,
-      condition: (row) => {
+      condition: (row: any) => {
         if (row.status === "Benchmarked") {
           return true;
         }
         return false;
       },
-      onClick: (row) => {
-        setBenchMarkModal(row);
+      onClick: (_row: any) => {
+        // setBenchMarkModal(row);
       },
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "Cancel Requisition",
       icon: <RiDeleteBin5Line />,
-      onClick: (row) => {
-        setIsModal(row.id);
+      onClick: (_row: any) => {
+        // setIsModal(row.id);
       },
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "View Details",
       icon: <FaRegEye />,
-      onClick: (row) => {
-        setSelectedProject(row);
-        setIsSidebarOpen(row);
+      onClick: (_row: any) => {
+        // setSelectedProject(row);
+        // setIsSidebarOpen(row);
       },
     },
     {
-      type: "link",
+      type: "link" as const,
       label: "Edit Details",
       icon: <VscEdit />,
-      link: (row) => `/requisition-management/edit-requisition/${row.id}`,
+      link: (row: any) => `/requisition-management/edit-requisition/${row.id}`,
     },
   ];
 
   const {
     data: requisitions,
     //loading,
-    error,
+    error: _error,
     // totalCount,
     // page,
     //  setPage,
     // limit,
-    setSearch,
+    setSearch: _setSearch,
     // filter,
-    setFilters,
-    totalDoc,
-    refetch,
+    setFilters: _setFilters,
+    totalDoc: _totalDoc,
+    refetch: _refetch,
   } = useFetchData(`/requisition/get-all?companyid=${companyId}`, 10);
 
   const { data: projects, loading, page, setPage, limit, totalCount } = useFetchData("/project/get-all", 10);
 
-  const toggleAccordion = (id) => {
+  const toggleAccordion = (id: number) => {
     setExpandedRow(expandedRow === id ? null : id);
   };
 
@@ -156,8 +154,8 @@ const Test = () => {
         </h1>
       </div>
 
-      {projects.map((project, i) => (
-        <div key={i} className="rounded-md mb-2">{console.log({ data: project.projectId })}
+      {projects.map((project: any, i: number) => (
+        <div key={i} className="rounded-md mb-2">
           <div
             className="flex justify-between items-center rounded-md pt-4 px-4 pb-0 border cursor-pointer"
             onClick={() => toggleAccordion(i)}
@@ -180,7 +178,7 @@ const Test = () => {
         </div>
       ))}
 
-      <Pagination currentPage={page} totalPages={totalCount} onPageChange={setPage} limit={limit} />
+      <Pagination currentPage={page} totalPages={totalCount} onPageChange={setPage} limit={limit} totalDoc={0} />
     </div>
   );
 };

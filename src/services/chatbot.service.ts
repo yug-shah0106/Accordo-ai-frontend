@@ -334,6 +334,42 @@ export const chatbotService = {
   },
 
   /**
+   * Get behavioral analysis data for a deal (Adaptive Negotiation Engine)
+   * GET /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/behavioral
+   */
+  getBehavioralData: async (
+    ctx: DealContext
+  ): Promise<{
+    data: {
+      momentum: number;
+      strategy: string;
+      convergenceRate: number;
+      concessionVelocity: number;
+      isStalling: boolean;
+      isConverging: boolean;
+      isDiverging: boolean;
+      latestSentiment: string;
+      roundHistory: Array<{
+        round: number;
+        vendorPrice: number | null;
+        pmCounter: number | null;
+        gap: number | null;
+        utility: number | null;
+      }>;
+      dynamicRounds: {
+        softMax: number;
+        hardMax: number;
+        currentRound: number;
+        extendLikely: boolean;
+        reason: string;
+      } | null;
+    };
+  }> => {
+    const res = await authApi.get(buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'behavioral'));
+    return res.data;
+  },
+
+  /**
    * Get deal summary for modal display
    * GET /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/summary
    */

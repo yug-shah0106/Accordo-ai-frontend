@@ -2,8 +2,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
 import SuccessMessage from "./components/vendor/SuccessMessage";
 import VerifyOtp from "./components/vendor/VerifyOtp";
-import Wireframe from "./pages/wireframe";
 import SignUp from "./pages/Auth/SignUp";
+import AuthPage from "./pages/Auth/AuthPage";
+import { OnboardingPage } from "./pages/Onboarding";
+import VendorChat from "./pages/vendorChat/VendorChat";
 import Layout from "./Layout/Auth";
 import DashBoardLayout from "./Layout/DashBoardLayout";
 import logo from "./assets/logo.png";
@@ -24,7 +26,7 @@ import VendorContact from "./pages/vendorContract/VendorContract";
 import HomePage from "./components/LandingPages/HomePage";
 import RequisitionsManagement from "./components/vendor/RequisitionsManagement";
 import VendorManagement from "./components/vendor/VendorManagement";
-import AddVendor from "./components/vendor/AddVendor";
+import VendorFormContainer from "./components/VendorForm/VendorFormContainer";
 import PoManagement from "./components/po/PoManagement";
 import UserInfo from "./components/settings/UserInfo";
 import CreateUserForm from "./components/user/AddUser";
@@ -58,7 +60,8 @@ function App() {
       <Toaster />
       <BrowserRouter>
         <Routes>
-          <Route path="/vendor-chat" element={<Wireframe />} />
+          {/* Public vendor chat route (no auth required) */}
+          <Route path="/vendor-chat/:uniqueToken" element={<VendorChat />} />
           <Route path="/" element={<HomePage />} />
 
           <Route
@@ -69,6 +72,16 @@ function App() {
               </Layout>
             }
           />
+          <Route
+            path="/auth"
+            element={
+              <Layout logo={logo}>
+                <AuthPage />
+              </Layout>
+            }
+          />
+          <Route path="/onboarding" element={<OnboardingPage />} />
+          {/* Legacy routes - redirect to /auth */}
           <Route
             path="/sign-in"
             element={
@@ -181,9 +194,9 @@ function App() {
             {/* <Route path="create-project" element={<CreateProjectForm />} /> */}
             {/* <Route path="editproductform/:id" element={<CreateProjectForm />} /> */}
             {/* <Route path="requisition" element={<ViewRequisition />} /> */}
-            <Route path="create-vendor/" element={<AddVendor />} />
-            <Route path="edit-vendor/:id" element={<AddVendor />} />
-            <Route path="add-vendor/:id" element={<AddVendor />} />
+            <Route path="create-vendor/" element={<VendorFormContainer />} />
+            <Route path="edit-vendor/:id" element={<VendorFormContainer />} />
+            <Route path="add-vendor/:id" element={<VendorFormContainer />} />
             {/* <Route path="edit-requisition/:id" element={<AddRequisition />} /> */}
             {/* <Route path="requisition/contract" element={<Contracts />} /> */}
           </Route>

@@ -16,15 +16,15 @@ import Modal from "../Modal";
 import Filter from "../Filter";
 
 const ViewRequisition = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<any>(false);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
   const navigate = useNavigate();
   const { state } = useLocation();
   console.log({ state });
-  const [isModal, setIsModal] = useState(false);
-  const [benchmarkModal, setBenchMarkModal] = useState(false);
+  const [isModal, setIsModal] = useState<any>(false);
+  const [benchmarkModal, setBenchMarkModal] = useState<any>(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [selectedFilters, setSelectedFilters] = useState([
+  const [selectedFilters, setSelectedFilters] = useState<any>([
     {
       moduleName: "Requisition",
       filterBy: "totalVendors",
@@ -88,7 +88,7 @@ const ViewRequisition = () => {
   const {
     data: requisitions,
     loading,
-    error,
+    error: _error,
     totalCount,
     page,
     setPage,
@@ -105,26 +105,26 @@ const ViewRequisition = () => {
 
 
 
-  const handleDeleteModalConfirm = async (id) => {
+  const handleDeleteModalConfirm = async (id: any) => {
     try {
       await authApi.delete(`/requisition/delete/${id}`);
       await refetch();
       toast.success("Deleted confirmation");
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message || "Something went wrong");
     }
   };
   const handleCloseModal = async () => {
     setIsModal(false);
   };
-  const handleCreateBenchMark = async (row) => {
+  const handleCreateBenchMark = async (row: any) => {
     try {
       await authApi.post(`/benchmark/create`, {
         requisitionId: row?.id,
       });
       toast.success("Bench Mark Created Successfully");
       await refetch();
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message || "Something went wrong");
     }
   };
@@ -169,86 +169,86 @@ const ViewRequisition = () => {
 
   const actions = [
     {
-      type: "link",
+      type: "link" as const,
       label: "View Contracts",
       icon: <FaRegEye />,
-      link: (row) => `/requisition-management/requisition/contract`,
+      link: (_row: any) => `/requisition-management/requisition/contract`,
       state: "whole",
     },
     {
-      type: "link",
+      type: "link" as const,
       label: "Add Vendor",
       icon: <FaPlus />,
-      link: (row) => `/requisition-management/edit-requisition/${row.id}?redirect=3`,
+      link: (row: any) => `/requisition-management/edit-requisition/${row.id}?redirect=3`,
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "Create Bench Mark",
       icon: <FaPlus />,
-      condition: (row) => {
+      condition: (row: any) => {
         if (row.status === "Benchmarked") {
           return false;
         }
         return true;
       },
-      onClick: (row) => {
+      onClick: (row: any) => {
         handleCreateBenchMark(row);
       },
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "View Bench Mark",
       icon: <FaRegEye />,
-      condition: (row) => {
+      condition: (row: any) => {
         if (row.status === "Benchmarked") {
           return true;
         }
         return false;
       },
-      onClick: (row) => {
+      onClick: (row: any) => {
         setBenchMarkModal(row);
       },
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "Cancel Requisition",
       icon: <RiDeleteBin5Line />,
-      onClick: (row) => {
+      onClick: (row: any) => {
         setIsModal(row.id);
       },
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "View Details",
       icon: <FaRegEye />,
-      onClick: (row) => {
+      onClick: (row: any) => {
         setSelectedProject(row);
         setIsSidebarOpen(row);
       },
     },
     {
-      type: "link",
+      type: "link" as const,
       label: "Edit Details",
       icon: <VscEdit />,
-      link: (row) => `/requisition-management/edit-requisition/${row.id}`,
+      link: (row: any) => `/requisition-management/edit-requisition/${row.id}`,
     },
   ];
 
-  const handleRowClick = (project) => {
+  const handleRowClick = (project: any) => {
 
 
     setSelectedProject(project);
     setIsSidebarOpen(true);
   };
 
-  const applyFilters = (filters) => {
-    const transformedFilters = Object.keys(filters).reduce((acc, key) => {
+  const applyFilters = (filters: any) => {
+    const transformedFilters = Object.keys(filters).reduce((acc: Record<string, any>, key) => {
       const filter = filters[key];
 
       if (filter.controlType === "checkbox" && typeof filter.selected === "object") {
         acc[key] = {
           ...filter,
-          value: Object.keys(filter.selected).filter((key) => filter.selected[key]),
+          value: Object.keys(filter.selected).filter((k) => filter.selected[k]),
         };
       } else {
         acc[key] = filter;
@@ -256,11 +256,11 @@ const ViewRequisition = () => {
 
       return acc;
     }, {});
-    const apiFilters = Object.values(filters).map(filter => {
+    const apiFilters = Object.values(filters).map((filter: any) => {
       if (filter.controlType === "checkbox" && typeof filter.selected === "object") {
         return {
           ...filter,
-          value: Object.keys(filter.selected).filter(key => filter.selected[key]),
+          value: Object.keys(filter.selected).filter((k: string) => filter.selected[k]),
           selected: undefined,
         };
       }
@@ -275,7 +275,7 @@ const ViewRequisition = () => {
       return filter;
     });
 
-    setSelectedFilters(transformedFilters)
+    setSelectedFilters(transformedFilters as any)
     setFilters(JSON.stringify(apiFilters));
     setIsFilterModalOpen(false);
   };
@@ -402,7 +402,7 @@ const ViewRequisition = () => {
               <div className="space-y-2">
                 <p>Vendor</p>
                 <ul className="list-disc">
-                  {selectedProject.Contract.map((vendor) => (
+                  {selectedProject.Contract.map((vendor: any) => (
                     <li key={vendor?.Vendor?.id}>{vendor?.Vendor?.name}</li>
                   ))}
                 </ul>
@@ -446,7 +446,7 @@ const ViewRequisition = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedProject?.RequisitionProduct?.map((product, idx) => (
+                  {selectedProject?.RequisitionProduct?.map((product: any, idx: number) => (
                     <tr
                       key={product.id}
                       className={`border ${idx % 2 && "bg-gray-100"}`}
@@ -485,7 +485,7 @@ const ViewRequisition = () => {
           <div className="mt-2 pt-2 pb-0">
             <p className="font-medium text-gray-500">Attachments</p>
             <div className="flex gap-4 mt-4">
-              {selectedProject?.RequisitionAttachment?.map((attachment) => (
+              {selectedProject?.RequisitionAttachment?.map((attachment: any) => (
                 <img
                   key={attachment.id}
                   className="h-10 w-10"
@@ -512,10 +512,9 @@ const ViewRequisition = () => {
             handleDeleteModalConfirm(isModal);
             setIsModal(false);
           }}
-          handleClose={handleCloseModal}
-        >
-          Are you sure you want to delete this product?
-        </Modal>
+          onClose={handleCloseModal}
+          body="Are you sure you want to delete this product?"
+        />
       )}
       {benchmarkModal && (
         <Modal
@@ -524,10 +523,10 @@ const ViewRequisition = () => {
           btnsStyle="justify-center"
           showCancelButton={false}
           isDeleteIcon={false}
-          handleClose={() => {
+          onClose={() => {
             setBenchMarkModal(false);
           }}
-          body={JSON.parse(benchmarkModal?.benchmarkResponse)?.FinalBenchmark?.map((i) => {
+          body={JSON.parse(benchmarkModal?.benchmarkResponse)?.FinalBenchmark?.map((i: any) => {
             return (
               <div key={i.id}>
                 <p className="text-black font-bold text-start">
@@ -536,7 +535,7 @@ const ViewRequisition = () => {
               </div>
             );
           })}
-        ></Modal>
+        />
       )}
     </div>
   );

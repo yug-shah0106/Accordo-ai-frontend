@@ -135,12 +135,28 @@ export const step1 = (tenureInDays: number | undefined) =>
 
 
 export const step2 = z.object({
+  totalQuantity: z
+    .union([z.string(), z.number()])
+    .transform((val) => (typeof val === "string" ? parseInt(val, 10) || 0 : val))
+    .refine((val) => Number.isInteger(val) && val >= 0, {
+      message: "Total Quantity must be a non-negative integer",
+    })
+    .optional(),
+
   totalPrice: z
     .union([z.string(), z.number()])
     .transform((val) => (typeof val === "string" ? parseFloat(val) || 0 : val))
     .refine((val) => Number.isFinite(val) && val >= 0, {
-      message: "Total Price must be a positive integer",
+      message: "Total Unit Price must be a positive number",
     }),
+
+  totalMaxPrice: z
+    .union([z.string(), z.number()])
+    .transform((val) => (typeof val === "string" ? parseFloat(val) || 0 : val))
+    .refine((val) => Number.isFinite(val) && val >= 0, {
+      message: "Total Maximum Acceptable Price must be a positive number",
+    })
+    .optional(),
 
   productData: productDataSchema.optional(),
   paymentTerms: z.string().optional(),

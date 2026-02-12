@@ -8,8 +8,13 @@
 import { FiSun, FiMoon } from 'react-icons/fi';
 import { useTheme } from '../../context/ThemeContext';
 
-export default function ThemeToggle({ variant = 'icon', className = '' }) {
-  const { theme, toggleTheme, isDark } = useTheme();
+interface ThemeToggleProps {
+  variant?: 'icon' | 'menu';
+  className?: string;
+}
+
+export default function ThemeToggle({ variant = 'icon', className = '' }: ThemeToggleProps) {
+  const { theme: _theme, toggleTheme, isDark } = useTheme();
 
   if (variant === 'menu') {
     // Menu item variant for sidebar

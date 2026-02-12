@@ -18,6 +18,7 @@ import LineGraphrequisitions from "./Graphs/LineGraphRequisition";
 import BudgetCards from "./BudgetCards";
 import SelectField from "./SelectField";
 import { FiBarChart2 } from "react-icons/fi";
+import OnboardingReminder from "./OnboardingReminder";
 
 interface ChartDataset {
   label: string;
@@ -182,14 +183,18 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="bg-white rounded-lg  shadow-md p-6">
-      <div className="mb-4">
-        <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-          <FiBarChart2 className="text-xl" />
-          Dashboard
-        </h1>
-      </div>
-      <hr />
+    <div className="bg-white rounded-lg shadow-md">
+      {/* Onboarding Reminder Banner */}
+      <OnboardingReminder className="rounded-t-lg" />
+
+      <div className="p-6">
+        <div className="mb-4">
+          <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <FiBarChart2 className="text-xl" />
+            Dashboard
+          </h1>
+        </div>
+        <hr />
 
       <div className="flex justify-between p-6">
         <p className="text-xl font-medium">Overview</p>
@@ -260,6 +265,7 @@ const Dashboard = () => {
         <div className="bg-white border rounded-lg shadow-sm p-6">
           <LineGraphSaving />
         </div>
+      </div>
       </div>
     </div>
   );

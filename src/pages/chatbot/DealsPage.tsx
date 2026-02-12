@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import chatbotService from "../../services/chatbot.service";
-import type { Deal, ListDealsParams, DealContext } from "../../types/chatbot";
+import type { Deal, DealContext } from "../../types/chatbot";
 import { FiArchive, FiPlus } from "react-icons/fi";
 import toast from "react-hot-toast";
 
@@ -33,19 +33,44 @@ export default function DealsPage() {
   const fetchDeals = async (): Promise<void> => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      const params: ListDealsParams = {
-        page,
-        limit: 9, // 3x3 grid = 9 items per page
-        archived: false,
-        deleted: false,
-      };
+      // Fetch all requisitions
+      const reqResponse = await chatbotService.getRequisitionsWithDeals({
+        archived: 'active',
+      });
 
-      const response = await chatbotService.listDeals(params);
-      const responseData: any = response.data;
+      // Flatten deals from all requisitions
+      const allDeals: Deal[] = [];
+      for (const req of reqResponse.data.requisitions || []) {
+        try {
+          const dealsResponse = await chatbotService.getRequisitionDeals(req.id, {
+            archived: 'active',
+          });
+          for (const deal of dealsResponse.data.deals || []) {
+            // Map VendorDealSummary to Deal-like structure
+            allDeals.push({
+              id: deal.dealId,
+              status: deal.status,
+              round: deal.currentRound,
+              requisitionId: req.id,
+              vendorId: deal.vendorId,
+              title: `${deal.vendorName} - ${req.rfqNumber}`,
+            } as Deal);
+          }
+        } catch (err) {
+          console.warn(`Failed to load deals for requisition ${req.id}:`, err);
+        }
+      }
+
+      // Simple pagination (9 items per page)
+      const limit = 9;
+      const start = (page - 1) * limit;
+      const paginatedDeals = allDeals.slice(start, start + limit);
+      const totalPages = Math.ceil(allDeals.length / limit) || 1;
+
       setState((prev) => ({
         ...prev,
-        deals: responseData.data || responseData.deals || [],
-        totalPages: responseData.totalPages || 1,
+        deals: paginatedDeals,
+        totalPages,
         loading: false,
       }));
     } catch (err) {

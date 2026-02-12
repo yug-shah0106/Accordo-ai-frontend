@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo } from "react";
-import { AlertCircle, RotateCcw, Sparkles } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { AlertCircle, RotateCcw, Sparkles, Lock, Unlock } from "lucide-react";
 import type {
   DealWizardStepFour,
   DealWizardStepTwo,
@@ -18,9 +18,10 @@ interface StepFourProps {
 }
 
 // Parameter definitions for display
+// UPDATED Feb 2026: Changed "Target Unit Price" to "Total Target Price"
 const STEP2_PARAMETERS = [
-  { id: "targetUnitPrice", name: "Target Unit Price", source: "step2" as const },
-  { id: "maxAcceptablePrice", name: "Max Acceptable Price", source: "step2" as const },
+  { id: "targetUnitPrice", name: "Total Target Price", source: "step2" as const },
+  { id: "maxAcceptablePrice", name: "Total Max Price", source: "step2" as const },
   { id: "volumeDiscountExpectation", name: "Volume Discount", source: "step2" as const },
   { id: "paymentTermsRange", name: "Payment Terms Range", source: "step2" as const },
   { id: "advancePaymentLimit", name: "Advance Payment Limit", source: "step2" as const },
@@ -60,12 +61,32 @@ const WeightSlider: React.FC<{
   parameterName: string;
   weight: number;
   color: string;
+  isLocked: boolean;
   onChange: (weight: number) => void;
-}> = ({ parameterId: _parameterId, parameterName, weight, color, onChange }) => {
+  onToggleLock: () => void;
+}> = ({ parameterId: _parameterId, parameterName, weight, color, isLocked, onChange, onToggleLock }) => {
   const percentage = weight;
 
   return (
-    <div className="flex items-center gap-4 py-3 px-4 bg-white dark:bg-dark-surface rounded-lg border border-gray-200 dark:border-dark-border hover:border-blue-300 dark:hover:border-blue-600 transition-colors">
+    <div className={`flex items-center gap-4 py-3 px-4 bg-white dark:bg-dark-surface rounded-lg border transition-colors ${
+      isLocked
+        ? 'border-blue-300 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-900/10'
+        : 'border-gray-200 dark:border-dark-border hover:border-blue-300 dark:hover:border-blue-600'
+    }`}>
+      {/* Lock/Unlock button */}
+      <button
+        type="button"
+        onClick={onToggleLock}
+        className={`p-1 rounded transition-colors ${
+          isLocked
+            ? 'text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30'
+            : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+        }`}
+        title={isLocked ? 'Unlock (allow auto-adjustment)' : 'Lock (prevent auto-adjustment)'}
+      >
+        {isLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+      </button>
+
       {/* Color indicator */}
       <div
         className="w-3 h-3 rounded-full flex-shrink-0"
@@ -74,7 +95,7 @@ const WeightSlider: React.FC<{
 
       {/* Parameter name */}
       <div className="w-40 flex-shrink-0">
-        <span className="text-sm font-medium text-gray-700 dark:text-dark-text">
+        <span className={`text-sm font-medium ${isLocked ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-dark-text'}`}>
           {parameterName}
         </span>
       </div>
@@ -111,7 +132,7 @@ const WeightSlider: React.FC<{
       {/* Value display */}
       <div className="w-16 text-center">
         <span
-          className="text-sm font-semibold px-2 py-1 rounded"
+          className={`text-sm font-semibold px-2 py-1 rounded ${isLocked ? 'ring-2 ring-blue-300 dark:ring-blue-600' : ''}`}
           style={{
             backgroundColor: `${color}20`,
             color: color,
@@ -135,6 +156,9 @@ export default function StepFour({
   stepThreeData,
   errors,
 }: StepFourProps) {
+  // Track which parameters are locked (manually adjusted)
+  const [lockedParams, setLockedParams] = useState<Set<string>>(new Set());
+
   // Build list of all parameters based on Steps 2 & 3
   const allParameters = useMemo(() => {
     const params: Array<{ id: string; name: string; source: "step2" | "step3" | "custom" }> = [];
@@ -200,10 +224,25 @@ export default function StepFour({
   };
 
   /**
+   * Toggle lock state for a parameter
+   */
+  const toggleLock = (parameterId: string) => {
+    setLockedParams((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(parameterId)) {
+        newSet.delete(parameterId);
+      } else {
+        newSet.add(parameterId);
+      }
+      return newSet;
+    });
+  };
+
+  /**
    * Auto-adjust weights to maintain 100% total
-   * - Equal adjustment: All other non-zero parameters reduced by the same amount
-   * - Skip zeros: Parameters at 0% stay at 0%
-   * - No minimum: Parameters can go down to 0%
+   * - Only adjusts UNLOCKED parameters (locked ones stay fixed)
+   * - The parameter being adjusted is automatically locked
+   * - Equal adjustment among unlocked non-zero parameters
    * - Real-time: Adjust immediately on slider change
    */
   const handleWeightChange = (parameterId: string, newWeight: number) => {
@@ -217,40 +256,61 @@ export default function StepFour({
     // If no change, do nothing
     if (weightDifference === 0) return;
 
-    // Get all other parameters that can be adjusted (non-zero weights, excluding current)
+    // Auto-lock the parameter being adjusted
+    setLockedParams((prev) => {
+      const newSet = new Set(prev);
+      newSet.add(parameterId);
+      return newSet;
+    });
+
+    // Get all other parameters that can be adjusted:
+    // - Not the current parameter
+    // - Not locked
+    // - Has non-zero weight (or we're trying to increase total)
     const adjustableParams = data.weights.filter(
-      (w) => w.parameterId !== parameterId && w.weight > 0
+      (w) =>
+        w.parameterId !== parameterId &&
+        !lockedParams.has(w.parameterId) &&
+        w.weight > 0
     );
 
     // If there are no adjustable parameters, just update the current one
+    // (total won't be 100, but user needs to unlock something)
     if (adjustableParams.length === 0) {
       const updatedWeights = data.weights.map((w) =>
         w.parameterId === parameterId ? { ...w, weight: newWeight } : w
       );
+      const totalWeight = updatedWeights.reduce((sum, w) => sum + w.weight, 0);
       onChange({
         ...data,
         weights: updatedWeights,
         aiSuggested: false,
-        totalWeight: 100,
+        totalWeight,
       });
       return;
     }
 
-    // Calculate how much each adjustable parameter needs to change (equal distribution)
-    const adjustmentPerParam = weightDifference / adjustableParams.length;
+    // Calculate total weight of adjustable parameters
+    const totalAdjustableWeight = adjustableParams.reduce((sum, w) => sum + w.weight, 0);
 
-    // Apply adjustments
+    // Apply proportional adjustments to unlocked parameters
     let updatedWeights = data.weights.map((w) => {
       if (w.parameterId === parameterId) {
         return { ...w, weight: newWeight };
+      }
+      // Skip locked parameters
+      if (lockedParams.has(w.parameterId)) {
+        return w;
       }
       if (w.weight === 0) {
         // Skip zero-weight parameters
         return w;
       }
-      // Reduce by equal amount, but don't go below 0
-      const adjustedWeight = Math.max(0, w.weight - adjustmentPerParam);
-      return { ...w, weight: Math.round(adjustedWeight * 100) / 100 };
+      // Proportionally adjust based on current weight
+      const proportion = w.weight / totalAdjustableWeight;
+      const adjustment = weightDifference * proportion;
+      const adjustedWeight = Math.max(0, w.weight - adjustment);
+      return { ...w, weight: adjustedWeight };
     });
 
     // Round all weights to integers for cleaner display
@@ -262,12 +322,17 @@ export default function StepFour({
     // Calculate the new total (may not be exactly 100 due to rounding)
     let totalWeight = updatedWeights.reduce((sum, w) => sum + w.weight, 0);
 
-    // Fix any rounding errors by adjusting the largest adjustable parameter
+    // Fix any rounding errors by adjusting the largest unlocked adjustable parameter
     if (totalWeight !== 100) {
       const diff = 100 - totalWeight;
-      // Find the largest adjustable parameter (not the one we just changed)
+      // Find the largest unlocked adjustable parameter (not the one we just changed)
       const sortedAdjustable = updatedWeights
-        .filter((w) => w.parameterId !== parameterId && w.weight > 0)
+        .filter(
+          (w) =>
+            w.parameterId !== parameterId &&
+            !lockedParams.has(w.parameterId) &&
+            w.weight > 0
+        )
         .sort((a, b) => b.weight - a.weight);
 
       if (sortedAdjustable.length > 0) {
@@ -277,8 +342,8 @@ export default function StepFour({
             ? { ...w, weight: Math.max(0, w.weight + diff) }
             : w
         );
+        totalWeight = 100;
       }
-      totalWeight = 100;
     }
 
     onChange({
@@ -290,6 +355,8 @@ export default function StepFour({
   };
 
   const handleResetToDefaults = () => {
+    // Clear all locks when resetting
+    setLockedParams(new Set());
     initializeWeights();
   };
 
@@ -326,7 +393,9 @@ export default function StepFour({
               parameterName={weight.parameterName}
               weight={weight.weight}
               color={weight.color || CHART_COLORS[0]}
+              isLocked={lockedParams.has(weight.parameterId)}
               onChange={(newWeight) => handleWeightChange(weight.parameterId, newWeight)}
+              onToggleLock={() => toggleLock(weight.parameterId)}
             />
           ))}
         </div>
@@ -369,10 +438,18 @@ export default function StepFour({
             <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2">
               How Weights Work
             </h4>
-            <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
+            <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed mb-3">
               Higher weights indicate more important parameters. The AI uses these weights
               to calculate utility scores and make negotiation decisions. Parameters with
               0% weight are ignored during negotiation.
+            </p>
+            <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2">
+              Lock Feature
+            </h4>
+            <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
+              When you adjust a slider, it automatically locks (shown with a lock icon).
+              Locked parameters won't change when you adjust other sliders. Click the
+              lock icon to unlock a parameter and allow it to be auto-adjusted again.
             </p>
           </div>
         </div>

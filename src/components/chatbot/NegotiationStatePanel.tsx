@@ -73,11 +73,11 @@ export default function NegotiationStatePanel({ state }: NegotiationStatePanelPr
         <div className="mt-6 pt-4 border-t border-gray-200">
           <h4 className="text-sm font-semibold text-gray-900 mb-3">Last Vendor Offer</h4>
           <div className="bg-gray-50 rounded-lg pt-4 px-4 pb-0 space-y-2">
-            {state.lastVendorOffer.unit_price !== null && state.lastVendorOffer.unit_price !== undefined && (
+            {(state.lastVendorOffer.total_price ?? state.lastVendorOffer.unit_price) !== null && (state.lastVendorOffer.total_price ?? state.lastVendorOffer.unit_price) !== undefined && (
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Price:</span>
+                <span className="text-sm text-gray-600">Total Price:</span>
                 <span className="text-sm font-medium text-gray-900">
-                  ${state.lastVendorOffer.unit_price}
+                  ${state.lastVendorOffer.total_price ?? state.lastVendorOffer.unit_price}
                 </span>
               </div>
             )}
@@ -98,11 +98,11 @@ export default function NegotiationStatePanel({ state }: NegotiationStatePanelPr
         <div className="mt-4 pt-4 border-t border-gray-200">
           <h4 className="text-sm font-semibold text-gray-900 mb-3">Pending Counter</h4>
           <div className="bg-blue-50 rounded-lg pt-4 px-4 pb-0 space-y-2">
-            {state.pendingCounter.unit_price !== null && state.pendingCounter.unit_price !== undefined && (
+            {(state.pendingCounter.total_price ?? state.pendingCounter.unit_price) !== null && (state.pendingCounter.total_price ?? state.pendingCounter.unit_price) !== undefined && (
               <div className="flex items-center justify-between">
-                <span className="text-sm text-blue-700">Price:</span>
+                <span className="text-sm text-blue-700">Total Price:</span>
                 <span className="text-sm font-medium text-blue-900">
-                  ${state.pendingCounter.unit_price}
+                  ${state.pendingCounter.total_price ?? state.pendingCounter.unit_price}
                 </span>
               </div>
             )}

@@ -30,7 +30,6 @@ import {
   type ScenarioConfig,
   type VendorScenario,
   type OfferChip,
-  type ScenarioFallbackSuggestions,
 } from '../../../utils/scenarioGenerator';
 
 interface ComposerProps {

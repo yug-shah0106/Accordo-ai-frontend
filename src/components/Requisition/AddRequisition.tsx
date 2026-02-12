@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { GoCircle } from "react-icons/go";
-import { IoIosCheckmarkCircle } from "react-icons/io";
 import { IoArrowBackOutline } from "react-icons/io5";
+import { VerticalStepProgress, Step } from "../shared";
 import BasicInformation from "./BasicInformation";
 import ProductDetails from "./ProductDetails";
 import VendorDetails from "./VendorDetails";
@@ -14,7 +13,8 @@ interface Requisition {
   subject?: string;
   category?: string;
   deliveryDate?: string;
-  maximumDeliveryDate?: string;
+  maxDeliveryDate?: string; // Backend uses maxDeliveryDate
+  maximumDeliveryDate?: string; // Keep for backward compatibility
   negotiationClosureDate?: string;
   typeOfCurrency?: string;
   rfqId?: string;
@@ -43,11 +43,32 @@ interface ProjectState {
 const AddRequisition: React.FC = () => {
   const queryParams = new URLSearchParams(window.location.search);
   const redirect = queryParams.get("redirect");
-  const [currentStep, setCurrentStep] = useState<number>(redirect === "3" ? 3 : 1);
+  const { id } = useParams<{ id: string }>();
+
+  // Persist current step in localStorage to survive page refresh
+  const getInitialStep = (): number => {
+    if (redirect === "3") return 3;
+    if (id) {
+      const savedStep = localStorage.getItem(`requisition_step_${id}`);
+      if (savedStep) {
+        const step = parseInt(savedStep, 10);
+        if (step >= 1 && step <= 3) return step;
+      }
+    }
+    return 1;
+  };
+
+  const [currentStep, setCurrentStep] = useState<number>(getInitialStep());
   const [requisition, setRequisition] = useState<Requisition | null>(null);
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
   const { state } = useLocation() as { state: ProjectState };
+
+  // Save current step to localStorage whenever it changes (only for edit mode)
+  useEffect(() => {
+    if (id) {
+      localStorage.setItem(`requisition_step_${id}`, String(currentStep));
+    }
+  }, [currentStep, id]);
 
   const nextStep = () => {
     if (currentStep < 3) setCurrentStep(currentStep + 1);
@@ -55,6 +76,13 @@ const AddRequisition: React.FC = () => {
 
   const prevStep = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
+  };
+
+  const handleStepClick = (stepId: number) => {
+    // Allow navigation to completed steps (previous steps)
+    if (stepId <= currentStep) {
+      setCurrentStep(stepId);
+    }
   };
 
   const fetchRequisitionData = async (requisitionId: string): Promise<void> => {
@@ -75,6 +103,25 @@ const AddRequisition: React.FC = () => {
     }
   }, [id, currentStep]);
 
+  // Define steps for VerticalStepProgress
+  const steps: Step[] = [
+    {
+      id: 1,
+      title: 'Basic Information',
+      description: 'Project and requisition details'
+    },
+    {
+      id: 2,
+      title: 'Product Details',
+      description: 'Products, pricing, and priorities'
+    },
+    {
+      id: 3,
+      title: 'Vendor Details',
+      description: 'Vendor selection and negotiation'
+    },
+  ];
+
   return (
     <div className="flex flex-col min-h-full">
       {/* Sticky Header */}
@@ -92,82 +139,54 @@ const AddRequisition: React.FC = () => {
 
       {/* Form Content */}
       <div className="flex-1 px-8 xl:px-16 pb-6">
-        <div className="flex flex-wrap xl:flex-nowrap pt-4">
-        <div className="xl:w-[20%] h-[20%] mt-4 rounded p-6 border-2 sm:w-full ">
-          <h2 className="text-lg font-semibold border-b-2">Details</h2>
-          <ul className="sm:flex xl:block sm:justify-between">
-            <li
-              className={`py-2 cursor-pointer flex items-center gap-2 ${
-                currentStep > 1 ? "font-bold" : "text-gray-500"
-              }`}
-            >
-              {currentStep > 1 ? (
-                <IoIosCheckmarkCircle className="text-[#009A4F] w-6 h-6 flex-shrink-0" />
-              ) : (
-                <GoCircle className="w-6 h-6 flex-shrink-0" />
-              )}
-              <p className="xl:trancate">Basic Information</p>
-            </li>
-            <li
-              className={`py-2 cursor-pointer flex items-center gap-2 ${
-                currentStep > 2 ? "font-bold" : "text-gray-500"
-              }`}
-            >
-              {currentStep > 2 ? (
-                <IoIosCheckmarkCircle className="text-[#009A4F] font-normal w-6 h-6 flex-shrink-0" />
-              ) : (
-                <GoCircle className="w-6 h-6 flex-shrink-0" />
-              )}
-              <p>Product Details</p>
-            </li>
-            <li
-              className={`py-2 cursor-pointer flex items-center gap-2 ${
-                currentStep >= 3 ? "font-bold" : "text-gray-500"
-              }`}
-            >
-              {currentStep > 3 ? (
-                <IoIosCheckmarkCircle className="text-[#009A4F] w-6 h-6 flex-shrink-0" />
-              ) : (
-                <GoCircle className="w-6 h-6 flex-shrink-0" />
-              )}
-              <p>Vendor Details</p>
-            </li>
-          </ul>
-        </div>
+        <div className="flex flex-wrap xl:flex-nowrap pt-4 gap-6">
+          {/* Step Progress Sidebar */}
+          <div className="xl:w-[20%] w-full">
+            <div className="h-fit mt-4 rounded p-6 border-2 bg-white">
+              <h2 className="text-lg font-semibold border-b-2 pb-2 mb-4">Details</h2>
+              <VerticalStepProgress
+                steps={steps}
+                currentStep={currentStep}
+                onStepClick={handleStepClick}
+                allowNavigation={true}
+              />
+            </div>
+          </div>
 
-        <div className="w-full p-4">
-          {currentStep === 1 && (
-            <BasicInformation
-              currentStep={currentStep}
-              nextStep={nextStep}
-              projectId={state}
-              requisitionId={id ?? requisition?.id ?? ""}
-              requisition={requisition}
-              setRequisition={setRequisition}
-            />
-          )}
-          {currentStep === 2 && (
-            <ProductDetails
-              currentStep={currentStep}
-              prevStep={prevStep}
-              nextStep={nextStep}
-              requisitionId={id ?? requisition?.id ?? ""}
-              requisition={requisition}
-              setRequisition={setRequisition}
-            />
-          )}
-          {currentStep === 3 && (
-            <VendorDetails
-              currentStep={currentStep}
-              prevStep={prevStep}
-              nextStep={nextStep}
-              requisition={requisition}
-              requisitionId={id ?? requisition?.id ?? ""}
-            />
-          )}
+          {/* Step Content */}
+          <div className="flex-1 p-4">
+            {currentStep === 1 && (
+              <BasicInformation
+                currentStep={currentStep}
+                nextStep={nextStep}
+                projectId={state}
+                requisitionId={id ?? requisition?.id ?? ""}
+                requisition={requisition as any}
+                setRequisition={setRequisition as any}
+              />
+            )}
+            {currentStep === 2 && (
+              <ProductDetails
+                currentStep={currentStep}
+                prevStep={prevStep}
+                nextStep={nextStep}
+                requisitionId={id ?? requisition?.id ?? ""}
+                requisition={requisition as any}
+                setRequisition={setRequisition as any}
+              />
+            )}
+            {currentStep === 3 && (
+              <VendorDetails
+                currentStep={currentStep}
+                prevStep={prevStep}
+                nextStep={nextStep}
+                requisition={requisition}
+                requisitionId={id ?? requisition?.id ?? ""}
+              />
+            )}
+          </div>
         </div>
       </div>
-    </div>
     </div>
   );
 };

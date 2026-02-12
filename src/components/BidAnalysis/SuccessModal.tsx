@@ -53,6 +53,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
       }, 3000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;

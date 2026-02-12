@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { IoSearchOutline } from "react-icons/io5";
-import { VscEdit, VscSettings } from "react-icons/vsc";
+import { IoSearchOutline, IoCloseCircle } from "react-icons/io5";
+import { VscEdit } from "react-icons/vsc";
 import { PiPlusSquareBold } from "react-icons/pi";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Table from "../Table";
 import Pagination from "../Pagination";
 import { RiDeleteBin5Line } from "react-icons/ri";
-import { FaArrowLeft, FaCaretDown, FaPlus, FaRegEye } from "react-icons/fa";
-import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import { FaArrowLeft, FaPlus, FaRegEye } from "react-icons/fa";
+import { MdOutlineKeyboardArrowDown, MdOutlineKeyboardArrowUp } from "react-icons/md";
 import useFetchData from "../../hooks/useFetchData";
 import useDebounce from "../../hooks/useDebounce";
 import { authApi } from "../../api";
@@ -19,21 +19,32 @@ import Breadcrumb from "../BreadeCrum";
 import { LuGitPullRequest } from "react-icons/lu";
 
 const RequisitionsManagement = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<any>(false);
   const [cursorLoading, setCursorLoading] = useState(false);
 
-  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
   const navigate = useNavigate();
   const { state } = useLocation();
   console.log({ state });
 
-  const [isModal, setIsModal] = useState(false);
-  const [benchmarkModal, setBenchMarkModal] = useState(false);
-  const companyId = localStorage.getItem("%companyId%");
+  const [isModal, setIsModal] = useState<any>(false);
+  const [benchmarkModal, setBenchMarkModal] = useState<any>(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const menuRef = useRef(null);
+  const [expandedSections, setExpandedSections] = useState({
+    basicInfo: true,
+    productDetails: true,
+  });
 
-  const [selectedFilters, setSelectedFilters] = useState([
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
+  const [selectedFilters, setSelectedFilters] = useState<any>([
     {
       moduleName: "Requisition",
       filterBy: "totalVendors",
@@ -96,7 +107,7 @@ const RequisitionsManagement = () => {
   const {
     data: requisitions,
     loading,
-    error,
+    error: _error,
     totalCount,
     page,
     setPage,
@@ -113,6 +124,16 @@ const RequisitionsManagement = () => {
   );
   const debounce = useDebounce(setSearch, 600);
 
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    debounce(value);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    setSearch("");
+  };
+
   console.log(state);
 
   useEffect(() => {
@@ -127,23 +148,23 @@ const RequisitionsManagement = () => {
     };
   }, [cursorLoading]);
 
-  const handleDeleteModalConfirm = async (id) => {
+  const handleDeleteModalConfirm = async (id: any) => {
     try {
       await authApi.delete(`/requisition/delete/${id}`);
       await refetch();
       toast.success("Cancel confirmation");
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message || "Something went wrong");
     }
   };
   const handleCloseModal = async () => {
     setIsModal(false);
   };
-  const handleCreateBenchMark = async (row) => {
+  const handleCreateBenchMark = async (row: any) => {
     console.log(row);
 
     const isContractCreated = row?.Contract?.some(
-      (contract) => contract?.status === "Created"
+      (contract: any) => contract?.status === "Created"
     );
 
     // If a contract is 'Created', show an error and return early
@@ -159,7 +180,7 @@ const RequisitionsManagement = () => {
       });
       toast.success("Benchmark Created Successfully");
       await refetch();
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message || "Something went wrong");
     } finally {
       setCursorLoading(false); // ✅ Stop loading
@@ -207,15 +228,15 @@ const RequisitionsManagement = () => {
 
   const actions = [
     {
-      type: "button",
+      type: "button" as const,
       label: "View Contracts",
       icon: <FaRegEye />,
       // link: (row) => `/project-management/requisition/contract`,
-      onClick: (row) => {
+      onClick: (row: any) => {
         handleRowClick(row);
       },
       state: "whole",
-      condition: (row) => {
+      condition: (row: any) => {
         if (row.status !== "Cancelled") {
           return true;
         }
@@ -223,12 +244,12 @@ const RequisitionsManagement = () => {
       },
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "Add Vendor",
       icon: <FaPlus />,
       // link: (row) => `/requisition-management/edit-requisition/${row.id}?redirect=3`,
-      onClick: (row) => addVendor(row),
-      condition: (row) => {
+      onClick: (row: any) => addVendor(row),
+      condition: (row: any) => {
         if (row.status !== "Cancelled") {
           return true;
         }
@@ -236,10 +257,10 @@ const RequisitionsManagement = () => {
       },
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "Create Bench Mark",
       icon: <FaPlus />,
-      condition: (row) => {
+      condition: (row: any) => {
         // Hide if already benchmarked
         if (row.status === "Benchmarked") {
           return false;
@@ -250,21 +271,21 @@ const RequisitionsManagement = () => {
         }
         return false;
       },
-      onClick: (row) => {
+      onClick: (row: any) => {
         handleCreateBenchMark(row);
       },
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "View Bench Mark",
       icon: <FaRegEye />,
-      condition: (row) => {
+      condition: (row: any) => {
         if (row.status === "Benchmarked") {
           return true;
         }
         return false;
       },
-      onClick: (row) => {
+      onClick: (row: any) => {
         console.log({ row });
         console.log(JSON.parse(row.benchmarkResponse));
 
@@ -272,13 +293,13 @@ const RequisitionsManagement = () => {
       },
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "Cancel Requisition",
       icon: <RiDeleteBin5Line />,
-      onClick: (row) => {
+      onClick: (row: any) => {
         setIsModal(row.id);
       },
-      condition: (row) => {
+      condition: (row: any) => {
         if (row.status !== "Cancelled") {
           return true;
         }
@@ -286,21 +307,21 @@ const RequisitionsManagement = () => {
       },
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "View Details",
       icon: <FaRegEye />,
-      onClick: (row) => {
+      onClick: (row: any) => {
         setSelectedProject(row);
         setIsSidebarOpen(row);
       },
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "Edit Details",
       icon: <VscEdit />,
       // link: (row) => `/project-management/edit-requisition/${row.id}`,
-      onClick: (row) => editDetails(row),
-      condition: (row) => {
+      onClick: (row: any) => editDetails(row),
+      condition: (row: any) => {
         if (row.status !== "Cancelled") {
           return true;
         }
@@ -308,25 +329,25 @@ const RequisitionsManagement = () => {
       },
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "View Summary",
       icon: <FaRegEye />,
-      condition: (row) => {
+      condition: (row: any) => {
         // Check if any contract has status "Rejected" or "Accepted"
-        if (row.Contract && row.Contract.some((contract) => 
+        if (row.Contract && row.Contract.some((contract: any) =>
           contract.status === "Accepted"
         )) {
           return true;
         }
         return false;
       },
-      onClick: (row) => {
+      onClick: (row: any) => {
         navigate(`/group-summary?requisitionId=${row.id}`);
       },
     },
   ];
 
-  const handleRowClick = (project) => {
+  const handleRowClick = (project: any) => {
     console.log({ project });
 
     if (project.status === "Cancelled") {
@@ -339,16 +360,22 @@ const RequisitionsManagement = () => {
     // setSelectedProject(project);
     // setIsSidebarOpen(true);
   };
-  const editDetails = (row) => {
+  const editDetails = (row: any) => {
     console.log({ row });
 
-    if (
-      row.Contract &&
-      row.Contract.some((contract) => contract.status !== "Created")
-    ) {
-      toast.error(
-        "Editing is not allowed because a contract has 'InitialQuotation' status."
-      );
+    // Only block editing for Cancelled requisitions
+    if (row.status === "Cancelled") {
+      toast.error("Editing is not allowed for cancelled requisitions.");
+      return;
+    }
+
+    // Permission check: Admin can edit any; PM can only edit their own
+    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+    const userId = userData?.id;
+    const userType = userData?.userType;
+
+    if (userType !== "admin" && row.createdBy !== userId) {
+      toast.error("You can only edit requisitions you created.");
       return;
     }
 
@@ -359,14 +386,14 @@ const RequisitionsManagement = () => {
     setIsSidebarOpen(false);
     setSelectedProject(null);
   };
-  const addVendor = (row) => {
+  const addVendor = (row: any) => {
     navigate(`/requisition-management/edit-requisition/${row.id}?redirect=3`);
   };
 
-  const applyFilters = (filters) => {
+  const applyFilters = (filters: any) => {
     if (filters === null) {
-      const clearedFilters = Object.keys(selectedFilters).reduce((acc, key) => {
-        const filter = selectedFilters[key];
+      const clearedFilters = Object.keys(selectedFilters).reduce((acc: Record<string, any>, key) => {
+        const filter = (selectedFilters as any)[key];
 
         if (filter.controlType === "rangeNumeric") {
           acc[key] = { ...filter, value: [filter.range[0], filter.range[1]] };
@@ -380,11 +407,11 @@ const RequisitionsManagement = () => {
         return acc;
       }, {});
       setSelectedFilters(clearedFilters);
-      setFilters(null);
+      setFilters(undefined);
       setIsFilterModalOpen((prev) => !prev);
       return;
     }
-    const transformedFilters = Object.keys(filters).reduce((acc, key) => {
+    const transformedFilters = Object.keys(filters).reduce((acc: Record<string, any>, key) => {
       const filter = filters[key];
 
       if (
@@ -394,7 +421,7 @@ const RequisitionsManagement = () => {
         acc[key] = {
           ...filter,
           value: Object.keys(filter.selected).filter(
-            (key) => filter.selected[key]
+            (k) => filter.selected[k]
           ),
         };
       } else {
@@ -403,7 +430,7 @@ const RequisitionsManagement = () => {
 
       return acc;
     }, {});
-    const apiFilters = Object.values(filters).map((filter) => {
+    const apiFilters = Object.values(filters).map((filter: any) => {
       if (
         filter.controlType === "checkbox" &&
         typeof filter.selected === "object"
@@ -411,7 +438,7 @@ const RequisitionsManagement = () => {
         return {
           ...filter,
           value: Object.keys(filter.selected).filter(
-            (key) => filter.selected[key]
+            (k) => filter.selected[k]
           ),
           selected: undefined,
         };
@@ -437,10 +464,10 @@ const RequisitionsManagement = () => {
   };
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !(menuRef.current as HTMLElement).contains(event.target as Node)) {
         setSelectedProject(null);
-        setIsSidebarOpen(null);
+        setIsSidebarOpen(null as any);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -492,14 +519,25 @@ const RequisitionsManagement = () => {
         </div>
 
         <div className="flex justify-between gap-2">
-          <div className="relative ">
+          <div className="relative flex-1 max-w-md">
             <input
-              onChange={(e) => debounce(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => handleSearchChange(e.target.value)}
               type="text"
-              placeholder=" Search by name"
-              className="border border-gray-300 rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full px-4"
+              placeholder="Search by Project ID, RFQ ID, name, category, vendor..."
+              className="w-full border border-gray-300 rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 px-4"
             />
-            <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            {searchTerm ? (
+              <button
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                title="Clear search"
+              >
+                <IoCloseCircle className="text-lg" />
+              </button>
+            ) : (
+              <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            )}
           </div>
           <div className="flex gap-6">
             {/* <button
@@ -589,12 +627,19 @@ const RequisitionsManagement = () => {
             </div>
           )}
 
-          <div className="flex justify-between">
-            <h3 className="text-lg font-medium mb-4">Basic Information</h3>
-            <MdOutlineKeyboardArrowDown />
+          <div
+            className="flex justify-between items-center cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2 py-2"
+            onClick={() => toggleSection('basicInfo')}
+          >
+            <h3 className="text-lg font-medium">Basic Information</h3>
+            {expandedSections.basicInfo ? (
+              <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+            ) : (
+              <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+            )}
           </div>
-          {selectedProject && (
-            <div className="grid grid-cols-3 text-sm gap-8">
+          {expandedSections.basicInfo && selectedProject && (
+            <div className="grid grid-cols-3 text-sm gap-8 mt-4">
               <div className="space-y-2">
                 <p>Subject</p>
                 <p>{selectedProject.subject}</p>
@@ -605,12 +650,17 @@ const RequisitionsManagement = () => {
               </div>
               <div className="space-y-2">
                 <p>Vendor</p>
-                <ul className="list-disc">
-                  {selectedProject.Contract.map((vendor) => (
-                    <li key={vendor?.Vendor?.id}>{vendor?.Vendor?.name}</li>
-                  ))}
+                <ul className="list-disc pl-4">
+                  {selectedProject?.Contract?.length > 0 ? (
+                    selectedProject.Contract.map((contract: any, index: number) => (
+                      <li key={contract?.Vendor?.id || contract?.id || index}>
+                        {contract?.Vendor?.name || "Unknown Vendor"}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-gray-500">No vendors assigned</li>
+                  )}
                 </ul>
-                <p>{selectedProject.vendor}</p>
               </div>
               <div className="space-y-2">
                 <p>Delivery Date</p>
@@ -635,10 +685,18 @@ const RequisitionsManagement = () => {
 
           {selectedProject?.RequisitionProduct?.length > 0 && (
             <>
-              <div className="flex justify-between">
-                <h3 className="text-lg font-medium mt-6">Product Details</h3>
-                <MdOutlineKeyboardArrowDown />
+              <div
+                className="flex justify-between items-center cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2 py-2 mt-4"
+                onClick={() => toggleSection('productDetails')}
+              >
+                <h3 className="text-lg font-medium">Product Details</h3>
+                {expandedSections.productDetails ? (
+                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                ) : (
+                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                )}
               </div>
+              {expandedSections.productDetails && (
               <table className="w-full bg-white mt-4 rounded overflow-hidden">
                 <thead>
                   <tr className="border">
@@ -654,7 +712,7 @@ const RequisitionsManagement = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedProject?.RequisitionProduct?.map((product, idx) => (
+                  {selectedProject?.RequisitionProduct?.map((product: any, idx: any) => (
                     <tr
                       key={product.id}
                       className={`border ${idx % 2 && "bg-gray-100"}`}
@@ -668,6 +726,7 @@ const RequisitionsManagement = () => {
                   )) || <tr>No products found</tr>}
                 </tbody>
               </table>
+              )}
             </>
           )}
 
@@ -688,7 +747,7 @@ const RequisitionsManagement = () => {
           <div className="mt-2 pt-2 pb-0">
             <p className="font-medium text-gray-500">Attachments</p>
             <div className="flex gap-4 mt-4">
-              {selectedProject?.RequisitionAttachment?.map((attachment) => (
+              {selectedProject?.RequisitionAttachment?.map((attachment: any) => (
                 <img
                   key={attachment.id}
                   className="h-10 w-10"
@@ -716,10 +775,9 @@ const RequisitionsManagement = () => {
             handleDeleteModalConfirm(isModal);
             setIsModal(false);
           }}
-          handleClose={handleCloseModal}
-        >
-          Are you sure you want to delete this product?
-        </Modal>
+          onClose={handleCloseModal}
+          body="Are you sure you want to delete this product?"
+        />
       )}
       {benchmarkModal && (
         <Modal
@@ -729,7 +787,7 @@ const RequisitionsManagement = () => {
           additionalClasses="w-[50%]"
           showCancelButton={false}
           isDeleteIcon={false}
-          handleClose={() => setBenchMarkModal(false)}
+          onClose={() => setBenchMarkModal(false)}
           body={
             <div className="overflow-x-auto pt-4 px-4 pb-0">
               {(() => {
@@ -749,9 +807,9 @@ const RequisitionsManagement = () => {
                   const benchmarkItems = finalBenchmarkData[key] || [];
 
                   // Extract values for Price, Delivery Date, and Payment Terms
-                  const priceItem = benchmarkItems.find((item) => item.name === "Price");
-                  const deliveryItem = benchmarkItems.find((item) => item.name === "Delivery Date");
-                  const paymentItem = benchmarkItems.find((item) => item.name === "Payment Terms");
+                  const priceItem = benchmarkItems.find((item: any) => item.name === "Price");
+                  const deliveryItem = benchmarkItems.find((item: any) => item.name === "Delivery Date");
+                  const paymentItem = benchmarkItems.find((item: any) => item.name === "Payment Terms");
 
                   return {
                     product: key,

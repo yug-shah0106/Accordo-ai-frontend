@@ -2,7 +2,7 @@
  * BidAnalysisDetailPage - Detailed bid analysis with top bids and approvals sidebar
  */
 
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   MdArrowBack,
@@ -27,14 +27,14 @@ export const BidAnalysisDetailPage: React.FC = () => {
     history,
     selectedBid,
     loading,
-    historyLoading,
+    historyLoading: _historyLoading,
     error,
     selectBidForReview,
     refresh,
     refreshHistory,
   } = useBidAnalysisDetail(reqId);
 
-  const { loading: actionLoading, selectBid, rejectBid, restoreBid, downloadPdf } = useBidActions();
+  const { loading: actionLoading, selectBid, rejectBid, restoreBid, downloadPdf: _downloadPdf } = useBidActions();
 
   // Success modal state
   const [successModal, setSuccessModal] = useState<{
@@ -80,9 +80,9 @@ export const BidAnalysisDetailPage: React.FC = () => {
     navigate(`/chatbot/requisitions/${rfqId}/vendors/${vendorId}/deals/${dealId}`);
   }, [navigate]);
 
-  const handlePdfDownload = useCallback((rfqId: number) => {
-    downloadPdf(rfqId);
-  }, [downloadPdf]);
+  const handlePdfDownload = useCallback((_rfqId: number) => {
+    // PDF download handled inline in button click
+  }, []);
 
   const handleAccept = useCallback(async (remarks?: string) => {
     if (!reqId || !selectedBid) return;
@@ -93,7 +93,7 @@ export const BidAnalysisDetailPage: React.FC = () => {
         isOpen: true,
         actionType: 'accept',
         vendorName: result.vendorName,
-        bidPrice: result.selectedPrice,
+        bidPrice: (result as any).selectedPrice,
         poId: result.poId,
       });
       // Auto-refresh data
@@ -199,7 +199,7 @@ export const BidAnalysisDetailPage: React.FC = () => {
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => reqId && downloadPdf(reqId)}
+              onClick={() => reqId && _downloadPdf(reqId)}
               className="flex items-center gap-2 px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
             >
               <MdDownload size={18} />

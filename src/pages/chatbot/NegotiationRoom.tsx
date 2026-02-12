@@ -4,16 +4,17 @@ import toast from "react-hot-toast";
 // @ts-ignore - hooks are JS files without type definitions
 import { useDealActions } from "../../hooks/chatbot";
 // @ts-ignore - components barrel export is a JS file without type definitions
-import { ChatTranscript, Composer } from "../../components/chatbot/chat";
+import { ChatTranscript } from "../../components/chatbot/chat";
 import { exportDealAsPDF, exportDealAsCSV } from "../../utils/exportDeal";
 import chatbotService from "../../services/chatbot.service";
-import type { DealSummaryResponse, ExtendedNegotiationConfig } from "../../types/chatbot";
-import { FiMessageSquare, FiFileText, FiTrendingUp, FiClock, FiCheckCircle, FiXCircle, FiDollarSign, FiCreditCard, FiTruck, FiClipboard, FiSettings, FiActivity, FiRefreshCw } from "react-icons/fi";
+import type { DealSummaryResponse, ExtendedNegotiationConfig, BehavioralData } from "../../types/chatbot";
+import { FiMessageSquare, FiFileText, FiTrendingUp, FiClock, FiCheckCircle, FiXCircle, FiDollarSign, FiCreditCard, FiTruck, FiClipboard, FiSettings, FiActivity, FiRefreshCw, FiAlertCircle, FiTarget } from "react-icons/fi";
 import {
   CollapsibleSection,
   ParameterRow,
   UnifiedUtilityBar,
-  type RecommendationAction,
+  ConvergenceChart,
+  type UnifiedRecommendationAction as RecommendationAction,
 } from "../../components/chatbot/sidebar";
 
 // Type for weighted utility data from API
@@ -53,7 +54,6 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 export default function NegotiationRoom() {
   const { dealId } = useParams<{ dealId: string }>();
   const navigate = useNavigate();
-  const [inputText, setInputText] = useState<string>("");
   const [showExportDropdown, setShowExportDropdown] = useState<boolean>(false);
   const exportDropdownRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<TabType>("chat");
@@ -73,8 +73,23 @@ export default function NegotiationRoom() {
   const [utilityData, setUtilityData] = useState<WeightedUtilityData | null>(null);
   const [_utilityLoading, setUtilityLoading] = useState<boolean>(false);
 
+  // Behavioral analysis state (Adaptive Negotiation Engine)
+  const [behavioralData, setBehavioralData] = useState<BehavioralData | null>(null);
+  const [showConvergenceChart, setShowConvergenceChart] = useState<boolean>(false);
+
   // Accordion state for collapsible sidebar sections
   const [openSection, setOpenSection] = useState<string | null>('price');
+
+  // Status change notification banner
+  const [statusBanner, setStatusBanner] = useState<{
+    show: boolean;
+    status: string;
+    message: string;
+  } | null>(null);
+
+  // Track previous status for change detection
+  const previousStatusRef = useRef<string | null>(null);
+  const previousMessageCountRef = useRef<number>(0);
 
   const {
     deal,
@@ -85,11 +100,8 @@ export default function NegotiationRoom() {
     error,
     sending,
     resetLoading,
-    canSend,
     canReset,
     pmTyping,
-    sendVendorMessage,
-    sendVendorMessageTwoPhase,
     reset,
     reload,
   } = useDealActions(dealId);
@@ -103,26 +115,132 @@ export default function NegotiationRoom() {
     return "/chatbot";
   }, [context?.rfqId]);
 
-  const handleSend = async (text: string): Promise<void> => {
-    if (!text.trim()) return;
-    try {
-      // Use two-phase messaging for instant vendor message display + async PM response
-      await sendVendorMessageTwoPhase(text);
-      setInputText(""); // Clear input after successful send
-    } catch (err) {
-      console.error("Failed to send message:", err);
+  // Build per-round strategy info for ChatTranscript round dividers
+  const roundStrategyInfo = useMemo(() => {
+    if (!behavioralData?.roundHistory?.length) return undefined;
+    const info: Record<number, { strategy?: string; utility?: number | null; isConverging?: boolean; isStalling?: boolean; isDiverging?: boolean }> = {};
+    for (const rh of behavioralData.roundHistory) {
+      info[rh.round] = {
+        utility: rh.utility,
+        // Strategy/convergence status applies to the latest state; show on all rounds for context
+        strategy: behavioralData.strategy,
+        isConverging: behavioralData.isConverging,
+        isStalling: behavioralData.isStalling,
+        isDiverging: behavioralData.isDiverging,
+      };
     }
-  };
+    // Only the latest round gets the current strategy label; earlier rounds just show utility
+    const maxRound = Math.max(...behavioralData.roundHistory.map(r => r.round));
+    for (const rh of behavioralData.roundHistory) {
+      if (rh.round < maxRound) {
+        info[rh.round] = { utility: rh.utility };
+      }
+    }
+    return info;
+  }, [behavioralData]);
+
+  // Polling for real-time updates (every 5 seconds)
+  useEffect(() => {
+    // Only poll if deal is active (NEGOTIATING status)
+    if (!deal || deal.status !== 'NEGOTIATING') {
+      return;
+    }
+
+    const pollInterval = setInterval(() => {
+      reload();
+    }, 5000);
+
+    return () => clearInterval(pollInterval);
+  }, [deal?.status, reload]);
+
+  // Detect status changes and show notifications
+  useEffect(() => {
+    if (!deal) return;
+
+    const currentStatus = deal.status;
+    const previousStatus = previousStatusRef.current;
+
+    // Only notify if status changed (not on initial load)
+    if (previousStatus && previousStatus !== currentStatus) {
+      let message = '';
+      let toastType: 'success' | 'error' | 'info' = 'info';
+
+      switch (currentStatus) {
+        case 'ACCEPTED':
+          message = 'The vendor has accepted the deal!';
+          toastType = 'success';
+          break;
+        case 'WALKED_AWAY':
+          message = 'The negotiation has ended - AI Negotiator walked away.';
+          toastType = 'error';
+          break;
+        case 'ESCALATED':
+          message = 'The deal has been escalated for human review.';
+          toastType = 'info';
+          break;
+        default:
+          message = `Status changed to ${currentStatus}`;
+      }
+
+      // Show toast notification
+      if (toastType === 'success') {
+        toast.success(message, { duration: 5000 });
+      } else if (toastType === 'error') {
+        toast.error(message, { duration: 5000 });
+      } else {
+        toast(message, { duration: 5000, icon: '⚠️' });
+      }
+
+      // Show banner
+      setStatusBanner({
+        show: true,
+        status: currentStatus,
+        message,
+      });
+    }
+
+    previousStatusRef.current = currentStatus;
+  }, [deal?.status]);
+
+  // Detect new messages and show subtle notification
+  useEffect(() => {
+    if (!messages) return;
+
+    const currentCount = messages.length;
+    const previousCount = previousMessageCountRef.current;
+
+    // Only notify if new messages arrived (not on initial load)
+    if (previousCount > 0 && currentCount > previousCount) {
+      const newMessageCount = currentCount - previousCount;
+      toast(`${newMessageCount} new message${newMessageCount > 1 ? 's' : ''} received`, {
+        duration: 2000,
+        icon: '💬',
+      });
+    }
+
+    previousMessageCountRef.current = currentCount;
+  }, [messages?.length]);
 
   const handleReset = async (): Promise<void> => {
-    if (
-      window.confirm("Are you sure you want to reset this deal? All messages will be deleted.")
-    ) {
-      try {
-        await reset();
-        setInputText("");
-      } catch (err) {
-        console.error("Failed to reset deal:", err);
+    const confirmMessage =
+      "⚠️ WARNING: This action cannot be undone!\n\n" +
+      "Resetting this deal will:\n" +
+      "• Delete ALL messages in this negotiation\n" +
+      "• Reset the negotiation round to 0\n" +
+      "• Require the vendor to start over\n\n" +
+      "Are you absolutely sure you want to reset this deal?";
+
+    if (window.confirm(confirmMessage)) {
+      // Double confirmation for destructive action
+      if (window.confirm("Final confirmation: Reset the entire negotiation?")) {
+        try {
+          await reset();
+          toast.success("Deal has been reset. Vendor will need to start negotiation again.");
+          setStatusBanner(null); // Clear any status banner
+        } catch (err) {
+          console.error("Failed to reset deal:", err);
+          toast.error("Failed to reset deal. Please try again.");
+        }
       }
     }
   };
@@ -179,12 +297,25 @@ export default function NegotiationRoom() {
     }
   }, [context]);
 
-  // Fetch utility data when deal round changes (after each message exchange)
+  // Fetch behavioral data (Adaptive Negotiation Engine)
+  const fetchBehavioralData = useCallback(async (): Promise<void> => {
+    if (!context) return;
+    try {
+      const response = await chatbotService.getBehavioralData(context);
+      setBehavioralData(response.data);
+    } catch (err) {
+      console.debug("Behavioral data not available:", err);
+      // Silently fail - behavioral data is an optional enhancement
+    }
+  }, [context]);
+
+  // Fetch utility data and behavioral data when deal round changes
   useEffect(() => {
     if (deal && deal.round > 0) {
       fetchUtilityData();
+      fetchBehavioralData();
     }
-  }, [deal?.round, fetchUtilityData]);
+  }, [deal?.round, fetchUtilityData, fetchBehavioralData]);
 
   const formatCurrency = (value: number | null): string => {
     if (value === null) return "N/A";
@@ -305,8 +436,9 @@ export default function NegotiationRoom() {
 
       if (vendorPrices.length > 0 && accordoPrices.length > 0) {
         // Calculate convergence - are we getting closer?
-        const _latestVendorPrice = vendorPrices[vendorPrices.length - 1];
-        const _latestAccordoPrice = accordoPrices[accordoPrices.length - 1];
+        // These values used for debugging convergence
+        // const _latestVendorPrice = vendorPrices[vendorPrices.length - 1];
+        // const _latestAccordoPrice = accordoPrices[accordoPrices.length - 1];
 
         // Adjust anchor based on convergence (getting more flexible)
         const convergenceFactor = Math.min(round / (config.max_rounds || 10), 1);
@@ -617,7 +749,7 @@ export default function NegotiationRoom() {
               </div>
             </div>
 
-            <ChatTranscript messages={messages} isProcessing={false} />
+            <ChatTranscript messages={messages} isProcessing={false} pmMode={true} roundStrategyInfo={roundStrategyInfo} />
           </div>
         </div>
       </div>
@@ -670,7 +802,18 @@ export default function NegotiationRoom() {
                 {deal?.status}
               </span>
               {deal?.round !== undefined && (
-                <span className="text-sm text-gray-600 dark:text-dark-text-secondary">Round {deal.round}</span>
+                <span className="text-sm text-gray-600 dark:text-dark-text-secondary">
+                  Round {deal.round}
+                  {behavioralData?.dynamicRounds && (
+                    <span className="text-gray-400">/{behavioralData.dynamicRounds.softMax}</span>
+                  )}
+                  {behavioralData?.dynamicRounds?.extendLikely && deal.round >= (behavioralData.dynamicRounds.softMax * 0.7) && (
+                    <span className="ml-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">(extending — converging)</span>
+                  )}
+                  {behavioralData?.isStalling && deal.round >= (behavioralData?.dynamicRounds?.softMax ?? Infinity) * 0.5 && (
+                    <span className="ml-1.5 text-xs text-orange-600 dark:text-orange-400 font-medium">(may escalate — stalling)</span>
+                  )}
+                </span>
               )}
             </div>
           </div>
@@ -738,29 +881,75 @@ export default function NegotiationRoom() {
           {/* Tab Content */}
           {activeTab === "chat" ? (
             <>
-              {/* Messages - Scrollable */}
+              {/* Status Change Banner */}
+              {statusBanner?.show && (
+                <div
+                  className={`flex-shrink-0 px-4 py-3 flex items-center justify-between ${
+                    statusBanner.status === "ACCEPTED"
+                      ? "bg-green-100 border-b border-green-200"
+                      : statusBanner.status === "WALKED_AWAY"
+                      ? "bg-red-100 border-b border-red-200"
+                      : statusBanner.status === "ESCALATED"
+                      ? "bg-orange-100 border-b border-orange-200"
+                      : "bg-blue-100 border-b border-blue-200"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {statusBanner.status === "ACCEPTED" ? (
+                      <FiCheckCircle className="w-5 h-5 text-green-600" />
+                    ) : statusBanner.status === "WALKED_AWAY" ? (
+                      <FiXCircle className="w-5 h-5 text-red-600" />
+                    ) : (
+                      <FiAlertCircle className="w-5 h-5 text-orange-600" />
+                    )}
+                    <span
+                      className={`text-sm font-medium ${
+                        statusBanner.status === "ACCEPTED"
+                          ? "text-green-800"
+                          : statusBanner.status === "WALKED_AWAY"
+                          ? "text-red-800"
+                          : "text-orange-800"
+                      }`}
+                    >
+                      {statusBanner.message}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setStatusBanner(null)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <FiXCircle className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Messages - Scrollable (PM Read-Only View) */}
               <div className="flex-1 px-6 py-6 overflow-y-auto">
                 <ChatTranscript
                   messages={messages}
                   isProcessing={pmTyping || sending}
                   processingType={pmTyping ? "analyzing" : "vendor-typing"}
+                  pmMode={true}
+                  roundStrategyInfo={roundStrategyInfo}
                 />
               </div>
 
-              {/* Composer - Fixed at bottom */}
-              <div className="flex-shrink-0">
-                <Composer
-                  onSend={handleSend}
-                  inputText={inputText}
-                  onInputChange={setInputText}
-                  sending={sending}
-                  dealStatus={deal?.status}
-                  canSend={canSend}
-                  dealId={dealId}
-                  context={context}
-                  wizardConfig={wizardConfig}
-                  currentRound={deal?.round || 0}
-                />
+              {/* Read-Only Notice - Fixed at bottom (replaces Composer) */}
+              <div className="flex-shrink-0 bg-gray-50 dark:bg-dark-surface border-t border-gray-200 dark:border-dark-border px-6 py-3">
+                <div className="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-dark-text-secondary">
+                  <FiMessageSquare className="w-4 h-4" />
+                  <span>
+                    {deal?.status === "NEGOTIATING"
+                      ? "Watching live negotiation. The AI Negotiator is handling this deal on your behalf."
+                      : deal?.status === "ACCEPTED"
+                      ? "This negotiation has been completed successfully."
+                      : deal?.status === "WALKED_AWAY"
+                      ? "This negotiation has ended."
+                      : deal?.status === "ESCALATED"
+                      ? "This deal has been escalated for human review."
+                      : "Viewing negotiation history."}
+                  </span>
+                </div>
               </div>
             </>
           ) : (
@@ -1014,8 +1203,125 @@ export default function NegotiationRoom() {
                   </div>
                   <div className="flex justify-between mt-1.5 text-[10px] text-indigo-500">
                     <span>Start</span>
-                    <span>{adaptiveConfig.max_rounds} rounds max</span>
+                    <span>
+                      {behavioralData?.dynamicRounds
+                        ? `${behavioralData.dynamicRounds.softMax} rounds (max ${behavioralData.dynamicRounds.hardMax})`
+                        : `${adaptiveConfig.max_rounds} rounds max`}
+                    </span>
                   </div>
+                  {behavioralData?.dynamicRounds?.extendLikely && deal.round >= adaptiveConfig.max_rounds * 0.7 && (
+                    <div className="mt-1.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                      May extend — converging
+                    </div>
+                  )}
+                  {behavioralData?.isStalling && deal.round >= adaptiveConfig.max_rounds * 0.5 && (
+                    <div className="mt-1.5 text-[10px] text-orange-600 dark:text-orange-400 font-medium">
+                      May escalate early — stalling
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* AI Strategy Section (Adaptive Negotiation Engine) */}
+              {behavioralData && deal && deal.round > 0 && (
+                <div className="bg-gradient-to-br from-violet-50 via-purple-50 to-violet-50 dark:from-violet-900/20 dark:via-purple-900/20 dark:to-violet-900/20 rounded-lg p-4 shadow-sm border border-violet-200 dark:border-violet-800">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-violet-100 dark:bg-violet-900/40 rounded-md">
+                        <FiTarget className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+                      </div>
+                      <span className="text-sm font-semibold text-violet-900 dark:text-violet-200">AI Strategy</span>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      behavioralData.strategy === 'Holding Firm'
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                        : behavioralData.strategy === 'Accelerating'
+                        ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
+                        : behavioralData.strategy === 'Final Push'
+                        ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                        : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                    }`}>
+                      {behavioralData.strategy}
+                    </span>
+                  </div>
+
+                  {/* Momentum Bar */}
+                  <div className="mb-3">
+                    <div className="flex items-center justify-between text-[10px] mb-1">
+                      <span className="text-violet-600 dark:text-violet-400 font-medium">Momentum</span>
+                      <span className={`font-bold ${
+                        behavioralData.momentum > 0.3 ? 'text-green-600 dark:text-green-400'
+                        : behavioralData.momentum < -0.3 ? 'text-red-600 dark:text-red-400'
+                        : 'text-yellow-600 dark:text-yellow-400'
+                      }`}>
+                        {behavioralData.momentum > 0 ? '+' : ''}{(behavioralData.momentum * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="relative w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          behavioralData.momentum > 0.3 ? 'bg-gradient-to-r from-green-400 to-green-500'
+                          : behavioralData.momentum < -0.3 ? 'bg-gradient-to-r from-red-400 to-red-500'
+                          : 'bg-gradient-to-r from-yellow-400 to-yellow-500'
+                        }`}
+                        style={{ width: `${Math.max(5, ((behavioralData.momentum + 1) / 2) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Key Metrics */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-violet-700 dark:text-violet-300">Convergence</span>
+                      <span className={`font-semibold ${
+                        behavioralData.isConverging ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'
+                      }`}>
+                        {behavioralData.isConverging ? '\u25B2' : behavioralData.isDiverging ? '\u25BC' : '\u25CF'}{' '}
+                        {(behavioralData.convergenceRate * 100).toFixed(0)}%/round
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-violet-700 dark:text-violet-300">Vendor Pace</span>
+                      <span className="font-semibold text-violet-900 dark:text-violet-200">
+                        ${behavioralData.concessionVelocity.toFixed(0)}/round
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-violet-700 dark:text-violet-300">Sentiment</span>
+                      <span className={`font-semibold px-1.5 py-0.5 rounded text-[10px] ${
+                        behavioralData.latestSentiment === 'positive'
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                          : behavioralData.latestSentiment === 'resistant'
+                          ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                          : behavioralData.latestSentiment === 'urgent'
+                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                          : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                      }`}>
+                        {behavioralData.latestSentiment}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Convergence Chart (collapsible) */}
+                  {behavioralData.roundHistory.length >= 2 && (
+                    <div className="mt-3 pt-3 border-t border-violet-200 dark:border-violet-700">
+                      <button
+                        onClick={() => setShowConvergenceChart(!showConvergenceChart)}
+                        className="flex items-center gap-1.5 text-[10px] text-violet-600 dark:text-violet-400 hover:text-violet-800 dark:hover:text-violet-300 font-medium transition-colors"
+                      >
+                        <FiTrendingUp className="w-3 h-3" />
+                        {showConvergenceChart ? 'Hide' : 'Show'} Convergence Chart
+                      </button>
+                      {showConvergenceChart && (
+                        <div className="mt-2">
+                          <ConvergenceChart
+                            roundHistory={behavioralData.roundHistory}
+                            isConverging={behavioralData.isConverging}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 

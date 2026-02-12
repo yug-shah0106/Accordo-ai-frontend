@@ -1,0 +1,40 @@
+# =============================================
+# Accordo Frontend - Docker Compose
+# Nginx serving static React/Vite build
+# =============================================
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:5002}
+        VITE_FRONTEND_URL: ${VITE_FRONTEND_URL:-http://localhost:5001}
+        VITE_ASSEST_URL: ${VITE_ASSEST_URL:-http://localhost:5002}
+    container_name: accordo-frontend
+    ports:
+      - "5001:5001"
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+
+# Usage:
+# ------
+# Build and start:
+#   docker compose up -d --build
+#
+# With custom backend URL:
+#   VITE_BACKEND_URL=http://api.example.com docker compose up -d --build
+#
+# View logs:
+#   docker compose logs -f
+#
+# Stop:
+#   docker compose down

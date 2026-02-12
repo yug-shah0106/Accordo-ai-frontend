@@ -49,9 +49,14 @@ export default function SummaryPage() {
 
     try {
       setLoading(true);
+
+      // First lookup the deal to get context
+      const lookupRes = await chatbotService.lookupDeal(dealId);
+      const ctx = lookupRes.data.context;
+
       const [dealRes, configRes] = await Promise.all([
-        chatbotService.getDeal(dealId),
-        chatbotService.getDealConfig(dealId),
+        chatbotService.getDeal(ctx),
+        chatbotService.getDealConfig(ctx),
       ]);
 
       setDeal(dealRes.data?.deal || dealRes.data);
@@ -60,7 +65,7 @@ export default function SummaryPage() {
 
       // Try to get explainability if available
       try {
-        const explainRes = await chatbotService.getExplainability(dealId);
+        const explainRes = await chatbotService.getExplainability(ctx);
         setExplainability(explainRes.data.explainability || explainRes.data);
       } catch (err) {
         console.log('No explainability data available');

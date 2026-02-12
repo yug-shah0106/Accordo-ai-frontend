@@ -1,21 +1,26 @@
 import { useForm } from "react-hook-form";
-import SelectField from "../SelectField";
+import { FormSelect, SelectOption } from "../shared";
 import Button from "../Button";
 import useFetchData from "../../hooks/useFetchData";
 import { RiDeleteBinLine } from "react-icons/ri";
 import toast from "react-hot-toast";
 import { authApi } from "../../api";
-import { FiCopy, FiExternalLink, FiPlay } from "react-icons/fi";
+import { FiExternalLink, FiPlay, FiUser, FiCopy } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Modal from "../Modal";
 import chatbotService from "../../services/chatbot.service";
 import type { DealStatus, VendorDealSummary } from "../../types/chatbot";
+
+type ContractStatus = 'Created' | 'Active' | 'Opened' | 'Completed' | 'Verified' | 'Accepted' | 'Rejected' | 'Expired' | 'Escalated' | 'InitialQuotation';
 
 interface Contract {
   id: string;
   vendorId: string;
   uniqueToken: string;
+  status?: ContractStatus;
+  createdAt?: string;
+  chatbotDealId?: string | null;
 }
 
 interface Product {
@@ -64,24 +69,174 @@ interface FormData {
   contractData?: Contract[];
 }
 
-// Deal status badge colors
-const statusColors: Record<DealStatus, { bg: string; text: string }> = {
-  NEGOTIATING: { bg: 'bg-blue-100', text: 'text-blue-700' },
-  ACCEPTED: { bg: 'bg-green-100', text: 'text-green-700' },
-  WALKED_AWAY: { bg: 'bg-red-100', text: 'text-red-700' },
-  ESCALATED: { bg: 'bg-yellow-100', text: 'text-yellow-700' },
+// Timeline item - can be either a deal or a contract
+interface TimelineItem {
+  type: 'deal' | 'contract';
+  id: string;
+  vendorId: string;
+  createdAt: string;
+  deal?: VendorDealSummary;
+  contract?: Contract;
+}
+
+// Vendor group with their timeline items
+interface VendorGroup {
+  vendorId: string;
+  vendorName: string;
+  email?: string;
+  items: TimelineItem[];
+  dealCount: number;
+  activeDeals: number;
+  completedDeals: number;
+}
+
+// Deal status configuration with labels and colors
+const statusConfig: Record<DealStatus, { label: string; bg: string; text: string; cardBg: string; cardBorder: string }> = {
+  NEGOTIATING: {
+    label: 'Active',
+    bg: 'bg-blue-100',
+    text: 'text-blue-700',
+    cardBg: 'bg-blue-50',
+    cardBorder: 'border-blue-200'
+  },
+  ACCEPTED: {
+    label: 'Won',
+    bg: 'bg-green-100',
+    text: 'text-green-700',
+    cardBg: 'bg-green-50',
+    cardBorder: 'border-green-200'
+  },
+  WALKED_AWAY: {
+    label: 'Lost',
+    bg: 'bg-gray-100',
+    text: 'text-gray-700',
+    cardBg: 'bg-gray-50',
+    cardBorder: 'border-gray-200'
+  },
+  ESCALATED: {
+    label: 'Escalated',
+    bg: 'bg-orange-100',
+    text: 'text-orange-700',
+    cardBg: 'bg-orange-50',
+    cardBorder: 'border-orange-200'
+  },
+};
+
+// Contract status configuration with labels and colors
+const contractStatusConfig: Record<ContractStatus, { label: string; bg: string; text: string; cardBg: string; cardBorder: string }> = {
+  Created: {
+    label: 'Pending',
+    bg: 'bg-purple-100',
+    text: 'text-purple-700',
+    cardBg: 'bg-purple-50',
+    cardBorder: 'border-purple-200'
+  },
+  Active: {
+    label: 'Negotiating',
+    bg: 'bg-blue-100',
+    text: 'text-blue-700',
+    cardBg: 'bg-blue-50',
+    cardBorder: 'border-blue-200'
+  },
+  Escalated: {
+    label: 'Escalated',
+    bg: 'bg-orange-100',
+    text: 'text-orange-700',
+    cardBg: 'bg-orange-50',
+    cardBorder: 'border-orange-200'
+  },
+  Accepted: {
+    label: 'Won',
+    bg: 'bg-green-100',
+    text: 'text-green-700',
+    cardBg: 'bg-green-50',
+    cardBorder: 'border-green-200'
+  },
+  Rejected: {
+    label: 'Lost',
+    bg: 'bg-gray-100',
+    text: 'text-gray-700',
+    cardBg: 'bg-gray-50',
+    cardBorder: 'border-gray-200'
+  },
+  Opened: {
+    label: 'Opened',
+    bg: 'bg-cyan-100',
+    text: 'text-cyan-700',
+    cardBg: 'bg-cyan-50',
+    cardBorder: 'border-cyan-200'
+  },
+  Completed: {
+    label: 'Completed',
+    bg: 'bg-green-100',
+    text: 'text-green-700',
+    cardBg: 'bg-green-50',
+    cardBorder: 'border-green-200'
+  },
+  Verified: {
+    label: 'Verified',
+    bg: 'bg-teal-100',
+    text: 'text-teal-700',
+    cardBg: 'bg-teal-50',
+    cardBorder: 'border-teal-200'
+  },
+  Expired: {
+    label: 'Expired',
+    bg: 'bg-red-100',
+    text: 'text-red-700',
+    cardBg: 'bg-red-50',
+    cardBorder: 'border-red-200'
+  },
+  InitialQuotation: {
+    label: 'Quotation',
+    bg: 'bg-indigo-100',
+    text: 'text-indigo-700',
+    cardBg: 'bg-indigo-50',
+    cardBorder: 'border-indigo-200'
+  },
+};
+
+// Helper to get contract status config with fallback
+const getContractStatusConfig = (status?: ContractStatus) => {
+  return contractStatusConfig[status || 'Created'] || contractStatusConfig.Created;
+};
+
+// Helper to get deal counts by status for a vendor
+const getVendorDealCounts = (vendorId: string, deals: VendorDealSummary[]): { active: number; completed: number } => {
+  const vendorDeals = deals.filter(d => d.vendorId?.toString() === vendorId);
+  const active = vendorDeals.filter(d => d.status === 'NEGOTIATING' || d.status === 'ESCALATED').length;
+  const completed = vendorDeals.filter(d => d.status === 'ACCEPTED' || d.status === 'WALKED_AWAY').length;
+  return { active, completed };
+};
+
+// Format vendor label with deal counts
+const formatVendorLabel = (vendorName: string, active: number, completed: number): string => {
+  if (active === 0 && completed === 0) {
+    return vendorName;
+  }
+
+  const parts: string[] = [];
+  if (active > 0) parts.push(`${active} Active`);
+  if (completed > 0) parts.push(`${completed} Completed`);
+
+  return `${vendorName} (${parts.join(', ')})`;
+};
+
+// Truncate token for display
+const truncateToken = (token: string, maxLength: number = 12): string => {
+  if (token.length <= maxLength) return token;
+  return `${token.substring(0, maxLength)}...`;
 };
 
 const VendorDetails: React.FC<VendorDetailsProps> = ({
   currentStep,
-  nextStep,
+  nextStep: _nextStep,  // Unused but required by interface
   prevStep,
   requisitionId,
   requisition,
 }) => {
   const navigate = useNavigate();
   const {
-    register,
     handleSubmit,
     reset,
     setValue,
@@ -94,9 +249,9 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
   });
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [isConfirmed, setIsConfirmed] = useState<boolean>(false);
   const [deals, setDeals] = useState<VendorDealSummary[]>([]);
   const [loadingDeals, setLoadingDeals] = useState<boolean>(false);
+  const [activeVendorTab, setActiveVendorTab] = useState<string | null>(null);
 
   useEffect(() => {
     reset({
@@ -124,86 +279,100 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     fetchDeals();
   }, [requisitionId]);
 
-  const onSubmit = (data: FormData): void => {
-    if (!watch("contractData")?.length && deals.length === 0) {
+  const { data, loading: _loading } = useFetchData<Vendor>("/vendor/get-all");
+  const contractData = watch("contractData") || [];
+
+  // Build vendor groups with timeline items
+  const { vendorGroups, pendingContracts } = useMemo(() => {
+    const groups: Map<string, VendorGroup> = new Map();
+    const pending: Contract[] = [];
+
+    // Add deals to groups
+    deals.forEach(deal => {
+      const vendorId = deal.vendorId?.toString() || '';
+      if (!groups.has(vendorId)) {
+        groups.set(vendorId, {
+          vendorId,
+          vendorName: deal.vendorName || 'Unknown Vendor',
+          email: deal.vendorEmail,
+          items: [],
+          dealCount: 0,
+          activeDeals: 0,
+          completedDeals: 0,
+        });
+      }
+
+      const group = groups.get(vendorId)!;
+      group.items.push({
+        type: 'deal',
+        id: deal.dealId,
+        vendorId,
+        createdAt: deal.lastActivityAt || new Date().toISOString(),
+        deal,
+      });
+      group.dealCount++;
+      if (deal.status === 'NEGOTIATING' || deal.status === 'ESCALATED') {
+        group.activeDeals++;
+      } else {
+        group.completedDeals++;
+      }
+    });
+
+    // Process contracts - separate pending contracts from those with deals
+    contractData.forEach(contract => {
+      const vendorId = contract.vendorId?.toString() || '';
+      const hasDeal = contract.chatbotDealId || deals.some(d => d.vendorId?.toString() === vendorId);
+
+      if (!hasDeal) {
+        // This is a pending contract (no deals yet)
+        pending.push(contract);
+      } else if (groups.has(vendorId)) {
+        // Add contract to existing vendor group's timeline
+        const group = groups.get(vendorId)!;
+        group.items.push({
+          type: 'contract',
+          id: contract.id,
+          vendorId,
+          createdAt: contract.createdAt || new Date().toISOString(),
+          contract,
+        });
+      }
+    });
+
+    // Sort timeline items chronologically (newest first)
+    groups.forEach(group => {
+      group.items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    });
+
+    return {
+      vendorGroups: Array.from(groups.values()),
+      pendingContracts: pending,
+    };
+  }, [deals, contractData]);
+
+  // Set default active tab
+  useEffect(() => {
+    if (!activeVendorTab && vendorGroups.length > 0) {
+      setActiveVendorTab(vendorGroups[0].vendorId);
+    }
+  }, [vendorGroups, activeVendorTab]);
+
+  const onSubmit = (): void => {
+    if (!contractData?.length && deals.length === 0) {
       toast.error("Add Vendor First");
       return;
     }
     try {
-      toast.success("Edited Successfully");
+      toast.success("Requisition saved successfully");
       submitRequisition();
-      navigate(-1);
+      navigate("/requisition-management");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Something went wrong";
       toast.error(errorMessage);
     }
   };
 
-  const { data, loading, error } = useFetchData<Vendor>("/vendor/get-all");
-  const contractData = watch("contractData") || [];
-
-  // State for tracking contract creation
-  const [creatingContract, setCreatingContract] = useState<boolean>(false);
-
-  // Navigate to Deal Wizard with pre-filled context
-  // Creates a Contract record IMMEDIATELY to link vendor to requisition
-  const handleStartNegotiation = async (): Promise<void> => {
-    const selectedVendorId = watch("selectedVendor");
-
-    if (!selectedVendorId) {
-      toast.error("Select a vendor first");
-      return;
-    }
-
-    // Find the vendor data - convert to string for comparison since form values are strings
-    const selectedVendor = data?.find(v => v.vendorId?.toString() === selectedVendorId?.toString());
-
-    if (!selectedVendor) {
-      toast.error("Vendor not found");
-      return;
-    }
-
-    setCreatingContract(true);
-
-    try {
-      // Step 1: Create Contract record IMMEDIATELY (auto-add vendor to requisition)
-      // This ensures the vendor is linked to the requisition before navigating
-      // Skip email and chatbot deal creation - we'll create the deal in the Deal Wizard
-      // IMPORTANT: Convert IDs to numbers - backend expects number types
-      const {
-        data: { data: contractResponse },
-      } = await authApi.post<{ data: Contract }>("/contract/create", {
-        requisitionId: parseInt(requisitionId, 10),
-        vendorId: parseInt(selectedVendorId, 10),
-        skipEmail: true,      // Don't send email - user is navigating to Deal Wizard
-        skipChatbot: true,    // Don't auto-create deal - Deal Wizard will create it
-      });
-
-      // Update local contractData state to reflect the new contract
-      setValue("contractData", [...(watch("contractData") || []), contractResponse]);
-      setValue("selectedVendor", "");
-
-      // Step 2: Navigate with correct vendor ID and name for robust matching
-      // The vendorId from contract is the User.id which the chatbot API expects
-      // Also pass vendorName as fallback for matching
-      const searchParams = new URLSearchParams({
-        rfqId: requisitionId,
-        vendorId: contractResponse.vendorId?.toString() || selectedVendorId,
-        vendorName: selectedVendor.Vendor?.name || '',
-        locked: 'true',
-        returnTo: `/requisition-management/edit/${requisitionId}`,
-      });
-
-      navigate(`/chatbot/requisitions/deals/new?${searchParams.toString()}`);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to attach vendor";
-      toast.error(errorMessage);
-    } finally {
-      setCreatingContract(false);
-    }
-  };
-
-  // Legacy: Add Contract (keeping for backwards compatibility)
+  // Add vendor to requisition (creates contract without starting negotiation)
   const handleAddContract = async (): Promise<void> => {
     try {
       if (!watch("selectedVendor")) {
@@ -213,14 +382,17 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
       const {
         data: { data: contractResponse },
       } = await authApi.post<{ data: Contract }>("/contract/create", {
-        requisitionId: requisitionId,
-        vendorId: watch("selectedVendor"),
+        requisitionId: parseInt(requisitionId, 10),
+        vendorId: parseInt(watch("selectedVendor"), 10),
+        skipEmail: true,      // Don't send email - just adding vendor
+        skipChatbot: true,    // Don't auto-create deal - user can start negotiation later
       });
 
       setValue("contractData", [...(watch("contractData") || []), contractResponse]);
       setValue("selectedVendor", "");
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Something went wrong";
+      toast.success("Vendor added successfully");
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || "Something went wrong";
       toast.error(errorMessage);
     }
   };
@@ -235,26 +407,45 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
           (i) => i?.id?.toString() !== id?.toString()
         )
       );
+      toast.success("Contract deleted successfully");
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Something went wrong";
       toast.error(errorMessage);
     }
   };
 
-  const handleCopy = (contract: Contract): void => {
+  // Open contract link in new window
+  const handleOpenContractLink = (contract: Contract): void => {
     const link = `${import.meta.env.VITE_FRONTEND_URL}/vendor-contract/${contract?.uniqueToken}`;
-    navigator.clipboard
-      .writeText(link)
-      .then(() => {
-        toast.success("Link copied to clipboard!");
-      })
-      .catch((error: Error) => {
-        console.error("Failed to copy the link:", error);
-      });
+    window.open(link, '_blank');
+  };
+
+  // Copy link to clipboard
+  const handleCopyLink = (contract: Contract): void => {
+    const link = `${import.meta.env.VITE_FRONTEND_URL}/vendor-contract/${contract?.uniqueToken}`;
+    navigator.clipboard.writeText(link);
+    toast.success("Link copied to clipboard");
+  };
+
+  // Start negotiation - navigates to wizard with optional contractId
+  const handleStartNegotiation = (vendorId: string, vendorName: string, contractId?: string): void => {
+    const searchParams = new URLSearchParams({
+      rfqId: requisitionId,
+      vendorId: vendorId,
+      vendorName: vendorName,
+      locked: 'true',
+      returnTo: `/requisition-management/edit-requisition/${requisitionId}`,
+    });
+
+    // If starting from an existing contract, pass the contractId
+    if (contractId) {
+      searchParams.set('contractId', contractId);
+    }
+
+    navigate(`/chatbot/requisitions/deals/new?${searchParams.toString()}`);
   };
 
   const handleModalConfirm = (): void => {
-    setIsConfirmed(true);
     setIsModalOpen(false);
     try {
       navigate(-1);
@@ -276,170 +467,326 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
   const submitRequisition = async (): Promise<void> => {
     try {
       if (!requisition) return;
-
-      const requestData = {
-        id: requisition.id,
-        payment_terms: requisition.paymentTerms,
-        delivery_date: requisition.deliveryDate?.split("T")[0],
-        negotiation_closure_date:
-          requisition.negotiationClosureDate?.split("T")[0],
-        status: requisition.status,
-        type_of_currency: requisition.typeOfCurrency,
-        total_price: requisition.totalPrice,
-        products: requisition.RequisitionProduct?.map((product) => {
-          return {
-            product_name: product.Product
-              ? product.Product.productName
-              : "Unknown",
-            quantity: product.qty,
-            target_price: product.targetPrice,
-          };
-        }),
-      };
-
-      // Commented out as it's not currently used
-      // const response = await axios.post(
-      //   "https://model.accordo.ai/rfq/requisitions/",
-      //   requestData
-      // );
+      // Requisition submission logic (currently not used)
     } catch (error) {
       console.error("Error sending data:", error);
     }
   };
 
-  // Get vendors that don't already have a deal or contract
+  // Get all vendors that don't already have a contract
   const availableVendors = (data || []).filter((vendor) => {
     const hasContract = contractData.find(
       (contract) => contract?.vendorId?.toString() === vendor.vendorId?.toString()
     );
     const hasDeal = deals.find(
-      (deal) => deal?.vendorId?.toString() === vendor.vendorId?.toString()
+      (deal) => deal.vendorId?.toString() === vendor.vendorId?.toString()
     );
     return !hasContract && !hasDeal;
   });
 
+  // Format vendors for FormSelect with deal count indicators
+  const vendorOptions: SelectOption[] = availableVendors.map((vendor) => {
+    const vendorName = vendor.Vendor?.name || vendor.Vendor?.companyName || 'Unknown Vendor';
+    const { active, completed } = getVendorDealCounts(vendor.vendorId, deals);
+
+    return {
+      value: vendor.vendorId,
+      label: formatVendorLabel(vendorName, active, completed),
+    };
+  });
+
+  // Get vendor name from vendor data
+  const getVendorName = (vendorId: string): string => {
+    const vendor = data?.find(v => v.vendorId?.toString() === vendorId);
+    return vendor?.Vendor?.name || vendor?.Vendor?.companyName || 'Unknown Vendor';
+  };
+
+  // Format date for timeline display (compact version)
+  const formatDate = (dateStr: string): string => {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const activeGroup = vendorGroups.find(g => g.vendorId === activeVendorTab);
+
   return (
-    <div className="border-2 rounded p-4">
+    <div className="border-2 rounded p-4 w-full max-w-full overflow-hidden">
       <h3 className="text-lg font-semibold">Vendor Details</h3>
-      <p className="font-normal text-[#46403E] py-2">
+      <p className="font-normal text-[#46403E] py-2 text-sm">
         Select a vendor and start a negotiation deal
       </p>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex items-center gap-2 justify-between">
-          <div className="grow">
-            <SelectField
+      <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+        {/* Vendor Selection */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="w-full sm:w-3/4">
+            <FormSelect
               name="selectedVendor"
               placeholder="Select Vendor"
-              options={availableVendors}
-              register={register}
-              error={errors.selectedVendor}
-              wholeInputClassName={`my-1`}
-              optionKey="Vendor.name"
-              optionValue="vendorId"
+              options={vendorOptions}
+              value={watch("selectedVendor") || ""}
+              onChange={(e) => setValue("selectedVendor", e.target.value)}
+              error={errors.selectedVendor?.message}
+              className="my-1"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="sm:w-1/4 flex items-center">
             <Button
-              className="px-4 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleStartNegotiation}
+              className="w-full px-3 py-2.5 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed text-xs whitespace-nowrap"
+              onClick={handleAddContract}
               type="button"
-              disabled={creatingContract}
+              disabled={!watch("selectedVendor")}
             >
-              {creatingContract ? (
-                <>
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Starting...
-                </>
-              ) : (
-                <>
-                  <FiPlay className="w-4 h-4" />
-                  Start Negotiation
-                </>
-              )}
+              Add
             </Button>
           </div>
         </div>
 
-        {/* Active Negotiations Section */}
-        {(deals.length > 0 || loadingDeals) && (
-          <div className="mt-6">
-            <h4 className="text-sm font-semibold text-gray-700 mb-2">Active Negotiations</h4>
-            {loadingDeals ? (
-              <div className="text-sm text-gray-500">Loading deals...</div>
-            ) : (
-              <ul className="space-y-2">
-                {deals.map((deal) => {
-                  const statusStyle = statusColors[deal.status] || statusColors.NEGOTIATING;
+        {/* Tabbed Vendor View with Timeline */}
+        {(vendorGroups.length > 0 || loadingDeals) && (
+          <div className="mt-5">
+            <h4 className="text-sm font-semibold text-gray-700 mb-3">Vendor Negotiations</h4>
 
-                  return (
-                    <li
-                      key={deal.dealId}
-                      className="bg-blue-50 px-4 py-3 flex items-center justify-between gap-3 border border-blue-200 rounded-lg"
+            {loadingDeals ? (
+              <div className="text-sm text-gray-500 p-4 bg-gray-50 rounded-lg">Loading...</div>
+            ) : (
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                {/* Tab Headers - Horizontal scroll */}
+                <div className="flex border-b border-gray-200 bg-gray-50 overflow-x-auto">
+                  {vendorGroups.map((group) => (
+                    <button
+                      key={group.vendorId}
+                      type="button"
+                      onClick={() => setActiveVendorTab(group.vendorId)}
+                      className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors flex-shrink-0 ${
+                        activeVendorTab === group.vendorId
+                          ? 'border-blue-500 text-blue-600 bg-white'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                      }`}
                     >
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="flex-1">
-                          <span className="font-medium text-gray-900">
-                            {deal.vendorName || 'Unknown Vendor'}
-                          </span>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${statusStyle.bg} ${statusStyle.text}`}>
-                              {deal.status}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              Round {deal.currentRound}
-                            </span>
-                          </div>
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <FiUser className="w-4 h-4" />
+                        <span className="max-w-[120px] truncate">{group.vendorName}</span>
+                        <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 text-gray-600">
+                          {group.dealCount}
+                        </span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => handleViewDeal(deal)}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
-                      >
-                        <FiExternalLink className="w-4 h-4" />
-                        View Deal
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Tab Content - Timeline View */}
+                {activeGroup && (
+                  <div className="p-4 bg-white">
+                    {/* Vendor Summary Header */}
+                    <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100 gap-3">
+                      <div className="min-w-0 flex-1">
+                        <h5 className="font-medium text-gray-900 text-base truncate">{activeGroup.vendorName}</h5>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {activeGroup.activeDeals > 0 && (
+                          <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">
+                            {activeGroup.activeDeals} Active
+                          </span>
+                        )}
+                        {activeGroup.completedDeals > 0 && (
+                          <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">
+                            {activeGroup.completedDeals} Done
+                          </span>
+                        )}
+                        <Button
+                          className="px-3 py-1.5 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1 text-sm"
+                          onClick={() => handleStartNegotiation(activeGroup.vendorId, activeGroup.vendorName)}
+                          type="button"
+                        >
+                          <FiPlay className="w-3 h-3" />
+                          New
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Timeline */}
+                    <div className="space-y-2.5">
+                      {activeGroup.items.map((item, index) => (
+                        <div
+                          key={item.id}
+                          className="relative pl-6"
+                        >
+                          {/* Timeline line */}
+                          {index < activeGroup.items.length - 1 && (
+                            <div className="absolute left-[7px] top-6 bottom-0 w-0.5 bg-gray-200" />
+                          )}
+
+                          {/* Timeline dot */}
+                          <div className={`absolute left-0 top-2 w-[16px] h-[16px] rounded-full border-2 ${
+                            item.type === 'deal'
+                              ? item.deal?.status === 'ACCEPTED'
+                                ? 'bg-green-100 border-green-500'
+                                : item.deal?.status === 'NEGOTIATING'
+                                ? 'bg-blue-100 border-blue-500'
+                                : item.deal?.status === 'ESCALATED'
+                                ? 'bg-orange-100 border-orange-500'
+                                : 'bg-gray-100 border-gray-400'
+                              : item.contract?.status === 'Active'
+                                ? 'bg-blue-100 border-blue-500'
+                                : item.contract?.status === 'Accepted'
+                                ? 'bg-green-100 border-green-500'
+                                : item.contract?.status === 'Rejected'
+                                ? 'bg-gray-100 border-gray-400'
+                                : item.contract?.status === 'Escalated'
+                                ? 'bg-orange-100 border-orange-500'
+                                : 'bg-purple-100 border-purple-500'
+                          }`} />
+
+                          {/* Item Content */}
+                          {item.type === 'deal' && item.deal && (
+                            <div className={`py-2 px-3 rounded-lg border ${statusConfig[item.deal.status].cardBg} ${statusConfig[item.deal.status].cardBorder}`}>
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                  <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${statusConfig[item.deal.status].bg} ${statusConfig[item.deal.status].text}`}>
+                                    {statusConfig[item.deal.status].label}
+                                  </span>
+                                  <span className="text-xs text-gray-500 flex-shrink-0">
+                                    Round {item.deal.currentRound}/{item.deal.maxRounds}
+                                  </span>
+                                  <span className="text-xs text-gray-400 flex-shrink-0">
+                                    {formatDate(item.createdAt)}
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleViewDeal(item.deal!)}
+                                  className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors flex-shrink-0"
+                                >
+                                  <FiExternalLink className="w-4 h-4" />
+                                  View
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {item.type === 'contract' && item.contract && (() => {
+                            const contractStatus = getContractStatusConfig(item.contract.status);
+                            const canStartNegotiation = item.contract.status !== 'Rejected' && item.contract.status !== 'Active' && item.contract.status !== 'Accepted';
+                            const isRejected = item.contract.status === 'Rejected';
+                            const isActive = item.contract.status === 'Active';
+                            return (
+                              <div className={`py-2 px-3 rounded-lg border ${contractStatus.cardBg} ${contractStatus.cardBorder}`}>
+                                <div className="flex items-center justify-between gap-3">
+                                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                                    <span className={`text-xs px-2 py-0.5 rounded-full ${contractStatus.bg} ${contractStatus.text} flex-shrink-0`}>
+                                      {contractStatus.label}
+                                    </span>
+                                    <span className="text-xs text-gray-400 flex-shrink-0">
+                                      {formatDate(item.createdAt)}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenContractLink(item.contract!)}
+                                      className="p-1.5 rounded border border-gray-300 bg-white hover:bg-gray-100 transition-colors"
+                                      title="Open link"
+                                    >
+                                      <FiExternalLink className="w-4 h-4 text-gray-700" />
+                                    </button>
+                                    {canStartNegotiation && (
+                                      <Button
+                                        className="px-3 py-1.5 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1 text-sm"
+                                        onClick={() => handleStartNegotiation(
+                                          item.contract!.vendorId,
+                                          getVendorName(item.contract!.vendorId),
+                                          item.contract!.id
+                                        )}
+                                        type="button"
+                                      >
+                                        <FiPlay className="w-3 h-3" />
+                                        {item.contract.status === 'Escalated' ? 'Re-negotiate' : 'Start'}
+                                      </Button>
+                                    )}
+                                    {isRejected && (
+                                      <span className="text-xs text-gray-500 italic">Final</span>
+                                    )}
+                                    {isActive && (
+                                      <span className="text-xs text-blue-600 italic">In progress</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         )}
 
-        {/* Legacy Contracts Section */}
-        {contractData.length > 0 && (
-          <div className="mt-6">
-            <h4 className="text-sm font-semibold text-gray-700 mb-2">Vendor Contracts (Legacy Portal)</h4>
+        {/* Pending Contracts Section */}
+        {pendingContracts.length > 0 && (
+          <div className="mt-5">
+            <h4 className="text-sm font-semibold text-gray-700 mb-2">Pending Contracts</h4>
+            <p className="text-xs text-gray-500 mb-3">Vendors added but no negotiation started</p>
             <ul className="space-y-2">
-              {contractData.map((contract, index) => {
-                const matchedProduct = data?.find(
-                  (i) => i?.vendorId?.toString() === contract?.vendorId?.toString()
+              {pendingContracts.map((contract) => {
+                const matchedVendor = data?.find(
+                  (v) => v?.vendorId?.toString() === contract?.vendorId?.toString()
                 );
+                const vendorName = matchedVendor?.Vendor?.name || matchedVendor?.Vendor?.companyName || 'Unknown Vendor';
+                const fullLink = `${import.meta.env.VITE_FRONTEND_URL}/vendor-contract/${contract?.uniqueToken}`;
+
                 return (
                   <li
-                    key={index}
-                    className="bg-[#F3F3F3] px-[10px] py-[10px] flex items-center justify-between gap-3 border-1 border-[#DDDDDD] select-none"
+                    key={contract.id}
+                    className="bg-amber-50 px-4 py-3 flex items-center justify-between gap-3 border border-amber-200 rounded-lg"
                   >
-                    <div className="d-flex flex-md-row flex-column">
-                      <span className="md:text-base flex-grow text-[13px] font-[590]">
-                        {matchedProduct?.Vendor?.name}
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <span className="font-medium text-gray-900 text-sm truncate">{vendorName}</span>
+                      <span
+                        className="text-xs text-gray-500 truncate max-w-[140px] cursor-help"
+                        title={fullLink}
+                      >
+                        ...{truncateToken(contract?.uniqueToken)}
                       </span>
                     </div>
-                    <span className="flex items-center gap-3 flex-grow">
-                      <div className="flex items-center justify-between px-[10px] py-[5px] bg-white w-full">
-                        <div className="cursor-pointer break-all text-xs">{`${import.meta.env.VITE_FRONTEND_URL
-                          }/vendor-contract/${contract?.uniqueToken}`}</div>
-                      </div>
-                      <FiCopy
-                        className="w-5 h-5 cursor-pointer text-gray-600 hover:text-gray-900"
-                        onClick={() => handleCopy(contract)}
-                      />
-                      <RiDeleteBinLine
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleCopyLink(contract)}
+                        className="p-1.5 rounded border border-gray-300 bg-white hover:bg-gray-100 transition-colors"
+                        title="Copy link"
+                      >
+                        <FiCopy className="w-4 h-4 text-gray-700" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenContractLink(contract)}
+                        className="p-1.5 rounded border border-gray-300 bg-white hover:bg-gray-100 transition-colors"
+                        title="Open link"
+                      >
+                        <FiExternalLink className="w-4 h-4 text-gray-700" />
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => handleDeleteContract(contract?.id)}
-                        className="cursor-pointer text-[#EF2D2E] w-5 h-5"
-                      />
-                    </span>
+                        className="p-1.5 rounded border border-red-300 bg-white hover:bg-red-50 transition-colors"
+                        title="Delete"
+                      >
+                        <RiDeleteBinLine className="w-4 h-4 text-red-600" />
+                      </button>
+                      <Button
+                        className="px-3 py-1.5 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1 text-sm"
+                        onClick={() => handleStartNegotiation(contract.vendorId, vendorName, contract.id)}
+                        type="button"
+                      >
+                        <FiPlay className="w-3 h-3" />
+                        Start
+                      </Button>
+                    </div>
                   </li>
                 );
               })}
@@ -447,9 +794,9 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
           </div>
         )}
 
-        <div className="mt-6 flex justify-start gap-4">
+        <div className="mt-4 flex justify-start gap-3">
           <Button
-            className="px-4 py-2 bg-[white] text-[black] border rounded !w-fit"
+            className="px-3 py-2 bg-[white] text-[black] border rounded !w-fit text-sm"
             onClick={() => {
               prevStep();
             }}
@@ -461,7 +808,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="px-4 py-2 bg-blue-500 text-white rounded !w-fit"
+            className="px-3 py-2 bg-blue-500 text-white rounded !w-fit text-sm"
           >
             Done
           </Button>
@@ -472,13 +819,15 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
         <Modal
           wholeModalStyle="text-center"
           heading="Are you sure you want to proceed without adding any vendor?"
+          body=""
           cancelText="No"
           actionText="Yes"
           isDeleteIcon={true}
           btnsStyle="justify-center"
           onAction={handleModalConfirm}
+          onClose={handleModalClose}
           handleClose={handleModalClose}
-        ></Modal>
+        />
       )}
     </div>
   );

@@ -174,6 +174,18 @@ const StepOne: React.FC<StepOneProps> = ({
             </div>
           </div>
         )}
+
+        {/* Vendor-only Locked Notice (when only vendor is locked via URL param) */}
+        {!lockedFields && data.vendorLocked && (
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Lock className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <p className="text-sm text-blue-700">
+                Vendor is pre-selected and cannot be changed for this negotiation.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Vendor Selection */}
@@ -183,6 +195,11 @@ const StepOne: React.FC<StepOneProps> = ({
           className="block text-sm font-medium text-gray-700 mb-1"
         >
           Vendor <span className="text-red-500">*</span>
+          {(lockedFields || data.vendorLocked) && (
+            <span className="ml-2 inline-flex items-center">
+              <Lock className="w-3.5 h-3.5 text-amber-500" />
+            </span>
+          )}
         </label>
         <div className="relative">
           <select
@@ -190,12 +207,12 @@ const StepOne: React.FC<StepOneProps> = ({
             name="vendorId"
             value={data.vendorId || ''}
             onChange={handleVendorSelect}
-            disabled={!data.requisitionId || loadingVendors || lockedFields}
+            disabled={!data.requisitionId || loadingVendors || lockedFields || data.vendorLocked}
             className={`
               w-full px-4 py-2.5 border rounded-lg appearance-none
               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
               disabled:bg-gray-50 disabled:text-gray-500
-              ${lockedFields ? 'bg-gray-100 cursor-not-allowed' : ''}
+              ${(lockedFields || data.vendorLocked) ? 'bg-gray-100 cursor-not-allowed' : ''}
               ${errors.vendorId ? 'border-red-300 bg-red-50' : 'border-gray-300'}
             `}
           >
@@ -313,7 +330,7 @@ const StepOne: React.FC<StepOneProps> = ({
       {/* Negotiation Priority */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Negotiation Priority <span className="text-red-500">*</span>
+          Negotiation Strategy <span className="text-red-500">*</span>
         </label>
         <div className="flex gap-3">
           {(['HIGH', 'MEDIUM', 'LOW'] as NegotiationPriority[]).map((priority) => (
@@ -335,7 +352,7 @@ const StepOne: React.FC<StepOneProps> = ({
             >
               <div className="text-center">
                 <p className="font-medium">
-                  {priority === 'HIGH' ? 'High' : priority === 'MEDIUM' ? 'Medium' : 'Low'}
+                  {priority === 'HIGH' ? 'Maximize Savings' : priority === 'MEDIUM' ? 'Fair Deal' : 'Quick Close'}
                 </p>
                 <p className="text-xs mt-0.5 opacity-75">
                   {priority === 'HIGH'
@@ -350,10 +367,10 @@ const StepOne: React.FC<StepOneProps> = ({
         </div>
         <p className="mt-2 text-xs text-gray-500">
           {data.priority === 'HIGH'
-            ? 'High priority: More assertive negotiation, faster escalation, fewer concessions'
+            ? 'Maximize Savings: Aggressive negotiation focused on getting the best price. More negotiation rounds, stricter acceptance criteria.'
             : data.priority === 'MEDIUM'
-              ? 'Medium priority: Balanced approach between assertiveness and flexibility'
-              : 'Low priority: More flexible negotiation, willing to make concessions'}
+              ? 'Fair Deal: Balanced approach where both parties achieve reasonable outcomes. Standard negotiation rounds.'
+              : 'Quick Close: Flexible negotiation focused on faster resolution. Fewer rounds, more willing to accept good offers.'}
         </p>
       </div>
     </div>

@@ -25,8 +25,8 @@ export default function ResetPassword() {
 
   const onSubmit = async (data: ResetPasswordFormData): Promise<void> => {
     try {
-      const { confirmPassword, ...resetData } = data;
-      const response = await api.put(`/auth/reset-password/${id}`, resetData);
+      const { confirmPassword: _, ...resetData } = data;
+      await api.put(`/auth/reset-password/${id}`, resetData);
       toast.success("Password reset successfully")
       navigate("/sign-in");
     } catch (error: any) {

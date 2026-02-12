@@ -12,6 +12,7 @@ interface DateFieldProps {
   className?: string;
   labelClassName?: string;
   wholeInputClassName?: string;
+  required?: boolean;
 }
 
 const DateField = ({
@@ -25,6 +26,7 @@ const DateField = ({
   className,
   labelClassName,
   wholeInputClassName,
+  required,
 }: DateFieldProps) => {
   const [internalValue, setInternalValue] = useState("");
 
@@ -44,6 +46,7 @@ const DateField = ({
           className={`block text-gray-600 font-medium mb-2 ${labelClassName}`}
         >
           {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
       <div>

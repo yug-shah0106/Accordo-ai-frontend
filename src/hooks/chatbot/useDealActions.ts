@@ -108,9 +108,9 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
   const maxRounds = config?.max_rounds ?? 10;
   const mode: DealMode = (deal?.mode as DealMode) ?? 'INSIGHTS';
 
-  // Vendor mode is enabled when deal mode is 'VENDOR' (AI-PM simulates buyer)
-  // This could be expanded to check deal.vendorMode or config.vendorMode
-  const vendorMode = mode === 'VENDOR' || (deal as unknown as { vendorMode?: boolean })?.vendorMode === true;
+  // Vendor mode is enabled when deal has vendorMode flag set
+  // In vendor mode, AI-PM simulates the buyer
+  const vendorMode = (deal as unknown as { vendorMode?: boolean })?.vendorMode === true;
 
   // Load deal data using lookupDeal (gets both deal and context)
   const loadDeal = useCallback(async () => {

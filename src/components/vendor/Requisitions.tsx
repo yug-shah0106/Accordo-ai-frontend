@@ -1,6 +1,11 @@
 import { Link } from "react-router-dom";
 
-function Requisitions({isOpen, toggleMenu}) {
+interface RequisitionsProps {
+  isOpen: boolean;
+  toggleMenu: () => void;
+}
+
+function Requisitions({isOpen, toggleMenu}: RequisitionsProps) {
   const data = [
     { venderId: "Printer", Quantity: 14 },
     { venderId: "Printer", Quantity: 14 },
