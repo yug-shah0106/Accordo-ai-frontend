@@ -42,10 +42,8 @@ ENV VITE_BACKEND_URL=${VITE_BACKEND_URL}
 ENV VITE_FRONTEND_URL=${VITE_FRONTEND_URL}
 ENV VITE_ASSEST_URL=${VITE_ASSEST_URL}
 
-# Build the application
-# Skip TypeScript type checking during build (vite build only)
-# Type errors should be caught during development, not blocking production builds
-RUN npx vite build
+# Build the application (tsc type-check + vite build)
+RUN npm run build
 
 # ---------------------------------------------
 # Stage 3: Production (nginx)

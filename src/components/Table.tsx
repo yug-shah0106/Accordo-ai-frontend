@@ -3,7 +3,6 @@ import { HiDotsHorizontal } from "react-icons/hi";
 import { Link } from "react-router-dom";
 import TableShimmer from "./shimmerTable/tableShimmer";
 import Badge from "./badge";
-import toast from "react-hot-toast";
 import { FiExternalLink } from "react-icons/fi";
 import { formatDate } from "../utils/utils";
 import { Menu, MenuItem, IconButton } from "@mui/material";
