@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form";
 import Button from "../Button";
 import { authApi } from "../../api";
-import { useNavigate } from "react-router-dom";
 import SelectField from "../SelectField";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
@@ -30,7 +29,6 @@ const VendorCurrencyDetails: React.FC<VendorCurrencyDetailsProps> = ({
   companyId,
   company
 }) => {
-  const navigate = useNavigate();
   const {
     register,
     handleSubmit,

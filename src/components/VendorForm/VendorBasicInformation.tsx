@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import InputField from "../InputField";
 import Button from "../Button";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { authApi } from "../../api";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
@@ -35,12 +35,10 @@ const VendorBasicInformation: React.FC<VendorBasicInformationProps> = ({
   currentStep,
   nextStep,
   prevStep,
-  projectId,
+  projectId: _projectId,
   companyId,
   company
 }) => {
-  const navigate = useNavigate();
-  
   const {
     register,
     handleSubmit,
@@ -81,10 +79,13 @@ const VendorBasicInformation: React.FC<VendorBasicInformationProps> = ({
   const onSubmit = async (data: FormData): Promise<void> => {
     try {
       if (apicall !== "add-vendor") {
-        await authApi.put(
-          `/vendor/update/${company?.Vendor?.[0]?.id}`,
-          data
-        );
+        // Try to get vendor ID from either direct Vendor association or VendorCompanies
+        const vendorId = (company as any)?.Vendor?.[0]?.id || (company as any)?.VendorCompanies?.[0]?.Vendor?.id;
+        if (vendorId) {
+          await authApi.put(`/vendor/update/${vendorId}`, data);
+        } else {
+          throw new Error("Vendor ID not found");
+        }
       } else {
         await authApi.post("/vendor/create", {
           ...data,
@@ -101,10 +102,24 @@ const VendorBasicInformation: React.FC<VendorBasicInformationProps> = ({
 
   useEffect(() => {
     if (company) {
+      // Try to get vendor from either direct Vendor association or VendorCompanies
+      const vendor = (company as any)?.Vendor?.[0] || (company as any)?.VendorCompanies?.[0]?.Vendor;
+
+      console.log('=== STEP 2 - BASIC INFORMATION ===');
+      console.log('Company object:', company);
+      console.log('Vendor from company.Vendor[0]:', (company as any)?.Vendor?.[0]);
+      console.log('Vendor from VendorCompanies:', (company as any)?.VendorCompanies?.[0]?.Vendor);
+      console.log('Selected vendor:', vendor);
+      console.log('Resetting form with:', {
+        name: vendor?.name || "",
+        phone: vendor?.phone || "",
+        email: vendor?.email || "",
+      });
+
       reset({
-        name: company?.Vendor?.[0]?.name || "",
-        phone: company?.Vendor?.[0]?.phone || "",
-        email: company?.Vendor?.[0]?.email || "",
+        name: vendor?.name || "",
+        phone: vendor?.phone || "",
+        email: vendor?.email || "",
       });
     }
   }, [company, reset]);

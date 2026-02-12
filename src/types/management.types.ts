@@ -62,12 +62,24 @@ export interface Vendor {
   companyId: string;
   approvedContractCount?: number;
   contractCount?: number;
+  Company?: Company;
 }
 
 export interface VendorRow {
   vendorId: string;
   companyId: string;
   Vendor: Vendor;
+}
+
+export interface Address {
+  id: number;
+  label: string;
+  address: string;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  postalCode: string | null;
+  isDefault: boolean;
 }
 
 export interface Company {
@@ -94,7 +106,11 @@ export interface Company {
   accountNumber: string;
   ifscCode: string;
   fullAddress: string;
+  swiftCode?: string;
+  iBanNumber?: string;
+  typeOfCurrency?: string;
   Vendor: Vendor[];
+  Addresses?: Address[];
 }
 
 export interface PurchaseOrder {

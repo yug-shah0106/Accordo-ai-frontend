@@ -12,6 +12,8 @@ import type { DealStatus } from '../../../types';
  */
 
 interface VendorControlsProps {
+  rfqId: number;
+  vendorId: number;
   dealId: string;
   dealStatus: DealStatus;
   currentRound: number;
@@ -23,6 +25,8 @@ interface VendorControlsProps {
 type ScenarioType = 'SOFT' | 'HARD' | 'WALK_AWAY';
 
 export default function VendorControls({
+  rfqId,
+  vendorId,
   dealId,
   dealStatus,
   currentRound,
@@ -30,6 +34,8 @@ export default function VendorControls({
   onUpdate,
   disabled = false,
 }: VendorControlsProps) {
+  // Build DealContext for service calls
+  const ctx = { rfqId, vendorId, dealId };
   const [selectedScenario, setSelectedScenario] = useState<ScenarioType>('SOFT');
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +53,7 @@ export default function VendorControls({
       setError(null);
       setIsRunning(true);
 
-      const response = await chatbotService.generateVendorMessage(dealId, selectedScenario);
+      const response = await chatbotService.generateVendorMessage(ctx, selectedScenario);
 
       if (response.data.completed) {
         const finalStatus = response.data.deal.status;
@@ -87,7 +93,7 @@ export default function VendorControls({
       setError(null);
       setIsRunning(true);
 
-      const response = await chatbotService.runDemo(dealId, selectedScenario, maxRounds);
+      const response = await chatbotService.runDemo(ctx, selectedScenario, maxRounds);
 
       const { finalStatus, totalRounds, finalUtility } = response.data;
 

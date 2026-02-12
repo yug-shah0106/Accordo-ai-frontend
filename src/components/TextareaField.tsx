@@ -1,6 +1,20 @@
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
+import type { FieldError, UseFormRegister, FieldValues, Path } from "react-hook-form";
 
-const TextareaField = ({
+interface TextareaFieldProps<T extends FieldValues = FieldValues> {
+  label?: string;
+  name: Path<T>;
+  register?: UseFormRegister<T>;
+  error?: FieldError;
+  value?: string;
+  onChange?: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+  className?: string;
+  labelClassName?: string;
+  wholeInputClassName?: string;
+  placeholder?: string;
+}
+
+const TextareaField = <T extends FieldValues = FieldValues>({
   label,
   name,
   register,
@@ -11,10 +25,10 @@ const TextareaField = ({
   labelClassName,
   wholeInputClassName,
   placeholder
-}) => {
+}: TextareaFieldProps<T>) => {
   const [internalValue, setInternalValue] = useState("");
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     if (onChange) {
       onChange(e);
     } else {

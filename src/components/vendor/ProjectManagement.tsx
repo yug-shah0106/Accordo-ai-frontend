@@ -1,165 +1,72 @@
 import React, { useEffect, useState } from "react";
-import { AiFillProject } from "react-icons/ai";
-import { IoSearchOutline } from "react-icons/io5";
-import { VscEdit, VscSettings } from "react-icons/vsc";
+import { IoSearchOutline, IoCloseCircle } from "react-icons/io5";
+import { VscEdit } from "react-icons/vsc";
 import { PiPlusSquareBold } from "react-icons/pi";
 import { Link, useNavigate } from "react-router-dom";
 import Table from "../Table";
 import Pagination from "../Pagination";
 import { RiDeleteBin5Line } from "react-icons/ri";
-import { FaArrowLeft, FaCaretDown, FaPlus, FaRegEye } from "react-icons/fa";
-import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import { FaArrowLeft, FaPlus, FaRegEye } from "react-icons/fa";
+import { MdOutlineKeyboardArrowDown, MdOutlineKeyboardArrowUp } from "react-icons/md";
 import useFetchData from "../../hooks/useFetchData";
 import useDebounce from "../../hooks/useDebounce";
 import { authApi } from "../../api";
 import toast from "react-hot-toast";
 import Modal from "../Modal";
-import Filter from "../Filter";
 import { useRef } from "react";
 import { LuTwitch } from "react-icons/lu";
 import { hasPermission } from "../../utils/permissions";
-import { createPortal } from "react-dom";
 
-const FilterModal = ({ isOpen, onClose, selectedFilters, setSelectedFilters, applyFilters }) => {
-  const [localMin, setLocalMin] = useState(selectedFilters[0].value[0]);
-  const [localMax, setLocalMax] = useState(selectedFilters[0].value[1]);
+// Error boundary component - defined outside to prevent re-creation on each render
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
-  useEffect(() => {
-    if (isOpen) {
-      setLocalMin(selectedFilters[0].value[0]);
-      setLocalMax(selectedFilters[0].value[1]);
-    }
-  }, [isOpen, selectedFilters]);
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
 
-  const handleApply = () => {
-    // Validate the range values
-    const minValue = localMin === '' ? selectedFilters[0].range[0] : Number(localMin);
-    const maxValue = localMax === '' ? selectedFilters[0].range[1] : Number(localMax);
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Error in component:', error, errorInfo);
+  }
 
-    // Ensure min is not greater than max
-    if (minValue > maxValue) {
-      toast.error('Minimum value cannot be greater than maximum value');
-      return;
-    }
-
-    const newFilters = [...selectedFilters];
-    newFilters[0].value = [minValue, maxValue];
-    setSelectedFilters(newFilters);
-    applyFilters(newFilters);
-  };
-
-  if (!isOpen) return null;
-
-  return createPortal(
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-start justify-center pt-20">
-      <div className="bg-white rounded-xl border border-gray-200 shadow-2xl overflow-hidden relative max-w-2xl w-full mx-4">
-        {/* Decorative top border */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#234BF3] to-blue-400"></div>
-        
-        <div className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <VscSettings className="text-[#234BF3] text-lg" />
-              <h3 className="text-lg font-semibold text-gray-900">Filter Projects</h3>
-            </div>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-500 p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 max-h-[60vh] overflow-y-auto pr-2">
-            {selectedFilters.map((filter, index) => (
-              <div key={index} className="space-y-3 bg-gray-50/50 pt-3 px-3 pb-0 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-900">
-                    {filter.label}
-                  </label>
-                </div>
-
-                {filter.controlType === "rangeNumeric" && (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1">
-                        <label className="block text-xs text-gray-500 mb-1">Minimum</label>
-                        <input
-                          type="number"
-                          min={filter.range[0]}
-                          max={filter.range[1]}
-                          value={localMin}
-                          onChange={(e) => {
-                            const value = e.target.value === '' ? '' : Number(e.target.value);
-                            setLocalMin(value);
-                          }}
-                          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#234BF3] focus:border-transparent transition-all duration-200 shadow-sm"
-                          placeholder="Min"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <label className="block text-xs text-gray-500 mb-1">Maximum</label>
-                        <input
-                          type="number"
-                          min={filter.range[0]}
-                          max={filter.range[1]}
-                          value={localMax}
-                          onChange={(e) => {
-                            const value = e.target.value === '' ? '' : Number(e.target.value);
-                            setLocalMax(value);
-                          }}
-                          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#234BF3] focus:border-transparent transition-all duration-200 shadow-sm"
-                          placeholder="Max"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <h2 className="text-red-800 font-medium">Something went wrong.</h2>
+          <p className="text-red-600 text-sm mt-1">Please try refreshing the page.</p>
         </div>
+      );
+    }
 
-        <div className="bg-gray-50 px-4 pt-3 pb-0 border-t border-gray-200 flex justify-end gap-3 sticky bottom-0">
-          <button
-            onClick={onClose}
-            className="px-3 pt-1 pb-0.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#234BF3] transition-all duration-200 shadow-sm"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleApply}
-            className="px-3 pt-1 pb-0.5 text-sm font-medium text-white bg-[#234BF3] border border-transparent rounded-lg hover:bg-[#1d3fd8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#234BF3] transition-all duration-200 shadow-sm"
-          >
-            Apply Filters
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
-};
+    return this.props.children;
+  }
+}
 
 const ProjectManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [localFilterValues, setLocalFilterValues] = useState({ min: 1, max: 360 });
+  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<any>(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const menuRef = useRef(null);
   const navigate = useNavigate();
-  const [selectedFilters, setSelectedFilters] = useState([
-    {
-      moduleName: "Project",
-      filterBy: "tenureInDays",
-      controlType: "rangeNumeric",
-      label: "Tenure",
-      range: [1, 360],
-      value: [1, 360],
-    }
-  ]);
+  const [expandedSections, setExpandedSections] = useState({
+    basicInfo: true,
+    pocInfo: true,
+  });
+
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
 
   const columns = [
     { header: "Project Id", accessor: "projectId" },
@@ -177,82 +84,90 @@ const ProjectManagement = () => {
   const {
     data: projects,
     loading,
-    error,
+    error: _error,
     totalCount,
     page,
     setPage,
     limit,
     setSearch,
     totalDoc,
-    setFilters,
     refetch,
   } = useFetchData("/project/get-all", 10);
 
   const debounceSearch = useDebounce(setSearch, 600);
 
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    debounceSearch(value);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    setSearch("");
+  };
+
   const actions = [
     {
-      type: "button",
+      type: "button" as const,
       label: "View Requisition",
       icon: <FaRegEye />,
       // link: (row) => ({
       //   pathname: `/requisition-management`,
       //   state: row,
       // }),
-      onClick: (row) => handleViewRequisition(row),
+      onClick: (row: any) => handleViewRequisition(row),
       state: "whole",
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "View Details",
       icon: <FaRegEye />,
-      onClick: (row) => handleViewDetails(row),
+      onClick: (row: any) => handleViewDetails(row),
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "Add Requisition",
       icon: <FaPlus />,
       // link: () => `/project-management/create-requisition`,
-      onClick: (row) => addRequisition(row),
+      onClick: (row: any) => addRequisition(row),
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "Edit Details",
       icon: <VscEdit />,
       // link: (row) => `/project-management/editprojectform/${row.id}`,
-      onClick: (row) => editProject(row),
+      onClick: (row: any) => editProject(row),
     },
     {
-      type: "button",
+      type: "button" as const,
       label: "Delete",
       icon: <RiDeleteBin5Line />,
-      onClick: (row) => setIsDeleteModalOpen(row.id),
+      onClick: (row: any) => setIsDeleteModalOpen(row.id),
     },
   ];
 
-  const handleRowClick = (project) => {
+  const handleRowClick = (project: any) => {
     navigate("/requisition-management", { state: project });
 
     // setSelectedProject(project);
     // setIsSidebarOpen(true);
   };
 
-  const handleViewDetails = (project) => {
+  const handleViewDetails = (project: any) => {
     setSelectedProject(project);
     setIsSidebarOpen(true);
   };
-  const handleViewRequisition = (row) => {
+  const handleViewRequisition = (row: any) => {
     navigate("/requisition-management", {
-      id: row.id,
-      tenureInDays: row.tenureInDays,
+      state: { id: row.id, tenureInDays: row.tenureInDays },
     });
   };
-  const addRequisition = (row) => {
+  const addRequisition = (row: any) => {
     navigate(`/requisition-management/create-requisition`, {
       state: { id: row.id, tenureInDays: row.tenureInDays },
     });
   };
-  const editProject = (row) => {
+  const editProject = (row: any) => {
     navigate(`/project-management/editprojectform/${row.id}`);
   };
 
@@ -265,72 +180,23 @@ const ProjectManagement = () => {
     setIsDeleteModalOpen(false);
   };
 
-  const confirmDelete = async (id) => {
+  const confirmDelete = async (id: any) => {
     try {
       await authApi.delete(`/project/delete/${id}`);
       await refetch();
       toast.success("Project deleted successfully.");
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message || "An error occurred while deleting.");
     } finally {
       setIsDeleteModalOpen(false);
     }
   };
 
-  const applyFilters = (filters) => {
-    try {
-      if (filters === null) {
-        // Reset filters to default values
-        const resetFilters = selectedFilters.map(filter => {
-          if (filter.controlType === "rangeNumeric") {
-            return { ...filter, value: [...filter.range] };
-          }
-          return filter;
-        });
-        setSelectedFilters(resetFilters);
-        setFilters(null);
-        setIsFilterModalOpen(false);
-        return;
-      }
-
-      // Transform filters for API
-      const apiFilters = filters.map(filter => {
-        if (filter.controlType === "rangeNumeric") {
-          // Ensure we have valid numbers for the range
-          const minValue = filter.value[0] === '' ? filter.range[0] : Number(filter.value[0]);
-          const maxValue = filter.value[1] === '' ? filter.range[1] : Number(filter.value[1]);
-          
-          return {
-            moduleName: "Project",
-            filterBy: "tenureInDays",
-            operator: "between",
-            controlType: "rangeNumeric",
-            value: [minValue, maxValue]
-          };
-        }
-        return filter;
-      });
-
-      // Apply the filters to the table
-      setFilters(JSON.stringify(apiFilters));
-      setIsFilterModalOpen(false);
-      
-      // Show a toast notification
-      toast.success('Filters applied successfully');
-    } catch (error) {
-      console.error('Error applying filters:', error);
-      toast.error('Error applying filters. Please try again.');
-    }
-  };
-
-  const closeFilterModal = () => {
-    setIsFilterModalOpen(false);
-  };
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !(menuRef.current as HTMLElement).contains(event.target as Node)) {
         setSelectedProject(null);
-        setIsSidebarOpen(null);
+        setIsSidebarOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -343,35 +209,6 @@ const ProjectManagement = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
-  // Add error boundary component
-  class ErrorBoundary extends React.Component {
-    constructor(props) {
-      super(props);
-      this.state = { hasError: false };
-    }
-
-    static getDerivedStateFromError(error) {
-      return { hasError: true };
-    }
-
-    componentDidCatch(error, errorInfo) {
-      console.error('Error in component:', error, errorInfo);
-    }
-
-    render() {
-      if (this.state.hasError) {
-        return (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <h2 className="text-red-800 font-medium">Something went wrong.</h2>
-            <p className="text-red-600 text-sm mt-1">Please try refreshing the page.</p>
-          </div>
-        );
-      }
-
-      return this.props.children;
-    }
-  }
 
   return (
     <ErrorBoundary>
@@ -400,12 +237,23 @@ const ProjectManagement = () => {
             <div className="flex flex-col md:flex-row justify-between gap-3">
               <div className="relative flex-1 max-w-md">
                 <input
-                  onChange={(e) => debounceSearch(e.target.value)}
+                  value={searchTerm}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   type="text"
-                  placeholder="Search projects by name..."
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#234BF3] focus:border-transparent transition-all duration-200"
+                  placeholder="Search by ID, name, category, tenure, POC..."
+                  className="w-full px-4 py-2 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#234BF3] focus:border-transparent transition-all duration-200"
                 />
-                <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                {searchTerm ? (
+                  <button
+                    onClick={clearSearch}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    title="Clear search"
+                  >
+                    <IoCloseCircle className="text-lg" />
+                  </button>
+                ) : (
+                  <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                )}
               </div>
               <div className="flex items-center gap-3">
                 <div className="bg-gray-50 px-3 py-1.5 rounded-lg">
@@ -420,77 +268,42 @@ const ProjectManagement = () => {
             </div>
           </div>
 
-          {/* Filter Section */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsFilterModalOpen((prev) => !prev)}
-              className={`rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all duration-200 ${
-                isFilterModalOpen
-                  ? 'bg-[#234BF3] text-white shadow-sm'
-                  : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <VscSettings className={isFilterModalOpen ? 'text-white' : 'text-gray-500'} />
-              Filters
-              <FaCaretDown className={`transition-transform duration-200 ${isFilterModalOpen ? 'rotate-180' : ''}`} />
-            </button>
-            {selectedFilters.some(filter =>
-              (filter.controlType === "rangeNumeric" && (filter.value[0] !== filter.range[0] || filter.value[1] !== filter.range[1]))
-            ) && (
-              <button
-                onClick={() => applyFilters(null)}
-                className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
-              >
-                Clear all filters
-              </button>
-            )}
-          </div>
-
-          <FilterModal
-            isOpen={isFilterModalOpen}
-            onClose={() => setIsFilterModalOpen(false)}
-            selectedFilters={selectedFilters}
-            setSelectedFilters={setSelectedFilters}
-            applyFilters={applyFilters}
-          />
         </div>
 
         {/* Content Area */}
         <div className="flex-1 px-6 pb-6">
           <div className="flex flex-col justify-between mt-4">
+            {/* Table Section */}
+            <div className="border border-gray-100 rounded-lg overflow-hidden shadow-sm">
+              <div className="overflow-auto hide-scrollbar">
+                <Table
+                  data={projects}
+                  columns={columns}
+                  actions={actions}
+                  onRowClick={handleRowClick}
+                  loading={loading}
+                  currentPage={page}
+                  style="bg-white"
+                  itemsPerPage={10}
+                />
+              </div>
+            </div>
 
-        {/* Table Section */}
-        <div className="border border-gray-100 rounded-lg overflow-hidden shadow-sm">
-          <div className="overflow-auto hide-scrollbar">
-            <Table
-              data={projects}
-              columns={columns}
-              actions={actions}
-              onRowClick={handleRowClick}
-              loading={loading}
-              currentPage={page}
-              style="bg-white"
-              itemsPerPage={10}
-            />
+            {/* Pagination */}
+            <div className="mt-6">
+              <Pagination
+                currentPage={page}
+                totalPages={totalCount}
+                onPageChange={setPage}
+                limit={limit}
+                totalDoc={totalDoc}
+              />
+            </div>
           </div>
         </div>
-
-          {/* Pagination */}
-          <div className="mt-6">
-            <Pagination
-              currentPage={page}
-              totalPages={totalCount}
-              onPageChange={setPage}
-              limit={limit}
-              totalDoc={totalDoc}
-            />
-          </div>
-        </div>
-        {/* End Scrollable Content Area */}
-      </div>
       </div>
 
-        {/* Project Details Sidebar */}
+      {/* Project Details Sidebar */}
         {isSidebarOpen && selectedProject && (
           <div
             ref={menuRef}
@@ -501,7 +314,7 @@ const ProjectManagement = () => {
             <div className="h-full overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-3">
-                  <button 
+                  <button
                     onClick={closeSidebar}
                     className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
                   >
@@ -509,44 +322,74 @@ const ProjectManagement = () => {
                   </button>
                   <h2 className="text-xl font-semibold text-gray-800">Project Details</h2>
                 </div>
-                <span className="text-sm text-gray-500">ID: {selectedProject.Id}</span>
+                <span className="text-sm text-gray-500">ID: {selectedProject.projectId}</span>
               </div>
 
-              <div className="space-y-6">
-                <div className="bg-gray-50 rounded-lg pt-4 px-4 pb-0">
-                  <h3 className="text-lg font-medium text-gray-800 mb-4">Basic Information</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Project Name</p>
-                      <p className="font-medium text-gray-900">{selectedProject.projectName}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Project Type</p>
-                      <p className="font-medium text-gray-900">{selectedProject.typeOfProject}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Address</p>
-                      <p className="font-medium text-gray-900">{selectedProject.projectAddress}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Tenure</p>
-                      <p className="font-medium text-gray-900">
-                        {selectedProject.tenureInDays} Day{selectedProject.tenureInDays > 1 && "s"}
-                      </p>
-                    </div>
+              <div className="space-y-4">
+                {/* Basic Information Section */}
+                <div className="bg-gray-50 rounded-lg px-4 py-2">
+                  <div
+                    className="flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded px-2 -mx-2 py-2"
+                    onClick={() => toggleSection('basicInfo')}
+                  >
+                    <h3 className="text-lg font-medium text-gray-800">Basic Information</h3>
+                    {expandedSections.basicInfo ? (
+                      <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                    ) : (
+                      <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                    )}
                   </div>
+                  {expandedSections.basicInfo && (
+                    <div className="grid grid-cols-2 gap-4 mt-4 pb-4">
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-500">Project Name</p>
+                        <p className="font-medium text-gray-900">{selectedProject.projectName}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-500">Project Type</p>
+                        <p className="font-medium text-gray-900">{selectedProject.typeOfProject}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-500">Address</p>
+                        <p className="font-medium text-gray-900">{selectedProject.projectAddress}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-500">Tenure</p>
+                        <p className="font-medium text-gray-900">
+                          {selectedProject.tenureInDays} Day{selectedProject.tenureInDays > 1 && "s"}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="bg-gray-50 rounded-lg pt-4 px-4 pb-0">
-                  <h3 className="text-lg font-medium text-gray-800 mb-4">Point of Contact</h3>
-                  <div className="space-y-2">
-                    {selectedProject?.ProjectPoc?.map((poc) => (
-                      <div key={poc?.userId} className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-[#234BF3] rounded-full"></div>
-                        <span className="text-gray-900">{poc?.User?.name}</span>
-                      </div>
-                    ))}
+                {/* Point of Contact Section */}
+                <div className="bg-gray-50 rounded-lg px-4 py-2">
+                  <div
+                    className="flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded px-2 -mx-2 py-2"
+                    onClick={() => toggleSection('pocInfo')}
+                  >
+                    <h3 className="text-lg font-medium text-gray-800">Point of Contact</h3>
+                    {expandedSections.pocInfo ? (
+                      <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                    ) : (
+                      <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                    )}
                   </div>
+                  {expandedSections.pocInfo && (
+                    <div className="space-y-2 mt-4 pb-4">
+                      {selectedProject?.ProjectPoc?.length > 0 ? (
+                        selectedProject.ProjectPoc.map((poc: any) => (
+                          <div key={poc?.userId} className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-[#234BF3] rounded-full"></div>
+                            <span className="text-gray-900">{poc?.User?.name}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-gray-500 text-sm">No POC assigned</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -563,13 +406,14 @@ const ProjectManagement = () => {
             isDeleteIcon
             btnsStyle="justify-center"
             onAction={() => confirmDelete(isDeleteModalOpen)}
-            handleClose={closeDeleteModal}
-          >
-            <div className="py-4">
-              <p className="text-gray-600 mb-2">Are you sure you want to delete this project?</p>
-              <p className="text-sm text-gray-500">This action cannot be undone.</p>
-            </div>
-          </Modal>
+            onClose={closeDeleteModal}
+            body={
+              <div className="py-4">
+                <p className="text-gray-600 mb-2">Are you sure you want to delete this project?</p>
+                <p className="text-sm text-gray-500">This action cannot be undone.</p>
+              </div>
+            }
+          />
         )}
     </ErrorBoundary>
   );

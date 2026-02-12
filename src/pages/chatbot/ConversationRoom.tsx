@@ -28,11 +28,14 @@ export default function ConversationRoom() {
     loading,
     sending,
     canSend,
-    isTerminal,
-    revealAvailable,
     sendMessage,
     reload,
-  } = useConversation(dealId);
+  } = useConversation(dealId || '');
+
+  // Compute terminal state from deal status
+  const isTerminal = deal?.status && deal.status !== 'NEGOTIATING';
+  // Reveal is available for non-terminal states (show explainability)
+  const revealAvailable = !isTerminal;
 
   const [showExplainability, setShowExplainability] = useState<boolean>(false);
 
@@ -159,8 +162,10 @@ export default function ConversationRoom() {
       </div>
 
       {/* Explainability Drawer */}
-      {showExplainability && dealId && (
+      {showExplainability && dealId && deal?.requisitionId && deal?.vendorId && (
         <ExplainDrawer
+          rfqId={deal.requisitionId}
+          vendorId={deal.vendorId}
           dealId={dealId}
           isOpen={showExplainability}
           onClose={() => setShowExplainability(false)}

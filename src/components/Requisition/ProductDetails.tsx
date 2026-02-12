@@ -1,8 +1,7 @@
 import { useForm } from "react-hook-form";
-import InputField from "../InputField";
-import SelectField from "../SelectField";
+import { FormInput, FormSelect, SelectOption } from "../shared";
 import Button from "../Button";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import useFetchData from "../../hooks/useFetchData";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
@@ -11,7 +10,9 @@ import toast from "react-hot-toast";
 import { BsPlusCircleFill } from "react-icons/bs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { step2 } from "../../schema/requisition";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom"; // Unused - commented out
+import { useAutoSave } from "../../hooks/useAutoSave";
+import AutosaveIndicator from "../AutosaveIndicator";
 
 interface ProductData {
   productId: string;
@@ -33,17 +34,25 @@ interface Requisition {
   id?: string;
   deliveryDate?: string;
   negotiationClosureDate?: string;
+  // Payment terms - both camelCase and snake_case for backend compatibility
   paymentTerms?: string;
+  payment_terms?: string;
   status?: string;
   typeOfCurrency?: string;
   totalPrice?: string;
+  // Net payment day - both naming conventions
   netPaymentDay?: string;
+  net_payment_day?: string;
+  // Payment percentages - both naming conventions
   prePaymentPercentage?: string;
+  pre_payment_percentage?: number;
   postPaymentPercentage?: string;
+  post_payment_percentage?: number;
   discountTerms?: string;
-  pricePriority?: number;
-  deliveryPriority?: number;
-  paymentTermsPriority?: number;
+  // Priority fields - can be number or string from backend
+  pricePriority?: number | string;
+  deliveryPriority?: number | string;
+  paymentTermsPriority?: number | string;
   productData?: ProductData[];
   RequisitionProduct?: ProductData[];
   RequisitionAttachment?: RequisitionAttachment[];
@@ -56,12 +65,14 @@ interface ProductDetailsProps {
   requisitionId: string;
   projectId?: any;
   requisition: Requisition | null;
-  setRequisition: React.Dispatch<React.SetStateAction<Requisition | null>>;
+  setRequisition: (value: React.SetStateAction<Requisition | null>) => void;
 }
 
 interface FormData {
   selectedProduct: string;
+  totalQuantity: number | string;
   totalPrice: number | string;
+  totalMaxPrice: number | string;
   productData: ProductData[];
   paymentTerms: string;
   files: FileList | RequisitionAttachment[];
@@ -79,11 +90,11 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   nextStep,
   prevStep,
   requisitionId,
-  projectId,
+  projectId: _projectId,
   requisition,
   setRequisition,
 }) => {
-  const navigate = useNavigate();
+  // Note: navigation is available via useNavigate if needed in future
   const {
     register,
     handleSubmit,
@@ -103,13 +114,100 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       prePaymentPercentage: "",
       postPaymentPercentage: "",
       selectedProduct: "",
+      totalQuantity: 0,
       totalPrice: 0,
+      totalMaxPrice: 0,
       productData: [],
       paymentTerms: "",
     },
   });
-  const { data, loading, error } = useFetchData<Product[]>("/product/getall");
-  const [requisitionData, setRequisitionData] = useState<{
+  const { data, loading: _loading, error: _error } = useFetchData<Product>("/product/getall");
+
+  // Watch all form values for autosave
+  const formValues = watch();
+
+  // Autosave hook - enabled for both new and edit requisitions
+  const autosaveKey = requisitionId ? `requisition_step2_${requisitionId}` : "requisition_step2_new";
+  const { lastSaved, isSaving, hasDraft, clearSaved, loadSaved } = useAutoSave({
+    key: autosaveKey,
+    data: formValues,
+    interval: 2000, // Save 2 seconds after last change
+    enabled: true, // Enable autosave for both create and edit
+  });
+
+  // Track whether draft was restored or server data was loaded
+  const [draftRestored, setDraftRestored] = useState(false);
+  const [serverDataLoaded, setServerDataLoaded] = useState(false);
+
+  // Automatically restore draft on mount (no popup) - takes priority over server data
+  useEffect(() => {
+    if (hasDraft && !draftRestored && !serverDataLoaded) {
+      const savedData = loadSaved();
+      if (savedData && (savedData.productData?.length > 0 || savedData.paymentTerms ||
+          savedData.pricePriority || savedData.deliveryPriority || savedData.paymentTermsPriority)) {
+        // Silently restore draft data - this takes priority over server data
+        setDraftRestored(true);
+        reset(savedData);
+      }
+    }
+  }, [hasDraft, draftRestored, serverDataLoaded, loadSaved, reset]);
+
+  // Backend autosave - periodically save to server for edit mode
+  const backendAutosaveRef = useRef<NodeJS.Timeout | null>(null);
+  const lastBackendSaveRef = useRef<string>("");
+
+  const saveToBackend = useCallback(async (data: FormData) => {
+    if (!requisitionId) return; // Only save to backend when editing
+
+    try {
+      const cleanData = {
+        productData: JSON.stringify(data.productData || []),
+        discountTerms: data.discountTerms || "",
+        pricePriority: Number(data.pricePriority) || 1,
+        deliveryPriority: Number(data.deliveryPriority) || 1,
+        paymentTermsPriority: Number(data.paymentTermsPriority) || 1,
+        totalQuantity: data.totalQuantity || 0,
+        totalPrice: data.totalPrice || 0,
+        totalMaxPrice: data.totalMaxPrice || 0,
+        payment_terms: data.paymentTerms || "",
+        net_payment_day: data.netPaymentDay || "",
+        pre_payment_percentage: data.prePaymentPercentage || "",
+        post_payment_percentage: data.postPaymentPercentage || "",
+      };
+
+      await authMultiFormApi.put(`/requisition/update/${requisitionId}`, cleanData);
+    } catch (error) {
+      // Silent fail for autosave - don't interrupt user
+      console.error("Backend autosave failed:", error);
+    }
+  }, [requisitionId]);
+
+  // Debounced backend autosave effect
+  useEffect(() => {
+    if (!requisitionId) return; // Only for edit mode
+
+    const currentDataString = JSON.stringify(formValues);
+    if (currentDataString === lastBackendSaveRef.current) return;
+
+    // Clear existing timeout
+    if (backendAutosaveRef.current) {
+      clearTimeout(backendAutosaveRef.current);
+    }
+
+    // Set new timeout for backend save (5 seconds after last change)
+    backendAutosaveRef.current = setTimeout(() => {
+      lastBackendSaveRef.current = currentDataString;
+      saveToBackend(formValues);
+    }, 5000);
+
+    return () => {
+      if (backendAutosaveRef.current) {
+        clearTimeout(backendAutosaveRef.current);
+      }
+    };
+  }, [formValues, requisitionId, saveToBackend]);
+
+  const [_requisitionData, _setRequisitionData] = useState<{
     id?: string;
     delivery_date?: string;
     negotiation_closure_date?: string;
@@ -131,25 +229,36 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
     products: [],
   });
 
+  // Helper to ensure priority values are numeric (1-5), defaulting to 1
+  const parseNumericPriority = (value: number | string | undefined): number => {
+    if (value === undefined || value === null || value === "") return 1;
+    const num = typeof value === "string" ? parseInt(value, 10) : value;
+    if (isNaN(num) || num < 1 || num > 5) return 1;
+    return num;
+  };
+
   useEffect(() => {
-    // Only reset if we have requisition data and it's different from current form values
-    if (requisition && Object.keys(requisition).length > 0) {
+    // Only reset from server data if we haven't already restored a draft
+    // Draft data takes priority over server data to preserve user edits
+    if (requisition && Object.keys(requisition).length > 0 && !draftRestored) {
+      setServerDataLoaded(true);
       reset({
         selectedProduct: "",
         totalPrice: requisition?.totalPrice || "",
         productData: requisition?.productData ?? requisition?.RequisitionProduct ?? [],
-        paymentTerms: requisition?.paymentTerms || "",
+        // Handle both camelCase and snake_case field names from backend
+        paymentTerms: requisition?.paymentTerms || requisition?.payment_terms || "",
         files: requisition?.RequisitionAttachment || [],
-        netPaymentDay: requisition?.netPaymentDay || "",
-        prePaymentPercentage: requisition?.prePaymentPercentage || "",
-        postPaymentPercentage: requisition?.postPaymentPercentage || "",
+        netPaymentDay: requisition?.netPaymentDay || requisition?.net_payment_day || "",
+        prePaymentPercentage: requisition?.prePaymentPercentage || requisition?.pre_payment_percentage || "",
+        postPaymentPercentage: requisition?.postPaymentPercentage || requisition?.post_payment_percentage || "",
         discountTerms: requisition?.discountTerms || "",
-        pricePriority: requisition?.pricePriority || 1,
-        deliveryPriority: requisition?.deliveryPriority || 1,
-        paymentTermsPriority: requisition?.paymentTermsPriority || 1,
+        pricePriority: parseNumericPriority(requisition?.pricePriority),
+        deliveryPriority: parseNumericPriority(requisition?.deliveryPriority),
+        paymentTermsPriority: parseNumericPriority(requisition?.paymentTermsPriority),
       });
     }
-  }, [requisition?.id, reset]); // Only depend on requisition ID, not the entire requisition object
+  }, [requisition?.id, reset, draftRestored]); // Only depend on requisition ID and draftRestored flag
 
   const handleAddProduct = (): void => {
     if (!watch("selectedProduct")) {
@@ -176,23 +285,24 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
     );
   };
 
-  const handleQtyProduct = (productId: string, method: "increment" | "decrement"): void => {
-    setValue(
-      "productData",
-      watch("productData")
-        .map((i) => {
-          if (i.productId === productId) {
-            if (method === "increment") {
-              return { ...i, qty: i.qty + 1 };
-            } else if (method === "decrement") {
-              return { ...i, qty: i.qty - 1 };
-            }
-          }
-          return i;
-        })
-        .filter((i) => i.qty > 0)
-    );
-  };
+  // Commented out: unused quantity adjustment handler
+  // const handleQtyProduct = (productId: string, method: "increment" | "decrement"): void => {
+  //   setValue(
+  //     "productData",
+  //     watch("productData")
+  //       .map((i) => {
+  //         if (i.productId === productId) {
+  //           if (method === "increment") {
+  //             return { ...i, qty: i.qty + 1 };
+  //           } else if (method === "decrement") {
+  //             return { ...i, qty: i.qty - 1 };
+  //           }
+  //         }
+  //         return i;
+  //       })
+  //       .filter((i) => i.qty > 0)
+  //   );
+  // };
 
   // Modify the handleDirectInput function for 1-5 scale
   const handleDirectInput = (
@@ -260,16 +370,16 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       return;
     }
     
-    setRequisitionData((prevData) => ({
+    _setRequisitionData((prevData: typeof _requisitionData) => ({
       ...prevData,
       payment_terms: data.paymentTerms,
-      total_price: data.totalPrice,
+      total_price: String(data.totalPrice),
       products: data.productData.map((product) => {
         const matchedProduct = productData.find(
-          (item) => item.id === product.productId
+          (item) => item.productId === product.productId
         );
         return {
-          product_name: matchedProduct ? matchedProduct.product_name : "Unknown",
+          product_name: matchedProduct ? (matchedProduct as any).product_name : "Unknown",
           quantity: product.qty,
           target_price: product.targetPrice,
         };
@@ -283,10 +393,12 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         productData: data.productData || [],
         files: data.files || [],
         discountTerms: data.discountTerms || "",
-        pricePriority: Number(data.pricePriority) || 0,
-        deliveryPriority: Number(data.deliveryPriority) || 0,
-        paymentTermsPriority: Number(data.paymentTermsPriority) || 0,
+        pricePriority: Number(data.pricePriority) || 1,
+        deliveryPriority: Number(data.deliveryPriority) || 1,
+        paymentTermsPriority: Number(data.paymentTermsPriority) || 1,
+        totalQuantity: data.totalQuantity || 0,
         totalPrice: data.totalPrice || 0,
+        totalMaxPrice: data.totalMaxPrice || 0,
         paymentTerms: data.paymentTerms || "",
         netPaymentDay: data.netPaymentDay || "",
         prePaymentPercentage: data.prePaymentPercentage || "",
@@ -304,7 +416,9 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
           deliveryPriority: cleanData.deliveryPriority,
           paymentTermsPriority: cleanData.paymentTermsPriority,
           // Snake case versions for API
+          totalQuantity: cleanData.totalQuantity,
           total_price: cleanData.totalPrice,
+          totalMaxPrice: cleanData.totalMaxPrice,
           payment_terms: cleanData.paymentTerms,
           net_payment_day: cleanData.netPaymentDay,
           pre_payment_percentage: cleanData.prePaymentPercentage,
@@ -317,42 +431,73 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         );
         setRequisition(response.data.data);
         toast.success("Created Successfully");
+        clearSaved(); // Clear autosaved draft on successful creation
         nextStep();
       } else {
         // Create clean API data for updating requisition
+        // Stringify productData for proper multipart/form-data handling
         const apiData = {
-          selectedProduct: cleanData.selectedProduct,
-          productData: cleanData.productData,
-          files: cleanData.files,
+          productData: JSON.stringify(cleanData.productData),
           discountTerms: cleanData.discountTerms,
           pricePriority: cleanData.pricePriority,
           deliveryPriority: cleanData.deliveryPriority,
           paymentTermsPriority: cleanData.paymentTermsPriority,
-          // Snake case versions for API
-          total_price: cleanData.totalPrice,
+          totalQuantity: cleanData.totalQuantity,
+          totalPrice: cleanData.totalPrice,
+          totalMaxPrice: cleanData.totalMaxPrice,
           payment_terms: cleanData.paymentTerms,
           net_payment_day: cleanData.netPaymentDay,
           pre_payment_percentage: cleanData.prePaymentPercentage,
           post_payment_percentage: cleanData.postPaymentPercentage,
         };
 
+        console.log('Sending update request with data:', apiData);
+
         await authMultiFormApi.put(
           `/requisition/update/${requisitionId}`,
           apiData
         );
         toast.success("Edited Successfully");
+        clearSaved(); // Clear autosaved draft on successful edit
         nextStep();
       }
     } catch (error: any) {
-      toast.error(error.message || "Something went wrong");
+      console.error('Update error:', error);
+      console.error('Error response:', error.response?.data);
+      const errorMessage = error.response?.data?.message || error.message || "Something went wrong";
+      toast.error(errorMessage);
     }
   };
 
   const productData = watch("productData");
+
+  // Calculate Total Quantity (sum of all qty)
+  const totalQuantity = useMemo(() => {
+    if (productData) {
+      return productData.reduce(
+        (acc, curr) => acc + (Number(curr.qty) || 0),
+        0
+      );
+    }
+    return 0;
+  }, [productData]);
+
+  // Calculate Total Unit Price (sum of qty * targetPrice)
   const totalPrice = useMemo(() => {
     if (productData) {
       return productData.reduce(
-        (acc, curr) => acc + curr.qty * (curr.targetPrice || 0),
+        (acc, curr) => acc + (Number(curr.qty) || 0) * (Number(curr.targetPrice) || 0),
+        0
+      );
+    }
+    return 0;
+  }, [productData]);
+
+  // Calculate Total Maximum Acceptable Price (sum of qty * maximum_price)
+  const totalMaxPrice = useMemo(() => {
+    if (productData) {
+      return productData.reduce(
+        (acc, curr) => acc + (Number(curr.qty) || 0) * (Number(curr.maximum_price) || 0),
         0
       );
     }
@@ -360,35 +505,53 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   }, [productData]);
 
   useEffect(() => {
+    setValue("totalQuantity", totalQuantity);
     setValue("totalPrice", totalPrice);
-  }, [totalPrice, setValue]);
+    setValue("totalMaxPrice", totalMaxPrice);
+  }, [totalQuantity, totalPrice, totalMaxPrice, setValue]);
 
+  // Format products for FormSelect - filter out already added products
+  const availableProducts = data?.filter(
+    (product) =>
+      !watch("productData")?.find(
+        (p) => p?.productId?.toString() === product?.id?.toString()
+      )
+  ) || [];
+
+  const productOptions: SelectOption[] = availableProducts.map((product) => ({
+    value: product.id,
+    label: product.productName,
+  }));
+
+  // Payment terms options
+  const paymentTermsOptions: SelectOption[] = [
+    { value: "net_payment", label: "Net Payment" },
+    { value: "pre_post_payment", label: "Pre and Post Payment" },
+  ];
 
   return (
     <div className="space-y-6">
       <div className="border-2 rounded p-4">
-        <h3 className="text-lg font-semibold">Product Details</h3>
-        <p className="font-normal text-[#46403E] py-2">
-          Your details will be used for Product Details
-        </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="text-lg font-semibold">Product Details</h3>
+            <p className="font-normal text-[#46403E] py-2">
+              Your details will be used for Product Details
+            </p>
+          </div>
+          <AutosaveIndicator lastSaved={lastSaved} isSaving={isSaving} />
+        </div>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex items-center gap-2 justify-between">
             <div className="grow">
-              <SelectField
+              <FormSelect
                 name="selectedProduct"
                 placeholder="Select Product"
-                options={data?.filter(
-                  (i) =>
-                    !watch("productData")?.find(
-                      (product) =>
-                        product?.productId?.toString() === i?.id?.toString()
-                    )
-                )}
-                register={register}
-                optionKey={"productName"}
-                optionValue={"id"}
-                error={errors.categoryId}
-                wholeInputClassName={`my-1`}
+                options={productOptions}
+                value={watch("selectedProduct") || ""}
+                onChange={(e) => setValue("selectedProduct", e.target.value)}
+                error={(errors as any).categoryId?.message}
+                className="my-1"
               />
             </div>
             <div className="">
@@ -416,7 +579,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                       {/* Quantity Field */}
                       <div className="flex flex-col">
                         <span className="text-xs text-gray-600 mb-1 font-medium">Quantity</span>
-                        <InputField
+                        <FormInput
                           placeholder="Enter quantity"
                           type="number"
                           name="qty"
@@ -426,20 +589,20 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                               "productData",
                               watch("productData").map((i) => {
                                 if (i.productId === product?.productId) {
-                                  return { ...i, qty: e.target.value };
+                                  return { ...i, qty: Number(e.target.value) || 0 };
                                 }
                                 return i;
-                              })
+                              }) as ProductData[]
                             );
                           }}
-                          wholeInputClassName={`my-1`}
+                          className="my-1"
                         />
                       </div>
 
-                      {/* Target Price Field */}
+                      {/* Target Unit Price Field */}
                       <div className="flex flex-col">
-                        <span className="text-xs text-gray-600 mb-1 font-medium">Target Price</span>
-                        <InputField
+                        <span className="text-xs text-gray-600 mb-1 font-medium">Target Unit Price</span>
+                        <FormInput
                           placeholder="Enter target Price"
                           type="number"
                           min={0}
@@ -449,7 +612,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                             const newValue = e.target.value === "" ? "" : parseFloat(e.target.value);
 
                             // Allow null/empty but prevent negative values
-                            if (newValue < 0) {
+                            if (typeof newValue === 'number' && newValue < 0) {
                               toast.error("Target price cannot be negative!");
                               return;
                             }
@@ -464,16 +627,16 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                               })
                             );
                           }}
-                          wholeInputClassName={`my-1`}
-                          error={errors.productData}
+                          className="my-1"
+                          error={errors.productData?.message}
                         />
                       </div>
 
-                      {/* Maximum Price Field */}
+                      {/* Maximum Acceptable Price Field */}
                       <div className="flex flex-col">
-                        <span className="text-xs text-gray-600 mb-1 font-medium">Max Price</span>
-                        <InputField
-                          placeholder="Max Price"
+                        <span className="text-xs text-gray-600 mb-1 font-medium">Maximum Acceptable Price</span>
+                        <FormInput
+                          placeholder="Enter max acceptable price"
                           type="number"
                           min={0}
                           name="maximum_price"
@@ -482,7 +645,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                             const newValue = e.target.value === "" ? "" : parseFloat(e.target.value);
 
                             // Allow null/empty but prevent negative values
-                            if (newValue < 0) {
+                            if (typeof newValue === 'number' && newValue < 0) {
                               toast.error("Maximum price cannot be negative!");
                               return;
                             }
@@ -497,7 +660,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                               })
                             );
                           }}
-                          wholeInputClassName={`my-1`}
+                          className="my-1"
                         />
                       </div>
 
@@ -515,26 +678,45 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               })}
           </ul>
 
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <InputField
-              label="Total Price"
+          <div className="grid grid-cols-3 gap-4 mt-4">
+            <FormInput
+              label="Total Quantity"
+              name="totalQuantity"
+              disabled={true}
+              value={watch("totalQuantity") || ''}
+              placeholder="Calculated automatically"
+              type="text"
+              className="my-1"
+            />
+            <FormInput
+              label="Total Unit Price"
               name="totalPrice"
               disabled={true}
               value={watch("totalPrice") || ''}
-              placeholder="Enter Price"
+              placeholder="Calculated automatically"
               type="text"
-              wholeInputClassName={`my-1`}
+              className="my-1"
+            />
+            <FormInput
+              label="Total Maximum Acceptable Price"
+              name="totalMaxPrice"
+              disabled={true}
+              value={watch("totalMaxPrice") || ''}
+              placeholder="Calculated automatically"
+              type="text"
+              className="my-1"
             />
           </div>
 
           <div className="bg-white rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Priority Settings</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Priority Settings <span className="text-sm font-normal text-gray-500">(Optional)</span></h3>
             <div className="space-y-6">
               {/* Price Priority Input */}
               <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-gray-700">Price Priority</label>
+                <label className="text-sm font-medium text-gray-700">Price Priority <span className="font-normal text-gray-500">(Optional)</span></label>
                 <div className="flex items-center gap-2">
                   <button
+                    type="button"
                     onClick={() => handlePriorityAdjust("pricePriority", "decrement")}
                     className="p-1 rounded-full hover:bg-gray-100"
                   >
@@ -546,9 +728,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                     max="5"
                     value={watch("pricePriority") || 1}
                     onChange={(e) => handleDirectInput("pricePriority", e.target.value)}
-                    className="w-20 px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-20 px-3 py-2 text-sm text-center border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <button
+                    type="button"
                     onClick={() => handlePriorityAdjust("pricePriority", "increment")}
                     className="p-1 rounded-full hover:bg-gray-100"
                   >
@@ -560,9 +743,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
               {/* Delivery Priority Input */}
               <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-gray-700">Delivery Priority</label>
+                <label className="text-sm font-medium text-gray-700">Delivery Priority <span className="font-normal text-gray-500">(Optional)</span></label>
                 <div className="flex items-center gap-2">
                   <button
+                    type="button"
                     onClick={() => handlePriorityAdjust("deliveryPriority", "decrement")}
                     className="p-1 rounded-full hover:bg-gray-100"
                   >
@@ -574,9 +758,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                     max="5"
                     value={watch("deliveryPriority") || 1}
                     onChange={(e) => handleDirectInput("deliveryPriority", e.target.value)}
-                    className="w-20 px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-20 px-3 py-2 text-sm text-center border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <button
+                    type="button"
                     onClick={() => handlePriorityAdjust("deliveryPriority", "increment")}
                     className="p-1 rounded-full hover:bg-gray-100"
                   >
@@ -588,9 +773,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
               {/* Payment Terms Priority Input */}
               <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-gray-700">Payment Terms Priority</label>
+                <label className="text-sm font-medium text-gray-700">Payment Terms Priority <span className="font-normal text-gray-500">(Optional)</span></label>
                 <div className="flex items-center gap-2">
                   <button
+                    type="button"
                     onClick={() => handlePriorityAdjust("paymentTermsPriority", "decrement")}
                     className="p-1 rounded-full hover:bg-gray-100"
                   >
@@ -602,9 +788,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                     max="5"
                     value={watch("paymentTermsPriority") || 1}
                     onChange={(e) => handleDirectInput("paymentTermsPriority", e.target.value)}
-                    className="w-20 px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-20 px-3 py-2 text-sm text-center border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <button
+                    type="button"
                     onClick={() => handlePriorityAdjust("paymentTermsPriority", "increment")}
                     className="p-1 rounded-full hover:bg-gray-100"
                   >
@@ -615,48 +802,37 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               </div>
 
               {/* Total Priority Display */}
-              
+
             </div>
           </div>
 
           {/* Payment Terms Field */}
-          <SelectField
+          <FormSelect
             label="Payment Terms"
             name="paymentTerms"
             placeholder="Select Payment Terms"
-            options={[
-              { id: "net_payment", paymentName: "Net Payment" },
-              { id: "pre_post_payment", paymentName: "Pre and Post Payment" }
-            ]}
-            register={register}
-            optionKey="paymentName"
-            optionValue="id"
-            error={errors.paymentTerms}
-            wholeInputClassName={`my-1`}
+            options={paymentTermsOptions}
+            value={watch("paymentTerms") || ""}
+            onChange={(e) => setValue("paymentTerms", e.target.value)}
+            error={errors.paymentTerms?.message}
+            className="my-1"
           />
 
           {/* Conditional Net Payment Day Field */}
           {watch("paymentTerms") === "net_payment" && (
-            <InputField
+            <FormInput
               label="Net Payment Day (Optional)"
               name="netPaymentDay"
               placeholder="Enter number of days (optional)"
               type="number"
               value={watch("netPaymentDay") || ''}
               min={0}
-              wholeInputClassName={`my-1`}
-              register={register}
-              onInput={(e) => {
-                // Allow empty values and prevent negative input while typing
-                if (e.target.value < 0) {
-                  e.target.value = 0;
-                }
-              }}
+              className="my-1"
               onChange={(e) => {
                 const newValue = e.target.value === "" ? "" : parseInt(e.target.value);
 
                 // Allow empty values and prevent negative values
-                if (newValue < 0) {
+                if (typeof newValue === 'number' && newValue < 0) {
                   toast.error("Net payment day cannot be negative!");
                   return;
                 }
@@ -669,7 +845,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
           {/* Conditional Pre and Post Payment Fields */}
           {watch("paymentTerms") === "pre_post_payment" && (
             <div className="grid grid-cols-2 gap-4">
-              <InputField
+              <FormInput
                 label="Pre Payment Percentage (Optional)"
                 name="prePaymentPercentage"
                 placeholder="Enter percentage (optional)"
@@ -677,19 +853,12 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 value={watch("prePaymentPercentage") || ''}
                 min={0}
                 max={100}
-                wholeInputClassName={`my-1`}
-                register={register}
-                onInput={(e) => {
-                  // Prevent negative input while typing
-                  if (e.target.value < 0) {
-                    e.target.value = 0;
-                  }
-                }}
+                className="my-1"
                 onChange={(e) => {
                   const newValue = e.target.value === "" ? "" : parseFloat(e.target.value);
 
                   // Prevent exceeding 100%
-                  if (newValue > 100) {
+                  if (typeof newValue === 'number' && newValue > 100) {
                     toast.error("Pre payment percentage cannot exceed 100%!");
                     return;
                   }
@@ -698,7 +867,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 }}
               />
 
-              <InputField
+              <FormInput
                 label="Post Payment Percentage (Optional)"
                 name="postPaymentPercentage"
                 placeholder="Enter percentage (optional)"
@@ -706,19 +875,12 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 value={watch("postPaymentPercentage") || ''}
                 min={0}
                 max={100}
-                wholeInputClassName={`my-1`}
-                register={register}
-                onInput={(e) => {
-                  // Prevent negative input while typing
-                  if (e.target.value < 0) {
-                    e.target.value = 0;
-                  }
-                }}
+                className="my-1"
                 onChange={(e) => {
                   const newValue = e.target.value === "" ? "" : parseFloat(e.target.value);
 
                   // Prevent exceeding 100%
-                  if (newValue > 100) {
+                  if (typeof newValue === 'number' && newValue > 100) {
                     toast.error("Post payment percentage cannot exceed 100%!");
                     return;
                   }
@@ -734,7 +896,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               htmlFor={"files"}
               className={`block text-white-600 font-medium mb-2`}
             >
-              Attachments
+              Attachments <span className="font-normal text-gray-500">(Optional)</span>
             </label>
             <label
               htmlFor="dropzone-file"
@@ -773,24 +935,27 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
           <div className="flex gap-6 my-3">
             {watch("files") &&
-              Object.keys(watch("files")).map((file, index) => {
+              Object.keys(watch("files")).map((fileKey, index) => {
+                const files = watch("files");
+                const file = (files as any)[fileKey];
                 return (
-                  <div key={`${file.name}-${index}`} className="relative w-fit">
+                  <div key={`${fileKey}-${index}`} className="relative w-fit">
                     <img
                       src={
-                        watch("files")?.[file]?.attachmentUrl
-                          ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${watch("files")?.[file]?.attachmentUrl
-                          }`
-                          : URL.createObjectURL(watch("files")?.[file])
+                        file?.attachmentUrl
+                          ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${file?.attachmentUrl}`
+                          : URL.createObjectURL(file)
                       }
                       className="w-12 h-12"
                     />
                     <BsPlusCircleFill
                       className="rotate-45 cursor-pointer ml-2 text-red-500 hover:text-red-700 absolute -right-1 top-0"
                       onClick={() => {
+                        const currentFiles = watch("files");
+                        const filesArray = Array.isArray(currentFiles) ? currentFiles : Array.from(currentFiles as FileList);
                         setValue(
                           "files",
-                          watch("files").filter((_, idx) => idx !== index)
+                          filesArray.filter((_: any, idx: number) => idx !== index) as any
                         );
                       }}
                     />

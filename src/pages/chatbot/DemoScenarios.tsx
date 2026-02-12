@@ -67,7 +67,7 @@ export default function DemoScenarios() {
   const [selectedScenario, setSelectedScenario] = useState<DemoScenarioType>('SOFT');
   const [isRunning, setIsRunning] = useState(false);
   const [demoResults, setDemoResults] = useState<DemoResults | null>(null);
-  const [currentStep, setCurrentStep] = useState(0);
+  const [_currentStep, setCurrentStep] = useState(0);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loadingDeals, setLoadingDeals] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -81,15 +81,40 @@ export default function DemoScenarios() {
     try {
       setLoadingDeals(true);
       setError(null);
-      const response = await chatbotService.listDeals({
-        status: 'NEGOTIATING',
-        limit: 100
+      // Fetch all requisitions
+      const reqResponse = await chatbotService.getRequisitionsWithDeals({
+        archived: 'active',
       });
-      setDeals(response.data.deals);
+
+      // Flatten deals from all requisitions and filter for NEGOTIATING
+      const negotiatingDeals: Deal[] = [];
+      for (const req of reqResponse.data.requisitions || []) {
+        try {
+          const dealsResponse = await chatbotService.getRequisitionDeals(req.id, {
+            status: 'NEGOTIATING',
+            archived: 'active',
+          });
+          for (const deal of dealsResponse.data.deals || []) {
+            // Map VendorDealSummary to Deal-like structure
+            negotiatingDeals.push({
+              id: deal.dealId,
+              status: deal.status,
+              round: deal.currentRound,
+              requisitionId: req.id,
+              vendorId: deal.vendorId,
+              title: `${deal.vendorName} - ${req.rfqNumber}`,
+            } as Deal);
+          }
+        } catch (err) {
+          console.warn(`Failed to load deals for requisition ${req.id}:`, err);
+        }
+      }
+
+      setDeals(negotiatingDeals);
 
       // Auto-select first deal if available
-      if (response.data.deals.length > 0 && !selectedDeal) {
-        setSelectedDeal(response.data.deals[0].id);
+      if (negotiatingDeals.length > 0 && !selectedDeal) {
+        setSelectedDeal(negotiatingDeals[0].id);
       }
     } catch (err: any) {
       const errorMsg = err.response?.data?.error || err.message || 'Failed to load deals';
@@ -115,7 +140,13 @@ export default function DemoScenarios() {
 
       toast.loading('Starting demo...', { id: 'demo-toast' });
 
-      const response = await chatbotService.runDemo(selectedDeal, selectedScenario, 10);
+      // Find the deal to get context
+      const deal = deals.find(d => d.id === selectedDeal);
+      if (!deal || !deal.requisitionId || !deal.vendorId) {
+        throw new Error('Deal context not available');
+      }
+      const ctx = { rfqId: deal.requisitionId, vendorId: deal.vendorId, dealId: selectedDeal };
+      const response = await chatbotService.runDemo(ctx, selectedScenario, 10);
 
       setDemoResults(response.data);
       setCurrentStep(response.data.steps.length);
@@ -146,7 +177,13 @@ export default function DemoScenarios() {
 
   const handleViewDeal = () => {
     if (selectedDeal) {
-      navigate(`/chatbot/deals/${selectedDeal}`);
+      // Find the deal to get requisitionId and vendorId
+      const deal = deals.find(d => d.id === selectedDeal);
+      if (deal?.requisitionId && deal?.vendorId) {
+        navigate(`/chatbot/requisitions/${deal.requisitionId}/vendors/${deal.vendorId}/deals/${selectedDeal}`);
+      } else {
+        toast.error('Cannot open deal: missing requisition or vendor context');
+      }
     }
   };
 
@@ -201,7 +238,7 @@ export default function DemoScenarios() {
                 <div className="text-center pt-6 pb-0">
                   <p className="text-sm text-gray-600 mb-4">No negotiating deals available</p>
                   <button
-                    onClick={() => navigate('/chatbot/deals/new')}
+                    onClick={() => navigate('/chatbot/requisitions/deals/new')}
                     className="px-4 pt-2 pb-0 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
                   >
                     Create New Deal

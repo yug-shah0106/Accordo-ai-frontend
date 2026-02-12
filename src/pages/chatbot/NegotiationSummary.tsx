@@ -8,11 +8,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import chatbotService from '../../services/chatbot.service';
-import type { Deal } from '../../types/chatbot';
+import type { VendorDealSummary } from '../../types/chatbot';
 import toast from 'react-hot-toast';
 
+// Map VendorDealSummary to Deal-like structure for display
+type DealLike = VendorDealSummary & {
+  id: string;
+  round: number;
+  requisitionId?: number;
+  title?: string;
+  counterparty?: string;
+  mode?: string;
+};
+
 export default function NegotiationSummary() {
-  const [deals, setDeals] = useState<Deal[]>([]);
+  const [deals, setDeals] = useState<DealLike[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'accepted' | 'walked_away'>('all');
   const navigate = useNavigate();
@@ -24,20 +34,37 @@ export default function NegotiationSummary() {
   const loadCompletedDeals = async () => {
     try {
       setLoading(true);
-      // Fetch deals with ACCEPTED or WALKED_AWAY status
-      const response = await chatbotService.listDeals({
-        page: 1,
-        limit: 100, // Get more deals for summary
-        deleted: false,
-        archived: false,
+      // Fetch all requisitions and their deals
+      const reqResponse = await chatbotService.getRequisitionsWithDeals({
+        archived: 'active',
       });
 
-      // Filter for completed deals only
-      const completedDeals = response.data.deals.filter(
-        (deal: Deal) => deal.status === 'ACCEPTED' || deal.status === 'WALKED_AWAY' || deal.status === 'ESCALATED'
-      );
+      // For each requisition, fetch its deals
+      const allDeals: DealLike[] = [];
+      for (const req of reqResponse.data.requisitions || []) {
+        try {
+          const dealsResponse = await chatbotService.getRequisitionDeals(req.id, {
+            archived: 'active',
+          });
+          for (const deal of dealsResponse.data.deals || []) {
+            if (deal.status === 'ACCEPTED' || deal.status === 'WALKED_AWAY' || deal.status === 'ESCALATED') {
+              allDeals.push({
+                ...deal,
+                id: deal.dealId,
+                round: deal.currentRound,
+                requisitionId: req.id,
+                title: `${deal.vendorName} - ${req.rfqNumber}`,
+                counterparty: deal.vendorName,
+              });
+            }
+          }
+        } catch (err) {
+          // Skip requisitions with errors
+          console.warn(`Failed to load deals for requisition ${req.id}:`, err);
+        }
+      }
 
-      setDeals(completedDeals);
+      setDeals(allDeals);
     } catch (error: any) {
       console.error('Failed to load deals:', error);
       toast.error(error.response?.data?.message || 'Failed to load negotiation summary');
@@ -244,7 +271,13 @@ export default function NegotiationSummary() {
           {filteredDeals.map((deal) => (
             <div
               key={deal.id}
-              onClick={() => navigate(`/chatbot/deals/${deal.id}`)}
+              onClick={() => {
+                if (deal.requisitionId && deal.vendorId) {
+                  navigate(`/chatbot/requisitions/${deal.requisitionId}/vendors/${deal.vendorId}/deals/${deal.id}`);
+                } else {
+                  toast.error('Cannot open deal: missing requisition or vendor context');
+                }
+              }}
               className="bg-white dark:bg-dark-surface rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer border border-gray-200 dark:border-dark-border overflow-hidden group"
             >
               {/* Color-coded status bar */}
@@ -293,7 +326,7 @@ export default function NegotiationSummary() {
 
                 {/* Date */}
                 <p className="text-xs text-gray-500 dark:text-dark-text-secondary">
-                  Completed: {new Date(deal.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  Completed: {deal.completedAt ? new Date(deal.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                 </p>
               </div>
             </div>

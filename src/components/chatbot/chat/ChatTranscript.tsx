@@ -12,8 +12,15 @@ interface MessageGroup {
 interface MessageWithDivider {
   type: 'message';
   message: Message;
-  round?: number;
   isGrouped: boolean;
+}
+
+interface RoundStrategyInfo {
+  strategy?: string;
+  utility?: number | null;
+  isConverging?: boolean;
+  isStalling?: boolean;
+  isDiverging?: boolean;
 }
 
 interface RoundDivider {
@@ -27,18 +34,27 @@ type TranscriptItem = MessageWithDivider | RoundDivider;
  * ChatTranscript Component
  * Displays chat messages with smart auto-scroll
  * Only scrolls to bottom when user is near the bottom (within 100px)
+ *
+ * Updated February 2026: Added pmMode for PM read-only view
+ * - In pmMode: Layout is FLIPPED - PM/Accordo messages on LEFT, Vendor on RIGHT
  */
 
 interface ChatTranscriptProps {
   messages: Message[];
   isProcessing?: boolean;
   processingType?: ProcessingType;
+  vendorMode?: boolean;  // When true, shows vendor-perspective labels
+  pmMode?: boolean;      // When true, flips layout for PM perspective
+  roundStrategyInfo?: Record<number, RoundStrategyInfo>;  // Per-round strategy info from behavioral analysis
 }
 
 export default function ChatTranscript({
   messages,
   isProcessing = false,
   processingType = "analyzing",
+  vendorMode = false,
+  pmMode = false,
+  roundStrategyInfo,
 }: ChatTranscriptProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -57,38 +73,32 @@ export default function ChatTranscript({
   };
 
   // Smart auto-scroll: only scroll if user is near bottom
+  // FIXED (Jan 2026): Added messages.length dependency to ensure scroll triggers on new messages
   useEffect(() => {
     if (isNearBottom && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, isProcessing, isNearBottom]);
-
-  // Calculate round number for each Accordo message
-  const getRoundForMessage = (message: Message, index: number): number | undefined => {
-    if (message.role === "ACCORDO" && message.engineDecision) {
-      const previousAccordo = messages.slice(0, index).filter(
-        (m) => m.role === "ACCORDO" && m.engineDecision
-      );
-      return previousAccordo.length + 1;
-    }
-    return undefined;
-  };
+  }, [messages, messages.length, isProcessing, isNearBottom]);
 
   // Group consecutive messages from same role
   const groupMessages = (msgs: Message[]): MessageGroup[] => {
-    if (msgs.length === 0) return [];
+    if (!msgs || msgs.length === 0) return [];
+
+    // Filter out any invalid messages
+    const validMsgs = msgs.filter(m => m && m.role);
+    if (validMsgs.length === 0) return [];
 
     const grouped: MessageGroup[] = [];
-    let currentGroup: Message[] = [msgs[0]];
-    let currentRole: MessageRole = msgs[0].role;
+    let currentGroup: Message[] = [validMsgs[0]];
+    let currentRole: MessageRole = validMsgs[0].role;
 
-    for (let i = 1; i < msgs.length; i++) {
-      if (msgs[i].role === currentRole) {
-        currentGroup.push(msgs[i]);
+    for (let i = 1; i < validMsgs.length; i++) {
+      if (validMsgs[i].role === currentRole) {
+        currentGroup.push(validMsgs[i]);
       } else {
         grouped.push({ messages: currentGroup, role: currentRole });
-        currentGroup = [msgs[i]];
-        currentRole = msgs[i].role;
+        currentGroup = [validMsgs[i]];
+        currentRole = validMsgs[i].role;
       }
     }
     grouped.push({ messages: currentGroup, role: currentRole });
@@ -97,25 +107,28 @@ export default function ChatTranscript({
 
   const groupedMessages = groupMessages(messages);
 
-  // Add round dividers
+  // Add round dividers BEFORE the first vendor message of each round
+  // Round dividers show "Round X" where X comes from message.round (backend source of truth)
   const messagesWithDividers: TranscriptItem[] = [];
-  let lastRound: number | undefined = undefined;
+  let lastSeenRound: number | null = null;
 
   groupedMessages.forEach((group) => {
     group.messages.forEach((message, msgIdx) => {
-      const index = messages.indexOf(message);
-      const round = getRoundForMessage(message, index);
+      const messageRound = message.round;
       const isGrouped = msgIdx > 0;
 
-      // Add divider if round changed and this is an Accordo message
-      if (round !== undefined && round !== lastRound && lastRound !== undefined) {
-        messagesWithDividers.push({ type: "divider", round });
+      // Add divider BEFORE the first vendor message of a new round
+      // Requirement: "Round X" divider appears before the vendor message that starts that round
+      if (
+        message.role === "VENDOR" &&
+        messageRound !== null &&
+        messageRound !== lastSeenRound
+      ) {
+        messagesWithDividers.push({ type: "divider", round: messageRound });
+        lastSeenRound = messageRound;
       }
 
-      messagesWithDividers.push({ type: "message", message, round, isGrouped });
-      if (round !== undefined) {
-        lastRound = round;
-      }
+      messagesWithDividers.push({ type: "message", message, isGrouped });
     });
   });
 
@@ -124,7 +137,9 @@ export default function ChatTranscript({
       {messages.length === 0 ? (
         <div className="flex items-center justify-center h-full">
           <p className="text-gray-500 text-center">
-            No messages yet. Send a message to start the negotiation.
+            {pmMode
+              ? "No messages yet. Waiting for the vendor to start the negotiation."
+              : "No messages yet. Send a message to start the negotiation."}
           </p>
         </div>
       ) : (
@@ -135,44 +150,83 @@ export default function ChatTranscript({
         >
           {messagesWithDividers.map((item, idx) => {
             if (item.type === "divider") {
+              const strategyInfo = roundStrategyInfo?.[item.round];
+              const hasStrategy = strategyInfo?.strategy;
+              const hasUtility = strategyInfo?.utility != null;
+              const statusColor = strategyInfo?.isConverging
+                ? 'border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/20'
+                : strategyInfo?.isStalling
+                ? 'border-yellow-300 bg-yellow-50 dark:border-yellow-700 dark:bg-yellow-900/20'
+                : strategyInfo?.isDiverging
+                ? 'border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
+                : 'border-gray-200 bg-white dark:border-dark-border dark:bg-dark-surface';
+
               return (
                 <div
                   key={`divider-${item.round}-${idx}`}
                   className="flex items-center justify-center my-4"
                 >
-                  <span className="px-3 pt-1 pb-0 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-full">
+                  <span className={`px-3 pt-1 pb-0 text-xs font-semibold text-gray-600 dark:text-dark-text-secondary border rounded-full ${statusColor}`}>
                     Round {item.round}
+                    {hasStrategy && (
+                      <span className="text-gray-400 dark:text-gray-500"> · </span>
+                    )}
+                    {hasStrategy && (
+                      <span className={
+                        strategyInfo.isConverging ? 'text-green-600 dark:text-green-400'
+                        : strategyInfo.isStalling ? 'text-yellow-600 dark:text-yellow-400'
+                        : strategyInfo.isDiverging ? 'text-red-600 dark:text-red-400'
+                        : 'text-gray-500 dark:text-gray-400'
+                      }>
+                        {strategyInfo.strategy}
+                      </span>
+                    )}
+                    {hasUtility && (
+                      <>
+                        <span className="text-gray-400 dark:text-gray-500"> · </span>
+                        <span className="text-blue-600 dark:text-blue-400">
+                          {Math.round(strategyInfo.utility! * 100)}% Utility
+                        </span>
+                      </>
+                    )}
                   </span>
                 </div>
               );
             }
+            // Use message.id if available, fallback to index for robustness
+            const messageKey = item.message?.id || `msg-${idx}-${item.message?.createdAt || idx}`;
             return (
               <MessageBubble
-                key={item.message.id}
+                key={messageKey}
                 message={item.message}
-                round={item.round}
                 isGrouped={item.isGrouped}
+                vendorMode={vendorMode}
+                pmMode={pmMode}
               />
             );
           })}
           {isProcessing && (
             <div
               className={`flex w-full px-4 mb-2 ${
-                processingType === "vendor-typing" ? "justify-start" : "justify-end"
+                pmMode
+                  ? (processingType === "vendor-typing" ? "justify-end" : "justify-start")
+                  : (processingType === "vendor-typing" ? "justify-start" : "justify-end")
               }`}
             >
               <div
                 className={`px-4 pt-3 pb-0 rounded-lg ${
-                  processingType === "vendor-typing"
-                    ? "bg-white border border-gray-200"
-                    : "bg-blue-50 border border-blue-200"
+                  pmMode
+                    ? (processingType === "vendor-typing" ? "bg-white border border-gray-200" : "bg-blue-50 border border-blue-200")
+                    : (processingType === "vendor-typing" ? "bg-white border border-gray-200" : "bg-blue-50 border border-blue-200")
                 }`}
               >
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <span>
-                    {processingType === "vendor-typing"
-                      ? "Vendor typing..."
-                      : "Accordo is analyzing..."}
+                    {pmMode
+                      ? (processingType === "vendor-typing" ? "Vendor is typing..." : "AI Negotiator is responding...")
+                      : (processingType === "vendor-typing"
+                          ? (vendorMode ? "You're typing..." : "Vendor typing...")
+                          : (vendorMode ? "AI Buyer is responding..." : "Accordo is analyzing..."))}
                   </span>
                   <span className="flex gap-1">
                     <span className="animate-bounce" style={{ animationDelay: "0ms" }}>

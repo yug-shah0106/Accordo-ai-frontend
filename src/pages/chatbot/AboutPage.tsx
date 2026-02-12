@@ -216,7 +216,7 @@ export default function AboutPage() {
             Create a deal and watch Accordo.ai negotiate on your behalf.
           </p>
           <button
-            onClick={() => window.location.href = '/chatbot/deals/new'}
+            onClick={() => window.location.href = '/chatbot/requisitions/deals/new'}
             className="bg-white text-blue-600 font-semibold px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors"
           >
             Create Your First Deal

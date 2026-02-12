@@ -2,7 +2,6 @@ import { useForm } from "react-hook-form";
 import InputField from "../InputField";
 import Button from "../Button";
 import { authApi } from "../../api";
-import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 
@@ -46,13 +45,12 @@ const VendorBankDetails: React.FC<VendorBankDetailsProps> = ({
   companyId,
   company
 }) => {
-  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-    watch,
+    watch: _watch,
   } = useForm<FormData>({
     defaultValues: {
       bankName: "",
@@ -185,7 +183,6 @@ const VendorBankDetails: React.FC<VendorBankDetailsProps> = ({
               <input
                   id="file-upload"
                   type="file"
-                  name="cancelledChequeURL"
                   {...register("cancelledChequeURL")}
                   className="block text-sm text-gray-700 border border-gray-300 rounded shadow-sm
                     file:border-0  file:px-3 file:py-2.5"

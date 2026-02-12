@@ -233,10 +233,10 @@ export default function ExplainabilityPanel({ explainability }: ExplainabilityPa
         <div className="bg-gray-50 rounded-lg pt-4 px-4 pb-0">
           <h4 className="text-sm font-semibold text-gray-700 mb-3">Vendor Offer</h4>
           <div className="grid grid-cols-2 gap-3">
-            {vendorOffer.unit_price !== null && (
+            {(vendorOffer.total_price ?? vendorOffer.unit_price) !== null && (
               <div>
-                <span className="text-xs text-gray-600">Unit Price</span>
-                <div className="text-lg font-bold text-gray-900">${vendorOffer.unit_price}</div>
+                <span className="text-xs text-gray-600">Total Price</span>
+                <div className="text-lg font-bold text-gray-900">${vendorOffer.total_price ?? vendorOffer.unit_price}</div>
               </div>
             )}
             {vendorOffer.payment_terms && (
@@ -253,11 +253,11 @@ export default function ExplainabilityPanel({ explainability }: ExplainabilityPa
           <div className="bg-blue-50 rounded-lg pt-4 px-4 pb-0 border border-blue-200">
             <h4 className="text-sm font-semibold text-blue-900 mb-3">Counter Offer</h4>
             <div className="grid grid-cols-2 gap-3">
-              {decision.counterOffer.unit_price !== null && (
+              {(decision.counterOffer.total_price ?? decision.counterOffer.unit_price) !== null && (
                 <div>
-                  <span className="text-xs text-blue-700">Unit Price</span>
+                  <span className="text-xs text-blue-700">Total Price</span>
                   <div className="text-lg font-bold text-blue-900">
-                    ${decision.counterOffer.unit_price}
+                    ${decision.counterOffer.total_price ?? decision.counterOffer.unit_price}
                   </div>
                 </div>
               )}

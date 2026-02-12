@@ -11,3 +11,4 @@ export { useHistoryTracking, getRelativeTime, clearAllHistory, mergeHistories } 
 export type { UseHistoryTrackingReturn, HistoryEntry } from './useHistoryTracking';
 
 export { useDealActions } from './useDealActions';
+export type { PmDecision } from './useDealActions';

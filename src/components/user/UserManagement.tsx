@@ -10,44 +10,19 @@ import useFetchData from "../../hooks/useFetchData";
 import useDebounce from "../../hooks/useDebounce";
 import { authApi } from "../../api";
 import Modal from "../Modal";
-import Filter from "../Filter";
 import Badge from "../badge";
 import { BiUserCheck } from "react-icons/bi";
 import { Menu, MenuItem } from "@mui/material";
 import type {
   User,
-  Role,
   TableColumn,
   TableAction,
-  FilterOption,
   UseFetchDataReturn
 } from "../../types/management.types";
 
 const UserManagement = () => {
   const [isModal, setIsModal] = useState(false);
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [userRoles, setUserRoles] = useState<Role[]>([]);
   const [userToReset, setUserToReset] = useState<User | null>(null);
-  const [selectedFilters, setSelectedFilters] = useState<FilterOption[]>([
-    {
-      moduleName: "User",
-      filterBy: "status",
-      controlType: "checkbox",
-      label: "User Status",
-      description: "User Status ",
-      value: [],
-      options: ["active", "inactive"],
-    },
-    {
-      moduleName: "User",
-      filterBy: "role",
-      controlType: "checkbox",
-      label: "User role",
-      description: "User role ",
-      value: [],
-      options: userRoles?.map((role: Role) => role.name) || [],
-    },
-  ]);
 
   const columns: TableColumn[] = [
     {
@@ -88,7 +63,6 @@ const UserManagement = () => {
     setSearch,
     totalDoc,
     refetch,
-    setFilters
   } = useFetchData("/user/get-all", 10) as UseFetchDataReturn<User>;
   const debounce = useDebounce(setSearch, 600);
 
@@ -145,102 +119,6 @@ const UserManagement = () => {
     setIsModal(false);
   };
 
-  const closeFilterModal = () => {
-    setIsFilterModalOpen(false);
-  };
-
-  const applyFilters = (filters: Record<string, FilterOption> | null) => {
-    if (filters === null) {
-      const clearedFilters = selectedFilters.map((filter) => {
-        if (filter.controlType === "rangeNumeric" && filter.range) {
-          return { ...filter, value: [filter.range[0], filter.range[1]] };
-        } else if (filter.controlType === "checkbox") {
-          return { ...filter, selected: {}, value: [] };
-        } else if (filter.controlType === "rangeDate") {
-          return { ...filter, value: { from: "", to: "" } };
-        } else if (filter.controlType === "inputText") {
-          return { ...filter, value: "" };
-        }
-        return filter;
-      });
-      setSelectedFilters(clearedFilters);
-      setFilters(null);
-      setIsFilterModalOpen((prev) => (!prev));
-      return;
-    }
-
-    const transformedFilters = Object.keys(filters).reduce((acc, key) => {
-      const filter = filters[key];
-
-      if (filter.controlType === "checkbox" && typeof filter.selected === "object") {
-        acc[key] = {
-          ...filter,
-          value: Object.keys(filter.selected).filter((k) => filter.selected![k]),
-        };
-      } else {
-        acc[key] = filter;
-      }
-
-      return acc;
-    }, {} as Record<string, FilterOption>);
-
-    const apiFilters = Object.values(filters).map((filter: FilterOption) => {
-      if (filter.controlType === "checkbox" && typeof filter.selected === "object") {
-        return {
-          ...filter,
-          value: Object.keys(filter.selected).filter(key => filter.selected![key]),
-          selected: undefined,
-        };
-      }
-
-      if (filter.controlType === "rangeDate") {
-        return {
-          ...filter,
-          value: [filter.value.from, filter.value.to],
-        };
-      }
-
-      return filter;
-    });
-
-    setSelectedFilters(Object.values(transformedFilters));
-    setFilters(JSON.stringify(apiFilters));
-    setIsFilterModalOpen(false);
-  };
-
-  const fetchRoles = async () => {
-    try {
-      const data = await authApi.get<{ data: Role[] }>(`/role/get-all`);
-      setUserRoles(data.data.data);
-      setSelectedFilters((prevFilters) => [
-        {
-          moduleName: "User",
-          filterBy: "status",
-          controlType: "checkbox",
-          label: "User Status",
-          description: "User Status",
-          value: prevFilters.find((f) => f.filterBy === "status")?.value || [],
-          options: ["active", "inactive"],
-        },
-        {
-          moduleName: "User",
-          filterBy: "role",
-          controlType: "checkbox",
-          label: "User Role",
-          description: "User Role",
-          value: prevFilters.find((f) => f.filterBy === "role")?.value || [],
-          options: data?.data?.data?.map((role: Role) => role.name) || [],
-        },
-      ]);
-    } catch (error) {
-      console.error("Error fetching roles:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchRoles();
-  }, []);
-
   // Reset scroll position when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -293,24 +171,18 @@ const UserManagement = () => {
           </div>
         </div>
 
-        {/* Search and Filter Bar */}
+        {/* Search Bar */}
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search users..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64"
+                placeholder="Search by name, email, phone, role..."
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-80"
                 onChange={(e) => debounce(e.target.value)}
               />
               <IoSearchOutline className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
-            <button
-              onClick={() => setIsFilterModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              <VscSettings className="text-gray-500" /> Filter
-            </button>
           </div>
         </div>
       </div>
@@ -332,7 +204,7 @@ const UserManagement = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {users?.map((row, rowIndex) => (
+              {users?.map((row, _rowIndex) => (
                 <tr
                   key={row.id}
                   className="hover:bg-gray-50 transition-colors"
@@ -344,13 +216,12 @@ const UserManagement = () => {
                     >
                       {column.isBadge ? (
                         <Badge
-                          status={row[column.accessor]}
-                          className="text-xs"
+                          status={(row as any)[column.accessor]}
                         />
                       ) : column.accessorKey ? (
-                        row[column.accessor]?.[column.accessorKey]
+                        (row as any)[column.accessor]?.[column.accessorKey]
                       ) : (
-                        row[column.accessor]
+                        (row as any)[column.accessor]
                       )}
                     </td>
                   ))}
@@ -358,7 +229,7 @@ const UserManagement = () => {
                     <div className="relative">
                       <PiDotsThreeBold
                         className="text-xl cursor-pointer hover:text-blue-500 transition-colors"
-                        onClick={(event) => setSelectedRow({ element: event.currentTarget as HTMLElement, user: row })}
+                        onClick={(event) => setSelectedRow({ element: event.currentTarget as unknown as HTMLElement, user: row })}
                       />
                       <Menu
                         anchorEl={selectedRow.element}
@@ -436,17 +307,6 @@ const UserManagement = () => {
       {/* End Scrollable Content Area */}
 
       {/* Modals - Outside Scrollable Area */}
-      {isFilterModalOpen && (
-        <Filter
-          onClose={closeFilterModal}
-          filtersData={selectedFilters.reduce((acc, filter, idx) => {
-            acc[idx] = filter;
-            return acc;
-          }, {} as Record<string, FilterOption>)}
-          onApply={applyFilters}
-        />
-      )}
-
       {isModal && userToReset && (
         <Modal
           heading="Reset Password"

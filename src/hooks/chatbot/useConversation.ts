@@ -4,6 +4,8 @@
  * Comprehensive conversation mode hook for chatbot negotiations.
  * Manages conversation state, phase tracking, refusal counting, and real-time updates.
  *
+ * Updated January 2026: Uses lookupDeal to get DealContext for nested API calls.
+ *
  * Features:
  * - Conversation state management (phase, refusal count, turn count)
  * - Message sending with conversation API
@@ -35,6 +37,7 @@ import type {
   Message,
   ConversationState,
   ConversationPhase,
+  DealContext,
 } from '../../types/chatbot';
 
 // ============================================================================
@@ -48,6 +51,7 @@ export interface UseConversationReturn {
   deal: Deal | null;
   messages: Message[];
   convoState: ConversationState | null;
+  context: DealContext | null;
 
   // Loading states
   loading: boolean;
@@ -153,6 +157,7 @@ export function useConversation(
 
   const [deal, setDeal] = useState<Deal | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [context, setContext] = useState<DealContext | null>(null);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -178,6 +183,7 @@ export function useConversation(
 
   const canSend =
     deal !== null &&
+    context !== null &&
     deal.status === 'NEGOTIATING' &&
     !sending &&
     currentPhase !== 'TERMINAL';
@@ -187,7 +193,7 @@ export function useConversation(
   // ============================================================================
 
   /**
-   * Load deal and messages from API
+   * Load deal and messages from API using lookupDeal
    */
   const reload = useCallback(async () => {
     if (!dealId) return;
@@ -196,11 +202,13 @@ export function useConversation(
     setError(null);
 
     try {
-      const response = await chatbotService.getDeal(dealId);
-      const { deal: fetchedDeal, messages: fetchedMessages } = response.data;
+      // Use lookupDeal to get deal + context in one call
+      const response = await chatbotService.lookupDeal(dealId);
+      const { deal: fetchedDeal, messages: fetchedMessages, context: fetchedContext } = response.data;
 
       setDeal(fetchedDeal);
       setMessages(fetchedMessages || []);
+      setContext(fetchedContext);
 
       // Auto-scroll to bottom on reload
       if (shouldScrollRef.current) {
@@ -223,13 +231,13 @@ export function useConversation(
    * Start a new conversation (sends greeting automatically)
    */
   const startConversation = useCallback(async () => {
-    if (!dealId) return;
+    if (!context) return;
 
     setSending(true);
     setError(null);
 
     try {
-      const response = await chatbotService.startConversation(dealId);
+      const response = await chatbotService.startConversation(context);
       const {
         vendorMessage,
         accordoMessage,
@@ -258,47 +266,38 @@ export function useConversation(
     } finally {
       setSending(false);
     }
-  }, [dealId, reload]);
+  }, [context, reload]);
 
   /**
    * Send a message in conversation mode
    */
   const sendMessage = useCallback(
     async (content: string) => {
-      if (!dealId || !canSend || !content.trim()) return;
+      if (!context || !canSend || !content.trim()) return;
 
       setSending(true);
       setError(null);
 
       try {
-        const response = await chatbotService.sendConversationMessage(
-          dealId,
-          content.trim()
+        // Use CONVERSATION mode
+        const response = await chatbotService.sendMessage(
+          context,
+          content.trim(),
+          'VENDOR',
+          'CONVERSATION'
         );
 
         const {
-          vendorMessage,
-          accordoMessage,
-          conversationState,
-        } = response.data;
+          deal: updatedDeal,
+          messages: updatedMessages,
+        } = response;
 
-        // Update messages optimistically
-        const newMessages: Message[] = [];
-        if (vendorMessage) newMessages.push(vendorMessage);
-        if (accordoMessage) newMessages.push(accordoMessage);
-
-        setMessages((prev) => [...prev, ...newMessages]);
-
-        // Update deal state with new conversation state
-        if (conversationState) {
-          setDeal((prev) => {
-            if (!prev) return prev;
-            return {
-              ...prev,
-              convoStateJson: conversationState,
-              round: prev.round + 1,
-            };
-          });
+        // Update state from response
+        if (updatedDeal) {
+          setDeal(updatedDeal);
+        }
+        if (updatedMessages) {
+          setMessages(updatedMessages);
         }
 
         // Auto-scroll to bottom
@@ -317,13 +316,13 @@ export function useConversation(
           'Failed to send message';
         setError(errorMessage);
 
-        // Remove optimistic update on error
+        // Reload on error to sync state
         await reload();
       } finally {
         setSending(false);
       }
     },
-    [dealId, canSend, reload]
+    [context, canSend, reload]
   );
 
   // ============================================================================
@@ -357,6 +356,7 @@ export function useConversation(
     deal,
     messages,
     convoState,
+    context,
 
     // Loading states
     loading,
@@ -378,52 +378,3 @@ export function useConversation(
 }
 
 export default useConversation;
-
-// ============================================================================
-// Example Test Cases
-// ============================================================================
-
-/**
- * Test 1: Initial Load
- * - Should load deal and messages on mount
- * - Should set loading to true, then false
- * - Should populate deal, messages, and convoState
- *
- * Test 2: Start Conversation
- * - Should send greeting message
- * - Should update messages with vendor + accordo messages
- * - Should set sending to true, then false
- *
- * Test 3: Send Message
- * - Should send vendor message
- * - Should update messages optimistically
- * - Should increment turn count
- * - Should auto-scroll to bottom
- *
- * Test 4: Refusal Warning
- * - warningLevel should be 'none' when refusalCount = 0
- * - warningLevel should be 'low' when refusalCount = 1
- * - warningLevel should be 'medium' when refusalCount = 2
- * - warningLevel should be 'high' when refusalCount >= 3
- *
- * Test 5: Phase Tracking
- * - currentPhase should be 'WAITING_FOR_OFFER' initially
- * - currentPhase should transition to 'NEGOTIATING' after offer
- * - currentPhase should be 'TERMINAL' when status is ESCALATED/CLOSED
- *
- * Test 6: Can Send
- * - canSend should be true when status is NEGOTIATING
- * - canSend should be false when status is ESCALATED
- * - canSend should be false when sending is true
- * - canSend should be false when deal is null
- *
- * Test 7: Error Handling
- * - Should set error message on API failure
- * - Should revert optimistic updates on send failure
- * - Should not crash on invalid convoStateJson
- *
- * Test 8: Auto-scroll
- * - Should scroll to bottom on new messages
- * - Should scroll to bottom after reload
- * - Should respect autoScroll option
- */

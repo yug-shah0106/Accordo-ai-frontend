@@ -1,0 +1,346 @@
+/**
+ * Vendor Chat API Service
+ * Public endpoints for vendor chat functionality (no authentication required)
+ * Uses 'api' instead of 'authApi' for all requests
+ */
+
+import api from "../api";
+
+const VENDOR_CHAT_BASE = "/vendor-chat";
+
+/**
+ * Quote data structure
+ */
+export interface ContractDetails {
+  products: Array<{
+    productId: number;
+    productName: string;
+    quantity: number;
+    quotedPrice: number | string;
+    deliveryDate?: string;
+  }>;
+  additionalTerms?: {
+    paymentTerms?: string;
+    netPaymentDay?: number | string;
+    prePaymentPercentage?: number | string;
+    postPaymentPercentage?: number | string;
+    additionalNotes?: string;
+  };
+}
+
+/**
+ * Message structure
+ */
+export interface VendorChatMessage {
+  id: string;
+  dealId: string;
+  role: "VENDOR" | "ACCORDO" | "SYSTEM";
+  content: string;
+  extractedOffer?: {
+    unit_price?: number | null;
+    payment_terms?: string | null;
+  } | null;
+  counterOffer?: {
+    unit_price?: number | null;
+    payment_terms?: string | null;
+  } | null;
+  decision?: string | null;
+  createdAt: string;
+}
+
+/**
+ * Deal structure
+ */
+export interface VendorDeal {
+  id: string;
+  title: string;
+  status: "NEGOTIATING" | "ACCEPTED" | "WALKED_AWAY" | "ESCALATED";
+  round: number;
+  mode: "INSIGHTS" | "CONVERSATION";
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Requisition product (vendor view - no PM targets)
+ */
+export interface VendorRequisitionProduct {
+  id: number;
+  name: string;
+  quantity: number;
+  unit: string | null;
+}
+
+/**
+ * Requisition data for vendor (stripped of PM targets)
+ */
+export interface VendorRequisition {
+  id: number;
+  title: string;
+  rfqNumber: string | null;
+  products: VendorRequisitionProduct[];
+}
+
+/**
+ * Deal data response for vendor
+ */
+export interface VendorDealData {
+  deal: VendorDeal;
+  messages: VendorChatMessage[];
+  contract: any;
+  requisition: VendorRequisition;
+  vendorQuote: ContractDetails | null;
+  isVendor: true;
+}
+
+/**
+ * PM decision structure
+ */
+export interface PMDecision {
+  action: "ACCEPT" | "COUNTER" | "ESCALATE" | "WALK_AWAY";
+  utilityScore: number;
+  counterOffer?: {
+    unit_price?: number | null;
+    payment_terms?: string | null;
+  } | null;
+  reasons: string[];
+}
+
+/**
+ * Vendor suggestion emphasis types
+ */
+export type VendorSuggestionEmphasis = "price" | "terms" | "delivery";
+
+/**
+ * Vendor suggestion scenario types
+ */
+export type VendorScenarioType = "STRONG" | "BALANCED" | "FLEXIBLE";
+
+/**
+ * Structured vendor suggestion
+ */
+export interface VendorStructuredSuggestion {
+  scenario: VendorScenarioType;
+  message: string;
+  price: number;
+  paymentTerms: string;
+  deliveryDate: string | null;
+  deliveryDays: number | null;
+  emphasis: VendorSuggestionEmphasis;
+}
+
+/**
+ * Vendor suggestions response
+ */
+export interface VendorSuggestionsResponse {
+  suggestions: VendorStructuredSuggestion[];
+  hasPMCounterOffer: boolean;
+  vendorQuotePrice: number | null;
+  pmCounterPrice: number | null;
+}
+
+/**
+ * Vendor Chat Service - All public API methods (no auth)
+ */
+export const vendorChatService = {
+  /**
+   * Submit initial vendor quote
+   * POST /api/vendor-chat/quote
+   */
+  submitQuote: async (
+    uniqueToken: string,
+    contractDetails: ContractDetails
+  ): Promise<{
+    data: {
+      contractId: number;
+      dealId: string | null;
+      canEdit: boolean;
+      chatUrl: string;
+      status: string;
+    };
+  }> => {
+    const res = await api.post<{
+      message: string;
+      data: {
+        contractId: number;
+        dealId: string | null;
+        canEdit: boolean;
+        chatUrl: string;
+        status: string;
+      };
+    }>(`${VENDOR_CHAT_BASE}/quote`, {
+      uniqueToken,
+      contractDetails,
+    });
+    return { data: res.data.data };
+  },
+
+  /**
+   * Check if quote can be edited (no messages yet)
+   * GET /api/vendor-chat/can-edit-quote?uniqueToken=x
+   */
+  canEditQuote: async (
+    uniqueToken: string
+  ): Promise<{
+    data: {
+      canEdit: boolean;
+      reason: string;
+    };
+  }> => {
+    const res = await api.get<{
+      message: string;
+      data: {
+        canEdit: boolean;
+        reason: string;
+      };
+    }>(`${VENDOR_CHAT_BASE}/can-edit-quote`, {
+      params: { uniqueToken },
+    });
+    return { data: res.data.data };
+  },
+
+  /**
+   * Edit quote (if no messages yet)
+   * PUT /api/vendor-chat/quote
+   */
+  editQuote: async (
+    uniqueToken: string,
+    contractDetails: ContractDetails
+  ): Promise<{
+    data: {
+      contractId: number;
+      status: string;
+    };
+  }> => {
+    const res = await api.put<{
+      message: string;
+      data: {
+        contractId: number;
+        status: string;
+      };
+    }>(`${VENDOR_CHAT_BASE}/quote`, {
+      uniqueToken,
+      contractDetails,
+    });
+    return { data: res.data.data };
+  },
+
+  /**
+   * Get deal data for vendor (strips PM targets)
+   * GET /api/vendor-chat/deal?uniqueToken=x
+   */
+  getDeal: async (uniqueToken: string): Promise<{ data: VendorDealData }> => {
+    const res = await api.get<{
+      message: string;
+      data: VendorDealData;
+    }>(`${VENDOR_CHAT_BASE}/deal`, {
+      params: { uniqueToken },
+    });
+    return { data: res.data.data };
+  },
+
+  /**
+   * Enter chat - creates opening message from quote if needed
+   * POST /api/vendor-chat/enter?uniqueToken=x
+   */
+  enterChat: async (
+    uniqueToken: string
+  ): Promise<{
+    data: {
+      deal: VendorDeal;
+      openingMessage: VendorChatMessage | null;
+    };
+  }> => {
+    const res = await api.post<{
+      message: string;
+      data: {
+        deal: VendorDeal;
+        openingMessage: VendorChatMessage | null;
+      };
+    }>(`${VENDOR_CHAT_BASE}/enter`, null, {
+      params: { uniqueToken },
+    });
+    return { data: res.data.data };
+  },
+
+  /**
+   * Send vendor message (instant save - Phase 1)
+   * POST /api/vendor-chat/message
+   */
+  sendMessage: async (
+    uniqueToken: string,
+    content: string
+  ): Promise<{
+    data: {
+      vendorMessage: VendorChatMessage;
+      deal: VendorDeal;
+    };
+  }> => {
+    const res = await api.post<{
+      message: string;
+      data: {
+        vendorMessage: VendorChatMessage;
+        deal: VendorDeal;
+      };
+    }>(`${VENDOR_CHAT_BASE}/message`, {
+      uniqueToken,
+      content,
+    });
+    return { data: res.data.data };
+  },
+
+  /**
+   * Get PM response (async - Phase 2)
+   * POST /api/vendor-chat/pm-response
+   */
+  getPMResponse: async (
+    uniqueToken: string,
+    vendorMessageId: string
+  ): Promise<{
+    data: {
+      pmMessage: VendorChatMessage;
+      decision: PMDecision;
+      deal: VendorDeal;
+    };
+  }> => {
+    const res = await api.post<{
+      message: string;
+      data: {
+        pmMessage: VendorChatMessage;
+        decision: PMDecision;
+        deal: VendorDeal;
+      };
+    }>(`${VENDOR_CHAT_BASE}/pm-response`, {
+      uniqueToken,
+      vendorMessageId,
+    });
+    return { data: res.data.data };
+  },
+
+  /**
+   * Get vendor suggestions based on PM counter-offer
+   * POST /api/vendor-chat/suggestions
+   *
+   * Returns suggestions from VENDOR perspective:
+   * - STRONG: 15% above PM's counter-offer
+   * - BALANCED: 5% above PM's counter-offer
+   * - FLEXIBLE: Match PM's counter-offer
+   *
+   * Only returns suggestions after PM has made at least one counter-offer.
+   */
+  getSuggestions: async (
+    uniqueToken: string,
+    emphases?: VendorSuggestionEmphasis[]
+  ): Promise<{ data: VendorSuggestionsResponse }> => {
+    const res = await api.post<{
+      message: string;
+      data: VendorSuggestionsResponse;
+    }>(`${VENDOR_CHAT_BASE}/suggestions`, {
+      uniqueToken,
+      emphases,
+    });
+    return { data: res.data.data };
+  },
+};
+
+export default vendorChatService;

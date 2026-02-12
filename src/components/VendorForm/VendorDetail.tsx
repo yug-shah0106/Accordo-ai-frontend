@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form";
 import Button from "../Button";
 import { authMultiFormApi } from "../../api";
-import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import InputField from "../InputField";
 import toast from "react-hot-toast";
@@ -46,14 +45,13 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
   companyId,
   company
 }) => {
-  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
     reset,
-    watch,
+    watch: _watch,
     formState: { errors, isSubmitting },
-    setValue,
+    setValue: _setValue,
   } = useForm<FormData>({
     defaultValues: {
       gstNumber: "",
@@ -104,6 +102,18 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
   };
 
   useEffect(() => {
+    console.log('=== STEP 3 - VENDOR DETAILS ===');
+    console.log('Company object:', company);
+    console.log('GST Number:', company?.gstNumber);
+    console.log('PAN Number:', company?.panNumber);
+    console.log('Resetting form with:', {
+      gstNumber: company?.gstNumber || "",
+      panNumber: company?.panNumber || "",
+      msmeNumber: company?.msmeNumber || "",
+      ciNumber: company?.ciNumber || "",
+      type: company?.type || "",
+    });
+
     reset({
       gstNumber: company?.gstNumber || "",
       panNumber: company?.panNumber || "",
@@ -140,7 +150,6 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
             <input
               id="file-upload-gst"
               type="file"
-              name="gstFile"
               {...register("gstFile")}
               className="block  text-sm text-gray-700 border border-gray-300 rounded shadow-sm file:border-0 file:px-3 file:py-2.5"
             />
@@ -170,7 +179,6 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
             <input
               id="file-upload-pan"
               type="file"
-              name="panFile"
               {...register("panFile")}
               className="block text-sm text-gray-700 border border-gray-300 rounded shadow-sm file:border-0 file:px-3 file:py-2.5"
             />
@@ -200,7 +208,6 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
             <input
               id="file-upload-msme"
               type="file"
-              name="msmeFile"
               {...register("msmeFile")}
               className="block text-sm text-gray-700 border border-gray-300 rounded shadow-sm file:border-0 file:px-3 file:py-2.5"
             />
@@ -232,7 +239,6 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
             <input
               id="file-upload-ci"
               type="file"
-              name="ciFile"
               {...register("ciFile")}
               className="block text-sm text-gray-700 border border-gray-300 rounded shadow-sm file:border-0 file:px-3 file:py-2.5"
             />

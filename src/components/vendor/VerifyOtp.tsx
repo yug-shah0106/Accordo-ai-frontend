@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom"; // Import useNavigate for routing
-import logo from "../../assets/logo.png";
 import api from "../../api";
 import toast from "react-hot-toast";
 import Button from "../Button";
@@ -12,19 +11,23 @@ const VerifyOtp = () => {
   const navigate = useNavigate();
   const [timer, setTimer] = useState(30);
   const [isResendEnabled, setIsResendEnabled] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Countdown
   useEffect(() => {
-    let interval = null;
     if (timer > 0) {
-      interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+      intervalRef.current = setInterval(() => setTimer((prev) => prev - 1), 1000);
     } else {
       setIsResendEnabled(true);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, [timer]);
 
-  const handleOtpChange = (e, index) => {
+  const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const value = e.target.value;
     const newOtp = [...otp];
 
@@ -49,15 +52,15 @@ const VerifyOtp = () => {
   // Handle resend functionality
   const handleResend = async () => {
     try {
-      const response = await api.post(`${resendReq}`, { email });
+      await api.post(`${resendReq}`, { email });
       setIsResendEnabled(false);
       setTimer(60);
       toast.success("Resend email sent successfully");
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.response?.data?.message || "Something went wrong");
     }
   };
-  const handleOtpKeyDown = (e, index) => {
+  const handleOtpKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
     if (e.key === "Backspace" && !otp[index]) {
       // Focus the previous input on Backspace if the current input is empty
       if (index > 0) {
@@ -96,7 +99,7 @@ const VerifyOtp = () => {
             value={digit}
             onChange={(e) => handleOtpChange(e, index)}
             onKeyDown={(e) => handleOtpKeyDown(e, index)}
-            maxLength="1"
+            maxLength={1}
             className="w-12 h-12 text-center border-2 border-gray-300 rounded-lg text-xl"
           />
         ))}

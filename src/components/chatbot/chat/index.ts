@@ -12,3 +12,4 @@ export { default as OutcomeBanner } from './OutcomeBanner';
 export { default as VendorControls } from './VendorControls';
 export { ConversationEnhanced } from './ConversationEnhanced';
 export type { ConversationEnhancedProps } from './ConversationEnhanced';
+export { ChatErrorBoundary } from './ChatErrorBoundary';
