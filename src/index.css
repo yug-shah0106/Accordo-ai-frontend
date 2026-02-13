@@ -3,9 +3,200 @@
 @tailwind utilities;
 
 * {
-  @apply font-Montserrat
-  /* font-family: "Montserrat"; */
-  ;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* ========================================
+   Scroll Reveal Animations
+   ======================================== */
+
+/* Base hidden state */
+.scroll-reveal,
+.scroll-reveal-child {
+  opacity: 0;
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Variant: fade-up (default) */
+.scroll-reveal,
+.scroll-reveal-child {
+  transform: translateY(30px);
+}
+
+/* Variant: fade-right */
+.scroll-reveal[data-reveal="fade-right"],
+.scroll-reveal-child[data-reveal="fade-right"] {
+  transform: translateX(-30px);
+}
+
+/* Variant: fade-left */
+.scroll-reveal[data-reveal="fade-left"],
+.scroll-reveal-child[data-reveal="fade-left"] {
+  transform: translateX(30px);
+}
+
+/* Variant: zoom-in */
+.scroll-reveal[data-reveal="zoom-in"],
+.scroll-reveal-child[data-reveal="zoom-in"] {
+  transform: scale(0.95);
+}
+
+/* Variant: fade-up explicit */
+.scroll-reveal[data-reveal="fade-up"],
+.scroll-reveal-child[data-reveal="fade-up"] {
+  transform: translateY(30px);
+}
+
+/* Revealed state -- all variants */
+.scroll-reveal.revealed,
+.scroll-reveal-child.revealed {
+  opacity: 1;
+  transform: translateY(0) translateX(0) scale(1);
+}
+
+/* ========================================
+   Navbar Link Styles
+   ======================================== */
+
+/* Desktop nav links -- default (over dark hero) */
+.nav-link {
+  color: rgba(255, 255, 255, 0.85);
+  transition: color 0.2s, background-color 0.2s;
+}
+.nav-link:hover {
+  color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Desktop nav links -- scrolled (over white content) */
+.nav-scrolled .nav-link {
+  color: #0F172A;
+}
+.nav-scrolled .nav-link:hover {
+  color: #0F172A;
+  background-color: #F8FAFC;
+}
+
+/* Desktop dropdown items (always on white bg) */
+.nav-dropdown-item {
+  color: #0F172A;
+  transition: background-color 0.2s;
+}
+.nav-dropdown-item:hover {
+  background-color: #F8FAFC;
+}
+
+/* Mobile menu links (always on white bg) */
+.nav-mobile-link {
+  color: #0F172A;
+  transition: background-color 0.2s;
+}
+.nav-mobile-link:hover {
+  background-color: #F8FAFC;
+}
+
+/* Mobile sub-links */
+.nav-mobile-sublink {
+  color: #475569;
+  transition: color 0.2s, background-color 0.2s;
+}
+.nav-mobile-sublink:hover {
+  color: #0F172A;
+  background-color: #F8FAFC;
+}
+
+/* Landing page utilities — using raw CSS to avoid @apply issues with custom theme tokens */
+.landing-section {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+@media (min-width: 768px) {
+  .landing-section {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+}
+
+.landing-container {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  .landing-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .landing-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.landing-heading {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: -0.025em;
+}
+@media (min-width: 768px) {
+  .landing-heading {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .landing-heading {
+    font-size: 3rem;
+    line-height: 1.15;
+  }
+}
+
+.landing-subheading {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  color: #475569;
+  max-width: 42rem;
+}
+@media (min-width: 768px) {
+  .landing-subheading {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+}
+
+.btn-primary {
+  background-color: #234BF3;
+  color: #ffffff;
+  font-weight: 600;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+.btn-primary:hover {
+  background-color: #1A3AD4;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: #0F172A;
+  font-weight: 600;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  border: 1px solid #E2E8F0;
+  transition: all 0.3s ease;
+}
+.btn-secondary:hover {
+  border-color: #8DA0FC;
+  color: #234BF3;
 }
 
 /* Dark mode support */

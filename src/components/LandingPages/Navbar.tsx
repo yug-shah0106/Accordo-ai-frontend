@@ -1,205 +1,224 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import logo from "../../assets/logo.svg";
+import { Menu, X, ChevronDown } from "lucide-react";
 
 const Navbar = () => {
-  const [dropdownOpen, setDropdownOpen] = useState<number | null>(null);
+  const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
-  const handleMouseEnter = (index: number) => setDropdownOpen(index);
-  const handleMouseLeave = () => setDropdownOpen(null);
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-  const handleMobileMenuToggle = () => setMobileMenuOpen(!mobileMenuOpen);
-
-  const menuItems = [
-    { title: "Product", options: ["Dashboard", "Settings", "Earnings"] },
-    // { title: "Solutions", options: ["Dashboard", "Settings", "Earnings"] },
-    // { title: "Integrations", options: ["Dashboard", "Settings", "Earnings"] },
-    { title: "Resources", options: ["Blog", "Use Case"] },
+  const navLinks = [
+    {
+      label: "Product",
+      href: "#features",
+      dropdown: [
+        { label: "Features", href: "#features" },
+        { label: "How It Works", href: "#how-it-works" },
+        { label: "Demo", href: "#demo" },
+      ],
+    },
+    { label: "Solutions", href: "#why-us" },
+    { label: "Pricing", href: "#pricing" },
+    {
+      label: "Resources",
+      href: "#",
+      dropdown: [
+        { label: "Case Studies", href: "#case-studies" },
+        { label: "FAQ", href: "#faq" },
+      ],
+    },
   ];
 
+  const scrollToSection = (href: string) => {
+    if (href.startsWith("#")) {
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+    setMobileMenuOpen(false);
+    setActiveDropdown(null);
+  };
+
+  // Inline styles only for nav container background/shadow/border
+  const navContainerStyle: React.CSSProperties = scrolled
+    ? {
+        background: '#FFFFFF',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        borderBottom: '1px solid #E2E8F0',
+      }
+    : {
+        background: 'rgba(11, 15, 23, 0.35)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+      };
+
   return (
-    <nav className="block xl:absolute w-full border-gray-200 dark:bg-gray-900 bg-black z-10">
-      <div className="w-[90%] flex items-start  mx-auto pt-2 px-2 pb-0 relative">
-        <div className="flex items-center justify-between w-full ">
-          <Link
-            to="/home"
-            className="flex items-center space-x-3 rtl:space-x-reverse"
-          >
-            <img src={logo} className="h-28" alt="Logo" />
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled ? "nav-scrolled" : ""
+      }`}
+      style={navContainerStyle}
+    >
+      <div className="landing-container">
+        <div className="flex items-center justify-between h-20">
+          {/* Logo */}
+          <Link to="/" className="flex items-center flex-shrink-0">
+            <img
+              src={logo}
+              className={`h-16 transition-all duration-300 ${
+                scrolled ? "" : "brightness-0 invert"
+              }`}
+              alt="Accordo AI"
+            />
           </Link>
 
-          <button
-            onClick={handleMobileMenuToggle}
-            className="block md:hidden pt-2 px-2 pb-0 text-white"
-            aria-label="Toggle menu"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
-
-          <div className="items-start justify-start hidden w-full md:flex md:w-auto md:order-1">
-            <ul className="flex flex-col font-medium  pt-4 px-4 pb-0 md:p-0 mt-4 border border-gray-100 rounded-lg md:space-x-4 md:flex-row md:mt-0 md:border-0 dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-              <li>
-                <a
-                  href="#"
-                  className="block pt-2 pb-0 mt-2 px-3 md:p-0 text-white rounded hover:bg-gray-100 md:hover:bg-transparent dark:text-white dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  About Us
-                </a>
-              </li>
-
-              {menuItems.map((menu, index) => (
-                <li
-                  key={index}
-                  onMouseEnter={() => handleMouseEnter(index)}
-                  onMouseLeave={handleMouseLeave}
-                  className="relative"
-                >
-                  <button className="flex items-center justify-between w-full pt-2 pb-0 px-3 text-white rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 dark:text-white md:dark:hover:text-blue-500">
-                    {menu.title}
-                    <svg
-                      className="w-2.5 h-2.5 ms-2.5"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 10 6"
-                    >
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="m1 1 4 4 4-4"
-                      />
-                    </svg>
-                  </button>
-
-                  {dropdownOpen === index && (
-                    <div className="z-10 absolute left-0 font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
-                      <ul className="py-2 text-sm text-gray-700 dark:text-gray-400">
-                        {menu.options.map((option, i) => (
-                          <li key={i}>
-                            <a
-                              href="#"
-                              className="block px-4 pt-2 pb-0 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                            >
-                              {option}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </li>
-              ))}
-
-              {/* <li>
-                <a
-                  href="#"
-                  className="block pt-2 pb-0 mt-2 px-3 md:p-0 text-white rounded hover:bg-gray-100 md:hover:bg-transparent dark:text-white dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  API
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="block pt-2 pb-0 mt-2 px-3 md:p-0 text-white rounded hover:bg-gray-100 md:hover:bg-transparent dark:text-white dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  Pricing
-                </a>
-              </li> */}
-            </ul>
-          </div>
-          <div className="hidden md:flex gap-5 md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-            <Link
-              to="/auth"
-              className="text-white bg-[#234BF3] font-medium rounded-lg text-sm px-4 pt-2 pb-0 text-center"
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
-
-        <div
-          className={`md:hidden w-full ${
-            mobileMenuOpen ? "absolute top-full " : "hidden"
-          }  `}
-        >
-          <ul className="flex flex-col font-medium pt-4 px-4 pb-0 mt-2 border border-gray-100 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700">
-            <li>
-              <a
-                href="#"
-                className="block pt-2 pb-0 mt-2 px-3 text-gray-900 rounded hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600 dark:hover:text-white"
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <div
+                key={link.label}
+                className="relative"
+                onMouseEnter={() =>
+                  link.dropdown && setActiveDropdown(link.label)
+                }
+                onMouseLeave={() => setActiveDropdown(null)}
               >
-                About Us
-              </a>
-            </li>
-            {menuItems.map((menu, index) => (
-              <li key={index}>
                 <button
-                  onClick={() => handleMouseEnter(index)}
-                  className="flex items-center justify-between w-full pt-2 pb-0 px-3 text-gray-900 rounded hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                  onClick={() => scrollToSection(link.href)}
+                  className="nav-link flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg"
                 >
-                  {menu.title}
-                  <svg
-                    className="w-2.5 h-2.5 ms-2.5"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 10 6"
-                  >
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="m1 1 4 4 4-4"
-                    />
-                  </svg>
+                  {link.label}
+                  {link.dropdown && <ChevronDown className="w-3.5 h-3.5" />}
                 </button>
 
-                {dropdownOpen === index && (
-                  <div className="font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-full dark:bg-gray-700 dark:divide-gray-600">
-                    <ul className="py-2 text-sm text-gray-700 dark:text-gray-400">
-                      {menu.options.map((option, i) => (
-                        <li key={i}>
-                          <a
-                            href="#"
-                            className="block px-4 pt-2 pb-0 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                          >
-                            {option}
-                          </a>
-                        </li>
+                {/* Dropdown */}
+                {link.dropdown && activeDropdown === link.label && (
+                  <div className="absolute top-full left-0 pt-2 w-48">
+                    <div
+                      className="rounded-xl shadow-lg overflow-hidden py-1"
+                      style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}
+                    >
+                      {link.dropdown.map((item) => (
+                        <button
+                          key={item.label}
+                          onClick={() => scrollToSection(item.href)}
+                          className="nav-dropdown-item block w-full text-left px-4 py-2.5 text-sm"
+                        >
+                          {item.label}
+                        </button>
                       ))}
-                    </ul>
+                    </div>
                   </div>
                 )}
-              </li>
+              </div>
             ))}
+          </div>
 
-            <div className="flex justify-end gap-6 pt-2 pb-0">
+          {/* Desktop CTA */}
+          <div className="hidden lg:flex items-center gap-3">
+            <Link
+              to="/auth"
+              className="nav-link text-sm font-medium px-4 py-2 rounded-lg"
+            >
+              Sign In
+            </Link>
+            <button
+              onClick={() => scrollToSection("#final-cta")}
+              className="btn-primary text-sm !py-2.5 !px-6"
+            >
+              Request a Demo
+            </button>
+          </div>
+
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="nav-link lg:hidden p-2 rounded-lg"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <div
+        className={`lg:hidden transition-all duration-300 overflow-hidden ${
+          mobileMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div
+          className="shadow-lg"
+          style={{ backgroundColor: '#FFFFFF', borderTop: '1px solid #E2E8F0' }}
+        >
+          <div className="landing-container py-4 space-y-1">
+            {navLinks.map((link) => (
+              <div key={link.label}>
+                <button
+                  onClick={() => {
+                    if (link.dropdown) {
+                      setActiveDropdown(
+                        activeDropdown === link.label ? null : link.label
+                      );
+                    } else {
+                      scrollToSection(link.href);
+                    }
+                  }}
+                  className="nav-mobile-link flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-lg"
+                >
+                  {link.label}
+                  {link.dropdown && (
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${
+                        activeDropdown === link.label ? "rotate-180" : ""
+                      }`}
+                    />
+                  )}
+                </button>
+                {link.dropdown && activeDropdown === link.label && (
+                  <div className="ml-4 space-y-1 mt-1">
+                    {link.dropdown.map((item) => (
+                      <button
+                        key={item.label}
+                        onClick={() => scrollToSection(item.href)}
+                        className="nav-mobile-sublink block w-full text-left px-4 py-2.5 text-sm rounded-lg"
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+            <div className="pt-4 space-y-2 px-4" style={{ borderTop: '1px solid #E2E8F0' }}>
               <Link
                 to="/auth"
-                className="text-white bg-[#234BF3] font-medium rounded-lg text-sm px-4 pt-2 pb-0 text-center"
+                className="nav-mobile-link block text-center py-2.5 text-sm font-medium"
               >
-                Get Started
+                Sign In
               </Link>
+              <button
+                onClick={() => scrollToSection("#final-cta")}
+                className="btn-primary w-full text-sm !py-2.5"
+              >
+                Request a Demo
+              </button>
             </div>
-          </ul>
+          </div>
         </div>
       </div>
     </nav>
