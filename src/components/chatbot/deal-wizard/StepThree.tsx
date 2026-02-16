@@ -32,10 +32,12 @@ interface StepThreeProps {
 }
 
 const WARRANTY_OPTIONS_LIST: { value: WarrantyPeriod; label: string; months: number }[] = [
+  { value: '0_MONTHS', label: '0 Months', months: 0 },
   { value: '6_MONTHS', label: '6 Months', months: 6 },
   { value: '1_YEAR', label: '1 Year', months: 12 },
   { value: '2_YEARS', label: '2 Years', months: 24 },
   { value: '3_YEARS', label: '3 Years', months: 36 },
+  { value: '5_YEARS', label: '5 Years', months: 60 },
 ];
 
 const PARAMETER_TYPES: { value: CustomParameterType; label: string }[] = [
@@ -443,6 +445,7 @@ const StepThree: React.FC<StepThreeProps> = ({
   const [showAddParameter, setShowAddParameter] = useState(false);
   const [certSearchTerm, setCertSearchTerm] = useState('');
   const [showCertDropdown, setShowCertDropdown] = useState(false);
+  const [customWarrantyUnit, setCustomWarrantyUnit] = useState<'months' | 'years'>('months');
   const [newParameter, setNewParameter] = useState<Partial<CustomParameter>>({
     name: '',
     type: 'BOOLEAN',
@@ -659,14 +662,23 @@ const StepThree: React.FC<StepThreeProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Warranty Period <span className="text-red-500">*</span>
             </label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="flex gap-2">
               {WARRANTY_OPTIONS_LIST.map((option) => (
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => updateContractSla('warrantyPeriod', option.value)}
+                  onClick={() => {
+                    onChange({
+                      ...data,
+                      contractSla: {
+                        ...data.contractSla,
+                        warrantyPeriod: option.value,
+                        customWarrantyMonths: null,
+                      },
+                    });
+                  }}
                   className={`
-                    px-4 py-3 rounded-lg border-2 transition-all text-sm font-medium
+                    flex-1 py-2 rounded-lg border-2 transition-all text-sm font-medium whitespace-nowrap text-center
                     ${data.contractSla.warrantyPeriod === option.value
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
                       : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
@@ -677,7 +689,94 @@ const StepThree: React.FC<StepThreeProps> = ({
                   {option.label}
                 </button>
               ))}
+              {/* Other / Custom option */}
+              <button
+                type="button"
+                onClick={() => {
+                  onChange({
+                    ...data,
+                    contractSla: {
+                      ...data.contractSla,
+                      warrantyPeriod: 'CUSTOM',
+                      customWarrantyMonths: data.contractSla.customWarrantyMonths ?? null,
+                    },
+                  });
+                }}
+                className={`
+                  flex-1 py-2 rounded-lg border-2 transition-all text-sm font-medium whitespace-nowrap text-center
+                  ${data.contractSla.warrantyPeriod === 'CUSTOM'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                  }
+                `}
+              >
+                <Settings2 className="w-4 h-4 mx-auto mb-1" />
+                Other
+              </button>
             </div>
+
+            {/* Custom warranty input (shown when "Other" is selected) */}
+            {data.contractSla.warrantyPeriod === 'CUSTOM' && (
+              <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <label className="block text-xs font-medium text-gray-600 mb-2">
+                  Enter custom warranty period (max 120 months / 10 years)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={
+                      data.contractSla.customWarrantyMonths !== null
+                        ? customWarrantyUnit === 'years'
+                          ? data.contractSla.customWarrantyMonths / 12
+                          : data.contractSla.customWarrantyMonths
+                        : ''
+                    }
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (!raw || raw.trim() === '') {
+                        onChange({
+                          ...data,
+                          contractSla: { ...data.contractSla, customWarrantyMonths: null },
+                        });
+                        return;
+                      }
+                      const parsed = parseFloat(raw);
+                      if (isNaN(parsed)) return;
+                      const months = customWarrantyUnit === 'years'
+                        ? Math.round(parsed * 12)
+                        : Math.round(parsed);
+                      const clamped = Math.max(0, Math.min(120, months));
+                      onChange({
+                        ...data,
+                        contractSla: { ...data.contractSla, customWarrantyMonths: clamped },
+                      });
+                    }}
+                    placeholder={customWarrantyUnit === 'years' ? 'e.g., 4' : 'e.g., 18'}
+                    min="0"
+                    max={customWarrantyUnit === 'years' ? '10' : '120'}
+                    step={customWarrantyUnit === 'years' ? '0.5' : '1'}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <select
+                    value={customWarrantyUnit}
+                    onChange={(e) => setCustomWarrantyUnit(e.target.value as 'months' | 'years')}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
+                  >
+                    <option value="months">Months</option>
+                    <option value="years">Years</option>
+                  </select>
+                </div>
+                {data.contractSla.customWarrantyMonths !== null && (
+                  <p className="mt-1.5 text-xs text-gray-500">
+                    = {data.contractSla.customWarrantyMonths} month{data.contractSla.customWarrantyMonths !== 1 ? 's' : ''}
+                    {data.contractSla.customWarrantyMonths >= 12 && (
+                      <> ({(data.contractSla.customWarrantyMonths / 12).toFixed(1).replace(/\.0$/, '')} year{data.contractSla.customWarrantyMonths >= 24 ? 's' : ''})</>
+                    )}
+                  </p>
+                )}
+              </div>
+            )}
+
             {errors.warrantyPeriod && (
               <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
                 <AlertCircle className="w-3.5 h-3.5" />

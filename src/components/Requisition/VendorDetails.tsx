@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { authApi } from "../../api";
 import { FiExternalLink, FiPlay, FiUser, FiCopy } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import Modal from "../Modal";
 import chatbotService from "../../services/chatbot.service";
 import type { DealStatus, VendorDealSummary } from "../../types/chatbot";
@@ -21,6 +21,7 @@ interface Contract {
   status?: ContractStatus;
   createdAt?: string;
   chatbotDealId?: string | null;
+  previousContractId?: string | null;
 }
 
 interface Product {
@@ -146,14 +147,14 @@ const contractStatusConfig: Record<ContractStatus, { label: string; bg: string; 
     cardBorder: 'border-orange-200'
   },
   Accepted: {
-    label: 'Won',
+    label: 'Accepted',
     bg: 'bg-green-100',
     text: 'text-green-700',
     cardBg: 'bg-green-50',
     cardBorder: 'border-green-200'
   },
   Rejected: {
-    label: 'Lost',
+    label: 'Rejected',
     bg: 'bg-gray-100',
     text: 'text-gray-700',
     cardBg: 'bg-gray-50',
@@ -260,24 +261,35 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
   }, [requisition, reset]);
 
   // Fetch deals for this requisition
-  useEffect(() => {
-    const fetchDeals = async () => {
-      if (!requisitionId) return;
+  const fetchDeals = useCallback(async () => {
+    if (!requisitionId) return;
+    setLoadingDeals(true);
+    try {
+      const response = await chatbotService.getRequisitionDeals(parseInt(requisitionId));
+      setDeals(response.data?.deals || []);
+    } catch (error) {
+      console.warn('Failed to load deals:', error);
+      setDeals([]);
+    } finally {
+      setLoadingDeals(false);
+    }
+  }, [requisitionId]);
 
-      setLoadingDeals(true);
-      try {
-        const response = await chatbotService.getRequisitionDeals(parseInt(requisitionId));
-        setDeals(response.data?.deals || []);
-      } catch (error) {
-        console.warn('Failed to load deals:', error);
-        setDeals([]);
-      } finally {
-        setLoadingDeals(false);
+  // Fetch on mount
+  useEffect(() => {
+    fetchDeals();
+  }, [fetchDeals]);
+
+  // Refetch when tab regains focus
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchDeals();
       }
     };
-
-    fetchDeals();
-  }, [requisitionId]);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [fetchDeals]);
 
   const { data, loading: _loading } = useFetchData<Vendor>("/vendor/get-all");
   const contractData = watch("contractData") || [];
@@ -318,13 +330,15 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
       }
     });
 
-    // Process contracts - separate pending contracts from those with deals
+    // Process contracts - separate pending contracts from those linked to deals
     contractData.forEach(contract => {
       const vendorId = contract.vendorId?.toString() || '';
-      const hasDeal = contract.chatbotDealId || deals.some(d => d.vendorId?.toString() === vendorId);
+      // A contract is linked to a deal only if it has chatbotDealId set.
+      // Unlinked contracts (chatbotDealId is null) are pending even if the vendor has other deals.
+      const isLinkedToDeal = !!contract.chatbotDealId;
 
-      if (!hasDeal) {
-        // This is a pending contract (no deals yet)
+      if (!isLinkedToDeal) {
+        // This is a pending contract (not linked to any deal)
         pending.push(contract);
       } else if (groups.has(vendorId)) {
         // Add contract to existing vendor group's timeline
@@ -427,8 +441,8 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     toast.success("Link copied to clipboard");
   };
 
-  // Start negotiation - navigates to wizard with optional contractId
-  const handleStartNegotiation = (vendorId: string, vendorName: string, contractId?: string): void => {
+  // Start negotiation - opens wizard in a new tab with optional contractId or previousContractId
+  const handleStartNegotiation = (vendorId: string, vendorName: string, contractId?: string, previousContractId?: string): void => {
     const searchParams = new URLSearchParams({
       rfqId: requisitionId,
       vendorId: vendorId,
@@ -437,12 +451,14 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
       returnTo: `/requisition-management/edit-requisition/${requisitionId}`,
     });
 
-    // If starting from an existing contract, pass the contractId
-    if (contractId) {
+    // Re-negotiation: pass previousContractId so a new contract is created
+    if (previousContractId) {
+      searchParams.set('previousContractId', previousContractId);
+    } else if (contractId) {
       searchParams.set('contractId', contractId);
     }
 
-    navigate(`/chatbot/requisitions/deals/new?${searchParams.toString()}`);
+    window.open(`/chatbot/requisitions/deals/new?${searchParams.toString()}`, '_blank');
   };
 
   const handleModalConfirm = (): void => {
@@ -494,12 +510,6 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
       label: formatVendorLabel(vendorName, active, completed),
     };
   });
-
-  // Get vendor name from vendor data
-  const getVendorName = (vendorId: string): string => {
-    const vendor = data?.find(v => v.vendorId?.toString() === vendorId);
-    return vendor?.Vendor?.name || vendor?.Vendor?.companyName || 'Unknown Vendor';
-  };
 
   // Format date for timeline display (compact version)
   const formatDate = (dateStr: string): string => {
@@ -606,119 +616,110 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                       </div>
                     </div>
 
-                    {/* Timeline */}
-                    <div className="space-y-2.5">
-                      {activeGroup.items.map((item, index) => (
-                        <div
-                          key={item.id}
-                          className="relative pl-6"
-                        >
-                          {/* Timeline line */}
-                          {index < activeGroup.items.length - 1 && (
-                            <div className="absolute left-[7px] top-6 bottom-0 w-0.5 bg-gray-200" />
-                          )}
-
-                          {/* Timeline dot */}
-                          <div className={`absolute left-0 top-2 w-[16px] h-[16px] rounded-full border-2 ${
-                            item.type === 'deal'
-                              ? item.deal?.status === 'ACCEPTED'
-                                ? 'bg-green-100 border-green-500'
-                                : item.deal?.status === 'NEGOTIATING'
-                                ? 'bg-blue-100 border-blue-500'
-                                : item.deal?.status === 'ESCALATED'
-                                ? 'bg-orange-100 border-orange-500'
-                                : 'bg-gray-100 border-gray-400'
-                              : item.contract?.status === 'Active'
-                                ? 'bg-blue-100 border-blue-500'
-                                : item.contract?.status === 'Accepted'
-                                ? 'bg-green-100 border-green-500'
-                                : item.contract?.status === 'Rejected'
-                                ? 'bg-gray-100 border-gray-400'
-                                : item.contract?.status === 'Escalated'
-                                ? 'bg-orange-100 border-orange-500'
-                                : 'bg-purple-100 border-purple-500'
-                          }`} />
-
-                          {/* Item Content */}
-                          {item.type === 'deal' && item.deal && (
-                            <div className={`py-2 px-3 rounded-lg border ${statusConfig[item.deal.status].cardBg} ${statusConfig[item.deal.status].cardBorder}`}>
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-3 min-w-0 flex-1">
-                                  <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${statusConfig[item.deal.status].bg} ${statusConfig[item.deal.status].text}`}>
-                                    {statusConfig[item.deal.status].label}
-                                  </span>
-                                  <span className="text-xs text-gray-500 flex-shrink-0">
-                                    Round {item.deal.currentRound}/{item.deal.maxRounds}
-                                  </span>
-                                  <span className="text-xs text-gray-400 flex-shrink-0">
-                                    {formatDate(item.createdAt)}
-                                  </span>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => handleViewDeal(item.deal!)}
-                                  className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors flex-shrink-0"
+                    {/* Deals Section */}
+                    {(() => {
+                      const dealItems = activeGroup.items.filter(i => i.type === 'deal');
+                      return (
+                        <div className="mb-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h6 className="text-sm font-semibold text-gray-700">Deals</h6>
+                            <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 text-gray-600">
+                              {dealItems.length}
+                            </span>
+                          </div>
+                          {dealItems.length === 0 ? (
+                            <p className="text-sm text-gray-400 italic">No deals yet</p>
+                          ) : (
+                            <div className="space-y-2">
+                              {dealItems.map((item) => (
+                                <div
+                                  key={item.id}
+                                  className={`py-2 px-3 rounded-lg border ${statusConfig[item.deal!.status].cardBg} ${statusConfig[item.deal!.status].cardBorder}`}
                                 >
-                                  <FiExternalLink className="w-4 h-4" />
-                                  View
-                                </button>
-                              </div>
-                            </div>
-                          )}
-
-                          {item.type === 'contract' && item.contract && (() => {
-                            const contractStatus = getContractStatusConfig(item.contract.status);
-                            const canStartNegotiation = item.contract.status !== 'Rejected' && item.contract.status !== 'Active' && item.contract.status !== 'Accepted';
-                            const isRejected = item.contract.status === 'Rejected';
-                            const isActive = item.contract.status === 'Active';
-                            return (
-                              <div className={`py-2 px-3 rounded-lg border ${contractStatus.cardBg} ${contractStatus.cardBorder}`}>
-                                <div className="flex items-center justify-between gap-3">
-                                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                                    <span className={`text-xs px-2 py-0.5 rounded-full ${contractStatus.bg} ${contractStatus.text} flex-shrink-0`}>
-                                      {contractStatus.label}
-                                    </span>
-                                    <span className="text-xs text-gray-400 flex-shrink-0">
-                                      {formatDate(item.createdAt)}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                      <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${statusConfig[item.deal!.status].bg} ${statusConfig[item.deal!.status].text}`}>
+                                        {statusConfig[item.deal!.status].label}
+                                      </span>
+                                      <span className="text-xs text-gray-500 flex-shrink-0">
+                                        Round {item.deal!.currentRound}/{item.deal!.maxRounds}
+                                      </span>
+                                      <span className="text-xs text-gray-400 flex-shrink-0">
+                                        {formatDate(item.createdAt)}
+                                      </span>
+                                    </div>
                                     <button
                                       type="button"
-                                      onClick={() => handleOpenContractLink(item.contract!)}
-                                      className="p-1.5 rounded border border-gray-300 bg-white hover:bg-gray-100 transition-colors"
-                                      title="Open link"
+                                      onClick={() => handleViewDeal(item.deal!)}
+                                      className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors flex-shrink-0"
                                     >
-                                      <FiExternalLink className="w-4 h-4 text-gray-700" />
+                                      <FiExternalLink className="w-4 h-4" />
+                                      View
                                     </button>
-                                    {canStartNegotiation && (
-                                      <Button
-                                        className="px-3 py-1.5 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1 text-sm"
-                                        onClick={() => handleStartNegotiation(
-                                          item.contract!.vendorId,
-                                          getVendorName(item.contract!.vendorId),
-                                          item.contract!.id
-                                        )}
-                                        type="button"
-                                      >
-                                        <FiPlay className="w-3 h-3" />
-                                        {item.contract.status === 'Escalated' ? 'Re-negotiate' : 'Start'}
-                                      </Button>
-                                    )}
-                                    {isRejected && (
-                                      <span className="text-xs text-gray-500 italic">Final</span>
-                                    )}
-                                    {isActive && (
-                                      <span className="text-xs text-blue-600 italic">In progress</span>
-                                    )}
                                   </div>
                                 </div>
-                              </div>
-                            );
-                          })()}
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })()}
+
+                    {/* Contracts Section */}
+                    {(() => {
+                      const contractItems = activeGroup.items.filter(i => i.type === 'contract');
+                      return (
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <h6 className="text-sm font-semibold text-gray-700">Contracts</h6>
+                            <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 text-gray-600">
+                              {contractItems.length}
+                            </span>
+                          </div>
+                          {contractItems.length === 0 ? (
+                            <p className="text-sm text-gray-400 italic">No contracts</p>
+                          ) : (
+                            <div className="space-y-2">
+                              {contractItems.map((item) => {
+                                const contractStatus = getContractStatusConfig(item.contract!.status);
+                                const isSuperseded = item.contract!.status === 'Escalated' &&
+                                  activeGroup.items.some(other =>
+                                    other.type === 'contract' && other.contract?.previousContractId?.toString() === item.contract!.id.toString()
+                                  );
+                                return (
+                                  <div
+                                    key={item.id}
+                                    className={`py-2 px-3 rounded-lg border ${contractStatus.cardBg} ${contractStatus.cardBorder} ${isSuperseded ? 'opacity-60 scale-[0.97] origin-left' : ''}`}
+                                  >
+                                    <div className="flex items-center justify-between gap-3">
+                                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                                        <span className={`text-xs px-2 py-0.5 rounded-full ${contractStatus.bg} ${contractStatus.text} flex-shrink-0`}>
+                                          {contractStatus.label}
+                                        </span>
+                                        {isSuperseded && (
+                                          <span className="text-xs text-gray-400 italic flex-shrink-0">(Superseded)</span>
+                                        )}
+                                        <span className="text-xs text-gray-400 flex-shrink-0">
+                                          {formatDate(item.createdAt)}
+                                        </span>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleOpenContractLink(item.contract!)}
+                                        className="p-1.5 rounded border border-gray-300 bg-white hover:bg-gray-100 transition-colors flex-shrink-0"
+                                        title="Open link"
+                                      >
+                                        <FiExternalLink className="w-4 h-4 text-gray-700" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>

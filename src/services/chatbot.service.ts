@@ -1078,6 +1078,82 @@ export const chatbotService = {
     return null;
   },
 
+  // ==================== MESO (Multiple Equivalent Simultaneous Offers) ====================
+
+  /**
+   * Get MESO options for a deal round
+   * GET /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/meso
+   */
+  getMesoOptions: async (
+    ctx: DealContext
+  ): Promise<{ data: import('../types').MesoResult }> => {
+    const res = await authApi.get<{ data: import('../types').MesoResult }>(
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'meso')
+    );
+    return res.data;
+  },
+
+  /**
+   * Submit vendor's MESO selection
+   * POST /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/meso/select
+   */
+  selectMesoOption: async (
+    ctx: DealContext,
+    optionId: string
+  ): Promise<{ data: import('../types').MesoSelection }> => {
+    const res = await authApi.post<{ data: import('../types').MesoSelection }>(
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'meso/select'),
+      { optionId }
+    );
+    return res.data;
+  },
+
+  /**
+   * Get MESO rounds history for a deal
+   * GET /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/meso/history
+   */
+  getMesoHistory: async (
+    ctx: DealContext
+  ): Promise<{ data: import('../types').MesoRound[] }> => {
+    const res = await authApi.get<{ data: import('../types').MesoRound[] }>(
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'meso/history')
+    );
+    return res.data;
+  },
+
+  // ==================== VALUE BREAKDOWN ====================
+
+  /**
+   * Get value breakdown for offer comparison
+   * POST /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/value-breakdown
+   */
+  getValueBreakdown: async (
+    ctx: DealContext,
+    currentOffer: import('../types').Offer,
+    proposedOffer: import('../types').Offer
+  ): Promise<{ data: import('../types').OfferValueBreakdown }> => {
+    const res = await authApi.post<{ data: import('../types').OfferValueBreakdown }>(
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'value-breakdown'),
+      { currentOffer, proposedOffer }
+    );
+    return res.data;
+  },
+
+  // ==================== VENDOR PROFILE ====================
+
+  /**
+   * Get vendor negotiation profile summary
+   * GET /api/chatbot/vendors/:vendorId/profile
+   */
+  getVendorProfile: async (
+    vendorId: number
+  ): Promise<{ data: import('../types').VendorProfileSummary | null }> => {
+    const res = await authApi.get<{ data: import('../types').VendorProfileSummary | null }>(
+      `${CHATBOT_BASE}/vendors/${vendorId}/profile`
+    );
+    return res.data;
+  },
+
   // ==================== QUALITY CERTIFICATIONS ====================
 
   /**

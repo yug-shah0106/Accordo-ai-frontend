@@ -12,7 +12,8 @@ import SelectField from "../../components/SelectField";
 
 const VendorContact = () => {
   const { id } = useParams();
-  const [contracts, setContracts] = useState<any>({});
+  const [contracts, setContracts] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const [showCountdown, setShowCountdown] = useState(false);
   const [countdown, setCountdown] = useState(10);
@@ -28,6 +29,7 @@ const VendorContact = () => {
 
   const fetchVendorContract = async (uniqueToken: string) => {
     try {
+      setLoading(true);
       const {
         data: { data },
       } = await api.get(`/contract/get-contract-details?uniquetoken=${uniqueToken}`);
@@ -35,6 +37,8 @@ const VendorContact = () => {
     } catch (error: any) {
       console.error("Error fetching vendor contract:", error);
       toast.error(error.message || "Something went wrong while fetching data");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,6 +63,49 @@ const VendorContact = () => {
 
     return () => clearTimeout(timer);
   }, [showCountdown, countdown, navigate, id]);
+
+  // Pre-fill form from previous contract's contractDetails (for re-negotiation)
+  useEffect(() => {
+    if (!contracts?.contractDetails) return;
+    try {
+      const details = typeof contracts.contractDetails === 'string'
+        ? JSON.parse(contracts.contractDetails)
+        : contracts.contractDetails;
+
+      // Pre-fill product prices and delivery dates
+      if (details.products && Array.isArray(details.products)) {
+        details.products.forEach((product: any) => {
+          if (product.productId && product.quotedPrice) {
+            setValue(`quotedPrice_${product.productId}`, product.quotedPrice);
+          }
+          if (product.productId && product.deliveryDate) {
+            setValue(`deliveryDate_${product.productId}`, product.deliveryDate);
+          }
+        });
+      }
+
+      // Pre-fill payment terms
+      if (details.additionalTerms) {
+        if (details.additionalTerms.paymentTerms) {
+          setValue('paymentTerms', details.additionalTerms.paymentTerms);
+        }
+        if (details.additionalTerms.netPaymentDay) {
+          setValue('netPaymentDay', details.additionalTerms.netPaymentDay);
+        }
+        if (details.additionalTerms.prePaymentPercentage) {
+          setValue('prePaymentPercentage', details.additionalTerms.prePaymentPercentage);
+        }
+        if (details.additionalTerms.postPaymentPercentage) {
+          setValue('postPaymentPercentage', details.additionalTerms.postPaymentPercentage);
+        }
+        if (details.additionalTerms.additionalNotes) {
+          setValue('additionalNotes', details.additionalTerms.additionalNotes);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to parse contractDetails for pre-fill:', e);
+    }
+  }, [contracts, setValue]);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -137,12 +184,30 @@ const VendorContact = () => {
     }
   };
 
-  // Redirect if negotiation has already started
-  if (
-    contracts?.Requisition?.status === "NegotiationStarted" ||
-    contracts?.Requisition?.status === "Benchmarked"
-  ) {
-    navigate(`/vendor-chat/${id}`);
+  // Redirect if negotiation has already started AND vendor has already submitted their quote
+  // Don't redirect if the vendor still needs to fill out the form (no contractDetails yet)
+  const hasSubmittedQuote = contracts?.contractDetails != null;
+  useEffect(() => {
+    if (!contracts || loading) return;
+    if (
+      (contracts?.Requisition?.status === "NegotiationStarted" ||
+        contracts?.Requisition?.status === "Benchmarked") &&
+      contracts?.status !== "Created" &&
+      hasSubmittedQuote
+    ) {
+      navigate(`/vendor-chat/${id}`);
+    }
+  }, [contracts, loading, navigate, id, hasSubmittedQuote]);
+
+  // Show loading while fetching contract data
+  if (loading || !contracts) {
+    return (
+      <div className="w-full max-w-md mt-8">
+        <div className="p-8 bg-white rounded-lg shadow-lg border border-gray-200 text-center">
+          <p className="text-gray-600">Loading contract details...</p>
+        </div>
+      </div>
+    );
   }
 
   // Show countdown overlay
@@ -178,7 +243,7 @@ const VendorContact = () => {
 
   return (
     <div className="w-max mt-8">
-      {contracts?.Requisition?.status === "Draft" || contracts?.status === "Created" ? (
+      {contracts?.Requisition?.status === "Draft" || contracts?.status === "Created" || !hasSubmittedQuote ? (
         <>
           <h2 className="text-2xl font-bold text-center text-gray-800">
             Vendor Contract

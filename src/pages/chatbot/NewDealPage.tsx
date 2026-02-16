@@ -194,8 +194,11 @@ export default function NewDealPage() {
   // Optional: contractId from "Start Negotiation" on existing contract
   // When provided, the deal will be linked to this existing contract
   const urlContractId = searchParams.get('contractId');
+  // Optional: previousContractId from "Re-negotiate" on escalated contract
+  // When provided, a new contract will be created referencing the old one
+  const urlPreviousContractId = searchParams.get('previousContractId');
 
-  console.log('[NewDealPage] URL params:', { urlRfqId, urlVendorId, urlVendorName, urlLocked, urlReturnTo, urlContractId });
+  console.log('[NewDealPage] URL params:', { urlRfqId, urlVendorId, urlVendorName, urlLocked, urlReturnTo, urlContractId, urlPreviousContractId });
 
   // Handle router state from VendorDetails "Start Negotiation" flow
   const routerState = location.state as {
@@ -965,6 +968,8 @@ export default function NewDealPage() {
 
     if (!contractSla.warrantyPeriod) {
       newErrors.warrantyPeriod = 'Warranty period is required';
+    } else if (contractSla.warrantyPeriod === 'CUSTOM' && (contractSla.customWarrantyMonths === null || contractSla.customWarrantyMonths === undefined)) {
+      newErrors.warrantyPeriod = 'Please enter a custom warranty period';
     }
     if (
       contractSla.lateDeliveryPenaltyPerDay === null ||
@@ -1101,8 +1106,12 @@ export default function NewDealPage() {
         negotiationControl: formData.stepThree.negotiationControl,
         customParameters: formData.stepThree.customParameters,
         parameterWeights,
-        // Include contractId if starting from existing contract (from VendorDetails "Start Negotiation")
-        ...(urlContractId ? { contractId: parseInt(urlContractId, 10) } : {}),
+        // Include contractId or previousContractId from VendorDetails
+        ...(urlPreviousContractId
+          ? { previousContractId: parseInt(urlPreviousContractId, 10) }
+          : urlContractId
+            ? { contractId: parseInt(urlContractId, 10) }
+            : {}),
       };
 
       const response = await chatbotService.createDealWithConfig(rfqId, vendorId, createInput);

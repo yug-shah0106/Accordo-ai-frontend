@@ -249,6 +249,7 @@ export interface WizardConfig {
   };
   contractSla: {
     warrantyPeriod: WarrantyPeriod;
+    customWarrantyMonths?: number;
     defectLiabilityMonths?: number;
     lateDeliveryPenaltyPerDay: number;
     maxPenaltyCap?: {
@@ -463,7 +464,7 @@ export interface DealFiltersProps {
 // ============================================================================
 
 export type NegotiationPriority = 'HIGH' | 'MEDIUM' | 'LOW';
-export type WarrantyPeriod = '6_MONTHS' | '1_YEAR' | '2_YEARS' | '3_YEARS';
+export type WarrantyPeriod = '0_MONTHS' | '6_MONTHS' | '1_YEAR' | '2_YEARS' | '3_YEARS' | '5_YEARS' | 'CUSTOM';
 export type PaymentMethod = 'BANK_TRANSFER' | 'CREDIT' | 'LC';
 export type PartialDeliveryType = 'QUANTITY' | 'PERCENTAGE';
 export type PenaltyCapType = 'PERCENTAGE' | 'FIXED';
@@ -557,6 +558,7 @@ export interface PenaltyCapConfig {
  */
 export interface ContractSlaParams {
   warrantyPeriod: WarrantyPeriod | null;
+  customWarrantyMonths: number | null;
   defectLiabilityMonths: number | null;
   lateDeliveryPenaltyPerDay: number | null;
   maxPenaltyCap: PenaltyCapConfig | null;
@@ -629,6 +631,10 @@ export interface CreateDealWithConfigInput {
   // When provided, the backend will link the new deal to this contract
   // When not provided, a new contract will be created (1:1 with deal)
   contractId?: number;
+
+  // Optional: Re-negotiate an escalated contract
+  // When provided, a new contract will be created referencing the old one
+  previousContractId?: number;
 
   // Commercial parameters (Step 2)
   priceQuantity: PriceQuantityParams;
@@ -794,10 +800,12 @@ export interface WarrantyOption {
 }
 
 export const WARRANTY_OPTIONS: WarrantyOption[] = [
+  { value: '0_MONTHS', label: '0 Months', months: 0 },
   { value: '6_MONTHS', label: '6 Months', months: 6 },
   { value: '1_YEAR', label: '1 Year', months: 12 },
   { value: '2_YEARS', label: '2 Years', months: 24 },
   { value: '3_YEARS', label: '3 Years', months: 36 },
+  { value: '5_YEARS', label: '5 Years', months: 60 },
 ];
 
 /**
@@ -985,6 +993,7 @@ export const DEFAULT_WIZARD_FORM_DATA: DealWizardFormData = {
   stepThree: {
     contractSla: {
       warrantyPeriod: '1_YEAR',
+      customWarrantyMonths: null,
       defectLiabilityMonths: null,
       lateDeliveryPenaltyPerDay: 1,
       maxPenaltyCap: null,
@@ -1003,3 +1012,178 @@ export const DEFAULT_WIZARD_FORM_DATA: DealWizardFormData = {
     totalWeight: 0,
   },
 };
+
+// ============================================================================
+// MESO Types (Multiple Equivalent Simultaneous Offers - February 2026)
+// ============================================================================
+
+/**
+ * A single MESO option in a counter-offer round
+ */
+export interface MesoOption {
+  /** Unique identifier for this option */
+  id: string;
+  /** The offer terms for this option */
+  offer: Offer & {
+    payment_terms_days?: number;
+    advance_payment_percent?: number;
+    delivery_days?: number;
+    warranty_months?: number;
+    volume_discount?: number;
+  };
+  /** Utility score for this option (should be similar across all options) */
+  utility: number;
+  /** Short human-readable label */
+  label: string;
+  /** Longer description of the option */
+  description: string;
+  /** Parameter this option emphasizes (can be string or array from backend) */
+  emphasis: ('price' | 'payment' | 'payment_terms' | 'delivery' | 'warranty' | 'balanced')[] | 'price' | 'payment' | 'payment_terms' | 'delivery' | 'warranty' | 'balanced';
+  /** Trade-off descriptions */
+  tradeoffs: string[];
+}
+
+/**
+ * Result from MESO generation
+ */
+export interface MesoResult {
+  /** Array of 2-3 equivalent options */
+  options: MesoOption[];
+  /** Target utility score for all options */
+  targetUtility: number;
+  /** Maximum variance from target (should be <2%) */
+  variance: number;
+  /** Whether generation was successful */
+  success: boolean;
+  /** Reason if not successful */
+  reason?: string;
+}
+
+/**
+ * Vendor's selection from MESO options
+ */
+export interface MesoSelection {
+  /** ID of the selected option */
+  selectedOptionId: string;
+  /** The selected offer */
+  selectedOffer: MesoOption['offer'];
+  /** Preferences inferred from this selection */
+  inferredPreferences: {
+    parameter: string;
+    score: number;
+    description: string;
+  }[];
+}
+
+/**
+ * MESO round data stored in database
+ */
+export interface MesoRound {
+  id: string;
+  dealId: string;
+  round: number;
+  options: MesoOption[];
+  targetUtility: number;
+  variance: number;
+  vendorSelection?: MesoSelection;
+  selectedOptionId?: string;
+  inferredPreferences?: MesoSelection['inferredPreferences'];
+  preferenceConfidence?: number;
+  createdAt: string;
+}
+
+// ============================================================================
+// Value Function Types ($/Value Trade-offs - February 2026)
+// ============================================================================
+
+/**
+ * Value impact for a single parameter change
+ */
+export interface ValueImpact {
+  /** Dollar impact of the change */
+  dollarImpact: number;
+  /** Percentage change */
+  percentChange: number;
+  /** Human-readable narrative */
+  narrative: string;
+  /** Unit change (days, %, etc.) */
+  unitChange: number;
+  /** Whether this change is favorable for buyer */
+  isFavorable: boolean;
+}
+
+/**
+ * Complete value breakdown for an offer
+ */
+export interface OfferValueBreakdown {
+  /** Total dollar impact across all parameters */
+  totalDollarImpact: number;
+  /** Per-parameter impact */
+  parameterImpacts: Record<string, ValueImpact>;
+  /** Key trade-offs to highlight */
+  keyTradeoffs: string[];
+  /** Recommendations based on value analysis */
+  recommendations: string[];
+}
+
+/**
+ * Analysis of trading one parameter for another
+ */
+export interface TradeoffAnalysis {
+  /** First parameter */
+  param1: {
+    name: string;
+    change: string;
+    dollarImpact: number;
+  };
+  /** Second parameter */
+  param2: {
+    name: string;
+    change: string;
+    dollarImpact: number;
+  };
+  /** Net result description */
+  netResult: string;
+  /** Whether this trade is favorable */
+  isFavorable: boolean;
+}
+
+// ============================================================================
+// Vendor Negotiation Profile Types (February 2026)
+// ============================================================================
+
+/**
+ * Vendor negotiation style
+ */
+export type VendorNegotiationStyle = 'aggressive' | 'collaborative' | 'passive' | 'unknown';
+
+/**
+ * Summary of vendor negotiation profile for decision making
+ */
+export interface VendorProfileSummary {
+  vendorId: number;
+  totalDeals: number;
+  successRate: number;
+  negotiationStyle: VendorNegotiationStyle;
+  styleConfidence: number;
+  avgConcessionRate: number;
+  avgRoundsToClose: number;
+  preferredTerms: {
+    paymentTermsDays?: number;
+    advancePaymentPercent?: number;
+    deliveryDays?: number;
+    warrantyMonths?: number;
+  } | null;
+  mesoPreferences: {
+    scores: {
+      price: number;
+      paymentTerms: number;
+      delivery: number;
+      warranty: number;
+      quality: number;
+    };
+    primaryPreference: string;
+    confidence: number;
+  } | null;
+  recommendations: string[];
+}
