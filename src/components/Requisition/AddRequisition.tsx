@@ -103,6 +103,17 @@ const AddRequisition: React.FC = () => {
     }
   }, [id, currentStep]);
 
+  // Auto-refetch when tab regains focus (e.g., returning from deal wizard)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && id) {
+        fetchRequisitionData(id);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [id]);
+
   // Define steps for VerticalStepProgress
   const steps: Step[] = [
     {

@@ -6,6 +6,8 @@ import vendorChatService, {
   type VendorChatMessage,
   type VendorDeal,
 } from "../../services/vendorChat.service";
+import { MesoOptions } from "../../components/chatbot/MesoOptions";
+import type { MesoResult, MesoOption } from "../../types/chatbot";
 
 /**
  * VendorChat Page
@@ -305,6 +307,8 @@ export default function VendorChat() {
   const [deal, setDeal] = useState<VendorDeal | null>(null);
   const [sending, setSending] = useState(false);
   const [pmTyping, setPmTyping] = useState(false);
+  const [mesoResult, setMesoResult] = useState<MesoResult | null>(null);
+  const [selectedMesoId, setSelectedMesoId] = useState<string | null>(null);
 
   // Fetch deal data
   const fetchDeal = useCallback(async () => {
@@ -352,6 +356,12 @@ export default function VendorChat() {
           setMessages((prev) => [...prev, pmResponse.data.pmMessage]);
           setDeal(pmResponse.data.deal);
 
+          // Store MESO options if available
+          if (pmResponse.data.meso && pmResponse.data.meso.success) {
+            setMesoResult(pmResponse.data.meso);
+            console.log("[VendorChat] MESO options received:", pmResponse.data.meso.options.length);
+          }
+
           // Show notification based on decision
           if (pmResponse.data.decision.action === "ACCEPT") {
             toast.success("Your offer has been accepted!");
@@ -382,6 +392,24 @@ export default function VendorChat() {
     fetchDeal();
   }, [fetchDeal]);
 
+  // Handle MESO option selection
+  const handleMesoSelect = (option: MesoOption) => {
+    setSelectedMesoId(option.id);
+
+    // Auto-generate a response based on the selected option
+    const price = option.offer.total_price?.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) || 'the proposed price';
+    const terms = option.offer.payment_terms || 'the proposed terms';
+
+    // Create a vendor response based on selection
+    const responseContent = `I'm interested in your "${option.label}" offer at ${price} with ${terms} payment terms. Let's proceed with this option.`;
+
+    // Send the message
+    handleSend(responseContent);
+
+    // Clear MESO after selection
+    setMesoResult(null);
+  };
+
   // Send message handler
   const handleSend = async (content: string) => {
     if (!uniqueToken || !content.trim() || sending) return;
@@ -406,6 +434,16 @@ export default function VendorChat() {
       // Add PM message to UI
       setMessages((prev) => [...prev, pmResponse.data.pmMessage]);
       setDeal(pmResponse.data.deal);
+
+      // Store MESO options if available
+      if (pmResponse.data.meso && pmResponse.data.meso.success) {
+        setMesoResult(pmResponse.data.meso);
+        setSelectedMesoId(null); // Reset selection for new MESO round
+        console.log("[VendorChat] MESO options received:", pmResponse.data.meso.options.length);
+      } else {
+        // Clear MESO if no new options (e.g., final round or ACCEPT/WALK_AWAY)
+        setMesoResult(null);
+      }
 
       // Show notification if deal status changed
       if (pmResponse.data.decision.action === "ACCEPT") {
@@ -495,6 +533,18 @@ export default function VendorChat() {
       {/* Chat Area - Full Width, No Sidebar */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <ChatTranscript messages={messages} isProcessing={pmTyping} />
+
+        {/* MESO Options - Display when available */}
+        {mesoResult && mesoResult.success && canNegotiate && (
+          <div className="border-t border-gray-200 p-4 bg-gradient-to-b from-blue-50 to-white">
+            <MesoOptions
+              mesoResult={mesoResult}
+              onSelect={handleMesoSelect}
+              disabled={sending || pmTyping}
+              selectedId={selectedMesoId || undefined}
+            />
+          </div>
+        )}
 
         {/* Composer - Only if NEGOTIATING */}
         {canNegotiate ? (

@@ -31,10 +31,12 @@ interface ReviewStepProps {
 }
 
 const WARRANTY_LABELS: Record<string, string> = {
+  '0_MONTHS': '0 Months',
   '6_MONTHS': '6 Months',
   '1_YEAR': '1 Year',
   '2_YEARS': '2 Years',
   '3_YEARS': '3 Years',
+  '5_YEARS': '5 Years',
 };
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
@@ -325,7 +327,13 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
           <div className="bg-gray-50 rounded-lg p-3">
             <DataRow
               label="Warranty Period"
-              value={WARRANTY_LABELS[data.stepThree.contractSla.warrantyPeriod || ''] || '—'}
+              value={
+                data.stepThree.contractSla.warrantyPeriod === 'CUSTOM'
+                  ? data.stepThree.contractSla.customWarrantyMonths !== null
+                    ? `${data.stepThree.contractSla.customWarrantyMonths} month${data.stepThree.contractSla.customWarrantyMonths !== 1 ? 's' : ''}`
+                    : '—'
+                  : WARRANTY_LABELS[data.stepThree.contractSla.warrantyPeriod || ''] || '—'
+              }
               highlight
             />
             <DataRow
