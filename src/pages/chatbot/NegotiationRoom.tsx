@@ -8,12 +8,12 @@ import { ChatTranscript } from "../../components/chatbot/chat";
 import { exportDealAsPDF, exportDealAsCSV } from "../../utils/exportDeal";
 import chatbotService from "../../services/chatbot.service";
 import type { DealSummaryResponse, ExtendedNegotiationConfig, BehavioralData } from "../../types/chatbot";
-import { FiMessageSquare, FiFileText, FiTrendingUp, FiClock, FiCheckCircle, FiXCircle, FiDollarSign, FiCreditCard, FiTruck, FiClipboard, FiSettings, FiActivity, FiRefreshCw, FiAlertCircle, FiTarget } from "react-icons/fi";
+import { FiMessageSquare, FiFileText, FiTrendingUp, FiClock, FiCheckCircle, FiXCircle, FiDollarSign, FiCreditCard, FiTruck, FiClipboard, FiSettings, FiActivity, FiRefreshCw, FiAlertCircle, FiZap, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import {
   CollapsibleSection,
   ParameterRow,
   UnifiedUtilityBar,
-  ConvergenceChart,
+  AiReasoningModal,
   type UnifiedRecommendationAction as RecommendationAction,
 } from "../../components/chatbot/sidebar";
 
@@ -54,17 +54,14 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 export default function NegotiationRoom() {
   const { dealId } = useParams<{ dealId: string }>();
   const navigate = useNavigate();
+
+  // DEBUG: Log component mount and dealId
+  console.log('[NegotiationRoom] MOUNTED with dealId:', dealId);
+
   const [showExportDropdown, setShowExportDropdown] = useState<boolean>(false);
   const exportDropdownRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<TabType>("chat");
-
-  // Validate dealId early - redirect if invalid
-  useEffect(() => {
-    if (!dealId || dealId === 'undefined' || !UUID_REGEX.test(dealId)) {
-      toast.error('Invalid deal ID');
-      navigate('/chatbot');
-    }
-  }, [dealId, navigate]);
+  const [isInvalidDeal, setIsInvalidDeal] = useState<boolean>(false);
   const [summary, setSummary] = useState<DealSummaryResponse | null>(null);
   const [summaryLoading, setSummaryLoading] = useState<boolean>(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
@@ -75,10 +72,13 @@ export default function NegotiationRoom() {
 
   // Behavioral analysis state (Adaptive Negotiation Engine)
   const [behavioralData, setBehavioralData] = useState<BehavioralData | null>(null);
-  const [showConvergenceChart, setShowConvergenceChart] = useState<boolean>(false);
+
+  // AI Reasoning section state
+  const [showAiReasoning, setShowAiReasoning] = useState<boolean>(true);
+  const [reasoningModalIndex, setReasoningModalIndex] = useState<number | null>(null);
 
   // Accordion state for collapsible sidebar sections
-  const [openSection, setOpenSection] = useState<string | null>('price');
+  const [openSection, setOpenSection] = useState<string | null>(null);
 
   // Status change notification banner
   const [statusBanner, setStatusBanner] = useState<{
@@ -90,6 +90,13 @@ export default function NegotiationRoom() {
   // Track previous status for change detection
   const previousStatusRef = useRef<string | null>(null);
   const previousMessageCountRef = useRef<number>(0);
+
+  // Validate dealId early - show error UI instead of redirecting (prevents white screen)
+  useEffect(() => {
+    if (!dealId || dealId === 'undefined' || !UUID_REGEX.test(dealId)) {
+      setIsInvalidDeal(true);
+    }
+  }, [dealId]);
 
   const {
     deal,
@@ -402,6 +409,92 @@ export default function NegotiationRoom() {
   // Get negotiation state first
   const negotiationState = getLatestNegotiationState();
 
+  // Helper to build human-readable reasoning text (defined before useMemo that uses it)
+  const buildReasoningText = (
+    decision: any,
+    utilities: any,
+    counterOffer: any,
+    utilityScore: number | null
+  ): string[] => {
+    const reasons: string[] = [];
+
+    // Add decision reasons
+    if (decision.reasons && Array.isArray(decision.reasons)) {
+      reasons.push(...decision.reasons);
+    }
+
+    // Add utility-based reasoning
+    if (utilityScore !== null) {
+      const utilityPercent = (utilityScore * 100).toFixed(0);
+      if (utilityScore >= 0.7) {
+        reasons.push(`Utility score of ${utilityPercent}% meets acceptance threshold`);
+      } else if (utilityScore >= 0.5) {
+        reasons.push(`Utility score of ${utilityPercent}% is in counter-offer zone`);
+      } else if (utilityScore >= 0.3) {
+        reasons.push(`Utility score of ${utilityPercent}% suggests escalation may be needed`);
+      } else {
+        reasons.push(`Utility score of ${utilityPercent}% is below walk-away threshold`);
+      }
+    }
+
+    // Add counter-offer reasoning
+    if (counterOffer) {
+      if (counterOffer.total_price) {
+        reasons.push(`Counter-offered price: $${counterOffer.total_price.toLocaleString()}`);
+      }
+      if (counterOffer.payment_terms) {
+        reasons.push(`Counter-offered terms: ${counterOffer.payment_terms}`);
+      }
+    }
+
+    // Add utility breakdown if available
+    if (utilities.priceUtility !== undefined && utilities.priceUtility !== null) {
+      const priceUtil = (utilities.priceUtility * 100).toFixed(0);
+      reasons.push(`Price utility: ${priceUtil}%`);
+    }
+    if (utilities.termsUtility !== undefined && utilities.termsUtility !== null) {
+      const termsUtil = (utilities.termsUtility * 100).toFixed(0);
+      reasons.push(`Terms utility: ${termsUtil}%`);
+    }
+
+    return reasons.length > 0 ? reasons : ['Analyzing vendor offer...'];
+  };
+
+  // Extract AI reasoning timeline from ACCORDO messages
+  const getAiReasoningTimeline = useMemo(() => {
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return [];
+    }
+
+    // Get all ACCORDO messages with explainability data, sorted by round
+    const accordoMessages = messages
+      .filter((m: any) => m.role === "ACCORDO" && (m.explainabilityJson || m.engineDecision))
+      .sort((a: any, b: any) => (a.round || 0) - (b.round || 0));
+
+    return accordoMessages.map((msg: any) => {
+      const explainability = msg.explainabilityJson || {};
+      const decision = explainability.decision || msg.engineDecision || {};
+      const utilities = explainability.utilities || {};
+      const counterOffer = decision.counterOffer || msg.counterOffer;
+
+      // Extract MESO info if present in the message
+      const mesoInfo = msg.mesoOptions || null;
+
+      // Build reasoning object for this round
+      return {
+        round: msg.round || 0,
+        timestamp: msg.createdAt,
+        action: decision.action || msg.decisionAction || 'COUNTER',
+        utilityScore: msg.utilityScore || utilities.total || null,
+        reasons: decision.reasons || [],
+        counterOffer: counterOffer,
+        mesoOptions: mesoInfo,
+        // Build human-readable reasoning
+        reasoning: buildReasoningText(decision, utilities, counterOffer, msg.utilityScore),
+      };
+    });
+  }, [messages]);
+
   // Calculate adaptive config based on negotiation progress
   const getAdaptiveConfig = () => {
     // Safety check: ensure we have config
@@ -573,6 +666,31 @@ export default function NegotiationRoom() {
     };
   }, [utilityData]);
 
+  // Early return for invalid deal ID (all hooks have been called above)
+  if (isInvalidDeal) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-dark-bg">
+        <div className="text-center p-8">
+          <div className="text-red-600 mb-4">
+            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <p className="text-gray-800 dark:text-dark-text font-medium mb-2">Invalid Deal ID</p>
+          <p className="text-gray-600 dark:text-dark-text-secondary text-sm mb-4">
+            The deal ID &quot;{dealId}&quot; is not valid.
+          </p>
+          <button
+            onClick={() => navigate('/chatbot')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Go to Negotiations
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (loading && !deal) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-dark-bg">
@@ -616,8 +734,9 @@ export default function NegotiationRoom() {
     );
   }
 
-  // Check if deal is completed - show read-only summary
-  const isCompletedDeal = deal?.status === 'ACCEPTED' || deal?.status === 'WALKED_AWAY';
+  // Check if deal is completed or escalated - show read-only summary
+  // ESCALATED deals are also read-only as they're waiting for human review
+  const isCompletedDeal = deal?.status === 'ACCEPTED' || deal?.status === 'WALKED_AWAY' || deal?.status === 'ESCALATED';
 
   // Fallback: If loading is done but deal is still null (no error set), show error state
   if (!loading && !error && !deal) {
@@ -656,7 +775,7 @@ export default function NegotiationRoom() {
 
   if (isCompletedDeal) {
     return (
-      <div className="flex flex-col flex-1 min-h-0 overflow-y-auto bg-gray-100 dark:bg-dark-bg">
+      <div className="flex flex-col overflow-y-auto bg-gray-100 dark:bg-dark-bg" style={{ height: 'calc(100vh - 2rem)' }}>
         {/* Header */}
         <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 pt-6 pb-4 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -757,7 +876,7 @@ export default function NegotiationRoom() {
   }
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-hidden bg-gray-100 dark:bg-dark-bg">
+    <div className="flex flex-col bg-gray-100 dark:bg-dark-bg overflow-hidden" style={{ height: 'calc(100vh - 2rem)' }}>
       {/* Header - Fixed at top */}
       <div className="flex-shrink-0 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 py-4">
         <div className="flex items-center justify-between">
@@ -1158,7 +1277,7 @@ export default function NegotiationRoom() {
             <div className="space-y-4">
               {/* 1. Unified Utility & Threshold Bar */}
               <UnifiedUtilityBar
-                percentage={utilityData?.totalUtilityPercent || (negotiationState?.utilities?.total ? negotiationState.utilities.total * 100 : 0)}
+                percentage={utilityData?.totalUtilityPercent || (negotiationState?.utilities?.total ? (negotiationState?.utilities?.total ?? 0) * 100 : 0)}
                 recommendation={getRecommendationAction()}
                 thresholds={{
                   accept: adaptiveConfig.accept_threshold || 0.7,
@@ -1169,155 +1288,151 @@ export default function NegotiationRoom() {
                 recommendationReason={utilityData?.recommendationReason}
               />
 
-              {/* 3. Current Progress - Blue/Indigo Theme */}
-              {deal && (
-                <div className="bg-gradient-to-br from-indigo-50 via-blue-50 to-indigo-50 rounded-lg p-4 shadow-sm border border-indigo-200">
-                  <div className="flex items-center justify-between mb-3">
+              {/* AI Reasoning Section - Timeline of MESO decisions */}
+              {deal && deal.round > 0 && (
+                <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-50 dark:from-emerald-900/20 dark:via-teal-900/20 dark:to-emerald-900/20 rounded-lg shadow-sm border border-emerald-200 dark:border-emerald-800 overflow-hidden">
+                  {/* Header - Collapsible */}
+                  <button
+                    onClick={() => setShowAiReasoning(!showAiReasoning)}
+                    className="w-full flex items-center justify-between p-4 hover:bg-emerald-100/50 dark:hover:bg-emerald-900/30 transition-colors"
+                  >
                     <div className="flex items-center gap-2">
-                      <div className="p-1.5 bg-indigo-100 rounded-md">
-                        <FiClock className="w-4 h-4 text-indigo-600" />
+                      <div className="p-1.5 bg-emerald-100 dark:bg-emerald-900/40 rounded-md">
+                        <FiZap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       </div>
-                      <span className="text-sm font-semibold text-indigo-900">Negotiation Progress</span>
-                    </div>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                      deal.round >= adaptiveConfig.max_rounds
-                        ? 'bg-red-100 text-red-700'
-                        : deal.round >= adaptiveConfig.max_rounds * 0.7
-                        ? 'bg-orange-100 text-orange-700'
-                        : 'bg-indigo-100 text-indigo-700'
-                    }`}>
-                      Round {deal.round}/{adaptiveConfig.max_rounds}
-                    </span>
-                  </div>
-                  <div className="relative w-full bg-indigo-100 rounded-full h-2.5 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        deal.round >= adaptiveConfig.max_rounds
-                          ? 'bg-gradient-to-r from-red-500 to-red-600'
-                          : deal.round >= adaptiveConfig.max_rounds * 0.7
-                          ? 'bg-gradient-to-r from-orange-500 to-orange-600'
-                          : 'bg-gradient-to-r from-indigo-500 via-blue-500 to-indigo-600'
-                      }`}
-                      style={{ width: `${Math.min((deal.round / adaptiveConfig.max_rounds) * 100, 100)}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between mt-1.5 text-[10px] text-indigo-500">
-                    <span>Start</span>
-                    <span>
-                      {behavioralData?.dynamicRounds
-                        ? `${behavioralData.dynamicRounds.softMax} rounds (max ${behavioralData.dynamicRounds.hardMax})`
-                        : `${adaptiveConfig.max_rounds} rounds max`}
-                    </span>
-                  </div>
-                  {behavioralData?.dynamicRounds?.extendLikely && deal.round >= adaptiveConfig.max_rounds * 0.7 && (
-                    <div className="mt-1.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                      May extend — converging
-                    </div>
-                  )}
-                  {behavioralData?.isStalling && deal.round >= adaptiveConfig.max_rounds * 0.5 && (
-                    <div className="mt-1.5 text-[10px] text-orange-600 dark:text-orange-400 font-medium">
-                      May escalate early — stalling
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* AI Strategy Section (Adaptive Negotiation Engine) */}
-              {behavioralData && deal && deal.round > 0 && (
-                <div className="bg-gradient-to-br from-violet-50 via-purple-50 to-violet-50 dark:from-violet-900/20 dark:via-purple-900/20 dark:to-violet-900/20 rounded-lg p-4 shadow-sm border border-violet-200 dark:border-violet-800">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 bg-violet-100 dark:bg-violet-900/40 rounded-md">
-                        <FiTarget className="w-4 h-4 text-violet-600 dark:text-violet-400" />
-                      </div>
-                      <span className="text-sm font-semibold text-violet-900 dark:text-violet-200">AI Strategy</span>
-                    </div>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      behavioralData.strategy === 'Holding Firm'
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                        : behavioralData.strategy === 'Accelerating'
-                        ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
-                        : behavioralData.strategy === 'Final Push'
-                        ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                        : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                    }`}>
-                      {behavioralData.strategy}
-                    </span>
-                  </div>
-
-                  {/* Momentum Bar */}
-                  <div className="mb-3">
-                    <div className="flex items-center justify-between text-[10px] mb-1">
-                      <span className="text-violet-600 dark:text-violet-400 font-medium">Momentum</span>
-                      <span className={`font-bold ${
-                        behavioralData.momentum > 0.3 ? 'text-green-600 dark:text-green-400'
-                        : behavioralData.momentum < -0.3 ? 'text-red-600 dark:text-red-400'
-                        : 'text-yellow-600 dark:text-yellow-400'
-                      }`}>
-                        {behavioralData.momentum > 0 ? '+' : ''}{(behavioralData.momentum * 100).toFixed(0)}%
+                      <span className="text-sm font-semibold text-emerald-900 dark:text-emerald-200">AI Reasoning</span>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/40 px-1.5 py-0.5 rounded">
+                        {getAiReasoningTimeline.length} rounds
                       </span>
                     </div>
-                    <div className="relative w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          behavioralData.momentum > 0.3 ? 'bg-gradient-to-r from-green-400 to-green-500'
-                          : behavioralData.momentum < -0.3 ? 'bg-gradient-to-r from-red-400 to-red-500'
-                          : 'bg-gradient-to-r from-yellow-400 to-yellow-500'
-                        }`}
-                        style={{ width: `${Math.max(5, ((behavioralData.momentum + 1) / 2) * 100)}%` }}
-                      />
-                    </div>
-                  </div>
+                    {showAiReasoning ? (
+                      <FiChevronUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    ) : (
+                      <FiChevronDown className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    )}
+                  </button>
 
-                  {/* Key Metrics */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-violet-700 dark:text-violet-300">Convergence</span>
-                      <span className={`font-semibold ${
-                        behavioralData.isConverging ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'
-                      }`}>
-                        {behavioralData.isConverging ? '\u25B2' : behavioralData.isDiverging ? '\u25BC' : '\u25CF'}{' '}
-                        {(behavioralData.convergenceRate * 100).toFixed(0)}%/round
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-violet-700 dark:text-violet-300">Vendor Pace</span>
-                      <span className="font-semibold text-violet-900 dark:text-violet-200">
-                        ${behavioralData.concessionVelocity.toFixed(0)}/round
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-violet-700 dark:text-violet-300">Sentiment</span>
-                      <span className={`font-semibold px-1.5 py-0.5 rounded text-[10px] ${
-                        behavioralData.latestSentiment === 'positive'
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                          : behavioralData.latestSentiment === 'resistant'
-                          ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                          : behavioralData.latestSentiment === 'urgent'
-                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
-                          : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                      }`}>
-                        {behavioralData.latestSentiment}
-                      </span>
-                    </div>
-                  </div>
+                  {/* Timeline Content */}
+                  {showAiReasoning && (
+                    <div className="px-4 pb-4 max-h-80 overflow-y-auto">
+                      {getAiReasoningTimeline.length === 0 ? (
+                        <div className="text-center text-sm text-emerald-600 dark:text-emerald-400 py-4">
+                          Waiting for first MESO offer...
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          {/* Timeline line */}
+                          <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-emerald-200 dark:bg-emerald-700" />
 
-                  {/* Convergence Chart (collapsible) */}
-                  {behavioralData.roundHistory.length >= 2 && (
-                    <div className="mt-3 pt-3 border-t border-violet-200 dark:border-violet-700">
-                      <button
-                        onClick={() => setShowConvergenceChart(!showConvergenceChart)}
-                        className="flex items-center gap-1.5 text-[10px] text-violet-600 dark:text-violet-400 hover:text-violet-800 dark:hover:text-violet-300 font-medium transition-colors"
-                      >
-                        <FiTrendingUp className="w-3 h-3" />
-                        {showConvergenceChart ? 'Hide' : 'Show'} Convergence Chart
-                      </button>
-                      {showConvergenceChart && (
-                        <div className="mt-2">
-                          <ConvergenceChart
-                            roundHistory={behavioralData.roundHistory}
-                            isConverging={behavioralData.isConverging}
-                          />
+                          {/* Timeline items - show most recent first */}
+                          {[...getAiReasoningTimeline].reverse().map((item: any, index: number) => (
+                            <div
+                              key={item.round || index}
+                              className="relative pl-8 pb-4 last:pb-0 cursor-pointer hover:bg-emerald-100/40 dark:hover:bg-emerald-900/20 rounded-md transition-colors"
+                              onClick={() => setReasoningModalIndex(getAiReasoningTimeline.length - 1 - index)}
+                            >
+                              {/* Timeline dot */}
+                              <div className={`absolute left-1.5 top-1 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 ${
+                                item.action === 'ACCEPT' ? 'bg-green-500' :
+                                item.action === 'COUNTER' ? 'bg-blue-500' :
+                                item.action === 'ESCALATE' ? 'bg-orange-500' :
+                                item.action === 'WALK_AWAY' ? 'bg-red-500' :
+                                'bg-gray-400'
+                              }`} />
+
+                              {/* Round header */}
+                              <div className="flex items-center gap-2 mb-1.5">
+                                <span className="text-xs font-bold text-emerald-800 dark:text-emerald-200">
+                                  Round {item.round}
+                                </span>
+                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                                  item.action === 'ACCEPT' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+                                  item.action === 'COUNTER' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
+                                  item.action === 'ESCALATE' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
+                                  item.action === 'WALK_AWAY' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
+                                  'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {item.action?.replace('_', ' ')}
+                                </span>
+                                {item.utilityScore && (
+                                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400">
+                                    {(item.utilityScore * 100).toFixed(0)}% utility
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Reasoning points */}
+                              <div className="space-y-1">
+                                {item.reasoning.slice(0, 4).map((reason: string, rIndex: number) => (
+                                  <div key={rIndex} className="flex items-start gap-1.5 text-[11px] text-emerald-700 dark:text-emerald-300">
+                                    <span className="text-emerald-400 mt-0.5">•</span>
+                                    <span>{reason}</span>
+                                  </div>
+                                ))}
+                                {item.reasoning.length > 4 && (
+                                  <div className="text-[10px] text-emerald-500 dark:text-emerald-400 italic underline decoration-dotted">
+                                    +{item.reasoning.length - 4} more insights
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* MESO Options Summary (if available) */}
+                              {item.mesoOptions && item.mesoOptions.length > 0 && (
+                                <div className="mt-2 p-2 bg-white/50 dark:bg-gray-800/30 rounded border border-emerald-100 dark:border-emerald-800">
+                                  <div className="text-[10px] font-medium text-emerald-800 dark:text-emerald-200 mb-1">
+                                    MESO Options Offered:
+                                  </div>
+                                  <div className="space-y-1">
+                                    {item.mesoOptions.map((opt: any, oIndex: number) => (
+                                      <div key={oIndex} className="text-[10px] text-emerald-600 dark:text-emerald-400">
+                                        <span className="font-medium">{opt.label}:</span>{' '}
+                                        {opt.offer?.total_price ? `$${opt.offer.total_price.toLocaleString()}` : 'N/A'}{' '}
+                                        {opt.emphasis && `(${Array.isArray(opt.emphasis) ? opt.emphasis.join(', ') : opt.emphasis})`}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Current Decision Summary */}
+                      {utilityData?.recommendationReason && (
+                        <div className="mt-3 pt-3 border-t border-emerald-200 dark:border-emerald-700">
+                          <div className="text-[10px] font-medium text-emerald-800 dark:text-emerald-200 mb-1">
+                            Current Analysis:
+                          </div>
+                          <p className="text-[11px] text-emerald-700 dark:text-emerald-300 italic">
+                            {utilityData.recommendationReason}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Behavioral Insights */}
+                      {behavioralData && (
+                        <div className="mt-3 pt-3 border-t border-emerald-200 dark:border-emerald-700">
+                          <div className="text-[10px] font-medium text-emerald-800 dark:text-emerald-200 mb-1">
+                            Behavioral Insights:
+                          </div>
+                          <div className="space-y-1 text-[11px] text-emerald-700 dark:text-emerald-300">
+                            {behavioralData.isConverging && (
+                              <div>✓ Negotiation is converging - vendor moving toward agreement</div>
+                            )}
+                            {behavioralData.isStalling && (
+                              <div>⚠ Vendor appears to be stalling - limited progress</div>
+                            )}
+                            {behavioralData.isDiverging && (
+                              <div>✗ Gap is widening - may need to adjust strategy</div>
+                            )}
+                            {behavioralData.latestSentiment && (
+                              <div>Vendor sentiment: {behavioralData.latestSentiment}</div>
+                            )}
+                            {behavioralData.strategy && (
+                              <div>AI strategy: {behavioralData.strategy}</div>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1337,6 +1452,8 @@ export default function NegotiationRoom() {
                   onToggle={() => setOpenSection(openSection === 'price' ? null : 'price')}
                   gradientColors="from-blue-50 to-indigo-50"
                   borderColor="border-blue-200"
+                  iconBgColor="bg-blue-100 dark:bg-blue-900/40"
+                  iconColor="text-blue-600 dark:text-blue-400"
                   isLive={(deal?.round ?? 0) > 0}
                 >
                   <div className="space-y-2">
@@ -1401,6 +1518,8 @@ export default function NegotiationRoom() {
                   onToggle={() => setOpenSection(openSection === 'payment' ? null : 'payment')}
                   gradientColors="from-purple-50 to-pink-50"
                   borderColor="border-purple-200"
+                  iconBgColor="bg-purple-100 dark:bg-purple-900/40"
+                  iconColor="text-purple-600 dark:text-purple-400"
                   isLive={(deal?.round ?? 0) > 0}
                 >
                   <div className="space-y-2">
@@ -1471,8 +1590,10 @@ export default function NegotiationRoom() {
                   weight={getSectionWeight('delivery')}
                   isOpen={openSection === 'delivery'}
                   onToggle={() => setOpenSection(openSection === 'delivery' ? null : 'delivery')}
-                  gradientColors="from-green-50 to-emerald-50"
-                  borderColor="border-green-200"
+                  gradientColors="from-cyan-50 to-sky-50"
+                  borderColor="border-cyan-200"
+                  iconBgColor="bg-cyan-100 dark:bg-cyan-900/40"
+                  iconColor="text-cyan-600 dark:text-cyan-400"
                   isLive={(deal?.round ?? 0) > 0}
                 >
                   <div className="space-y-2">
@@ -1525,6 +1646,8 @@ export default function NegotiationRoom() {
                   onToggle={() => setOpenSection(openSection === 'contract' ? null : 'contract')}
                   gradientColors="from-amber-50 to-orange-50"
                   borderColor="border-amber-200"
+                  iconBgColor="bg-amber-100 dark:bg-amber-900/40"
+                  iconColor="text-amber-600 dark:text-amber-400"
                   isLive={(deal?.round ?? 0) > 0}
                 >
                   <div className="space-y-2">
@@ -1573,6 +1696,8 @@ export default function NegotiationRoom() {
                   onToggle={() => setOpenSection(openSection === 'custom' ? null : 'custom')}
                   gradientColors="from-slate-50 to-gray-100"
                   borderColor="border-gray-300"
+                  iconBgColor="bg-slate-200 dark:bg-slate-700/40"
+                  iconColor="text-slate-600 dark:text-slate-400"
                   isLive={(deal?.round ?? 0) > 0}
                 >
                   <div className="space-y-2">
@@ -1601,6 +1726,15 @@ export default function NegotiationRoom() {
           </div>
         </div>
       </div>
+
+      {/* AI Reasoning Detail Modal */}
+      <AiReasoningModal
+        isOpen={reasoningModalIndex !== null}
+        onClose={() => setReasoningModalIndex(null)}
+        timeline={getAiReasoningTimeline}
+        currentIndex={reasoningModalIndex ?? 0}
+        onNavigate={setReasoningModalIndex}
+      />
     </div>
   );
 }

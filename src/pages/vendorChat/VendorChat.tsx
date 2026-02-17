@@ -412,28 +412,52 @@ export default function VendorChat() {
 
   // Send message handler
   const handleSend = async (content: string) => {
-    if (!uniqueToken || !content.trim() || sending) return;
+    console.log('[VendorChat] handleSend called with content:', content?.substring(0, 50));
+    if (!uniqueToken || !content.trim() || sending) {
+      console.log('[VendorChat] Blocked - token:', !!uniqueToken, 'content:', !!content?.trim(), 'sending:', sending);
+      return;
+    }
 
     try {
       setSending(true);
 
       // Phase 1: Send vendor message (instant)
+      console.log('[VendorChat] Phase 1: Sending vendor message...');
       const messageResponse = await vendorChatService.sendMessage(uniqueToken, content);
+      console.log('[VendorChat] Phase 1 response:', messageResponse);
+
+      // Validate response before updating state
+      if (!messageResponse?.data?.vendorMessage) {
+        throw new Error('Invalid Phase 1 response - no vendor message');
+      }
 
       // Add vendor message to UI immediately
       setMessages((prev) => [...prev, messageResponse.data.vendorMessage]);
-      setDeal(messageResponse.data.deal);
+      if (messageResponse.data.deal) {
+        setDeal(messageResponse.data.deal);
+      }
 
       // Phase 2: Get PM response (async)
+      console.log('[VendorChat] Phase 2: Getting PM response...');
       setPmTyping(true);
       const pmResponse = await vendorChatService.getPMResponse(
         uniqueToken,
         messageResponse.data.vendorMessage.id
       );
+      console.log('[VendorChat] Phase 2 response:', pmResponse);
+
+      // Validate PM response before updating state
+      if (!pmResponse?.data?.pmMessage) {
+        console.error('[VendorChat] Invalid Phase 2 response - no PM message');
+        toast.error('PM response was incomplete');
+        return;
+      }
 
       // Add PM message to UI
       setMessages((prev) => [...prev, pmResponse.data.pmMessage]);
-      setDeal(pmResponse.data.deal);
+      if (pmResponse.data.deal) {
+        setDeal(pmResponse.data.deal);
+      }
 
       // Store MESO options if available
       if (pmResponse.data.meso && pmResponse.data.meso.success) {
@@ -446,15 +470,16 @@ export default function VendorChat() {
       }
 
       // Show notification if deal status changed
-      if (pmResponse.data.decision.action === "ACCEPT") {
+      if (pmResponse.data.decision?.action === "ACCEPT") {
         toast.success("Your offer has been accepted!");
-      } else if (pmResponse.data.decision.action === "WALK_AWAY") {
+      } else if (pmResponse.data.decision?.action === "WALK_AWAY") {
         toast.error("The procurement manager has walked away from this negotiation.");
-      } else if (pmResponse.data.decision.action === "ESCALATE") {
+      } else if (pmResponse.data.decision?.action === "ESCALATE") {
         toast("This negotiation has been escalated for review.", { icon: "⚠️" });
       }
     } catch (err: any) {
-      console.error("Error sending message:", err);
+      console.error("[VendorChat] Error sending message:", err);
+      console.error("[VendorChat] Error details:", err.response?.data);
       toast.error(err.response?.data?.message || "Failed to send message");
     } finally {
       setSending(false);

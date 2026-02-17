@@ -18,39 +18,31 @@ interface StepFourProps {
 }
 
 // Parameter definitions for display
-// UPDATED Feb 2026: Changed "Target Unit Price" to "Total Target Price"
+// UPDATED Feb 2026: Simplified to core utility parameters only
 const STEP2_PARAMETERS = [
   { id: "targetUnitPrice", name: "Total Target Price", source: "step2" as const },
   { id: "maxAcceptablePrice", name: "Total Max Price", source: "step2" as const },
   { id: "volumeDiscountExpectation", name: "Volume Discount", source: "step2" as const },
-  { id: "paymentTermsRange", name: "Payment Terms Range", source: "step2" as const },
   { id: "advancePaymentLimit", name: "Advance Payment Limit", source: "step2" as const },
   { id: "deliveryDate", name: "Delivery Date", source: "step2" as const },
-  { id: "partialDelivery", name: "Partial Delivery", source: "step2" as const },
 ];
 
 const STEP3_PARAMETERS = [
   { id: "warrantyPeriod", name: "Warranty Period", source: "step3" as const },
-  { id: "lateDeliveryPenalty", name: "Late Delivery Penalty", source: "step3" as const },
   { id: "qualityStandards", name: "Quality Standards", source: "step3" as const },
-  { id: "maxRounds", name: "Max Negotiation Rounds", source: "step3" as const },
-  { id: "walkawayThreshold", name: "Walkaway Threshold", source: "step3" as const },
 ];
 
 // Default weights distribution (AI-suggested)
+// Updated Feb 2026: Simplified to 7 core utility parameters
+// Removed: paymentTermsRange, partialDelivery, lateDeliveryPenalty, maxRounds, walkawayThreshold
 const getDefaultWeights = (): Record<string, number> => ({
-  targetUnitPrice: 25,
-  maxAcceptablePrice: 15,
-  volumeDiscountExpectation: 5,
-  paymentTermsRange: 15,
+  targetUnitPrice: 35,
+  maxAcceptablePrice: 20,
+  volumeDiscountExpectation: 10,
   advancePaymentLimit: 5,
-  deliveryDate: 10,
-  partialDelivery: 3,
-  warrantyPeriod: 7,
-  lateDeliveryPenalty: 5,
+  deliveryDate: 15,
+  warrantyPeriod: 10,
   qualityStandards: 5,
-  maxRounds: 2,
-  walkawayThreshold: 3,
 });
 
 /**
@@ -183,12 +175,28 @@ export default function StepFour({
     return params;
   }, [stepThreeData.customParameters]);
 
-  // Initialize weights when entering step (if not already set)
+  // Get valid parameter IDs for filtering
+  const validParamIds = useMemo(() => {
+    return new Set(allParameters.map(p => p.id));
+  }, [allParameters]);
+
+  // Filter weights to only show valid parameters (removes deprecated ones)
+  const filteredWeights = useMemo(() => {
+    return data.weights.filter(w => validParamIds.has(w.parameterId));
+  }, [data.weights, validParamIds]);
+
+  // Initialize weights when entering step (if not already set or if parameters changed)
   useEffect(() => {
-    if (data.weights.length === 0) {
+    // Re-initialize if:
+    // 1. No weights exist
+    // 2. Filtered weights count doesn't match expected parameters (old cached data)
+    const expectedParamCount = allParameters.length;
+    const validWeightsCount = filteredWeights.length;
+
+    if (data.weights.length === 0 || validWeightsCount !== expectedParamCount) {
       initializeWeights();
     }
-  }, [allParameters]);
+  }, [allParameters, filteredWeights.length]);
 
   const initializeWeights = () => {
     const defaultWeights = getDefaultWeights();
@@ -382,67 +390,72 @@ export default function StepFour({
         )}
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Sliders Column */}
-        <div className="lg:col-span-2 space-y-3">
-          {data.weights.map((weight) => (
-            <WeightSlider
-              key={weight.parameterId}
-              parameterId={weight.parameterId}
-              parameterName={weight.parameterName}
-              weight={weight.weight}
-              color={weight.color || CHART_COLORS[0]}
-              isLocked={lockedParams.has(weight.parameterId)}
-              onChange={(newWeight) => handleWeightChange(weight.parameterId, newWeight)}
-              onToggleLock={() => toggleLock(weight.parameterId)}
-            />
-          ))}
+      {/* Main Content: Sliders aligned with Donut Chart Card */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+        {/* Sliders Column - centered vertically within card-like container */}
+        <div className="lg:col-span-2 bg-white dark:bg-dark-surface rounded-xl border border-gray-200 dark:border-dark-border p-6 flex flex-col justify-center">
+          <div className="space-y-3">
+            {filteredWeights.map((weight) => (
+              <WeightSlider
+                key={weight.parameterId}
+                parameterId={weight.parameterId}
+                parameterName={weight.parameterName}
+                weight={weight.weight}
+                color={weight.color || CHART_COLORS[0]}
+                isLocked={lockedParams.has(weight.parameterId)}
+                onChange={(newWeight) => handleWeightChange(weight.parameterId, newWeight)}
+                onToggleLock={() => toggleLock(weight.parameterId)}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Right Column: Donut Chart + Summary */}
-        <div className="space-y-4">
-          {/* Donut Chart */}
-          <div className="bg-white dark:bg-dark-surface rounded-xl border border-gray-200 dark:border-dark-border p-6 flex flex-col items-center">
-            <DonutChart
-              weights={data.weights}
-              totalWeight={data.totalWeight}
-              size={180}
-            />
+        <div className="bg-white dark:bg-dark-surface rounded-xl border border-gray-200 dark:border-dark-border p-6 flex flex-col items-center justify-center">
+          <DonutChart
+            weights={filteredWeights}
+            totalWeight={filteredWeights.reduce((sum, w) => sum + w.weight, 0)}
+            size={180}
+          />
 
-            {/* Status Summary */}
-            <div className="mt-4 w-full">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-dark-text-secondary">Total:</span>
-                <span className="font-semibold text-green-600 dark:text-green-400">
-                  {Math.round(data.totalWeight)}%
-                </span>
-              </div>
-              <p className="mt-2 text-xs text-gray-500 dark:text-dark-text-secondary text-center">
-                Weights auto-balance to 100%
-              </p>
+          {/* Status Summary */}
+          <div className="mt-4 w-full">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600 dark:text-dark-text-secondary">Total:</span>
+              <span className="font-semibold text-green-600 dark:text-green-400">
+                {Math.round(data.totalWeight)}%
+              </span>
             </div>
-
-            {/* Reset Button */}
-            <button
-              onClick={handleResetToDefaults}
-              className="mt-4 flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-dark-text-secondary hover:text-gray-900 dark:hover:text-dark-text hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Reset to Defaults
-            </button>
+            <p className="mt-2 text-xs text-gray-500 dark:text-dark-text-secondary text-center">
+              Weights auto-balance to 100%
+            </p>
           </div>
 
-          {/* Info Card */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 p-4">
+          {/* Reset Button */}
+          <button
+            onClick={handleResetToDefaults}
+            className="mt-4 flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-dark-text-secondary hover:text-gray-900 dark:hover:text-dark-text hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Reset to Defaults
+          </button>
+        </div>
+      </div>
+
+      {/* Info Card - Full width below both columns */}
+      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
             <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2">
               How Weights Work
             </h4>
-            <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed mb-3">
+            <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
               Higher weights indicate more important parameters. The AI uses these weights
               to calculate utility scores and make negotiation decisions. Parameters with
               0% weight are ignored during negotiation.
             </p>
+          </div>
+          <div>
             <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2">
               Lock Feature
             </h4>

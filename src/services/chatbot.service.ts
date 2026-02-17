@@ -288,10 +288,10 @@ export const chatbotService = {
    * GET /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/config
    */
   getDealConfig: async (ctx: DealContext): Promise<{ data: { config: ExtendedNegotiationConfig } }> => {
-    const res = await authApi.get<{ data: { config: ExtendedNegotiationConfig } }>(
+    const res = await authApi.get<{ message: string; data: { config: ExtendedNegotiationConfig } }>(
       buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'config')
     );
-    return res.data;
+    return { data: res.data.data };
   },
 
   /**
@@ -328,8 +328,8 @@ export const chatbotService = {
       recommendationReason: string;
     };
   }> => {
-    const res = await authApi.get(buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'utility'));
-    return res.data;
+    const res = await authApi.get<{ message: string; data: any }>(buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'utility'));
+    return { data: res.data.data };
   },
 
   /**
@@ -364,8 +364,8 @@ export const chatbotService = {
       } | null;
     };
   }> => {
-    const res = await authApi.get(buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'behavioral'));
-    return res.data;
+    const res = await authApi.get<{ message: string; data: any }>(buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'behavioral'));
+    return { data: res.data.data };
   },
 
   /**
@@ -373,10 +373,10 @@ export const chatbotService = {
    * GET /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/summary
    */
   getDealSummary: async (ctx: DealContext): Promise<{ data: DealSummaryResponse }> => {
-    const res = await authApi.get<{ data: DealSummaryResponse }>(
+    const res = await authApi.get<{ message: string; data: DealSummaryResponse }>(
       buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'summary')
     );
-    return res.data;
+    return { data: res.data.data };
   },
 
   /**
@@ -452,10 +452,6 @@ export const chatbotService = {
       { content, role },
       { params: { mode } }
     );
-    // DEBUG: Log the full response structure
-    console.log('[DEBUG chatbot.service] sendMessage raw res.data:', JSON.stringify(res.data, null, 2));
-    console.log('[DEBUG chatbot.service] sendMessage res.data.data:', res.data.data);
-    console.log('[DEBUG chatbot.service] sendMessage res.data.data?.messages:', res.data.data?.messages);
     // Extract inner data to return clean SendMessageResponse
     // Backend wraps response in { message: string, data: SendMessageResponse }
     return res.data.data;
@@ -1051,14 +1047,18 @@ export const chatbotService = {
       context: DealContext;
     };
   }> => {
+    console.log('[chatbotService.lookupDeal] Calling API for dealId:', dealId);
     const res = await authApi.get<{
+      message: string;
       data: {
         deal: Deal;
         messages: Message[];
         context: DealContext;
       };
     }>(`${CHATBOT_BASE}/deals/${dealId}/lookup`);
-    return res.data;
+    console.log('[chatbotService.lookupDeal] API response:', res.status, res.data?.message);
+    // Backend returns { message, data: {...} }, we return just the structure the hook expects
+    return { data: res.data.data };
   },
 
   // ==================== CONVENIENCE HELPERS ====================

@@ -114,8 +114,11 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
 
   // Load deal data using lookupDeal (gets both deal and context)
   const loadDeal = useCallback(async () => {
+    console.log('[useDealActions] loadDeal called, dealId:', dealId);
+
     // Validate dealId - check for undefined, 'undefined' string, or invalid UUID format
     if (!dealId || dealId === 'undefined' || !UUID_REGEX.test(dealId)) {
+      console.log('[useDealActions] Invalid dealId, setting error');
       setError(new Error('Invalid deal ID'));
       setLoading(false);
       return;
@@ -125,15 +128,28 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
       setLoading(true);
       setError(null);
 
+      console.log('[useDealActions] Calling lookupDeal API...');
       // Use lookupDeal to get deal + context in one call
       const response = await chatbotService.lookupDeal(dealId);
+      console.log('[useDealActions] API response received:', response);
+
+      if (!response || !response.data) {
+        throw new Error('Invalid response from lookupDeal');
+      }
+
       const { deal: fetchedDeal, messages: fetchedMessages, context: fetchedContext } = response.data;
+      console.log('[useDealActions] Parsed deal:', fetchedDeal?.id, 'status:', fetchedDeal?.status);
+
+      if (!fetchedDeal) {
+        throw new Error('No deal data received');
+      }
 
       setDeal(fetchedDeal);
       setMessages(fetchedMessages || []);
       setContext(fetchedContext);
+      console.log('[useDealActions] State updated successfully');
     } catch (err) {
-      console.error('Failed to load deal:', err);
+      console.error('[useDealActions] Error loading deal:', err);
       setError(err instanceof Error ? err : new Error('Failed to load deal'));
     } finally {
       setLoading(false);
@@ -169,7 +185,6 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
   const sendVendorMessage = useCallback(async (content: string): Promise<void> => {
     if (!isValidContext(context)) {
       toast.error('Unable to send message: deal context is incomplete');
-      console.error('sendVendorMessage: Invalid context - missing or invalid rfqId/vendorId/dealId', context);
       return;
     }
 
@@ -185,12 +200,6 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
       // Service now returns SendMessageResponse directly (not wrapped in { data: ... })
       const response = await chatbotService.sendMessage(context, content, 'VENDOR', mode);
 
-      // DEBUG: Log the response received from service
-      console.log('[DEBUG useDealActions] Response from sendMessage:', response);
-      console.log('[DEBUG useDealActions] response.deal:', response?.deal);
-      console.log('[DEBUG useDealActions] response.messages:', response?.messages);
-      console.log('[DEBUG useDealActions] messages count:', response?.messages?.length);
-
       // Validate response structure to prevent blank screen
       if (!response) {
         throw new Error('Invalid response from server - no data received');
@@ -198,7 +207,6 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
 
       // Only update state if we have valid data (preserves existing state otherwise)
       if (response.deal) {
-        console.log('[DEBUG useDealActions] Setting deal state:', response.deal);
         setDeal(response.deal);
 
         // Handle terminal states with success notification
@@ -210,18 +218,14 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
       }
 
       if (response.messages && Array.isArray(response.messages)) {
-        console.log('[DEBUG useDealActions] Setting messages state with', response.messages.length, 'messages');
         // Create new array reference to ensure React re-render
         setMessages([...response.messages]);
-      } else {
-        console.log('[DEBUG useDealActions] No valid messages in response, messages:', response.messages);
       }
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
       setError(new Error(errorMessage));
       toast.error(errorMessage);
-      console.error('Failed to send message:', err);
       // Don't re-throw - preserve existing UI state instead of causing blank screen
     } finally {
       setSending(false);

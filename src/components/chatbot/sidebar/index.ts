@@ -59,6 +59,12 @@ export {
   default as ConvergenceChart,
 } from "./ConvergenceChart";
 
+// AI Reasoning Detail Modal
+export {
+  default as AiReasoningModal,
+  type ReasoningTimelineItem,
+} from "./AiReasoningModal";
+
 // Parameter Formatter Utilities
 export {
   formatParameterValue,

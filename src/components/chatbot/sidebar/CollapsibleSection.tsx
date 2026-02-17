@@ -7,7 +7,7 @@
  */
 
 import type { ReactNode } from "react";
-import { FiChevronRight, FiChevronDown } from "react-icons/fi";
+import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 
 export interface CollapsibleSectionProps {
   title: string;
@@ -18,6 +18,8 @@ export interface CollapsibleSectionProps {
   children: ReactNode;
   gradientColors: string; // Tailwind gradient classes e.g., "from-blue-50 to-indigo-50"
   borderColor?: string;
+  iconBgColor?: string; // Tailwind bg class for the icon pill e.g., "bg-blue-100 dark:bg-blue-900/40"
+  iconColor?: string; // Tailwind text class for the icon e.g., "text-blue-600 dark:text-blue-400"
   isLive?: boolean;
 }
 
@@ -65,6 +67,8 @@ export default function CollapsibleSection({
   children,
   gradientColors,
   borderColor = "border-gray-200",
+  iconBgColor,
+  iconColor,
   isLive = false,
 }: CollapsibleSectionProps) {
   const weightStyles = getWeightBadgeStyles(weight);
@@ -82,18 +86,13 @@ export default function CollapsibleSection({
         aria-expanded={isOpen}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          {/* Expand/Collapse Icon */}
-          {isOpen ? (
-            <FiChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
-          ) : (
-            <FiChevronRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
-          )}
-
-          {/* Section Icon */}
-          <span className="text-gray-600 flex-shrink-0">{icon}</span>
+          {/* Section Icon with background pill */}
+          <div className={`p-1.5 rounded-md flex-shrink-0 ${iconBgColor || "bg-gray-100 dark:bg-gray-800/40"}`}>
+            <span className={iconColor || "text-gray-600 dark:text-gray-400"}>{icon}</span>
+          </div>
 
           {/* Title */}
-          <h3 className="text-sm font-semibold text-gray-900 truncate">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-200 truncate">
             {title}
           </h3>
 
@@ -105,15 +104,24 @@ export default function CollapsibleSection({
           )}
         </div>
 
-        {/* Weight Badge */}
-        {weight > 0 && (
-          <span
-            className={`px-2 py-0.5 rounded text-xs font-semibold ${weightStyles.bg} ${weightStyles.text} border ${weightStyles.border} flex-shrink-0 ml-2`}
-            title={`Weight: ${weight}% importance`}
-          >
-            {weight}%
-          </span>
-        )}
+        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+          {/* Weight Badge */}
+          {weight > 0 && (
+            <span
+              className={`px-2 py-0.5 rounded text-xs font-semibold ${weightStyles.bg} ${weightStyles.text} border ${weightStyles.border}`}
+              title={`Weight: ${weight}% importance`}
+            >
+              {weight}%
+            </span>
+          )}
+
+          {/* Expand/Collapse Chevron (right side) */}
+          {isOpen ? (
+            <FiChevronUp className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+          ) : (
+            <FiChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+          )}
+        </div>
       </button>
 
       {/* Expandable Content */}

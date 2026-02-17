@@ -52,13 +52,14 @@ export interface UnifiedUtilityBarProps {
 }
 
 /**
- * Get the color class for the dot indicator based on percentage
+ * Get the color class for the dot indicator based on percentage and thresholds
  */
-const getDotColor = (percentage: number): string => {
-  if (percentage < 30) return "bg-red-500";
-  if (percentage < 50) return "bg-orange-500";
-  if (percentage < 70) return "bg-blue-500";
-  return "bg-green-500";
+const getDotColor = (percentage: number, thresholds: { accept: number; escalate: number; walkAway: number }): string => {
+  const utilityDecimal = percentage / 100;
+  if (utilityDecimal >= thresholds.accept) return "bg-green-500";
+  if (utilityDecimal >= thresholds.escalate) return "bg-blue-500";
+  if (utilityDecimal >= thresholds.walkAway) return "bg-orange-500";
+  return "bg-red-500";
 };
 
 /**
@@ -153,7 +154,7 @@ const OutcomeBadge = ({ status }: { status: DealStatus }) => {
  */
 export default function UnifiedUtilityBar({
   percentage,
-  recommendation,
+  recommendation: _recommendation,
   thresholds = { accept: 0.7, escalate: 0.5, walkAway: 0.3 },
   dealStatus = "NEGOTIATING",
   recommendationReason,
@@ -166,15 +167,24 @@ export default function UnifiedUtilityBar({
     return Math.max(0, Math.min(100, percentage));
   }, [percentage]);
 
-  // Get dot color based on current zone
+  // Get dot color based on current zone and thresholds
   const dotColorClass = useMemo(() => {
-    return getDotColor(clampedPercentage);
-  }, [clampedPercentage]);
+    return getDotColor(clampedPercentage, thresholds);
+  }, [clampedPercentage, thresholds]);
 
-  // Get recommendation config
+  // Calculate dynamic recommendation based on current utility and thresholds
+  const dynamicRecommendation = useMemo((): RecommendationAction => {
+    const utilityDecimal = clampedPercentage / 100;
+    if (utilityDecimal >= thresholds.accept) return "ACCEPT";
+    if (utilityDecimal >= thresholds.escalate) return "COUNTER";
+    if (utilityDecimal >= thresholds.walkAway) return "ESCALATE";
+    return "WALK_AWAY";
+  }, [clampedPercentage, thresholds]);
+
+  // Get recommendation config - use dynamic recommendation calculated from utility
   const recommendationConfig = useMemo(() => {
-    return getRecommendationConfig(recommendation);
-  }, [recommendation]);
+    return getRecommendationConfig(dynamicRecommendation);
+  }, [dynamicRecommendation]);
 
   // Check if deal is in terminal state
   const isTerminalState = dealStatus !== "NEGOTIATING";
@@ -303,12 +313,13 @@ export default function UnifiedUtilityBar({
 export function CompactUnifiedUtilityBar({
   percentage,
   recommendation: _recommendation,
+  thresholds = { accept: 0.7, escalate: 0.5, walkAway: 0.3 },
   dealStatus = "NEGOTIATING",
-}: Pick<UnifiedUtilityBarProps, "percentage" | "recommendation" | "dealStatus">) {
+}: Pick<UnifiedUtilityBarProps, "percentage" | "recommendation" | "thresholds" | "dealStatus">) {
   const [showTooltip, setShowTooltip] = useState(false);
 
   const clampedPercentage = Math.max(0, Math.min(100, percentage));
-  const dotColorClass = getDotColor(clampedPercentage);
+  const dotColorClass = getDotColor(clampedPercentage, thresholds);
   const isTerminalState = dealStatus !== "NEGOTIATING";
 
   return (

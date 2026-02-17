@@ -5,6 +5,7 @@
  */
 
 import api from "../api";
+import type { MesoResult } from "../types/chatbot";
 
 const VENDOR_CHAT_BASE = "/vendor-chat";
 
@@ -268,6 +269,8 @@ export const vendorChatService = {
       pmMessage: VendorChatMessage;
       decision: PMDecision;
       deal: VendorDeal;
+      meso?: MesoResult;
+      isFinal?: boolean;
     };
   }> => {
     const res = await api.post<{
@@ -276,6 +279,8 @@ export const vendorChatService = {
         pmMessage: VendorChatMessage;
         decision: PMDecision;
         deal: VendorDeal;
+        meso?: MesoResult;
+        isFinal?: boolean;
       };
     }>(`${VENDOR_CHAT_BASE}/pm-response`, {
       uniqueToken,
