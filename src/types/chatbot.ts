@@ -260,8 +260,10 @@ export interface WizardConfig {
   };
   negotiationControl: {
     deadline?: string | null;
-    maxRounds: number;
-    walkawayThreshold: number;
+    // maxRounds and walkawayThreshold removed from UI (Feb 2026)
+    // Kept as optional for backwards compatibility with existing deals
+    maxRounds?: number;
+    walkawayThreshold?: number;
   };
   customParameters: CustomParameter[];
 }
@@ -567,11 +569,14 @@ export interface ContractSlaParams {
 
 /**
  * Step 3: Negotiation Control Parameters
+ * Updated Feb 2026: maxRounds and walkawayThreshold removed from wizard UI
+ * System uses ACCORDO_DEFAULTS from backend instead
  */
 export interface NegotiationControlParams {
   deadline: string | null;
-  maxRounds: number | null;
-  walkawayThreshold: number | null;
+  // Optional for backwards compatibility - not shown in wizard UI
+  maxRounds?: number | null;
+  walkawayThreshold?: number | null;
 }
 
 /**
@@ -1001,8 +1006,8 @@ export const DEFAULT_WIZARD_FORM_DATA: DealWizardFormData = {
     },
     negotiationControl: {
       deadline: null,
-      maxRounds: 10,
-      walkawayThreshold: 20,
+      // maxRounds and walkawayThreshold removed from wizard UI (Feb 2026)
+      // System uses ACCORDO_DEFAULTS from backend
     },
     customParameters: [],
   },
@@ -1057,6 +1062,10 @@ export interface MesoResult {
   success: boolean;
   /** Reason if not successful */
   reason?: string;
+  /** Whether these are final offers (75%+ utility trigger) */
+  isFinal?: boolean;
+  /** Stall detection prompt ("Is this your final offer?") if vendor is stuck on a parameter */
+  stallPrompt?: string;
 }
 
 /**
