@@ -1,6 +1,6 @@
 # Accordo AI — Frontend
 
-React-based procurement negotiation platform with real-time AI strategy visualization and vendor management.
+React-based procurement negotiation platform with real-time AI strategy visualization, MESO negotiations, and vendor management.
 
 ## Quick Start
 
@@ -9,7 +9,7 @@ React-based procurement negotiation platform with real-time AI strategy visualiz
 npm install
 
 # Set up environment
-cp env.local.template .env.local
+cp .env.example .env.local
 # Edit .env.local with your backend URL
 
 # Start development server
@@ -20,7 +20,7 @@ The app runs on **http://localhost:5001** by default.
 
 ## Environment Setup
 
-Create `.env.local` with:
+Create `.env.local` from `.env.example`:
 
 ```env
 VITE_BACKEND_URL=http://localhost:5002
@@ -59,11 +59,13 @@ npm run test:coverage # Tests with coverage report
 ## Docker
 
 ```bash
-# Build and start
+# Development build
 docker compose up -d --build
 
-# With custom backend URL
-VITE_BACKEND_URL=http://api.example.com docker compose up -d --build
+# Production build with custom URLs
+VITE_BACKEND_URL=https://api.accordo.com \
+VITE_FRONTEND_URL=https://app.accordo.com \
+docker compose -f docker-compose.prod.yml up -d --build
 
 # View logs
 docker compose logs -f
@@ -72,10 +74,21 @@ docker compose logs -f
 docker compose down
 ```
 
+### Docker Features
+
 The Docker setup uses a multi-stage build:
 1. **deps** — Install node_modules (cached layer)
 2. **builder** — TypeScript type-check + Vite production build
-3. **production** — Nginx serving static assets with gzip, caching, and SPA fallback
+3. **production** — Nginx serving static assets
+
+**Production features:**
+- Gzip compression (level 6)
+- Static asset caching (1 year, immutable)
+- SPA fallback routing
+- Security headers (X-Frame-Options, X-Content-Type-Options, CSP, etc.)
+- Health check endpoint (`/health`)
+- Resource limits (256MB memory)
+- JSON file logging with rotation
 
 ## Architecture
 
@@ -85,17 +98,19 @@ src/
 ├── services/            # API service modules
 │   ├── chatbot.service.ts    # Negotiation chatbot API client (50+ methods)
 │   ├── bidAnalysis.service.ts # Bid comparison API client
-│   ├── vendorChat.service.ts  # Vendor portal API client
+│   ├── vendorChat.service.ts  # Vendor portal API client (MESO flow)
 │   └── export.service.ts     # PDF/CSV export utilities
 ├── hooks/               # Custom React hooks
 │   └── chatbot/         # Deal actions, conversation, history tracking
 ├── types/               # TypeScript type definitions
+│   └── chatbot.ts       # Comprehensive chatbot types (NegotiationPhase, MesoResult, etc.)
 ├── utils/               # Token storage, permissions, utilities
 ├── components/
 │   ├── chatbot/
 │   │   ├── chat/        # MessageBubble, ChatTranscript, Composer, DecisionBadge
-│   │   ├── sidebar/     # Utility bars, convergence chart, parameter display
+│   │   ├── sidebar/     # Utility bars, convergence chart, AI reasoning modal
 │   │   ├── deal-wizard/ # 4-step deal creation wizard
+│   │   ├── MesoOptions.tsx  # MESO offer cards with "Others" button
 │   │   └── common/      # ConfirmDialog, shared components
 │   ├── BidAnalysis/     # Bid comparison table, vendor cards, winner selection
 │   ├── Requisition/     # Multi-step requisition form
@@ -104,11 +119,51 @@ src/
 ├── pages/
 │   ├── chatbot/         # NegotiationRoom, NewDealPage, RequisitionListPage, etc.
 │   ├── BidAnalysis/     # Bid comparison pages
-│   └── vendorChat/      # Vendor-facing negotiation portal
+│   └── vendorChat/      # Vendor-facing negotiation portal with MESO flow
 └── Layout/              # Auth, DashBoard, Chat layouts
 ```
 
-### Key Pages
+## Key Features
+
+### Negotiation Room
+
+| Feature | Description |
+|---------|-------------|
+| Chat Panel | Real-time message transcript with smart auto-scroll and round dividers |
+| AI Strategy Sidebar | Momentum bar, convergence rate, vendor pace, sentiment badges |
+| AI Reasoning Modal | Detailed explainability for AI decisions |
+| Convergence Chart | Chart.js visualization of vendor/PM offer convergence |
+| Weighted Utility Display | Parameter-level utility breakdown with threshold zones |
+| Dynamic Round Counter | Shows soft/hard max with extension status |
+
+### MESO + Others Flow (Vendor Portal)
+
+The vendor negotiation portal (`/vendor-chat/:token`) implements a phased MESO approach:
+
+| Phase | Rounds | Behavior |
+|-------|--------|----------|
+| Normal Negotiation | 1-5 | Text-based negotiation, no MESO |
+| MESO Presentation | After 5 | Show 3 MESO offers + "Others" button |
+| Others Form | On click | Price + payment terms form input |
+| Post-Others | 4 rounds | Text negotiation before next MESO |
+| Final MESO | After stall | No "Others" option, must select offer |
+
+**MESO Components:**
+- `MesoOptions.tsx` — Displays 3 MESO offer cards with selection
+- `OthersForm` — Custom price/terms input form
+- `DisabledInputMessage` — Shown when MESO is displayed
+- Input state machine: `text` → `disabled` → `others_form`
+
+### Vendor Chat Service Methods
+
+```typescript
+// MESO flow endpoints
+vendorChatService.selectMesoOption(token, optionId)  // Auto-accept deal
+vendorChatService.submitOthers(token, price, days)   // Submit custom offer
+vendorChatService.confirmFinalOffer(token, isConfirmed)  // Final offer response
+```
+
+## Key Pages
 
 | Page | Route | Description |
 |------|-------|-------------|
@@ -117,27 +172,18 @@ src/
 | New Deal | `/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/new` | 4-step deal creation wizard |
 | Negotiation Room | `/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId` | Main negotiation interface |
 | Bid Analysis | `/bid-analysis/:rfqId` | Compare vendor bids |
+| Vendor Chat | `/vendor-chat/:token` | Vendor-facing MESO negotiation |
 
-### Negotiation Room Features
-
-- **Chat Panel**: Real-time message transcript with smart auto-scroll and round dividers
-- **AI Strategy Sidebar**: Momentum bar, convergence rate, vendor pace, sentiment badges
-- **Convergence Chart**: Chart.js visualization of vendor/PM offer convergence over rounds
-- **Weighted Utility Display**: Parameter-level utility breakdown with threshold zones
-- **Dynamic Round Counter**: Shows soft/hard max with extension status
-- **Enhanced Round Dividers**: Strategy labels and utility scores per round (color-coded)
-
-### Sidebar Components (`components/chatbot/sidebar/`)
+## Sidebar Components
 
 | Component | Purpose |
 |-----------|---------|
 | `UnifiedUtilityBar` | Combined utility scoring with decision threshold zones |
 | `WeightedUtilityBar` | Parameter-level weighted breakdown |
-| `ConvergenceChart` | Chart.js line chart — vendor offers vs PM counters over rounds |
-| `ParameterWeightsChart` | Visual weight distribution across parameters |
+| `ConvergenceChart` | Chart.js line chart — vendor offers vs PM counters |
+| `AiReasoningModal` | Detailed AI decision explainability |
 | `CollapsibleSection` | Accordion sections for parameter groups |
-| `DecisionThresholdZones` | Accept/counter/escalate/walk-away zone visualization |
-| `parameterFormatter` | Formatting utilities for parameter display |
+| `DecisionThresholdZones` | Accept/counter/escalate/walk-away visualization |
 
 ## Port Configuration
 
@@ -161,3 +207,33 @@ src/
 - **Notifications**: react-hot-toast
 - **Testing**: Vitest + Testing Library
 - **Production**: Nginx (Docker) with gzip and SPA fallback
+
+## Type Definitions
+
+Key types in `src/types/chatbot.ts`:
+
+```typescript
+// Negotiation flow phases
+type NegotiationPhase =
+  | 'NORMAL_NEGOTIATION'
+  | 'MESO_PRESENTATION'
+  | 'OTHERS_FORM'
+  | 'POST_OTHERS'
+  | 'FINAL_MESO'
+  | 'STALL_QUESTION'
+  | 'DEAL_ACCEPTED'
+  | 'ESCALATED';
+
+// MESO result with flow control
+interface MesoResult {
+  options: MesoOption[];
+  showOthers: boolean;      // Show "Others" button
+  isFinal: boolean;         // Final MESO (no Others)
+  inputDisabled: boolean;   // Disable text input
+  phase: NegotiationPhase;
+}
+```
+
+## License
+
+Proprietary — Accordo AI
