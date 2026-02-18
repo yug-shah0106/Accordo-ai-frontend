@@ -7,7 +7,7 @@ import vendorChatService, {
   type VendorDeal,
 } from "../../services/vendorChat.service";
 import { MesoOptions } from "../../components/chatbot/MesoOptions";
-import type { MesoResult, MesoOption } from "../../types/chatbot";
+import type { MesoResult, MesoOption, NegotiationPhase } from "../../types/chatbot";
 
 /**
  * VendorChat Page
@@ -15,7 +15,16 @@ import type { MesoResult, MesoOption } from "../../types/chatbot";
  * - No sidebar, Reset, Refresh, Summary, Back-to-Deals buttons
  * - Shows: Header with title/status, chat area, composer (if NEGOTIATING)
  * - PM targets hidden from vendors
+ * - MESO + Others flow support (February 2026)
  */
+
+/**
+ * Input mode state machine
+ * - 'text': Normal text input (Composer)
+ * - 'disabled': Input disabled (MESO shown, waiting for selection)
+ * - 'others_form': Others form shown (price + terms inputs)
+ */
+type InputMode = 'text' | 'disabled' | 'others_form';
 
 // Status badge colors
 const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }> = {
@@ -232,6 +241,148 @@ const Composer = ({
 };
 
 /**
+ * Others Form Component - For entering custom price & terms
+ */
+const OthersForm = ({
+  onSubmit,
+  onCancel,
+  disabled,
+  submitting,
+}: {
+  onSubmit: (totalPrice: number, paymentTermsDays: number) => void;
+  onCancel: () => void;
+  disabled: boolean;
+  submitting: boolean;
+}) => {
+  const [totalPrice, setTotalPrice] = useState("");
+  const [paymentTermsDays, setPaymentTermsDays] = useState("");
+  const [errors, setErrors] = useState<{ price?: string; terms?: string }>({});
+
+  const validate = (): boolean => {
+    const newErrors: { price?: string; terms?: string } = {};
+
+    const price = parseFloat(totalPrice);
+    if (!totalPrice || isNaN(price) || price <= 0) {
+      newErrors.price = "Please enter a valid price greater than 0";
+    }
+
+    const terms = parseInt(paymentTermsDays, 10);
+    if (!paymentTermsDays || isNaN(terms) || terms < 1 || terms > 180) {
+      newErrors.terms = "Please enter payment terms between 1-180 days";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate() || disabled || submitting) return;
+
+    onSubmit(parseFloat(totalPrice), parseInt(paymentTermsDays, 10));
+  };
+
+  return (
+    <div className="border-t border-gray-200 p-4 bg-gray-50">
+      <div className="max-w-md mx-auto">
+        <h4 className="font-medium text-gray-700 mb-3 text-center">
+          Enter Your Counter-Offer
+        </h4>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm text-gray-500 mb-1">
+              Total Price ($)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              placeholder="e.g., 35000"
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.price ? "border-red-300 bg-red-50" : "border-gray-300"
+              }`}
+              value={totalPrice}
+              onChange={(e) => {
+                setTotalPrice(e.target.value);
+                if (errors.price) setErrors((prev) => ({ ...prev, price: undefined }));
+              }}
+              disabled={disabled || submitting}
+            />
+            {errors.price && (
+              <p className="text-red-500 text-xs mt-1">{errors.price}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-500 mb-1">
+              Payment Terms (days)
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="180"
+              placeholder="e.g., 45"
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.terms ? "border-red-300 bg-red-50" : "border-gray-300"
+              }`}
+              value={paymentTermsDays}
+              onChange={(e) => {
+                setPaymentTermsDays(e.target.value);
+                if (errors.terms) setErrors((prev) => ({ ...prev, terms: undefined }));
+              }}
+              disabled={disabled || submitting}
+            />
+            {errors.terms && (
+              <p className="text-red-500 text-xs mt-1">{errors.terms}</p>
+            )}
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="submit"
+              disabled={disabled || submitting}
+              className="flex-1 bg-blue-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
+            >
+              {submitting ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Submitting...
+                </>
+              ) : (
+                "Submit Offer"
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={disabled || submitting}
+              className="px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Disabled Input Message Component
+ */
+const DisabledInputMessage = ({ message }: { message?: string }) => (
+  <div className="border-t border-gray-200 p-4 bg-gray-100">
+    <div className="text-center text-gray-500 py-2">
+      {message || 'Select an offer above or click "Others" to enter your counter-offer'}
+    </div>
+  </div>
+);
+
+/**
  * Deal Outcome Component (shown when negotiation ends)
  */
 const DealOutcome = ({ status }: { status: string }) => {
@@ -310,6 +461,11 @@ export default function VendorChat() {
   const [mesoResult, setMesoResult] = useState<MesoResult | null>(null);
   const [selectedMesoId, setSelectedMesoId] = useState<string | null>(null);
 
+  // Input state machine for MESO + Others flow
+  const [inputMode, setInputMode] = useState<InputMode>('text');
+  // Track negotiation phase for flow control (used in future stall detection UI)
+  const [, setNegotiationPhase] = useState<NegotiationPhase>('NORMAL_NEGOTIATION');
+
   // Fetch deal data
   const fetchDeal = useCallback(async () => {
     if (!uniqueToken) {
@@ -356,9 +512,22 @@ export default function VendorChat() {
           setMessages((prev) => [...prev, pmResponse.data.pmMessage]);
           setDeal(pmResponse.data.deal);
 
-          // Store MESO options if available
+          // Store MESO options if available and manage input mode
           if (pmResponse.data.meso && pmResponse.data.meso.success) {
             setMesoResult(pmResponse.data.meso);
+
+            // Update input mode based on MESO flags
+            if (pmResponse.data.meso.inputDisabled) {
+              setInputMode('disabled');
+            }
+
+            // Update negotiation phase from MESO response
+            if (pmResponse.data.meso.phase) {
+              setNegotiationPhase(pmResponse.data.meso.phase);
+            } else {
+              setNegotiationPhase('MESO_PRESENTATION');
+            }
+
             console.log("[VendorChat] MESO options received:", pmResponse.data.meso.options.length);
           }
 
@@ -392,22 +561,113 @@ export default function VendorChat() {
     fetchDeal();
   }, [fetchDeal]);
 
-  // Handle MESO option selection
-  const handleMesoSelect = (option: MesoOption) => {
+  // Handle MESO option selection - uses new selectMesoOption API
+  const handleMesoSelect = async (option: MesoOption) => {
+    if (!uniqueToken || sending) return;
+
     setSelectedMesoId(option.id);
+    setSending(true);
+    setPmTyping(true);
 
-    // Auto-generate a response based on the selected option
-    const price = option.offer.total_price?.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) || 'the proposed price';
-    const terms = option.offer.payment_terms || 'the proposed terms';
+    try {
+      console.log('[VendorChat] Selecting MESO option:', option.id);
+      const response = await vendorChatService.selectMesoOption(uniqueToken, option.id);
+      console.log('[VendorChat] MESO selection response:', response);
 
-    // Create a vendor response based on selection
-    const responseContent = `I'm interested in your "${option.label}" offer at ${price} with ${terms} payment terms. Let's proceed with this option.`;
+      // Add the confirmation message
+      if (response.data.message) {
+        setMessages((prev) => [...prev, response.data.message]);
+      }
 
-    // Send the message
-    handleSend(responseContent);
+      // Update deal (status changes to ACCEPTED)
+      if (response.data.deal) {
+        setDeal(response.data.deal);
+      }
 
-    // Clear MESO after selection
-    setMesoResult(null);
+      // Clear MESO and update state
+      setMesoResult(null);
+      setInputMode('text');
+      setNegotiationPhase('DEAL_ACCEPTED');
+
+      toast.success("Your selection has been accepted! Deal is now under review.");
+    } catch (err: any) {
+      console.error('[VendorChat] MESO selection error:', err);
+      toast.error(err.response?.data?.message || 'Failed to submit selection');
+      setSelectedMesoId(null);
+    } finally {
+      setSending(false);
+      setPmTyping(false);
+    }
+  };
+
+  // Handle "Others" button click - switch to Others form mode
+  const handleOthersClick = () => {
+    setInputMode('others_form');
+    setMesoResult(null); // Hide MESO options while form is shown
+  };
+
+  // Handle Others form submission
+  const handleOthersSubmit = async (totalPrice: number, paymentTermsDays: number) => {
+    if (!uniqueToken || sending) return;
+
+    setSending(true);
+    setPmTyping(true);
+
+    try {
+      console.log('[VendorChat] Submitting Others form:', { totalPrice, paymentTermsDays });
+      const response = await vendorChatService.submitOthers(uniqueToken, totalPrice, paymentTermsDays);
+      console.log('[VendorChat] Others submission response:', response);
+
+      // Add vendor message
+      if (response.data.vendorMessage) {
+        setMessages((prev) => [...prev, response.data.vendorMessage]);
+      }
+
+      // Add PM message
+      if (response.data.pmMessage) {
+        setMessages((prev) => [...prev, response.data.pmMessage]);
+      }
+
+      // Update deal
+      if (response.data.deal) {
+        setDeal(response.data.deal);
+      }
+
+      // Check for new MESO options
+      if (response.data.meso && response.data.meso.success) {
+        setMesoResult(response.data.meso);
+        setSelectedMesoId(null);
+        setInputMode('disabled');
+        setNegotiationPhase(response.data.meso.phase || 'MESO_PRESENTATION');
+        console.log("[VendorChat] New MESO options received after Others:", response.data.meso.options.length);
+      } else {
+        setMesoResult(null);
+        setInputMode('text');
+        setNegotiationPhase('POST_OTHERS');
+      }
+
+      // Show notification based on decision
+      if (response.data.decision?.action === "ACCEPT") {
+        toast.success("Your offer has been accepted!");
+      } else if (response.data.decision?.action === "WALK_AWAY") {
+        toast.error("The procurement manager has walked away from this negotiation.");
+      } else if (response.data.decision?.action === "ESCALATE") {
+        toast("This negotiation has been escalated for review.", { icon: "⚠️" });
+      }
+    } catch (err: any) {
+      console.error('[VendorChat] Others submission error:', err);
+      toast.error(err.response?.data?.message || 'Failed to submit offer');
+    } finally {
+      setSending(false);
+      setPmTyping(false);
+    }
+  };
+
+  // Handle Others form cancel
+  const handleOthersCancel = () => {
+    setInputMode('disabled');
+    // Re-fetch to get the current MESO options back
+    fetchDeal();
   };
 
   // Send message handler
@@ -459,14 +719,29 @@ export default function VendorChat() {
         setDeal(pmResponse.data.deal);
       }
 
-      // Store MESO options if available
+      // Store MESO options if available and manage input mode
       if (pmResponse.data.meso && pmResponse.data.meso.success) {
         setMesoResult(pmResponse.data.meso);
         setSelectedMesoId(null); // Reset selection for new MESO round
+
+        // Update input mode based on MESO flags
+        if (pmResponse.data.meso.inputDisabled) {
+          setInputMode('disabled');
+        }
+
+        // Update negotiation phase from MESO response
+        if (pmResponse.data.meso.phase) {
+          setNegotiationPhase(pmResponse.data.meso.phase);
+        } else {
+          setNegotiationPhase('MESO_PRESENTATION');
+        }
+
         console.log("[VendorChat] MESO options received:", pmResponse.data.meso.options.length);
       } else {
         // Clear MESO if no new options (e.g., final round or ACCEPT/WALK_AWAY)
         setMesoResult(null);
+        setInputMode('text');
+        setNegotiationPhase('NORMAL_NEGOTIATION');
       }
 
       // Show notification if deal status changed
@@ -559,25 +834,41 @@ export default function VendorChat() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <ChatTranscript messages={messages} isProcessing={pmTyping} />
 
-        {/* MESO Options - Display when available */}
-        {mesoResult && mesoResult.success && canNegotiate && (
+        {/* MESO Options - Display when available and not in others_form mode */}
+        {mesoResult && mesoResult.success && canNegotiate && inputMode !== 'others_form' && (
           <div className="border-t border-gray-200 p-4 bg-gradient-to-b from-blue-50 to-white">
             <MesoOptions
               mesoResult={mesoResult}
               onSelect={handleMesoSelect}
+              onOthersClick={handleOthersClick}
               disabled={sending || pmTyping}
               selectedId={selectedMesoId || undefined}
             />
           </div>
         )}
 
-        {/* Composer - Only if NEGOTIATING */}
+        {/* Input Area - Based on input mode state machine */}
         {canNegotiate ? (
-          <Composer
-            onSend={handleSend}
-            disabled={!canNegotiate}
-            sending={sending}
-          />
+          <>
+            {inputMode === 'text' && !mesoResult?.inputDisabled && (
+              <Composer
+                onSend={handleSend}
+                disabled={!canNegotiate}
+                sending={sending}
+              />
+            )}
+            {inputMode === 'disabled' && mesoResult && (
+              <DisabledInputMessage message={mesoResult.disabledMessage} />
+            )}
+            {inputMode === 'others_form' && (
+              <OthersForm
+                onSubmit={handleOthersSubmit}
+                onCancel={handleOthersCancel}
+                disabled={!canNegotiate}
+                submitting={sending}
+              />
+            )}
+          </>
         ) : (
           <DealOutcome status={deal.status} />
         )}

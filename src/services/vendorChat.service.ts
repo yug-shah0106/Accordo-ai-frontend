@@ -289,6 +289,114 @@ export const vendorChatService = {
     return { data: res.data.data };
   },
 
+  // ============================================================================
+  // MESO + Others Flow Endpoints (February 2026)
+  // ============================================================================
+
+  /**
+   * Select a MESO option (auto-accepts deal)
+   * POST /api/vendor-chat/meso/select
+   */
+  selectMesoOption: async (
+    uniqueToken: string,
+    selectedOptionId: string
+  ): Promise<{
+    data: {
+      deal: VendorDeal;
+      message: VendorChatMessage;
+      selectedOffer: {
+        total_price: number | null;
+        payment_terms: string | null;
+        payment_terms_days?: number | null;
+        delivery_days?: number | null;
+        warranty_months?: number | null;
+      };
+    };
+  }> => {
+    const res = await api.post<{
+      message: string;
+      data: {
+        deal: VendorDeal;
+        message: VendorChatMessage;
+        selectedOffer: {
+          total_price: number | null;
+          payment_terms: string | null;
+          payment_terms_days?: number | null;
+          delivery_days?: number | null;
+          warranty_months?: number | null;
+        };
+      };
+    }>(`${VENDOR_CHAT_BASE}/meso/select`, {
+      uniqueToken,
+      selectedOptionId,
+    });
+    return { data: res.data.data };
+  },
+
+  /**
+   * Submit "Others" form with custom price/terms
+   * POST /api/vendor-chat/meso/others
+   */
+  submitOthers: async (
+    uniqueToken: string,
+    totalPrice: number,
+    paymentTermsDays: number
+  ): Promise<{
+    data: {
+      vendorMessage: VendorChatMessage;
+      pmMessage: VendorChatMessage;
+      decision: PMDecision;
+      deal: VendorDeal;
+      meso?: MesoResult;
+    };
+  }> => {
+    const res = await api.post<{
+      message: string;
+      data: {
+        vendorMessage: VendorChatMessage;
+        pmMessage: VendorChatMessage;
+        decision: PMDecision;
+        deal: VendorDeal;
+        meso?: MesoResult;
+      };
+    }>(`${VENDOR_CHAT_BASE}/meso/others`, {
+      uniqueToken,
+      totalPrice,
+      paymentTermsDays,
+    });
+    return { data: res.data.data };
+  },
+
+  /**
+   * Confirm or deny final offer
+   * POST /api/vendor-chat/final-offer/confirm
+   */
+  confirmFinalOffer: async (
+    uniqueToken: string,
+    isConfirmedFinal: boolean
+  ): Promise<{
+    data: {
+      pmMessage: VendorChatMessage;
+      decision: PMDecision;
+      deal: VendorDeal;
+      meso?: MesoResult;
+    };
+  }> => {
+    const res = await api.post<{
+      message: string;
+      data: {
+        pmMessage: VendorChatMessage;
+        decision: PMDecision;
+        deal: VendorDeal;
+        meso?: MesoResult;
+      };
+    }>(`${VENDOR_CHAT_BASE}/final-offer/confirm`, {
+      uniqueToken,
+      isConfirmedFinal,
+    });
+    return { data: res.data.data };
+  },
+
 };
 
 export default vendorChatService;
