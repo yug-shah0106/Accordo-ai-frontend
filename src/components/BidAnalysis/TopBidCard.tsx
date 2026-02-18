@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { MdChat, MdDownload, MdCheckCircle, MdCancel } from 'react-icons/md';
+import { MdChat, MdCheckCircle, MdCancel } from 'react-icons/md';
 import type { TopBidInfo } from '../../types/bidAnalysis';
 import { RANK_LABELS, RANK_COLORS } from '../../types/bidAnalysis';
 
@@ -12,7 +12,6 @@ interface TopBidCardProps {
   isSelected: boolean;
   onSelect: (bidId: string) => void;
   onChatClick: (dealId: string, vendorId: number, requisitionId: number) => void;
-  onPdfDownload: (requisitionId: number) => void;
   requisitionId: number;
   disabled?: boolean;
 }
@@ -22,7 +21,6 @@ export const TopBidCard: React.FC<TopBidCardProps> = ({
   isSelected,
   onSelect,
   onChatClick,
-  onPdfDownload,
   requisitionId,
   disabled = false,
 }) => {
@@ -53,11 +51,6 @@ export const TopBidCard: React.FC<TopBidCardProps> = ({
   const handleChatClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onChatClick(bid.dealId, bid.vendorId, requisitionId);
-  };
-
-  const handlePdfClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onPdfDownload(requisitionId);
   };
 
   return (
@@ -132,13 +125,6 @@ export const TopBidCard: React.FC<TopBidCardProps> = ({
             >
               <MdChat size={16} />
               <span>Chat</span>
-            </button>
-            <button
-              onClick={handlePdfClick}
-              className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm"
-            >
-              <MdDownload size={16} />
-              <span>PDF</span>
             </button>
           </div>
         </div>
