@@ -30,7 +30,7 @@ package-lock.json
 .env.local
 .env.development
 .env.production
-.env.example
+!.env.example
 
 # Build output
 build
