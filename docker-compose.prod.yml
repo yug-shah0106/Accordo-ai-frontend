@@ -1,0 +1,75 @@
+# =============================================
+# Accordo Frontend - Production Docker Compose
+# Use this file for production deployments
+# =============================================
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL:?VITE_BACKEND_URL is required}
+        VITE_FRONTEND_URL: ${VITE_FRONTEND_URL:?VITE_FRONTEND_URL is required}
+        VITE_ASSEST_URL: ${VITE_ASSEST_URL:-${VITE_BACKEND_URL}}
+    container_name: accordo-frontend
+    ports:
+      - "${FRONTEND_PORT:-5001}:5001"
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # Network configuration
+    networks:
+      - accordo-network
+
+networks:
+  accordo-network:
+    driver: bridge
+    name: accordo-network
+
+# =============================================
+# Usage:
+# =============================================
+#
+# Required environment variables:
+#   VITE_BACKEND_URL  - Backend API URL (e.g., https://api.accordo.com)
+#   VITE_FRONTEND_URL - Frontend URL (e.g., https://app.accordo.com)
+#
+# Optional environment variables:
+#   VITE_ASSEST_URL   - Asset URL (defaults to VITE_BACKEND_URL)
+#   FRONTEND_PORT     - Host port to expose (defaults to 5001)
+#
+# Build and start:
+#   VITE_BACKEND_URL=https://api.accordo.com \
+#   VITE_FRONTEND_URL=https://app.accordo.com \
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# View logs:
+#   docker compose -f docker-compose.prod.yml logs -f
+#
+# Stop:
+#   docker compose -f docker-compose.prod.yml down
+#
+# Connect to existing network (e.g., with backend):
+#   docker network connect accordo-network accordo-backend
