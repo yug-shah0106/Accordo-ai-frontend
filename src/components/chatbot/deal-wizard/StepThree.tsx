@@ -1000,30 +1000,6 @@ const StepThree: React.FC<StepThreeProps> = ({
             onChange={(datetime) => updateNegotiationControl('deadline', datetime)}
             helpText="Deal will auto-escalate when deadline is reached"
           />
-
-          {/* Maximum Rounds - Blue Slider */}
-          <BlueSlider
-            label="Maximum Negotiation Rounds"
-            value={data.negotiationControl.maxRounds ?? 10}
-            onChange={(value) => updateNegotiationControl('maxRounds', value)}
-            min={5}
-            max={20}
-            step={1}
-            unit=""
-            helpText="Deal escalates after this many negotiation rounds"
-          />
-
-          {/* Walk-away Threshold - Blue Slider */}
-          <BlueSlider
-            label="Walk-away Threshold"
-            value={data.negotiationControl.walkawayThreshold ?? 20}
-            onChange={(value) => updateNegotiationControl('walkawayThreshold', value)}
-            min={10}
-            max={30}
-            step={1}
-            unit="%"
-            helpText="AI will walk away if vendor price exceeds target by this percentage"
-          />
         </div>
       </section>
 

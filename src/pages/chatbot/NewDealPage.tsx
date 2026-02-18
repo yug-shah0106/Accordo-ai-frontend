@@ -67,105 +67,61 @@ const getDraftKey = (rfqId: number | null, vendorId: number | null): string => {
 };
 
 // Parameter definitions for Step 4 (must match StepFour.tsx)
+// Updated Feb 2026: Simplified to 7 core utility parameters
 const STEP2_PARAMETERS = [
-  { id: 'targetUnitPrice', name: 'Target Unit Price', source: 'step2' as const, category: 'price' },
-  { id: 'maxAcceptablePrice', name: 'Max Acceptable Price', source: 'step2' as const, category: 'price' },
+  { id: 'targetUnitPrice', name: 'Total Target Price', source: 'step2' as const, category: 'price' },
+  { id: 'maxAcceptablePrice', name: 'Total Max Price', source: 'step2' as const, category: 'price' },
   { id: 'volumeDiscountExpectation', name: 'Volume Discount', source: 'step2' as const, category: 'price' },
-  { id: 'paymentTermsRange', name: 'Payment Terms Range', source: 'step2' as const, category: 'payment' },
   { id: 'advancePaymentLimit', name: 'Advance Payment Limit', source: 'step2' as const, category: 'payment' },
   { id: 'deliveryDate', name: 'Delivery Date', source: 'step2' as const, category: 'delivery' },
-  { id: 'partialDelivery', name: 'Partial Delivery', source: 'step2' as const, category: 'delivery' },
 ];
 
 const STEP3_PARAMETERS = [
   { id: 'warrantyPeriod', name: 'Warranty Period', source: 'step3' as const, category: 'contract' },
-  { id: 'lateDeliveryPenalty', name: 'Late Delivery Penalty', source: 'step3' as const, category: 'contract' },
   { id: 'qualityStandards', name: 'Quality Standards', source: 'step3' as const, category: 'contract' },
-  { id: 'maxRounds', name: 'Max Negotiation Rounds', source: 'step3' as const, category: 'control' },
-  { id: 'walkawayThreshold', name: 'Walkaway Threshold', source: 'step3' as const, category: 'control' },
 ];
 
 /**
  * Build Step 4 weights from requisition priorities
  * Maps pricePriority, deliveryPriority, paymentTermsPriority to individual parameter weights
  */
+/**
+ * Build Step 4 weights from requisition priorities
+ * Updated Feb 2026: Simplified to 7 core parameters
+ */
 const buildWeightsFromPriorities = (
   pricePriority: number | null,
   deliveryPriority: number | null,
-  paymentTermsPriority: number | null
+  _paymentTermsPriority: number | null
 ): ParameterWeight[] => {
   const allParameters = [...STEP2_PARAMETERS, ...STEP3_PARAMETERS];
 
   // If no priorities provided, return empty (will use default initialization)
-  if (pricePriority === null && deliveryPriority === null && paymentTermsPriority === null) {
+  if (pricePriority === null && deliveryPriority === null) {
     return [];
   }
 
-  // Normalize priorities to ensure they sum to 100
-  const rawPriceWeight = pricePriority || 40;
-  const rawDeliveryWeight = deliveryPriority || 30;
-  const rawPaymentWeight = paymentTermsPriority || 30;
-  const total = rawPriceWeight + rawDeliveryWeight + rawPaymentWeight;
+  // Default weights for 7 parameters (total = 100%)
+  const defaultWeights: Record<string, number> = {
+    targetUnitPrice: 35,
+    maxAcceptablePrice: 20,
+    volumeDiscountExpectation: 10,
+    advancePaymentLimit: 5,
+    deliveryDate: 15,
+    warrantyPeriod: 10,
+    qualityStandards: 5,
+  };
 
-  const priceWeight = Math.round((rawPriceWeight / total) * 100);
-  const deliveryWeight = Math.round((rawDeliveryWeight / total) * 100);
-  // const _paymentWeight = 100 - priceWeight - deliveryWeight; // Ensure exactly 100
-
-  // Count parameters in each category
-  const priceParams = allParameters.filter(p => p.category === 'price');
-  const deliveryParams = allParameters.filter(p => p.category === 'delivery');
-  const paymentParams = allParameters.filter(p => p.category === 'payment');
-  const otherParams = allParameters.filter(p => !['price', 'delivery', 'payment'].includes(p.category));
-
-  // Allocate weights to categories
-  // Reserve 15% for contract/control parameters
-  const reservedForOther = 15;
-  const availableForMain = 100 - reservedForOther;
-
-  const allocatedPrice = Math.round((priceWeight / 100) * availableForMain);
-  const allocatedDelivery = Math.round((deliveryWeight / 100) * availableForMain);
-  const allocatedPayment = availableForMain - allocatedPrice - allocatedDelivery;
-
-  // Distribute within categories
+  // Distribute within categories based on priorities
   const weights: ParameterWeight[] = allParameters.map((param, index) => {
-    let weight = 0;
-
-    if (param.category === 'price' && priceParams.length > 0) {
-      // Distribute price weight: 50% to targetUnitPrice, 30% to maxAcceptable, 20% to volumeDiscount
-      if (param.id === 'targetUnitPrice') weight = Math.round(allocatedPrice * 0.5);
-      else if (param.id === 'maxAcceptablePrice') weight = Math.round(allocatedPrice * 0.3);
-      else weight = Math.round(allocatedPrice * 0.2);
-    } else if (param.category === 'delivery' && deliveryParams.length > 0) {
-      // Distribute delivery weight: 70% to date, 30% to partial
-      if (param.id === 'deliveryDate') weight = Math.round(allocatedDelivery * 0.7);
-      else weight = Math.round(allocatedDelivery * 0.3);
-    } else if (param.category === 'payment' && paymentParams.length > 0) {
-      // Distribute payment weight: 60% to range, 40% to advance limit
-      if (param.id === 'paymentTermsRange') weight = Math.round(allocatedPayment * 0.6);
-      else weight = Math.round(allocatedPayment * 0.4);
-    } else if (otherParams.length > 0) {
-      // Distribute remaining weight equally among contract/control parameters
-      weight = Math.round(reservedForOther / otherParams.length);
-    }
-
     return {
       parameterId: param.id,
       parameterName: param.name,
-      weight,
+      weight: defaultWeights[param.id] || 0,
       source: param.source,
       color: CHART_COLORS[index % CHART_COLORS.length],
     };
   });
-
-  // Adjust to ensure exactly 100%
-  const currentTotal = weights.reduce((sum, w) => sum + w.weight, 0);
-  if (currentTotal !== 100 && weights.length > 0) {
-    const diff = 100 - currentTotal;
-    // Add difference to the largest weight parameter
-    const maxWeightIdx = weights.reduce((maxIdx, w, idx, arr) =>
-      w.weight > arr[maxIdx].weight ? idx : maxIdx, 0);
-    weights[maxWeightIdx].weight += diff;
-  }
 
   return weights;
 };
@@ -333,11 +289,25 @@ export default function NewDealPage() {
       try {
         const parsed = JSON.parse(tempDraft);
         if (parsed.data) {
+          // Check if stepFour has outdated parameters (more than 7 or has deprecated ones)
+          const validParamIds = new Set([
+            'targetUnitPrice', 'maxAcceptablePrice', 'volumeDiscountExpectation',
+            'advancePaymentLimit', 'deliveryDate', 'warrantyPeriod', 'qualityStandards'
+          ]);
+          const hasOutdatedParams = parsed.data.stepFour?.weights?.some(
+            (w: { parameterId: string }) => !validParamIds.has(w.parameterId)
+          );
+
+          // Reset stepFour if it has outdated parameters
+          const stepFourData = hasOutdatedParams
+            ? DEFAULT_WIZARD_FORM_DATA.stepFour
+            : (parsed.data.stepFour || DEFAULT_WIZARD_FORM_DATA.stepFour);
+
           // Merge with defaults to ensure all fields exist (especially stepFour for older drafts)
           setFormData({
             ...DEFAULT_WIZARD_FORM_DATA,
             ...parsed.data,
-            stepFour: parsed.data.stepFour || DEFAULT_WIZARD_FORM_DATA.stepFour,
+            stepFour: stepFourData,
           });
           setLastSaved(parsed.savedAt ? new Date(parsed.savedAt) : null);
         }
