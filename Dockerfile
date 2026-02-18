@@ -65,9 +65,9 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Expose port 5001
 EXPOSE 5001
 
-# Health check
+# Health check - uses /health endpoint defined in nginx.conf
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:5001/ || exit 1
+    CMD curl -f http://localhost:5001/health || exit 1
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
