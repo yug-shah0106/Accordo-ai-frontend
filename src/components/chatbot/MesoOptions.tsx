@@ -13,6 +13,8 @@ interface MesoOptionsProps {
   mesoResult: MesoResult;
   /** Callback when vendor selects an option */
   onSelect: (option: MesoOption) => void;
+  /** Callback when vendor clicks "Others" button */
+  onOthersClick?: () => void;
   /** Whether selection is disabled */
   disabled?: boolean;
   /** Currently selected option ID (if any) */
@@ -164,6 +166,7 @@ const MesoOptionCard: React.FC<{
 export const MesoOptions: React.FC<MesoOptionsProps> = ({
   mesoResult,
   onSelect,
+  onOthersClick,
   disabled,
   selectedId,
   isFinal = false,
@@ -226,8 +229,39 @@ export const MesoOptions: React.FC<MesoOptionsProps> = ({
         ))}
       </div>
 
+      {/* Others Button - Only show when showOthers is true (not final MESO) */}
+      {mesoResult.showOthers !== false && onOthersClick && (
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={onOthersClick}
+            disabled={disabled}
+            className={`
+              px-6 py-3 border-2 border-dashed rounded-lg transition-all
+              ${disabled
+                ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-50'
+                : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50 cursor-pointer'
+              }
+            `}
+          >
+            <span className="text-gray-600 font-medium">Others</span>
+            <span className="text-gray-400 text-sm block mt-1">
+              Enter your own price &amp; terms
+            </span>
+          </button>
+        </div>
+      )}
+
+      {/* Final MESO indicator */}
+      {mesoResult.isFinal && (
+        <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-center">
+          <span className="text-amber-700 text-sm font-medium">
+            Final Offer - Please select one of the options above
+          </span>
+        </div>
+      )}
+
       {/* Help text */}
-      <div className="text-xs text-gray-400 text-center">
+      <div className="text-xs text-gray-400 text-center mt-3">
         Your selection helps us understand your priorities for future negotiations
       </div>
     </div>

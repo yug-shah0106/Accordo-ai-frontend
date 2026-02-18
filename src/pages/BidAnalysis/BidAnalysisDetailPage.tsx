@@ -80,10 +80,6 @@ export const BidAnalysisDetailPage: React.FC = () => {
     navigate(`/chatbot/requisitions/${rfqId}/vendors/${vendorId}/deals/${dealId}`);
   }, [navigate]);
 
-  const handlePdfDownload = useCallback((_rfqId: number) => {
-    // PDF download handled inline in button click
-  }, []);
-
   const handleAccept = useCallback(async (remarks?: string) => {
     if (!reqId || !selectedBid) return;
     const result = await selectBid(reqId, selectedBid.bidId, remarks);
@@ -293,7 +289,6 @@ export const BidAnalysisDetailPage: React.FC = () => {
                     isSelected={selectedBid?.bidId === bid.bidId}
                     onSelect={selectBidForReview}
                     onChatClick={handleChatClick}
-                    onPdfDownload={handlePdfDownload}
                     requisitionId={requisition.id}
                     disabled={isAwarded}
                   />

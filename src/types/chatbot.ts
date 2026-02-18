@@ -1048,6 +1048,17 @@ export interface MesoOption {
   tradeoffs: string[];
 }
 
+/** Negotiation phase for frontend state management (February 2026) */
+export type NegotiationPhase =
+  | 'NORMAL_NEGOTIATION'    // Rounds 1-5, text input enabled
+  | 'MESO_PRESENTATION'     // MESO shown with Others, input disabled
+  | 'OTHERS_FORM'           // Vendor clicked Others, show form
+  | 'POST_OTHERS'           // Rounds after Others, text input enabled
+  | 'FINAL_MESO'            // Final MESO, no Others option
+  | 'STALL_QUESTION'        // "Is this your final offer?" shown
+  | 'DEAL_ACCEPTED'         // Vendor selected MESO, deal closed
+  | 'ESCALATED';            // Human PM takeover
+
 /**
  * Result from MESO generation
  */
@@ -1062,10 +1073,21 @@ export interface MesoResult {
   success: boolean;
   /** Reason if not successful */
   reason?: string;
-  /** Whether these are final offers (75%+ utility trigger) */
+  // Flow control flags (February 2026 - MESO + Others flow)
+  /** Whether to show "Others" button (false for final MESO) */
+  showOthers?: boolean;
+  /** Whether this is the final MESO (no more cycles) */
   isFinal?: boolean;
-  /** Stall detection prompt ("Is this your final offer?") if vendor is stuck on a parameter */
+  /** Whether text input should be disabled when MESO is shown */
+  inputDisabled?: boolean;
+  /** Message to show when input is disabled */
+  disabledMessage?: string;
+  /** Current negotiation phase */
+  phase?: NegotiationPhase;
+  /** Stall prompt if detected ("Is this your final offer?") */
   stallPrompt?: string;
+  /** Current MESO cycle number (1-5) */
+  mesoCycleNumber?: number;
 }
 
 /**

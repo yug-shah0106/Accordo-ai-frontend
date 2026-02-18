@@ -253,7 +253,6 @@ export interface TopBidCardProps {
   isSelected: boolean;
   onSelect: (bidId: string) => void;
   onChatClick: (dealId: string, vendorId: number, requisitionId: number) => void;
-  onPdfDownload: (requisitionId: number) => void;
   disabled?: boolean;
 }
 
