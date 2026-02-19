@@ -14,13 +14,6 @@ const features = [
 ];
 
 const Pricing = () => {
-  const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
   return (
     <section id="pricing" className="landing-section bg-white">
       <div className="landing-container">
@@ -80,13 +73,13 @@ const Pricing = () => {
 
               {/* CTA */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <button
-                  onClick={() => scrollToSection("#final-cta")}
+                <a
+                  href="mailto:jafar.mapara@gmail.com?subject=Accordo%20AI%20-%20Pricing%20Inquiry"
                   className="btn-primary flex items-center gap-2 text-base !py-3.5 !px-10"
                 >
                   Contact Sales
                   <ArrowRight className="w-4 h-4" />
-                </button>
+                </a>
                 <p className="text-sm text-landing-text-muted font-Inter">
                   Response within 24 hours
                 </p>

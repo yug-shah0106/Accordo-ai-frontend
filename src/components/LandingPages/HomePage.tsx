@@ -5,7 +5,7 @@ import LogoBar from "./LogoBar";
 import Features from "./Features";
 import HowItWorks from "./HowItWorks";
 import WhyChooseUs from "./WhyChooseUs";
-import ProductDemo from "./ProductDemo";
+// import ProductDemo from "./ProductDemo"; // TODO: Re-enable when product demo video is ready
 import Testimonials from "./Testimonials";
 import CaseStudies from "./CaseStudies";
 import Pricing from "./Pricing";
@@ -25,7 +25,7 @@ const HomePage = () => {
       <Features />
       <HowItWorks />
       <WhyChooseUs />
-      <ProductDemo />
+      {/* <ProductDemo /> */}{/* TODO: Re-enable when product demo video is ready */}
       <Testimonials />
       <CaseStudies />
       <Pricing />

@@ -8,8 +8,12 @@ const FinalCTA = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
+      const subject = encodeURIComponent("Demo Request - Accordo AI");
+      const body = encodeURIComponent(
+        `Hi,\n\nI'd like to request a demo of Accordo AI.\n\nMy email: ${email}\n\nLooking forward to hearing from you.`
+      );
+      window.location.href = `mailto:jafar.mapara@gmail.com?subject=${subject}&body=${body}`;
       setSubmitted(true);
-      // TODO: Integrate with backend API for demo requests
     }
   };
 
