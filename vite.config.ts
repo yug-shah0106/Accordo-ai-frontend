@@ -3,7 +3,9 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const rawBackend = (env.VITE_BACKEND_URL || "").trim();
+  // BACKEND_PROXY_TARGET is server-only (not exposed to browser).
+  // Falls back to VITE_BACKEND_URL, then localhost:5002.
+  const rawBackend = (env.BACKEND_PROXY_TARGET || env.VITE_BACKEND_URL || "").trim();
   const normalizedBackend = rawBackend
     ? rawBackend.replace(/\/+$/, "")
     : "http://localhost:5002";

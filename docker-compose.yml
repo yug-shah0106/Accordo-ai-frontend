@@ -37,10 +37,12 @@ services:
     container_name: accordo-frontend
     environment:
       NODE_ENV: development
-      # Vite env vars — backend URL for the /api proxy
-      VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://host.docker.internal:5002}
+      # BACKEND_PROXY_TARGET is server-only (Vite proxy inside container → backend)
+      # VITE_BACKEND_URL is left empty so the browser uses relative "/api" paths
+      # which hit the Vite dev server, which proxies them to the backend
+      BACKEND_PROXY_TARGET: ${BACKEND_PROXY_TARGET:-http://host.docker.internal:5002}
       VITE_FRONTEND_URL: ${VITE_FRONTEND_URL:-http://localhost:5001}
-      VITE_ASSEST_URL: ${VITE_ASSEST_URL:-http://host.docker.internal:5002}
+      VITE_ASSEST_URL: ${VITE_ASSEST_URL:-http://localhost:5002}
       VITE_DEV_HOST: "0.0.0.0"
       VITE_DEV_PORT: "5001"
     ports:
