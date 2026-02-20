@@ -1,47 +1,50 @@
 # =============================================
-# Accordo Frontend - Docker Compose
-# Nginx serving static React/Vite build
+# Accordo Frontend - Docker Compose (Development)
+# Vite dev server with hot-reload (HMR)
+# =============================================
+#
+# Usage:
+#   docker compose up -d --build       # Build and start
+#   docker compose logs -f frontend    # Follow logs
+#   docker compose down                # Stop
+#
+# The frontend runs vite dev with volume mounts so code
+# changes on the host are reflected immediately via HMR.
+# Vite proxies /api requests to the backend (localhost:5002).
 # =============================================
 
 services:
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile
-      args:
-        VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:5002}
-        VITE_FRONTEND_URL: ${VITE_FRONTEND_URL:-http://localhost:5001}
-        VITE_ASSEST_URL: ${VITE_ASSEST_URL:-http://localhost:5002}
+      dockerfile: Dockerfile.dev
     container_name: accordo-frontend
+    environment:
+      NODE_ENV: development
+      # Vite env vars — backend URL for the /api proxy
+      VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://host.docker.internal:5002}
+      VITE_FRONTEND_URL: ${VITE_FRONTEND_URL:-http://localhost:5001}
+      VITE_ASSEST_URL: ${VITE_ASSEST_URL:-http://host.docker.internal:5002}
+      VITE_DEV_HOST: "0.0.0.0"
+      VITE_DEV_PORT: "5001"
     ports:
       - "5001:5001"
-    environment:
-      - NODE_ENV=production
+    volumes:
+      # Mount source code for hot-reload (Vite HMR detects changes)
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./index.html:/app/index.html
+      - ./vite.config.ts:/app/vite.config.ts
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tsconfig.node.json:/app/tsconfig.node.json
+      - ./tailwind.config.js:/app/tailwind.config.js
+      - ./postcss.config.js:/app/postcss.config.js
+      # Prevent host node_modules from overriding container's
+      - /app/node_modules
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5001/"]
       interval: 30s
       timeout: 10s
-      start_period: 10s
+      start_period: 20s
       retries: 3
-    # Resource limits for production
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
     restart: unless-stopped
-
-# Usage:
-# ------
-# Build and start:
-#   docker compose up -d --build
-#
-# With custom backend URL:
-#   VITE_BACKEND_URL=http://api.example.com docker compose up -d --build
-#
-# View logs:
-#   docker compose logs -f
-#
-# Stop:
-#   docker compose down
