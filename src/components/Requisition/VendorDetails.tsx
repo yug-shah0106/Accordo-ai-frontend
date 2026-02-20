@@ -475,9 +475,9 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     setIsModalOpen(false);
   };
 
-  // Navigate to deal negotiation room
+  // Open deal negotiation room in a new tab
   const handleViewDeal = (deal: VendorDealSummary): void => {
-    navigate(`/chatbot/requisitions/${requisitionId}/vendors/${deal.vendorId}/deals/${deal.dealId}`);
+    window.open(`/chatbot/requisitions/${requisitionId}/vendors/${deal.vendorId}/deals/${deal.dealId}`, '_blank');
   };
 
   const submitRequisition = async (): Promise<void> => {
