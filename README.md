@@ -58,37 +58,101 @@ npm run test:coverage # Tests with coverage report
 
 ## Docker
 
+The project uses a **single `Dockerfile`** with multi-stage build targets (`dev` and `prod`) and a **single `docker-compose.yml`** with Docker Compose profiles to switch between environments.
+
+### Development Mode
+
+Development mode runs the Vite dev server with volume-mounted source code for hot-reload (HMR). Changes you make on the host are reflected in the browser immediately. The Vite proxy forwards `/api` requests to the backend.
+
 ```bash
-# Development build
-docker compose up -d --build
+# Build and start in dev mode
+docker compose --profile dev up -d --build
 
-# Production build with custom URLs
-VITE_BACKEND_URL=https://api.accordo.com \
-VITE_FRONTEND_URL=https://app.accordo.com \
-docker compose -f docker-compose.prod.yml up -d --build
+# Follow logs
+docker compose --profile dev logs -f frontend
 
-# View logs
-docker compose logs -f
+# Rebuild after dependency changes (package.json)
+docker compose --profile dev up -d --build
 
 # Stop
-docker compose down
+docker compose --profile dev down
+```
+
+### Production Mode
+
+Production mode compiles the app with Vite, then serves the static bundle with nginx. Gzip compression, SPA fallback routing, and security headers are configured via `nginx.conf`.
+
+```bash
+# Set required environment variables (baked into the static bundle at build time)
+export VITE_BACKEND_URL=https://api.accordo.com
+export VITE_FRONTEND_URL=https://app.accordo.com
+
+# Build and start in production mode
+docker compose --profile prod up -d --build
+
+# Follow logs
+docker compose --profile prod logs -f frontend-prod
+
+# Stop
+docker compose --profile prod down
+```
+
+### Building Images Directly
+
+You can also build Docker images without Compose:
+
+```bash
+# Build dev image
+docker build --target dev -t accordo-frontend:dev .
+
+# Build production image (VITE_ vars are required at build time)
+docker build --target prod \
+  --build-arg VITE_BACKEND_URL=https://api.accordo.com \
+  --build-arg VITE_FRONTEND_URL=https://app.accordo.com \
+  -t accordo-frontend:prod .
+```
+
+### Docker Architecture
+
+The `Dockerfile` uses multi-stage builds with two targets:
+
+```
+┌──────────────────────────────────────────────────┐
+│  Stage: deps (shared)                            │
+│  node:20-alpine + npm install --legacy-peer-deps │
+├──────────────────────┬───────────────────────────┤
+│  Target: dev         │  Stage: builder           │
+│  Vite dev server     │  npm run build (tsc+vite) │
+│  Volume-mounted src  │         │                 │
+│  HMR enabled         │  Target: prod             │
+│                      │  nginx:alpine             │
+│                      │  Static assets + gzip     │
+│                      │  SPA fallback routing     │
+└──────────────────────┴───────────────────────────┘
 ```
 
 ### Docker Features
 
-The Docker setup uses a multi-stage build:
-1. **deps** — Install node_modules (cached layer)
-2. **builder** — TypeScript type-check + Vite production build
-3. **production** — Nginx serving static assets
-
-**Production features:**
-- Gzip compression (level 6)
-- Static asset caching (1 year, immutable)
-- SPA fallback routing
-- Security headers (X-Frame-Options, X-Content-Type-Options, CSP, etc.)
+- **Unified Dockerfile** with `dev` and `prod` targets — no separate Dockerfile.dev
+- **Docker Compose profiles** — `--profile dev` or `--profile prod` in a single compose file
+- Multi-stage build optimized for layer caching
+- Hot-reload via Vite HMR in development
+- Nginx with gzip compression (level 6) in production
+- Static asset caching (1 year, immutable) for hashed filenames
+- SPA fallback routing (all routes serve `index.html`)
+- Security headers (X-Frame-Options, X-Content-Type-Options, XSS Protection, Referrer-Policy)
 - Health check endpoint (`/health`)
-- Resource limits (256MB memory)
-- JSON file logging with rotation
+- Resource limits (256MB memory, 0.5 CPU) in production
+- JSON file logging with rotation in production
+
+### Docker Environment Variables
+
+| Variable | Dev Default | Prod | Description |
+|----------|-------------|------|-------------|
+| `VITE_BACKEND_URL` | `http://host.docker.internal:5002` | **Required** (build arg) | Backend API URL |
+| `VITE_FRONTEND_URL` | `http://localhost:5001` | **Required** (build arg) | Frontend URL |
+| `VITE_ASSEST_URL` | `http://host.docker.internal:5002` | Defaults to `VITE_BACKEND_URL` | Backend URL for uploaded assets |
+| `FRONTEND_PORT` | `5001` | `5001` | Host port to expose |
 
 ## Architecture
 
