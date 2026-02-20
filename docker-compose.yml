@@ -1,23 +1,39 @@
 # =============================================
-# Accordo Frontend - Docker Compose (Development)
-# Vite dev server with hot-reload (HMR)
+# Accordo Frontend - Docker Compose
+# Unified dev + prod with Docker Compose profiles
 # =============================================
 #
-# Usage:
-#   docker compose up -d --build       # Build and start
-#   docker compose logs -f frontend    # Follow logs
-#   docker compose down                # Stop
+# Development (Vite dev server with HMR):
+#   docker compose --profile dev up -d --build
+#   docker compose --profile dev logs -f frontend
+#   docker compose --profile dev down
 #
-# The frontend runs vite dev with volume mounts so code
-# changes on the host are reflected immediately via HMR.
-# Vite proxies /api requests to the backend (localhost:5002).
+# Production (nginx serving static build):
+#   VITE_BACKEND_URL=https://api.accordo.com \
+#   VITE_FRONTEND_URL=https://app.accordo.com \
+#   docker compose --profile prod up -d --build
+#   docker compose --profile prod logs -f frontend-prod
+#   docker compose --profile prod down
+#
+# Required env vars for production:
+#   VITE_BACKEND_URL, VITE_FRONTEND_URL
+#
+# Optional overrides:
+#   VITE_ASSEST_URL (defaults to VITE_BACKEND_URL)
+#   FRONTEND_PORT (defaults to 5001)
 # =============================================
 
 services:
+  # ─────────────────────────────────────────
+  # Frontend — Development
+  # Vite dev server with volume mounts for HMR
+  # ─────────────────────────────────────────
   frontend:
+    profiles: [dev]
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
+      target: dev
     container_name: accordo-frontend
     environment:
       NODE_ENV: development
@@ -47,4 +63,44 @@ services:
       timeout: 10s
       start_period: 20s
       retries: 3
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────
+  # Frontend — Production
+  # nginx serving static Vite build
+  # ─────────────────────────────────────────
+  frontend-prod:
+    profiles: [prod]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: prod
+      args:
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL:-}       # REQUIRED for prod
+        VITE_FRONTEND_URL: ${VITE_FRONTEND_URL:-}     # REQUIRED for prod
+        VITE_ASSEST_URL: ${VITE_ASSEST_URL:-}
+    container_name: accordo-frontend
+    ports:
+      - "${FRONTEND_PORT:-5001}:5001"
+    environment:
+      NODE_ENV: production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped

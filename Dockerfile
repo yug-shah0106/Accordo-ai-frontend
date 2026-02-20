@@ -1,25 +1,60 @@
 # =============================================
-# Accordo Frontend - Production Dockerfile
-# Multi-stage build with nginx for static serving
-# Supports: AMD64 and ARM64 (Apple Silicon)
+# Accordo Frontend - Unified Dockerfile
+# Multi-stage build with dev and prod targets
+# =============================================
+#
+# Development (Vite dev server with HMR):
+#   docker build --target dev -t accordo-frontend:dev .
+#
+# Production (nginx serving static build):
+#   docker build --target prod \
+#     --build-arg VITE_BACKEND_URL=https://api.accordo.com \
+#     --build-arg VITE_FRONTEND_URL=https://app.accordo.com \
+#     -t accordo-frontend:prod .
+#
+# Or via Docker Compose profiles:
+#   docker compose --profile dev up -d --build
+#   docker compose --profile prod up -d --build
 # =============================================
 
 # ---------------------------------------------
-# Stage 1: Dependencies
+# Stage 1: Dependencies (shared by dev & prod)
 # ---------------------------------------------
 FROM node:20-alpine AS deps
 
+RUN apk add --no-cache curl
+
 WORKDIR /app
 
-# Copy package files for dependency installation
 COPY package*.json ./
 
-# Install dependencies
-# Using npm install instead of npm ci for better cross-platform compatibility
+# Install ALL dependencies (including devDependencies)
 RUN npm install --legacy-peer-deps
 
+# =============================================
+# TARGET: dev — Vite dev server with HMR
+# =============================================
+# Source code is mounted as a volume at runtime.
+# Vite HMR detects changes and hot-reloads.
 # ---------------------------------------------
-# Stage 2: Builder
+FROM deps AS dev
+
+ENV NODE_ENV=development
+
+EXPOSE 5001
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+    CMD curl -f http://localhost:5001/ || exit 1
+
+# Run vite dev server (host 0.0.0.0 allows access from outside the container)
+CMD ["npx", "vite", "--host", "0.0.0.0", "--port", "5001"]
+
+# =============================================
+# TARGET: prod — nginx serving static build
+# =============================================
+
+# ---------------------------------------------
+# Stage 2: Builder (Vite production build)
 # ---------------------------------------------
 FROM node:20-alpine AS builder
 
@@ -37,7 +72,6 @@ ARG VITE_BACKEND_URL
 ARG VITE_FRONTEND_URL
 ARG VITE_ASSEST_URL
 
-# Set environment variables for the build
 ENV VITE_BACKEND_URL=${VITE_BACKEND_URL}
 ENV VITE_FRONTEND_URL=${VITE_FRONTEND_URL}
 ENV VITE_ASSEST_URL=${VITE_ASSEST_URL}
@@ -48,9 +82,8 @@ RUN npm run build
 # ---------------------------------------------
 # Stage 3: Production (nginx)
 # ---------------------------------------------
-FROM nginx:alpine AS production
+FROM nginx:alpine AS prod
 
-# Install curl for health check
 RUN apk add --no-cache curl
 
 # Remove default nginx static assets
@@ -62,12 +95,9 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Copy custom nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 5001
 EXPOSE 5001
 
-# Health check - uses /health endpoint defined in nginx.conf
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:5001/health || exit 1
 
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
