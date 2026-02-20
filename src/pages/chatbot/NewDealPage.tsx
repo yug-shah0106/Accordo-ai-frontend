@@ -10,6 +10,7 @@ import { ArrowLeft, Loader2, Save, AlertCircle, CheckCircle, Mail, X, RefreshCw 
 console.log('[NewDealPage] Lucide icons imported');
 
 import toast from 'react-hot-toast';
+import axios from 'axios';
 console.log('[NewDealPage] react-hot-toast imported');
 
 import chatbotService from '../../services/chatbot.service';
@@ -751,11 +752,11 @@ export default function NewDealPage() {
                 ...prev.stepTwo.delivery,
                 // deliveryDate from requisition -> preferredDate in wizard
                 preferredDate: isEmpty(prev.stepTwo.delivery.preferredDate)
-                  ? (res.data.delivery.deliveryDate ?? '')
+                  ? (res.data.delivery.deliveryDate || null)
                   : prev.stepTwo.delivery.preferredDate,
                 // maxDeliveryDate from requisition -> requiredDate in wizard
                 requiredDate: isEmpty(prev.stepTwo.delivery.requiredDate)
-                  ? (res.data.delivery.maxDeliveryDate ?? '')
+                  ? (res.data.delivery.maxDeliveryDate || null)
                   : prev.stepTwo.delivery.requiredDate,
               },
             },
@@ -766,10 +767,8 @@ export default function NewDealPage() {
                 deadline: isEmpty(prev.stepThree.negotiationControl.deadline)
                   ? (res.data.delivery.negotiationClosureDate ?? null)
                   : prev.stepThree.negotiationControl.deadline,
-                // Auto-populate walkaway threshold from BATNA if available
-                walkawayThreshold: isEmpty(prev.stepThree.negotiationControl.walkawayThreshold)
-                  ? (res.data.negotiationLimits?.batna ?? prev.stepThree.negotiationControl.walkawayThreshold)
-                  : prev.stepThree.negotiationControl.walkawayThreshold,
+                // Note: walkawayThreshold and maxRounds removed from wizard UI (Feb 2026)
+                // Backend applies its own defaults based on priority
               },
             },
             // Auto-populate Step 4 weights from requisition priorities
@@ -1064,16 +1063,51 @@ export default function NewDealPage() {
       const rfqId = formData.stepOne.requisitionId!;
       const vendorId = formData.stepOne.vendorId!;
 
+      // Sanitize delivery dates: convert empty strings to null for Joi isoDate validation
+      const sanitizedDelivery = {
+        ...formData.stepTwo.delivery,
+        requiredDate: formData.stepTwo.delivery.requiredDate || null,
+        preferredDate: formData.stepTwo.delivery.preferredDate || null,
+      };
+
+      // Sanitize negotiationControl: only send deadline
+      // maxRounds and walkawayThreshold were removed from wizard UI (Feb 2026)
+      // Backend applies its own defaults based on priority
+      const sanitizedNegotiationControl: { deadline: string | null } = {
+        deadline: formData.stepThree.negotiationControl.deadline || null,
+      };
+
+      // Sanitize contractSla: ensure lateDeliveryPenaltyPerDay is within backend range (0.5-2)
+      const penaltyPerDay = formData.stepThree.contractSla.lateDeliveryPenaltyPerDay;
+      const sanitizedContractSla = {
+        ...formData.stepThree.contractSla,
+        lateDeliveryPenaltyPerDay: penaltyPerDay !== null && penaltyPerDay !== undefined
+          ? Math.min(2, Math.max(0.5, penaltyPerDay))
+          : 1,
+        // Ensure maxPenaltyCap is null (not empty object) when not configured
+        maxPenaltyCap: formData.stepThree.contractSla.maxPenaltyCap?.type
+          ? formData.stepThree.contractSla.maxPenaltyCap
+          : null,
+      };
+
+      // Sanitize priceQuantity: convert null values to undefined so they're not sent
+      const sanitizedPriceQuantity = {
+        ...formData.stepTwo.priceQuantity,
+        targetUnitPrice: formData.stepTwo.priceQuantity.targetUnitPrice ?? 0,
+        maxAcceptablePrice: formData.stepTwo.priceQuantity.maxAcceptablePrice ?? 0,
+        minOrderQuantity: formData.stepTwo.priceQuantity.minOrderQuantity ?? 0,
+      };
+
       const createInput = {
         title: formData.stepOne.title,
         counterparty: vendors.find((v) => v.id === vendorId)?.name,
         mode: formData.stepOne.mode,
         priority: formData.stepOne.priority,
-        priceQuantity: formData.stepTwo.priceQuantity,
+        priceQuantity: sanitizedPriceQuantity,
         paymentTerms: formData.stepTwo.paymentTerms,
-        delivery: formData.stepTwo.delivery,
-        contractSla: formData.stepThree.contractSla,
-        negotiationControl: formData.stepThree.negotiationControl,
+        delivery: sanitizedDelivery,
+        contractSla: sanitizedContractSla,
+        negotiationControl: sanitizedNegotiationControl,
         customParameters: formData.stepThree.customParameters,
         parameterWeights,
         // Include contractId or previousContractId from VendorDetails
@@ -1110,7 +1144,20 @@ export default function NewDealPage() {
       }
     } catch (err: unknown) {
       console.error('Failed to create deal:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create deal. Please try again.';
+      let errorMessage = 'Failed to create deal. Please try again.';
+      // Extract detailed validation errors from axios 400 response
+      if (axios.isAxiosError(err) && err.response) {
+        const data = err.response.data as { message?: string; errors?: string[] };
+        if (data?.errors?.length) {
+          errorMessage = data.errors.join('. ');
+        } else if (data?.message) {
+          errorMessage = data.message;
+        } else {
+          errorMessage = `Request failed with status ${err.response.status}`;
+        }
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
       setSubmitError(errorMessage);
       setSubmitting(false);
     }
