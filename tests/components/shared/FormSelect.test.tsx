@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import FormSelect from '../FormSelect';
+import FormSelect from '../../../src/components/shared/FormSelect';
 
 describe('FormSelect', () => {
   const mockOptions = [

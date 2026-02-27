@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderWithProviders, screen, waitFor, userEvent } from '../src/tests/utils';
-import CreateProductForm from '../src/components/vendor/CreateProductForm';
-import productSchema from '../src/schema/product';
+import { renderWithProviders, screen, waitFor, userEvent } from '../../helpers/utils';
+import CreateProductForm from '../../../src/components/vendor/CreateProductForm';
+import productSchema from '../../../src/schema/product';
 
 // Mock react-hot-toast
 vi.mock('react-hot-toast', () => ({
@@ -12,7 +12,7 @@ vi.mock('react-hot-toast', () => ({
 }));
 
 // Mock api
-vi.mock('../src/api', () => ({
+vi.mock('../../../src/api', () => ({
   authApi: {
     get: vi.fn(),
     post: vi.fn(),
@@ -42,7 +42,7 @@ describe('Product Schema Validation', () => {
         gstPercentage: 18,
         tds: 12345,
         type: 'Goods',
-        UOM: 'pieces',
+        UOM: 'units',
       };
 
       const result = productSchema.safeParse(data);
@@ -57,7 +57,7 @@ describe('Product Schema Validation', () => {
         gstType: 'Non-GST',
         tds: 12345,
         type: 'Goods',
-        UOM: 'pieces',
+        UOM: 'units',
       };
 
       const result = productSchema.safeParse(data);
@@ -72,7 +72,7 @@ describe('Product Schema Validation', () => {
         gstType: 'Non-Gst', // Wrong case - should be "Non-GST"
         tds: 12345,
         type: 'Goods',
-        UOM: 'pieces',
+        UOM: 'units',
       };
 
       const result = productSchema.safeParse(data);
@@ -87,7 +87,7 @@ describe('Product Schema Validation', () => {
         gstType: 'invalid',
         tds: 12345,
         type: 'Goods',
-        UOM: 'pieces',
+        UOM: 'units',
       };
 
       const result = productSchema.safeParse(data);
@@ -105,7 +105,7 @@ describe('Product Schema Validation', () => {
         // Missing gstPercentage
         tds: 12345,
         type: 'Goods',
-        UOM: 'pieces',
+        UOM: 'units',
       };
 
       const result = productSchema.safeParse(data);
@@ -123,7 +123,7 @@ describe('Product Schema Validation', () => {
         gstType: 'Non-GST',
         tds: 12345,
         type: 'Goods',
-        UOM: 'pieces',
+        UOM: 'units',
       };
 
       const result = productSchema.safeParse(data);
@@ -142,7 +142,7 @@ describe('Product Schema Validation', () => {
           gstPercentage: percentage,
           tds: 12345,
           type: 'Goods',
-          UOM: 'pieces',
+          UOM: 'units',
         };
 
         const result = productSchema.safeParse(data);
@@ -162,7 +162,7 @@ describe('Product Schema Validation', () => {
           gstPercentage: percentage,
           tds: 12345,
           type: 'Goods',
-          UOM: 'pieces',
+          UOM: 'units',
         };
 
         const result = productSchema.safeParse(data);
@@ -181,7 +181,7 @@ describe('Product Schema Validation', () => {
         gstPercentage: 18,
         tds: 12345,
         type: 'Goods',
-        UOM: 'pieces',
+        UOM: 'units',
       };
 
       const result = productSchema.safeParse(data);
@@ -197,7 +197,7 @@ describe('Product Schema Validation', () => {
         gstPercentage: 18,
         tds: 12345,
         type: 'Goods',
-        UOM: 'pieces',
+        UOM: 'units',
       };
 
       const result = productSchema.safeParse(data);
@@ -213,7 +213,7 @@ describe('Product Schema Validation', () => {
         gstPercentage: 18,
         tds: 12345,
         type: 'Goods',
-        UOM: 'pieces',
+        UOM: 'units',
       };
 
       const result = productSchema.safeParse(data);
@@ -229,7 +229,7 @@ describe('Product Schema Validation', () => {
         gstPercentage: 18,
         // Missing tds
         type: 'Goods',
-        UOM: 'pieces',
+        UOM: 'units',
       };
 
       const result = productSchema.safeParse(data);
@@ -245,7 +245,7 @@ describe('Product Schema Validation', () => {
         gstPercentage: 18,
         tds: -100,
         type: 'Goods',
-        UOM: 'pieces',
+        UOM: 'units',
       };
 
       const result = productSchema.safeParse(data);
@@ -263,7 +263,7 @@ describe('Product Schema Validation', () => {
         gstPercentage: 18,
         tds: 12345,
         type: 'Goods',
-        UOM: 'pieces',
+        UOM: 'units',
       };
 
       const result = productSchema.safeParse(data);
@@ -279,7 +279,7 @@ describe('Product Schema Validation', () => {
         gstPercentage: 18,
         tds: 12345,
         type: 'Services',
-        UOM: 'pieces',
+        UOM: 'units',
       };
 
       const result = productSchema.safeParse(data);
@@ -295,7 +295,7 @@ describe('Product Schema Validation', () => {
         gstPercentage: 18,
         tds: 12345,
         type: 'InvalidType',
-        UOM: 'pieces',
+        UOM: 'units',
       };
 
       const result = productSchema.safeParse(data);
@@ -305,7 +305,7 @@ describe('Product Schema Validation', () => {
 
   describe('UOM validation', () => {
     it('should accept valid UOM values', () => {
-      const validUoms = ['kg', 'liters', 'pieces'];
+      const validUoms = ['kgs', 'liters', 'units'];
 
       for (const uom of validUoms) {
         const data = {
@@ -333,7 +333,7 @@ describe('Product Schema Validation', () => {
         gstPercentage: 18,
         tds: 12345,
         type: 'Goods',
-        UOM: 'meters', // Invalid
+        UOM: 'pieces', // Invalid - not in the allowed list
       };
 
       const result = productSchema.safeParse(data);

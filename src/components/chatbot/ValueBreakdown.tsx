@@ -37,10 +37,8 @@ const parameterLabels: Record<string, string> = {
   targetUnitPrice: 'Price',
   maxAcceptablePrice: 'Max Price',
   paymentTermsRange: 'Payment Terms',
-  volumeDiscountExpectation: 'Volume Discount',
   deliveryDate: 'Delivery',
   warrantyPeriod: 'Warranty',
-  advancePaymentLimit: 'Advance Payment',
   lateDeliveryPenalty: 'Late Penalty',
   qualityStandards: 'Quality Standards',
 };

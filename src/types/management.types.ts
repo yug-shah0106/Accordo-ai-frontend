@@ -172,12 +172,10 @@ export interface Requisition {
   category: string;
   deliveryDate: string;
   negotiationClosureDate: string;
-  benchmarkingDate: string;
   typeOfCurrency: string;
   totalPrice: number;
   status: 'Created' | 'Fulfilled' | 'Cancelled' | 'Benchmarked' | 'InitialQuotation' | 'NegotiationStarted';
   paymentTerms: string;
-  benchmarkResponse?: string;
   Project: {
     projectId: string;
   };

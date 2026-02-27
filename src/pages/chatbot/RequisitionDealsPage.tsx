@@ -157,11 +157,15 @@ export default function RequisitionDealsPage() {
     }
   };
 
+  const CURRENCY_SYMBOL_MAP: Record<string, string> = {
+    USD: '$', INR: '₹', EUR: '€', GBP: '£', AUD: 'A$',
+  };
+  const requisitionCurrency = state.data?.requisition?.typeOfCurrency ?? 'USD';
+  const requisitionCurrencySymbol = CURRENCY_SYMBOL_MAP[requisitionCurrency] ?? requisitionCurrency + ' ';
+
   const formatCurrency = (value: number | null): string => {
     if (value === null) return "N/A";
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return requisitionCurrencySymbol + new Intl.NumberFormat("en-US", {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);

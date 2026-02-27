@@ -21,7 +21,6 @@ interface Project {
 
 interface Requisition {
   id?: string;
-  benchmarkingDate?: string;
   subject?: string;
   category?: string;
   deliveryDate?: string;
@@ -49,7 +48,6 @@ interface BasicInformationProps {
 
 interface FormData {
   projectId: string;
-  benchmarkingDate: string | number;
   subject: string;
   category: string;
   deliveryDate: string;
@@ -155,7 +153,6 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
     // Reset form to clean state with only projectId pre-filled
     reset({
       projectId: projectId?.id || "",
-      benchmarkingDate: "",
       subject: "",
       category: "",
       deliveryDate: "",
@@ -182,7 +179,6 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
         maxDeliveryDate: data.maxDeliveryDate || null,
         negotiationClosureDate: data.negotiationClosureDate,
         typeOfCurrency: data.typeOfCurrency,
-        benchmarkingDate: data.benchmarkingDate,
       };
 
       await authMultiFormApi.put(`/requisition/update/${requisitionId}`, cleanData);
@@ -225,9 +221,6 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
     if (requisition || requisitionId) {
       const formData: FormData = {
         projectId: projectId?.id || requisition?.projectId || "",
-        benchmarkingDate: requisition?.benchmarkingDate
-          ? requisition?.benchmarkingDate?.split("T")[0]
-          : "",
         subject: requisition?.subject || "",
         category: requisition?.category || "",
         deliveryDate: requisition?.deliveryDate?.split("T")[0] || "",
@@ -240,12 +233,6 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
       reset(formData);
     }
   }, [requisition, projectId, reset, requisitionId]);
-
-  const calculateISTBenchmarkingDate = (daysToAdd: number): Date => {
-    const now = new Date();
-    now.setDate(now.getDate() + daysToAdd);
-    return now;
-  };
 
   const onSubmit = async (data: FormData): Promise<void> => {
     // Clear previous errors
@@ -269,15 +256,6 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
 
     try {
       if (!requisitionId) {
-        const benchmarkingDate = calculateISTBenchmarkingDate(
-          Number(data.benchmarkingDate)
-        );
-        const deliveryDate = new Date(data.deliveryDate);
-        if (new Date(benchmarkingDate) >= deliveryDate) {
-          toast.error("Benchmarking date should be less than the delivery date.");
-          return;
-        }
-
         // Ensure all values are properly serialized for multipart form data
         // projectId comes either from form selection or from passed projectId prop
         const effectiveProjectId = data.projectId || projectId?.id;
@@ -289,7 +267,6 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
           deliveryDate: data.deliveryDate, // Already a string in YYYY-MM-DD format
           negotiationClosureDate: data.negotiationClosureDate,
           typeOfCurrency: data.typeOfCurrency,
-          benchmarkingDate: benchmarkingDate.toISOString(), // Convert Date to ISO string
           maxDeliveryDate: data.maxDeliveryDate || null,
         };
 
@@ -306,20 +283,6 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
         clearSaved(); // Clear autosaved draft on successful creation
         nextStep();
       } else {
-        const deliveryDate = new Date(data.deliveryDate || requisition?.deliveryDate || "");
-        const parsedBenchmarkingDate = new Date(
-          String(data.benchmarkingDate || requisition?.benchmarkingDate)
-        );
-
-        // Extract only the date part for comparison
-        const benchmarkingDateOnly = parsedBenchmarkingDate.toISOString().split("T")[0];
-        const deliveryDateOnly = deliveryDate.toISOString().split("T")[0];
-
-        if (benchmarkingDateOnly >= deliveryDateOnly) {
-          toast.error("Benchmarking date should be less than the delivery date.");
-          return; // Stop submission if condition fails
-        }
-
         // Ensure all values are properly serialized for multipart form data
         const payload = {
           subject: data.subject,
@@ -327,7 +290,6 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
           deliveryDate: data.deliveryDate,
           negotiationClosureDate: data.negotiationClosureDate,
           typeOfCurrency: data.typeOfCurrency,
-          benchmarkingDate: data.benchmarkingDate,
           maxDeliveryDate: data.maxDeliveryDate || null,
         };
 
@@ -427,7 +389,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
         </div>
       )}
 
-      <div className="border-2 rounded p-4">
+      <div className="border-2 rounded p-4 w-full max-w-full overflow-hidden">
       <div className="flex justify-between items-start">
         <div>
           <h3 className="text-lg font-semibold">Basic Information</h3>
@@ -511,31 +473,6 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
             required
             className="text-gray-700"
           />
-
-          {requisitionId ? (
-            <FormInput
-              label="Benchmarking days"
-              name="benchmarkingDate"
-              type="date"
-              value={watch("benchmarkingDate") || ""}
-              onChange={(e) => setValue("benchmarkingDate", e.target.value)}
-              error={errors.benchmarkingDate?.message}
-              required
-              className="text-gray-700"
-            />
-          ) : (
-            <FormInput
-              label="Benchmarking days"
-              name="benchmarkingDate"
-              type="number"
-              placeholder="Enter Benchmarking days"
-              value={watch("benchmarkingDate") || ""}
-              onChange={(e) => setValue("benchmarkingDate", e.target.value)}
-              error={errors.benchmarkingDate?.message}
-              required
-              className="text-gray-700"
-            />
-          )}
 
           <FormInput
             label="Negotiation Closure Date"

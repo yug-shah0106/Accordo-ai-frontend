@@ -68,12 +68,10 @@ const getDraftKey = (rfqId: number | null, vendorId: number | null): string => {
 };
 
 // Parameter definitions for Step 4 (must match StepFour.tsx)
-// Updated Feb 2026: Simplified to 7 core utility parameters
+// Updated Feb 2026: Simplified to 5 core utility parameters
 const STEP2_PARAMETERS = [
   { id: 'targetUnitPrice', name: 'Total Target Price', source: 'step2' as const, category: 'price' },
   { id: 'maxAcceptablePrice', name: 'Total Max Price', source: 'step2' as const, category: 'price' },
-  { id: 'volumeDiscountExpectation', name: 'Volume Discount', source: 'step2' as const, category: 'price' },
-  { id: 'advancePaymentLimit', name: 'Advance Payment Limit', source: 'step2' as const, category: 'payment' },
   { id: 'deliveryDate', name: 'Delivery Date', source: 'step2' as const, category: 'delivery' },
 ];
 
@@ -81,51 +79,6 @@ const STEP3_PARAMETERS = [
   { id: 'warrantyPeriod', name: 'Warranty Period', source: 'step3' as const, category: 'contract' },
   { id: 'qualityStandards', name: 'Quality Standards', source: 'step3' as const, category: 'contract' },
 ];
-
-/**
- * Build Step 4 weights from requisition priorities
- * Maps pricePriority, deliveryPriority, paymentTermsPriority to individual parameter weights
- */
-/**
- * Build Step 4 weights from requisition priorities
- * Updated Feb 2026: Simplified to 7 core parameters
- */
-const buildWeightsFromPriorities = (
-  pricePriority: number | null,
-  deliveryPriority: number | null,
-  _paymentTermsPriority: number | null
-): ParameterWeight[] => {
-  const allParameters = [...STEP2_PARAMETERS, ...STEP3_PARAMETERS];
-
-  // If no priorities provided, return empty (will use default initialization)
-  if (pricePriority === null && deliveryPriority === null) {
-    return [];
-  }
-
-  // Default weights for 7 parameters (total = 100%)
-  const defaultWeights: Record<string, number> = {
-    targetUnitPrice: 35,
-    maxAcceptablePrice: 20,
-    volumeDiscountExpectation: 10,
-    advancePaymentLimit: 5,
-    deliveryDate: 15,
-    warrantyPeriod: 10,
-    qualityStandards: 5,
-  };
-
-  // Distribute within categories based on priorities
-  const weights: ParameterWeight[] = allParameters.map((param, index) => {
-    return {
-      parameterId: param.id,
-      parameterName: param.name,
-      weight: defaultWeights[param.id] || 0,
-      source: param.source,
-      color: CHART_COLORS[index % CHART_COLORS.length],
-    };
-  });
-
-  return weights;
-};
 
 /**
  * NewDealPage - Multi-step wizard for creating a new negotiation deal
@@ -290,10 +243,10 @@ export default function NewDealPage() {
       try {
         const parsed = JSON.parse(tempDraft);
         if (parsed.data) {
-          // Check if stepFour has outdated parameters (more than 7 or has deprecated ones)
+          // Check if stepFour has outdated parameters (more than 5 or has deprecated ones)
           const validParamIds = new Set([
-            'targetUnitPrice', 'maxAcceptablePrice', 'volumeDiscountExpectation',
-            'advancePaymentLimit', 'deliveryDate', 'warrantyPeriod', 'qualityStandards'
+            'targetUnitPrice', 'maxAcceptablePrice',
+            'deliveryDate', 'warrantyPeriod', 'qualityStandards'
           ]);
           const hasOutdatedParams = parsed.data.stepFour?.weights?.some(
             (w: { parameterId: string }) => !validParamIds.has(w.parameterId)
@@ -736,17 +689,11 @@ export default function NewDealPage() {
                 minOrderQuantity: isEmpty(prev.stepTwo.priceQuantity.minOrderQuantity)
                   ? res.data.priceQuantity.totalQuantity
                   : prev.stepTwo.priceQuantity.minOrderQuantity,
-                volumeDiscountExpectation: isEmpty(prev.stepTwo.priceQuantity.volumeDiscountExpectation)
-                  ? res.data.priceQuantity.volumeDiscountExpectation
-                  : prev.stepTwo.priceQuantity.volumeDiscountExpectation,
               },
               paymentTerms: {
                 ...prev.stepTwo.paymentTerms,
                 minDays: prev.stepTwo.paymentTerms.minDays ?? res.data.paymentTerms.minDays,
                 maxDays: prev.stepTwo.paymentTerms.maxDays ?? res.data.paymentTerms.maxDays,
-                advancePaymentLimit:
-                  prev.stepTwo.paymentTerms.advancePaymentLimit ??
-                  res.data.paymentTerms.advancePaymentLimit,
               },
               delivery: {
                 ...prev.stepTwo.delivery,
@@ -771,29 +718,7 @@ export default function NewDealPage() {
                 // Backend applies its own defaults based on priority
               },
             },
-            // Auto-populate Step 4 weights from requisition priorities
-            stepFour: prev.stepFour.weights.length === 0 && res.data.priorities
-              ? (() => {
-                  const priorityWeights = buildWeightsFromPriorities(
-                    res.data.priorities.pricePriority,
-                    res.data.priorities.deliveryPriority,
-                    res.data.priorities.paymentTermsPriority
-                  );
-                  if (priorityWeights.length > 0) {
-                    console.log('[SmartDefaults] Auto-populating Step 4 weights from requisition priorities:', {
-                      pricePriority: res.data.priorities.pricePriority,
-                      deliveryPriority: res.data.priorities.deliveryPriority,
-                      paymentTermsPriority: res.data.priorities.paymentTermsPriority,
-                    });
-                    return {
-                      weights: priorityWeights,
-                      aiSuggested: true, // Mark as AI suggested since they come from requisition
-                      totalWeight: priorityWeights.reduce((sum, w) => sum + w.weight, 0),
-                    };
-                  }
-                  return prev.stepFour;
-                })()
-              : prev.stepFour,
+            stepFour: prev.stepFour,
           };
           });
         }
@@ -1272,6 +1197,7 @@ export default function NewDealPage() {
             addresses={addresses}
             onEditStep={handleEditStep}
             validationErrors={validationErrors}
+            currency={smartDefaults?.currency}
           />
         );
       default:

@@ -231,7 +231,7 @@ const truncateToken = (token: string, maxLength: number = 12): string => {
 
 const VendorDetails: React.FC<VendorDetailsProps> = ({
   currentStep,
-  nextStep: _nextStep,  // Unused but required by interface
+  nextStep,
   prevStep,
   requisitionId,
   requisition,
@@ -379,7 +379,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     try {
       toast.success("Requisition saved successfully");
       submitRequisition();
-      navigate("/requisition-management");
+      nextStep();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Something went wrong";
       toast.error(errorMessage);
@@ -779,14 +779,6 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                       >
                         <RiDeleteBinLine className="w-4 h-4 text-red-600" />
                       </button>
-                      <Button
-                        className="px-3 py-1.5 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1 text-sm"
-                        onClick={() => handleStartNegotiation(contract.vendorId, vendorName, contract.id)}
-                        type="button"
-                      >
-                        <FiPlay className="w-3 h-3" />
-                        Start
-                      </Button>
                     </div>
                   </li>
                 );
@@ -811,7 +803,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
             disabled={isSubmitting}
             className="px-3 py-2 bg-blue-500 text-white rounded !w-fit text-sm"
           >
-            Done
+            Next
           </Button>
         </div>
       </form>

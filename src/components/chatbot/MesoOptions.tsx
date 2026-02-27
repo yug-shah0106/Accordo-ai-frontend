@@ -42,7 +42,6 @@ const emphasisIcons: Record<string, string> = {
   payment: '💳',
   payment_terms: '💳',
   delivery: '🚚',
-  warranty: '🛡️',
   balanced: '⚖️',
 };
 
@@ -136,12 +135,7 @@ const MesoOptionCard: React.FC<{
             <span className="font-medium">{option.offer.delivery_days} days</span>
           </div>
         )}
-        {option.offer.warranty_months != null && (
-          <div className="flex justify-between">
-            <span className="text-gray-500">Warranty:</span>
-            <span className="font-medium">{option.offer.warranty_months} months</span>
-          </div>
-        )}
+        {/* Warranty hidden per client requirement */}
       </div>
 
 

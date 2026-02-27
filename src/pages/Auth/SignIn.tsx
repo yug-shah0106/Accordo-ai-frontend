@@ -24,6 +24,8 @@ interface RolePermission {
 }
 
 interface User {
+  id: number;
+  userType: string;
   companyId: number;
   RolePermission?: RolePermission;
 }
@@ -57,6 +59,7 @@ export default function SignIn() {
         tokenStorage.setTokens(accessToken, refreshToken);
 
         // Store user data and permissions
+        localStorage.setItem("userData", JSON.stringify(user));
         localStorage.setItem("%companyId%", String(user.companyId));
         localStorage.setItem("projectPermission", user?.RolePermission?.project || "");
         localStorage.setItem("requisitionPermission", user?.RolePermission?.requisition || "");

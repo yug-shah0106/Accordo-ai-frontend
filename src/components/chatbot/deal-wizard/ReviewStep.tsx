@@ -28,6 +28,7 @@ interface ReviewStepProps {
   addresses: DeliveryAddress[];
   onEditStep: (step: number) => void;
   validationErrors?: Record<string, string[]>;
+  currency?: string;
 }
 
 const WARRANTY_LABELS: Record<string, string> = {
@@ -55,6 +56,10 @@ const FLEXIBILITY_LABELS: Record<string, string> = {
  * ReviewStep - Summary of all wizard data before final submission
  * Shows all entered information organized by section with edit buttons
  */
+const CURRENCY_SYMBOL_MAP: Record<string, string> = {
+  USD: '$', INR: '₹', EUR: '€', GBP: '£', AUD: 'A$',
+};
+
 const ReviewStep: React.FC<ReviewStepProps> = ({
   data,
   requisitions,
@@ -62,6 +67,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
   addresses,
   onEditStep,
   validationErrors = {},
+  currency = 'USD',
 }) => {
   const selectedRfq = requisitions.find(r => r.id === data.stepOne.requisitionId);
   const selectedVendor = vendors.find(v => v.id === data.stepOne.vendorId);
@@ -69,9 +75,9 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
 
   const formatCurrency = (value: number | null) => {
     if (value === null) return '—';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    const currencyCode = ['USD', 'INR', 'EUR', 'GBP', 'AUD'].includes(currency) ? currency : 'USD';
+    const currencySymbol = CURRENCY_SYMBOL_MAP[currencyCode] ?? currencyCode + ' ';
+    return currencySymbol + new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(value);
@@ -237,12 +243,6 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
                 label="Preferred Quantity"
                 value={data.stepTwo.priceQuantity.preferredQuantity?.toLocaleString()}
               />
-              <DataRow
-                label="Volume Discount"
-                value={data.stepTwo.priceQuantity.volumeDiscountExpectation
-                  ? `${data.stepTwo.priceQuantity.volumeDiscountExpectation}%`
-                  : null}
-              />
             </div>
           </div>
         </div>
@@ -256,12 +256,6 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
             <DataRow
               label="Payment Days Range"
               value={`${data.stepTwo.paymentTerms.minDays} - ${data.stepTwo.paymentTerms.maxDays} days`}
-            />
-            <DataRow
-              label="Advance Payment Limit"
-              value={data.stepTwo.paymentTerms.advancePaymentLimit
-                ? `${data.stepTwo.paymentTerms.advancePaymentLimit}%`
-                : 'Not set'}
             />
             <DataRow
               label="Accepted Methods"

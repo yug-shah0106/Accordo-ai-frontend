@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AlertCircle, FileText, Loader2, Lock } from 'lucide-react';
+import { AlertCircle, FileText, Loader2, Lock, Users } from 'lucide-react';
 import type {
   DealWizardStepOne,
   NegotiationPriority,
@@ -17,6 +17,8 @@ interface StepOneProps {
   onRequisitionChange: (rfqId: number | null) => void;
   errors?: Record<string, string>;
   lockedFields?: boolean;
+  /** When multiple vendors are selected (batch deal creation), show chips instead of dropdown */
+  selectedVendorNames?: string[];
 }
 
 /**
@@ -33,6 +35,7 @@ const StepOne: React.FC<StepOneProps> = ({
   onRequisitionChange,
   errors = {},
   lockedFields = false,
+  selectedVendorNames,
 }) => {
   // Ensure arrays are always arrays (defensive coding)
   const safeRequisitions = Array.isArray(requisitions) ? requisitions : [];
@@ -194,55 +197,74 @@ const StepOne: React.FC<StepOneProps> = ({
           htmlFor="vendorId"
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          Vendor <span className="text-red-500">*</span>
+          {selectedVendorNames && selectedVendorNames.length > 1 ? 'Vendors' : 'Vendor'} <span className="text-red-500">*</span>
           {(lockedFields || data.vendorLocked) && (
             <span className="ml-2 inline-flex items-center">
               <Lock className="w-3.5 h-3.5 text-amber-500" />
             </span>
           )}
         </label>
-        <div className="relative">
-          <select
-            id="vendorId"
-            name="vendorId"
-            value={data.vendorId || ''}
-            onChange={handleVendorSelect}
-            disabled={!data.requisitionId || loadingVendors || lockedFields || data.vendorLocked}
-            className={`
-              w-full px-4 py-2.5 border rounded-lg appearance-none
-              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-              disabled:bg-gray-50 disabled:text-gray-500
-              ${(lockedFields || data.vendorLocked) ? 'bg-gray-100 cursor-not-allowed' : ''}
-              ${errors.vendorId ? 'border-red-300 bg-red-50' : 'border-gray-300'}
-            `}
-          >
-            <option value="">
-              {!data.requisitionId
-                ? 'Select an RFQ first...'
-                : loadingVendors
-                  ? 'Loading vendors...'
-                  : safeVendors.length === 0
-                    ? 'No vendors attached to this RFQ'
-                    : 'Select a vendor...'}
-            </option>
-            {safeVendors.map((vendor) => (
-              <option key={vendor.id} value={vendor.id}>
-                {vendor.name} {vendor.companyName ? `(${vendor.companyName})` : ''}
-                {vendor.pastDealsCount > 0 && ` - ${vendor.pastDealsCount} past deals`}
-              </option>
-            ))}
-          </select>
-          {loadingVendors && (
-            <div className="absolute right-10 top-1/2 -translate-y-1/2">
-              <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+
+        {/* Multi-vendor chip display (batch deal creation) */}
+        {selectedVendorNames && selectedVendorNames.length > 0 && lockedFields ? (
+          <div className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-100">
+            <div className="flex flex-wrap gap-2">
+              {selectedVendorNames.map((name, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm font-medium"
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  {name}
+                </span>
+              ))}
             </div>
-          )}
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
           </div>
-        </div>
+        ) : (
+          /* Single vendor dropdown (standard deal creation) */
+          <div className="relative">
+            <select
+              id="vendorId"
+              name="vendorId"
+              value={data.vendorId || ''}
+              onChange={handleVendorSelect}
+              disabled={!data.requisitionId || loadingVendors || lockedFields || data.vendorLocked}
+              className={`
+                w-full px-4 py-2.5 border rounded-lg appearance-none
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                disabled:bg-gray-50 disabled:text-gray-500
+                ${(lockedFields || data.vendorLocked) ? 'bg-gray-100 cursor-not-allowed' : ''}
+                ${errors.vendorId ? 'border-red-300 bg-red-50' : 'border-gray-300'}
+              `}
+            >
+              <option value="">
+                {!data.requisitionId
+                  ? 'Select an RFQ first...'
+                  : loadingVendors
+                    ? 'Loading vendors...'
+                    : safeVendors.length === 0
+                      ? 'No vendors attached to this RFQ'
+                      : 'Select a vendor...'}
+              </option>
+              {safeVendors.map((vendor) => (
+                <option key={vendor.id} value={vendor.id}>
+                  {vendor.name} {vendor.companyName ? `(${vendor.companyName})` : ''}
+                  {vendor.pastDealsCount > 0 && ` - ${vendor.pastDealsCount} past deals`}
+                </option>
+              ))}
+            </select>
+            {loadingVendors && (
+              <div className="absolute right-10 top-1/2 -translate-y-1/2">
+                <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+              </div>
+            )}
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        )}
         {errors.vendorId && (
           <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
             <AlertCircle className="w-3.5 h-3.5" />
@@ -251,7 +273,7 @@ const StepOne: React.FC<StepOneProps> = ({
         )}
 
         {/* Vendor warning if no vendors */}
-        {data.requisitionId && !loadingVendors && vendors.length === 0 && (
+        {!selectedVendorNames?.length && data.requisitionId && !loadingVendors && vendors.length === 0 && (
           <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <div className="flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />

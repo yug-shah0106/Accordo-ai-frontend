@@ -4,7 +4,6 @@ import Button from "../Button";
 import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import useFetchData from "../../hooks/useFetchData";
 import { RiDeleteBinLine } from "react-icons/ri";
-import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 import { authMultiFormApi } from "../../api";
 import toast from "react-hot-toast";
 import { BsPlusCircleFill } from "react-icons/bs";
@@ -49,10 +48,6 @@ interface Requisition {
   postPaymentPercentage?: string;
   post_payment_percentage?: number;
   discountTerms?: string;
-  // Priority fields - can be number or string from backend
-  pricePriority?: number | string;
-  deliveryPriority?: number | string;
-  paymentTermsPriority?: number | string;
   productData?: ProductData[];
   RequisitionProduct?: ProductData[];
   RequisitionAttachment?: RequisitionAttachment[];
@@ -80,9 +75,6 @@ interface FormData {
   prePaymentPercentage: number | string;
   postPaymentPercentage: number | string;
   discountTerms: string;
-  pricePriority: number | string;
-  deliveryPriority: number | string;
-  paymentTermsPriority: number | string;
 }
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({
@@ -108,9 +100,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       files: [],
       netPaymentDay: null,
       discountTerms: "",
-      pricePriority: 1,
-      deliveryPriority: 1,
-      paymentTermsPriority: 1,
       prePaymentPercentage: "",
       postPaymentPercentage: "",
       selectedProduct: "",
@@ -143,8 +132,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   useEffect(() => {
     if (hasDraft && !draftRestored && !serverDataLoaded) {
       const savedData = loadSaved();
-      if (savedData && (savedData.productData?.length > 0 || savedData.paymentTerms ||
-          savedData.pricePriority || savedData.deliveryPriority || savedData.paymentTermsPriority)) {
+      if (savedData && (savedData.productData?.length > 0 || savedData.paymentTerms)) {
         // Silently restore draft data - this takes priority over server data
         setDraftRestored(true);
         reset(savedData);
@@ -163,9 +151,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       const cleanData = {
         productData: JSON.stringify(data.productData || []),
         discountTerms: data.discountTerms || "",
-        pricePriority: Number(data.pricePriority) || 1,
-        deliveryPriority: Number(data.deliveryPriority) || 1,
-        paymentTermsPriority: Number(data.paymentTermsPriority) || 1,
         totalQuantity: data.totalQuantity || 0,
         totalPrice: data.totalPrice || 0,
         totalMaxPrice: data.totalMaxPrice || 0,
@@ -229,14 +214,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
     products: [],
   });
 
-  // Helper to ensure priority values are numeric (1-5), defaulting to 1
-  const parseNumericPriority = (value: number | string | undefined): number => {
-    if (value === undefined || value === null || value === "") return 1;
-    const num = typeof value === "string" ? parseInt(value, 10) : value;
-    if (isNaN(num) || num < 1 || num > 5) return 1;
-    return num;
-  };
-
   useEffect(() => {
     // Only reset from server data if we haven't already restored a draft
     // Draft data takes priority over server data to preserve user edits
@@ -253,9 +230,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         prePaymentPercentage: requisition?.prePaymentPercentage || requisition?.pre_payment_percentage || "",
         postPaymentPercentage: requisition?.postPaymentPercentage || requisition?.post_payment_percentage || "",
         discountTerms: requisition?.discountTerms || "",
-        pricePriority: parseNumericPriority(requisition?.pricePriority),
-        deliveryPriority: parseNumericPriority(requisition?.deliveryPriority),
-        paymentTermsPriority: parseNumericPriority(requisition?.paymentTermsPriority),
       });
     }
   }, [requisition?.id, reset, draftRestored]); // Only depend on requisition ID and draftRestored flag
@@ -304,65 +278,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   //   );
   // };
 
-  // Modify the handleDirectInput function for 1-5 scale
-  const handleDirectInput = (
-    field: "pricePriority" | "deliveryPriority" | "paymentTermsPriority",
-    value: string | number
-  ): void => {
-    // Allow empty string for better UX while typing
-    if (value === "") {
-      setValue(field, "");
-      return;
-    }
-
-    // Remove preceding zeros
-    const cleanValue = String(value).replace(/^0+/, "") || "0";
-    const newValue = parseInt(cleanValue);
-    if (isNaN(newValue)) return;
-
-    // Ensure value is between 1 and 5
-    const clampedValue = Math.max(1, Math.min(5, newValue));
-
-    // Get current values
-    const currentValues = {
-      pricePriority: Number(watch("pricePriority")) || 0,
-      deliveryPriority: Number(watch("deliveryPriority")) || 0,
-      paymentTermsPriority: Number(watch("paymentTermsPriority")) || 0,
-    };
-
-    // Calculate what the new total would be
-    const newTotal = Object.entries(currentValues).reduce((sum, [key, val]) => {
-      return sum + (key === field ? clampedValue : (val || 0));
-    }, 0);
-
-    // If new total would exceed 15 (max 5 for each of 3 priorities), show error and don't update
-    if (newTotal > 15) {
-      toast.error("Total priority cannot exceed 15 (max 5 for each priority)");
-      return;
-    }
-
-    // Update the value
-    setValue(field, clampedValue);
-  };
-
-  // Modify the handlePriorityAdjust function for 1-5 scale
-  const handlePriorityAdjust = (
-    field: "pricePriority" | "deliveryPriority" | "paymentTermsPriority",
-    action: "increment" | "decrement"
-  ): void => {
-    const currentValue = watch(field);
-    // Handle empty string case
-    if (currentValue === "") {
-      setValue(field, action === "increment" ? 1 : 1);
-      return;
-    }
-    const newValue =
-      action === "increment"
-        ? (Number(currentValue) || 0) + 1
-        : (Number(currentValue) || 0) - 1;
-    handleDirectInput(field, newValue);
-  };
-
   const onSubmit = async (data: FormData): Promise<void> => {
     // Check for validation errors
     if (Object.keys(errors).length > 0) {
@@ -393,9 +308,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         productData: data.productData || [],
         files: data.files || [],
         discountTerms: data.discountTerms || "",
-        pricePriority: Number(data.pricePriority) || 1,
-        deliveryPriority: Number(data.deliveryPriority) || 1,
-        paymentTermsPriority: Number(data.paymentTermsPriority) || 1,
         totalQuantity: data.totalQuantity || 0,
         totalPrice: data.totalPrice || 0,
         totalMaxPrice: data.totalMaxPrice || 0,
@@ -412,9 +324,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
           productData: cleanData.productData,
           files: cleanData.files,
           discountTerms: cleanData.discountTerms,
-          pricePriority: cleanData.pricePriority,
-          deliveryPriority: cleanData.deliveryPriority,
-          paymentTermsPriority: cleanData.paymentTermsPriority,
           // Snake case versions for API
           totalQuantity: cleanData.totalQuantity,
           total_price: cleanData.totalPrice,
@@ -439,9 +348,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         const apiData = {
           productData: JSON.stringify(cleanData.productData),
           discountTerms: cleanData.discountTerms,
-          pricePriority: cleanData.pricePriority,
-          deliveryPriority: cleanData.deliveryPriority,
-          paymentTermsPriority: cleanData.paymentTermsPriority,
           totalQuantity: cleanData.totalQuantity,
           totalPrice: cleanData.totalPrice,
           totalMaxPrice: cleanData.totalMaxPrice,
@@ -530,8 +436,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="border-2 rounded p-4">
+    <div className="space-y-6 w-full max-w-full">
+      <div className="border-2 rounded p-4 w-full max-w-full overflow-hidden">
         <div className="flex justify-between items-start">
           <div>
             <h3 className="text-lg font-semibold">Product Details</h3>
@@ -706,104 +612,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               type="text"
               className="my-1"
             />
-          </div>
-
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Priority Settings <span className="text-sm font-normal text-gray-500">(Optional)</span></h3>
-            <div className="space-y-6">
-              {/* Price Priority Input */}
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-gray-700">Price Priority <span className="font-normal text-gray-500">(Optional)</span></label>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handlePriorityAdjust("pricePriority", "decrement")}
-                    className="p-1 rounded-full hover:bg-gray-100"
-                  >
-                    <MdKeyboardArrowDown className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <input
-                    type="number"
-                    min="1"
-                    max="5"
-                    value={watch("pricePriority") || 1}
-                    onChange={(e) => handleDirectInput("pricePriority", e.target.value)}
-                    className="w-20 px-3 py-2 text-sm text-center border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handlePriorityAdjust("pricePriority", "increment")}
-                    className="p-1 rounded-full hover:bg-gray-100"
-                  >
-                    <MdKeyboardArrowUp className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <span className="text-sm text-gray-500">(1-5)</span>
-                </div>
-              </div>
-
-              {/* Delivery Priority Input */}
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-gray-700">Delivery Priority <span className="font-normal text-gray-500">(Optional)</span></label>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handlePriorityAdjust("deliveryPriority", "decrement")}
-                    className="p-1 rounded-full hover:bg-gray-100"
-                  >
-                    <MdKeyboardArrowDown className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <input
-                    type="number"
-                    min="1"
-                    max="5"
-                    value={watch("deliveryPriority") || 1}
-                    onChange={(e) => handleDirectInput("deliveryPriority", e.target.value)}
-                    className="w-20 px-3 py-2 text-sm text-center border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handlePriorityAdjust("deliveryPriority", "increment")}
-                    className="p-1 rounded-full hover:bg-gray-100"
-                  >
-                    <MdKeyboardArrowUp className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <span className="text-sm text-gray-500">(1-5)</span>
-                </div>
-              </div>
-
-              {/* Payment Terms Priority Input */}
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-gray-700">Payment Terms Priority <span className="font-normal text-gray-500">(Optional)</span></label>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handlePriorityAdjust("paymentTermsPriority", "decrement")}
-                    className="p-1 rounded-full hover:bg-gray-100"
-                  >
-                    <MdKeyboardArrowDown className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <input
-                    type="number"
-                    min="1"
-                    max="5"
-                    value={watch("paymentTermsPriority") || 1}
-                    onChange={(e) => handleDirectInput("paymentTermsPriority", e.target.value)}
-                    className="w-20 px-3 py-2 text-sm text-center border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handlePriorityAdjust("paymentTermsPriority", "increment")}
-                    className="p-1 rounded-full hover:bg-gray-100"
-                  >
-                    <MdKeyboardArrowUp className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <span className="text-sm text-gray-500">(1-5)</span>
-                </div>
-              </div>
-
-              {/* Total Priority Display */}
-
-            </div>
           </div>
 
           {/* Payment Terms Field */}

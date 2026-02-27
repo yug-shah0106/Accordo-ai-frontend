@@ -45,7 +45,7 @@ const productDataSchema = z.array(
   })
 );
 
-export const step1 = (tenureInDays: number | undefined) =>
+export const step1 = (_tenureInDays?: number | undefined) =>
   z
     .object({
       subject: z.string().min(1, "Subject is required"),
@@ -84,27 +84,6 @@ export const step1 = (tenureInDays: number | undefined) =>
           message: "Maximum delivery date must be today or in the future",
         })
         .optional(),
-
-      benchmarkingDate: z
-        .union([z.string(), z.number()])
-        .transform((val) => {
-          if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
-            const date = new Date(val);
-            if (isNaN(date.getTime())) throw new Error("Invalid benchmarking date format");
-
-            return { dateString: val, daysDiff: Math.ceil((date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) };
-          }
-
-          return { daysDiff: typeof val === "string" ? parseInt(val, 10) : val };
-        })
-        .refine((val) => Number.isInteger(val.daysDiff) && val.daysDiff > 0, {
-          message: "Benchmarking days must be a positive integer",
-        })
-        .refine((val) => tenureInDays === undefined || val.daysDiff <= tenureInDays, {
-          message: "Benchmarking days cannot exceed the project's tenure",
-        })
-        .transform((val) => val.dateString ?? val.daysDiff),
-
 
       typeOfCurrency: z.string().min(1, "Type of currency is required"),
 
@@ -201,40 +180,4 @@ export const step2 = z.object({
     })
     .optional(),
   
-  pricePriority: z
-    .union([z.string(), z.number()])
-    .transform((val) => {
-      if (typeof val === "string") {
-        return val === "" ? "" : parseInt(val, 10) || 0;
-      }
-      return val;
-    })
-    .refine((val) => val === "" || (Number.isInteger(val) && val >= 0 && val <= 100), {
-      message: "Price Priority must be between 0 and 100",
-    })
-    .optional(),
-  deliveryPriority: z
-    .union([z.string(), z.number()])
-    .transform((val) => {
-      if (typeof val === "string") {
-        return val === "" ? "" : parseInt(val, 10) || 0;
-      }
-      return val;
-    })
-    .refine((val) => val === "" || (Number.isInteger(val) && val >= 0 && val <= 100), {
-      message: "Delivery Priority must be between 0 and 100",
-    })
-    .optional(),
-  paymentTermsPriority: z
-    .union([z.string(), z.number()])
-    .transform((val) => {
-      if (typeof val === "string") {
-        return val === "" ? "" : parseInt(val, 10) || 0;
-      }
-      return val;
-    })
-    .refine((val) => val === "" || (Number.isInteger(val) && val >= 0 && val <= 100), {
-      message: "Payment Terms Priority must be between 0 and 100",
-    })
-    .optional(),
 });

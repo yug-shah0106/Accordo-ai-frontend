@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { renderWithProviders } from '../utils';
+import { renderWithProviders } from '../helpers/utils';
 
 describe('Frontend Test Setup Verification', () => {
   it('should run basic tests', () => {

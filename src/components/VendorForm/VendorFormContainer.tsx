@@ -133,12 +133,14 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [isLoadingCompany, setIsLoadingCompany] = useState(isEditMode && !!companyId);
+  const [showDraftDialog, setShowDraftDialog] = useState(false);
+  const [pendingDraftData, setPendingDraftData] = useState<{ currentStep: number; formData: VendorFormData } | null>(null);
 
   // Auto-save hook - save form data every 30 seconds
   const autoSaveKey = `vendor-form-draft-${companyId || 'new'}`;
   const { lastSaved, isSaving, clearSaved, loadSaved } = useAutoSave({
     key: autoSaveKey,
-    data: { currentStep, formData, timestamp: new Date().toISOString() },
+    data: { currentStep, formData },
     interval: 30000, // 30 seconds
     enabled: currentStep < 5, // Don't auto-save on review step
   });
@@ -186,16 +188,28 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
     if (!draftLoaded && !company) {
       const saved = loadSaved();
       if (saved && saved.currentStep && saved.formData) {
-        const isRecent = new Date().getTime() - new Date(saved.timestamp).getTime() < 7 * 24 * 60 * 60 * 1000; // 7 days
+        const savedTimestamp = localStorage.getItem(`${autoSaveKey}_timestamp`);
+        const isRecent = !savedTimestamp || (new Date().getTime() - new Date(savedTimestamp).getTime() < 7 * 24 * 60 * 60 * 1000); // 7 days
         if (isRecent) {
-          toast.success('Draft loaded from previous session', {
-            duration: 3000,
-            icon: '📄',
-          });
-          setCurrentStep(saved.currentStep);
-          setFormData(saved.formData);
+          const hasMeaningfulData =
+            saved.currentStep > 1 ||
+            Object.values(saved.formData).some(v => {
+              if (v == null || v === false) return false;
+              if (typeof v === 'string') return v.trim() !== '';
+              if (Array.isArray(v)) return v.length > 0;
+              if (typeof v === 'number') return true;
+              return true;
+            });
+          if (hasMeaningfulData) {
+            setPendingDraftData({ currentStep: saved.currentStep, formData: saved.formData });
+            setShowDraftDialog(true);
+            setDraftLoaded(true);
+            return;
+          }
         }
       }
+      // No meaningful draft — clear the stale empty draft and proceed
+      clearSaved();
       setDraftLoaded(true);
     }
   }, [draftLoaded, company, loadSaved, isEditMode]);
@@ -405,6 +419,22 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
     }
   };
 
+  const restoreDraft = () => {
+    if (pendingDraftData) {
+      setCurrentStep(pendingDraftData.currentStep);
+      setFormData(pendingDraftData.formData);
+      toast.success('Draft restored');
+    }
+    setShowDraftDialog(false);
+    setPendingDraftData(null);
+  };
+
+  const discardDraft = () => {
+    clearSaved();
+    setShowDraftDialog(false);
+    setPendingDraftData(null);
+  };
+
   /**
    * Handle final submission (Step 5 review complete)
    */
@@ -496,12 +526,39 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
 
   return (
     <div className="flex flex-col min-h-full">
+      {showDraftDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Restore Draft?</h3>
+            <p className="text-gray-600 mb-4">
+              You have an unsaved vendor draft from a previous session. Would you like to restore it?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg font-medium transition-all"
+                onClick={discardDraft}
+              >
+                Start Fresh
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium transition-all"
+                onClick={restoreDraft}
+              >
+                Restore Draft
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 pt-6 pb-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate('/vendor-management')}
+              onClick={() => { clearSaved(); navigate('/vendor-management'); }}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               aria-label="Back to vendor management"
             >

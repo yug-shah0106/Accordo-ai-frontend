@@ -20,15 +20,12 @@ import { LuGitPullRequest } from "react-icons/lu";
 
 const RequisitionsManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<any>(false);
-  const [cursorLoading, setCursorLoading] = useState(false);
-
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const navigate = useNavigate();
   const { state } = useLocation();
   console.log({ state });
 
   const [isModal, setIsModal] = useState<any>(false);
-  const [benchmarkModal, setBenchMarkModal] = useState<any>(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const menuRef = useRef(null);
@@ -75,7 +72,7 @@ const RequisitionsManagement = () => {
       label: "Requisition Status",
       description: "Requisition Status ",
       value: [],
-      options: ["Fulfilled", "Created", "Benchmarked", "NegotiationStarted"],
+      options: ["Fulfilled", "Created", "NegotiationStarted"],
     },
     // {
     //   "moduleName": "Requisition",
@@ -136,18 +133,6 @@ const RequisitionsManagement = () => {
 
   console.log(state);
 
-  useEffect(() => {
-    if (cursorLoading) {
-      document.body.style.cursor = "wait";
-    } else {
-      document.body.style.cursor = "default";
-    }
-
-    return () => {
-      document.body.style.cursor = "default";
-    };
-  }, [cursorLoading]);
-
   const handleDeleteModalConfirm = async (id: any) => {
     try {
       await authApi.delete(`/requisition/delete/${id}`);
@@ -160,33 +145,6 @@ const RequisitionsManagement = () => {
   const handleCloseModal = async () => {
     setIsModal(false);
   };
-  const handleCreateBenchMark = async (row: any) => {
-    console.log(row);
-
-    const isContractCreated = row?.Contract?.some(
-      (contract: any) => contract?.status === "Created"
-    );
-
-    // If a contract is 'Created', show an error and return early
-    if (isContractCreated) {
-      toast.error("Contract not submitted the quotation.");
-      return;
-    }
-
-    try {
-      setCursorLoading(true);
-      await authApi.post(`/benchmark/create`, {
-        requisitionId: row?.id,
-      });
-      toast.success("Benchmark Created Successfully");
-      await refetch();
-    } catch (error: any) {
-      toast.error(error.message || "Something went wrong");
-    } finally {
-      setCursorLoading(false); // ✅ Stop loading
-    }
-  };
-
   const columns = [
     {
       header: "Project Id",
@@ -254,42 +212,6 @@ const RequisitionsManagement = () => {
           return true;
         }
         return false;
-      },
-    },
-    {
-      type: "button" as const,
-      label: "Create Bench Mark",
-      icon: <FaPlus />,
-      condition: (row: any) => {
-        // Hide if already benchmarked
-        if (row.status === "Benchmarked") {
-          return false;
-        }
-        // Show for Created and InitialQuotation statuses
-        if (row.status === "InitialQuotation") {
-          return true;
-        }
-        return false;
-      },
-      onClick: (row: any) => {
-        handleCreateBenchMark(row);
-      },
-    },
-    {
-      type: "button" as const,
-      label: "View Bench Mark",
-      icon: <FaRegEye />,
-      condition: (row: any) => {
-        if (row.status === "Benchmarked") {
-          return true;
-        }
-        return false;
-      },
-      onClick: (row: any) => {
-        console.log({ row });
-        console.log(JSON.parse(row.benchmarkResponse));
-
-        setBenchMarkModal(row);
       },
     },
     {
@@ -366,16 +288,6 @@ const RequisitionsManagement = () => {
     // Only block editing for Cancelled requisitions
     if (row.status === "Cancelled") {
       toast.error("Editing is not allowed for cancelled requisitions.");
-      return;
-    }
-
-    // Permission check: Admin can edit any; PM can only edit their own
-    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-    const userId = userData?.id;
-    const userType = userData?.userType;
-
-    if (userType !== "admin" && row.createdBy !== userId) {
-      toast.error("You can only edit requisitions you created.");
       return;
     }
 
@@ -576,8 +488,7 @@ const RequisitionsManagement = () => {
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto px-6 pb-6">
         <div
-          className={`border rounded-md overflow-x-scroll hide-scrollbar-y ${cursorLoading ? "opacity-60 pointer-events-none cursor-wait" : ""
-            }`}
+          className="border rounded-md overflow-x-scroll hide-scrollbar-y"
         >
           <Table
             data={requisitions}
@@ -671,10 +582,6 @@ const RequisitionsManagement = () => {
                 <p>
                   {selectedProject?.negotiationClosureDate?.split("T")?.[0]}
                 </p>
-              </div>
-              <div className="space-y-2">
-                <p>Benchmarking Date</p>
-                <p>{selectedProject?.benchmarkingDate?.split("T")?.[0]}</p>
               </div>
               <div className="space-y-2">
                 <p>Currency</p>
@@ -778,91 +685,6 @@ const RequisitionsManagement = () => {
           onClose={handleCloseModal}
           body="Are you sure you want to delete this product?"
         />
-      )}
-      {benchmarkModal && (
-        <Modal
-          wholeModalStyle="text-center"
-          heading="Benchmark Details"
-          btnsStyle="justify-center"
-          additionalClasses="w-[50%]"
-          showCancelButton={false}
-          isDeleteIcon={false}
-          onClose={() => setBenchMarkModal(false)}
-          body={
-            <div className="overflow-x-auto pt-4 px-4 pb-0">
-              {(() => {
-                // Parse benchmark response once
-                const benchmarkData = JSON.parse(
-                  benchmarkModal?.benchmarkResponse || "{}"
-                );
-
-                // Get FinalBenchmark object
-                const finalBenchmarkData = benchmarkData?.FinalBenchmark || {};
-
-                // Extract all keys from FinalBenchmark (e.g., "Testing Product", "test")
-                const benchmarkKeys = Object.keys(finalBenchmarkData);
-
-                // Prepare combined data for each product with Price, Delivery Date, and Payment Terms
-                const combinedData = benchmarkKeys.map((key) => {
-                  const benchmarkItems = finalBenchmarkData[key] || [];
-
-                  // Extract values for Price, Delivery Date, and Payment Terms
-                  const priceItem = benchmarkItems.find((item: any) => item.name === "Price");
-                  const deliveryItem = benchmarkItems.find((item: any) => item.name === "Delivery Date");
-                  const paymentItem = benchmarkItems.find((item: any) => item.name === "Payment Terms");
-
-                  return {
-                    product: key,
-                    price: priceItem?.value || "N/A",
-                    deliveryDate: deliveryItem?.value || "N/A",
-                    paymentTerms: paymentItem?.value || "N/A",
-                  };
-                });
-
-                return combinedData.length > 0 ? (
-                  <table className="w-full rounded-lg border border-gray-300">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-4 pt-2 pb-0 text-center">
-                          Product Name
-                        </th>
-                        <th className="border border-gray-300 px-4 pt-2 pb-0 text-center">
-                          Price
-                        </th>
-                        <th className="border border-gray-300 px-4 pt-2 pb-0 text-center">
-                          Delivery Date
-                        </th>
-                        <th className="border border-gray-300 px-4 pt-2 pb-0 text-center">
-                          Payment Terms
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {combinedData.map((item, idx) => (
-                        <tr key={idx} className="even:bg-gray-50">
-                          <td className="border border-gray-300 px-4 pt-2 pb-0 text-center">
-                            {item?.product || "N/A"}
-                          </td>
-                          <td className="border border-gray-300 px-4 pt-2 pb-0 text-center">
-                            {item?.price || "N/A"}
-                          </td>
-                          <td className="border border-gray-300 px-4 pt-2 pb-0 text-center">
-                            {item?.deliveryDate || "N/A"}
-                          </td>
-                          <td className="border border-gray-300 px-4 pt-2 pb-0 text-center">
-                            {item?.paymentTerms || "N/A"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : (
-                  <p className="text-gray-600">No benchmark data available.</p>
-                );
-              })()}
-            </div>
-          }
-        ></Modal>
       )}
     </div>
   );

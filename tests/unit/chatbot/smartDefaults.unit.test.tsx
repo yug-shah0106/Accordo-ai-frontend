@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { createMockSmartDefaults } from '../factories';
+import { createMockSmartDefaults } from '../../helpers/factories';
 
 describe('Smart Defaults - Date Auto-Fill Unit Tests', () => {
   describe('Date Extraction Logic', () => {

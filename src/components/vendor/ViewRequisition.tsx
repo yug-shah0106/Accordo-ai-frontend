@@ -22,7 +22,6 @@ const ViewRequisition = () => {
   const { state } = useLocation();
   console.log({ state });
   const [isModal, setIsModal] = useState<any>(false);
-  const [benchmarkModal, setBenchMarkModal] = useState<any>(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState<any>([
     {
@@ -117,18 +116,6 @@ const ViewRequisition = () => {
   const handleCloseModal = async () => {
     setIsModal(false);
   };
-  const handleCreateBenchMark = async (row: any) => {
-    try {
-      await authApi.post(`/benchmark/create`, {
-        requisitionId: row?.id,
-      });
-      toast.success("Bench Mark Created Successfully");
-      await refetch();
-    } catch (error: any) {
-      toast.error(error.message || "Something went wrong");
-    }
-  };
-
   const columns = [
     {
       header: "Project ID",
@@ -180,34 +167,6 @@ const ViewRequisition = () => {
       label: "Add Vendor",
       icon: <FaPlus />,
       link: (row: any) => `/requisition-management/edit-requisition/${row.id}?redirect=3`,
-    },
-    {
-      type: "button" as const,
-      label: "Create Bench Mark",
-      icon: <FaPlus />,
-      condition: (row: any) => {
-        if (row.status === "Benchmarked") {
-          return false;
-        }
-        return true;
-      },
-      onClick: (row: any) => {
-        handleCreateBenchMark(row);
-      },
-    },
-    {
-      type: "button" as const,
-      label: "View Bench Mark",
-      icon: <FaRegEye />,
-      condition: (row: any) => {
-        if (row.status === "Benchmarked") {
-          return true;
-        }
-        return false;
-      },
-      onClick: (row: any) => {
-        setBenchMarkModal(row);
-      },
     },
     {
       type: "button" as const,
@@ -514,27 +473,6 @@ const ViewRequisition = () => {
           }}
           onClose={handleCloseModal}
           body="Are you sure you want to delete this product?"
-        />
-      )}
-      {benchmarkModal && (
-        <Modal
-          wholeModalStyle="text-center"
-          heading="Bench Mark Details"
-          btnsStyle="justify-center"
-          showCancelButton={false}
-          isDeleteIcon={false}
-          onClose={() => {
-            setBenchMarkModal(false);
-          }}
-          body={JSON.parse(benchmarkModal?.benchmarkResponse)?.FinalBenchmark?.map((i: any) => {
-            return (
-              <div key={i.id}>
-                <p className="text-black font-bold text-start">
-                  {i.name} : <span className="font-normal">{i.value}</span>
-                </p>
-              </div>
-            );
-          })}
         />
       )}
     </div>

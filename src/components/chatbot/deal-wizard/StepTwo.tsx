@@ -34,62 +34,6 @@ const DATE_PRESETS = [
 ];
 
 /**
- * Custom Blue Range Slider Component
- */
-const BlueSlider: React.FC<{
-  value: number;
-  onChange: (value: number) => void;
-  min?: number;
-  max?: number;
-  label?: string;
-  unit?: string;
-}> = ({ value, onChange, min = 0, max = 50, label, unit = '%' }) => {
-  const percentage = ((value - min) / (max - min)) * 100;
-
-  return (
-    <div className="w-full">
-      {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {label}
-        </label>
-      )}
-      <div className="flex items-center gap-4">
-        <div className="flex-1 relative">
-          {/* Track background */}
-          <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-            {/* Filled track */}
-            <div
-              className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-150"
-              style={{ width: `${percentage}%` }}
-            />
-          </div>
-          {/* Slider input (transparent, overlaid) */}
-          <input
-            type="range"
-            min={min}
-            max={max}
-            value={value}
-            onChange={(e) => onChange(parseInt(e.target.value))}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          />
-          {/* Thumb indicator */}
-          <div
-            className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white border-2 border-blue-500 rounded-full shadow-md pointer-events-none transition-all duration-150"
-            style={{ left: `calc(${percentage}% - 10px)` }}
-          />
-        </div>
-        {/* Value display */}
-        <div className="w-20 text-center px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
-          <span className="text-lg font-semibold text-blue-700">
-            {value}{unit}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/**
  * Calendar Popup Component
  */
 const CalendarPopup: React.FC<{
@@ -311,6 +255,10 @@ const CalendarPopup: React.FC<{
  * StepTwo - Commercial Parameters
  * Collects Price & Quantity, Payment Terms, and Delivery Parameters
  */
+const CURRENCY_SYMBOL_MAP: Record<string, string> = {
+  USD: '$', INR: '₹', EUR: '€', GBP: '£', AUD: 'A$',
+};
+
 const StepTwo: React.FC<StepTwoProps> = ({
   data,
   onChange,
@@ -320,6 +268,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
   onAddNewAddress,
   vendorId,
 }) => {
+  const currencySymbol = CURRENCY_SYMBOL_MAP[smartDefaults?.currency ?? ''] ?? '$';
   const updatePriceQuantity = (
     field: keyof typeof data.priceQuantity,
     value: number | null
@@ -428,7 +377,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
               Total Target Price <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">{currencySymbol}</span>
               <input
                 type="number"
                 value={data.priceQuantity.targetUnitPrice ?? ''}
@@ -458,7 +407,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
               Total Maximum Price <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">{currencySymbol}</span>
               <input
                 type="number"
                 value={data.priceQuantity.maxAcceptablePrice ?? ''}
@@ -527,18 +476,6 @@ const StepTwo: React.FC<StepTwoProps> = ({
             <p className="mt-1 text-xs text-gray-500">Ideal order quantity</p>
           </div>
 
-          {/* Volume Discount Expectation - Teal Slider */}
-          <div className="md:col-span-2">
-            <BlueSlider
-              label="Volume Discount Expectation"
-              value={data.priceQuantity.volumeDiscountExpectation ?? 0}
-              onChange={(value) => updatePriceQuantity('volumeDiscountExpectation', value)}
-              min={0}
-              max={50}
-              unit="%"
-            />
-            <p className="mt-2 text-xs text-gray-500">Expected discount for bulk orders</p>
-          </div>
         </div>
       </section>
 
@@ -609,19 +546,6 @@ const StepTwo: React.FC<StepTwoProps> = ({
                 </p>
               )}
             </div>
-          </div>
-
-          {/* Advance Payment Limit - Teal Slider */}
-          <div>
-            <BlueSlider
-              label="Advance Payment Limit"
-              value={data.paymentTerms.advancePaymentLimit ?? 0}
-              onChange={(value) => updatePaymentTerms('advancePaymentLimit', value)}
-              min={0}
-              max={50}
-              unit="%"
-            />
-            <p className="mt-2 text-xs text-gray-500">Maximum upfront payment you're willing to make</p>
           </div>
 
           {/* Payment Methods */}

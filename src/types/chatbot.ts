@@ -228,12 +228,10 @@ export interface WizardConfig {
     maxAcceptablePrice: number;
     minOrderQuantity: number;
     preferredQuantity?: number;
-    volumeDiscountExpectation?: number;
   };
   paymentTerms: {
     minDays: number;
     maxDays: number;
-    advancePaymentLimit?: number;
     acceptedMethods?: PaymentMethod[];
   };
   delivery: {
@@ -275,6 +273,8 @@ export interface WizardConfig {
 export interface ExtendedNegotiationConfig extends NegotiationConfig {
   wizardConfig?: WizardConfig;
   parameterWeights?: Record<string, number>;
+  /** Currency code stored on deal creation (e.g. "USD", "INR", "GBP") */
+  currency?: string;
 }
 
 // ============================================================================
@@ -505,7 +505,6 @@ export interface PriceQuantityParams {
   maxAcceptablePrice: number | null;
   minOrderQuantity: number | null;
   preferredQuantity: number | null;
-  volumeDiscountExpectation: number | null;
 }
 
 /**
@@ -514,7 +513,6 @@ export interface PriceQuantityParams {
 export interface PaymentTermsParams {
   minDays: number | null;
   maxDays: number | null;
-  advancePaymentLimit: number | null;
   acceptedMethods: PaymentMethod[];
 }
 
@@ -662,7 +660,6 @@ export interface SmartDefaults {
   priceQuantity: {
     targetUnitPrice: number | null;
     maxAcceptablePrice: number | null;
-    volumeDiscountExpectation: number | null;
     // New fields for auto-populating from requisition totals
     totalQuantity: number | null;
     totalTargetPrice: number | null;
@@ -671,7 +668,6 @@ export interface SmartDefaults {
   paymentTerms: {
     minDays: number;
     maxDays: number;
-    advancePaymentLimit: number | null;
     // Additional payment fields from requisition
     paymentTermsText?: string | null;      // e.g., "Net 30", "Net 60"
     netPaymentDay?: number | null;         // Parsed net payment day
@@ -685,18 +681,14 @@ export interface SmartDefaults {
     maxDeliveryDate?: string | null;      // Maps to requiredDate in wizard
     negotiationClosureDate?: string | null; // Maps to deadline in wizard Step 3
   };
-  // Requisition priorities for auto-populating Step 4 weights
-  priorities?: {
-    pricePriority: number | null;         // 0-100, weight for price parameters
-    deliveryPriority: number | null;      // 0-100, weight for delivery parameters
-    paymentTermsPriority: number | null;  // 0-100, weight for payment terms
-  };
   // BATNA and discount limits from requisition
   negotiationLimits?: {
     batna: number | null;                 // Best Alternative to Negotiated Agreement
     maxDiscount: number | null;           // Maximum discount allowed
     discountedValue: number | null;       // Discounted value calculation
   };
+  /** Currency code from the requisition (e.g. "USD", "INR", "GBP") */
+  currency: string;
   source: 'vendor_history' | 'similar_deals' | 'industry_default' | 'combined';
   confidence: number; // 0-1
 }
@@ -950,6 +942,7 @@ export interface RequisitionDealsResponse {
     projectName: string;
     estimatedValue: number | null;
     deadline: string | null;
+    typeOfCurrency?: string | null;
   };
   deals: VendorDealSummary[];
   statusCounts: {
@@ -975,12 +968,10 @@ export const DEFAULT_WIZARD_FORM_DATA: DealWizardFormData = {
       maxAcceptablePrice: null,
       minOrderQuantity: null,
       preferredQuantity: null,
-      volumeDiscountExpectation: null,
     },
     paymentTerms: {
       minDays: 30,
       maxDays: 60,
-      advancePaymentLimit: null,
       acceptedMethods: ['BANK_TRANSFER'],
     },
     delivery: {

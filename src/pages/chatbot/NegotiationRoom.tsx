@@ -324,11 +324,15 @@ export default function NegotiationRoom() {
     }
   }, [deal?.round, fetchUtilityData, fetchBehavioralData]);
 
+  const CURRENCY_SYMBOL_MAP: Record<string, string> = {
+    USD: '$', INR: '₹', EUR: '€', GBP: '£', AUD: 'A$',
+  };
+  const dealCurrencyCode = (config as ExtendedNegotiationConfig | null)?.currency ?? 'USD';
+  const dealCurrencySymbol = CURRENCY_SYMBOL_MAP[dealCurrencyCode] ?? dealCurrencyCode + ' ';
+
   const formatCurrency = (value: number | null): string => {
     if (value === null) return "N/A";
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return dealCurrencySymbol + new Intl.NumberFormat("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(value);
@@ -440,7 +444,7 @@ export default function NegotiationRoom() {
     // Add counter-offer reasoning
     if (counterOffer) {
       if (counterOffer.total_price) {
-        reasons.push(`Counter-offered price: $${counterOffer.total_price.toLocaleString()}`);
+        reasons.push(`Counter-offered price: ${dealCurrencySymbol}${counterOffer.total_price.toLocaleString()}`);
       }
       if (counterOffer.payment_terms) {
         reasons.push(`Counter-offered terms: ${counterOffer.payment_terms}`);
@@ -598,7 +602,7 @@ export default function NegotiationRoom() {
         case 'price':
           return (weights.targetUnitPrice || 0) + (weights.maxAcceptablePrice || 0) + (weights.minOrderQuantity || 0);
         case 'payment':
-          return (weights.paymentTermsRange || 0) + (weights.advancePaymentLimit || 0);
+          return (weights.paymentTermsRange || 0);
         case 'delivery':
           return (weights.requiredDate || 0) + (weights.partialDelivery || 0);
         case 'contract':
@@ -1386,7 +1390,7 @@ export default function NegotiationRoom() {
                                     {item.mesoOptions.map((opt: any, oIndex: number) => (
                                       <div key={oIndex} className="text-[10px] text-emerald-600 dark:text-emerald-400">
                                         <span className="font-medium">{opt.label}:</span>{' '}
-                                        {opt.offer?.total_price ? `$${opt.offer.total_price.toLocaleString()}` : 'N/A'}{' '}
+                                        {opt.offer?.total_price ? `${dealCurrencySymbol}${opt.offer.total_price.toLocaleString()}` : 'N/A'}{' '}
                                         {opt.emphasis && `(${Array.isArray(opt.emphasis) ? opt.emphasis.join(', ') : opt.emphasis})`}
                                       </div>
                                     ))}
@@ -1485,12 +1489,6 @@ export default function NegotiationRoom() {
                       value={wizardConfig?.priceQuantity?.preferredQuantity}
                       type="number"
                     />
-                    {/* Volume Discount: only from wizardConfig */}
-                    <ParameterRow
-                      label="Volume Discount"
-                      value={wizardConfig?.priceQuantity?.volumeDiscountExpectation}
-                      type="percentage"
-                    />
                     {/* Anchor Price from engine config */}
                     <ParameterRow
                       label="Anchor Price"
@@ -1550,12 +1548,6 @@ export default function NegotiationRoom() {
                         type="days"
                       />
                     )}
-                    {/* Advance Payment Limit */}
-                    <ParameterRow
-                      label="Advance Payment Limit"
-                      value={wizardConfig?.paymentTerms?.advancePaymentLimit}
-                      type="percentage"
-                    />
                     {/* Accepted Payment Methods */}
                     {wizardConfig?.paymentTerms?.acceptedMethods && wizardConfig.paymentTerms.acceptedMethods.length > 0 && (
                       <ParameterRow

@@ -87,49 +87,6 @@ const Contracts = () => {
     {
       header: "Rating",
       accessor: "vendorId",
-
-      isRating: (id: number) => {
-        // Ensure benchmarkResponse exists and is parsed properly
-        const benchmarkData = state?.benchmarkResponse
-          ? JSON.parse(state.benchmarkResponse)
-          : null;
-
-        if (!benchmarkData?.VendorComparison || !Array.isArray(benchmarkData.VendorComparison)) {
-          return "0.00";
-        }
-
-        // Get the vendor by ID and check if it exists
-        const vendor = benchmarkData.VendorComparison[id];
-        if (!vendor || !Array.isArray(vendor.Products)) return "0.00";
-
-        // Calculate the total rating
-        let totalRatingSum = 0;
-        let validProductCount = 0;
-
-        vendor.Products.forEach((product: { ContractDetails?: Array<{ rating?: number }> }) => {
-          if (!product?.ContractDetails || !Array.isArray(product.ContractDetails)) return;
-
-          let productRatingSum = 0;
-          let validContractCount = 0;
-
-          product.ContractDetails.forEach((contract: { rating?: number }) => {
-            if (typeof contract.rating === "number") {
-              productRatingSum += contract.rating;
-              validContractCount++;
-            }
-          });
-
-          if (validContractCount > 0) {
-            totalRatingSum += productRatingSum / validContractCount; // Average per product
-            validProductCount++;
-          }
-        });
-
-        // If no valid products, return "0.00" instead of NaN
-        return validProductCount > 0 ? (totalRatingSum / validProductCount).toFixed(2) : "0.00";
-      },
-
-
     },
     {
       header: "Link",

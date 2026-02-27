@@ -85,16 +85,33 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
 
   const { data, loading: _loading, error: _dataError } = useFetchData("/customer/get-all");
 
+  const hasMeaningfulDraft = (savedDraft: string | null): boolean => {
+    if (!savedDraft) return false;
+    try {
+      const parsed = JSON.parse(savedDraft);
+      return !!(
+        parsed?.projectName?.trim() ||
+        parsed?.projectAddress?.trim() ||
+        parsed?.typeOfProject?.trim() ||
+        parsed?.tenureInDays?.toString().trim() ||
+        (Array.isArray(parsed?.pointOfContact) && parsed.pointOfContact.length > 0)
+      );
+    } catch { return false; }
+  };
+
   // Check for existing draft on mount
   useEffect(() => {
     const savedDraft = localStorage.getItem(autosaveKey);
-    if (savedDraft && !id) {
-      // For new projects, show dialog to restore draft
-      setShowDraftDialog(true);
-    } else if (savedDraft && id) {
-      // For edit mode, show dialog to restore draft
-      setShowDraftDialog(true);
+    if (!id) {
+      // Create mode: show dialog only if draft has meaningful data
+      if (hasMeaningfulDraft(savedDraft)) {
+        setShowDraftDialog(true);
+      } else {
+        if (savedDraft) localStorage.removeItem(autosaveKey);
+        setIsDataLoaded(true);
+      }
     }
+    // Edit mode handled separately in fetchProductData effect
   }, [autosaveKey, id]);
 
   // Function to restore draft
@@ -129,11 +146,12 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
         selectedPoc: "",
         pointOfContact: projectData?.ProjectPoc?.map((i: any) => i.userId),
       });
-      // Check for draft after loading project data
+      // Check for draft after loading project data (edit mode)
       const savedDraft = localStorage.getItem(autosaveKey);
-      if (savedDraft) {
+      if (hasMeaningfulDraft(savedDraft)) {
         setShowDraftDialog(true);
       } else {
+        if (savedDraft) localStorage.removeItem(autosaveKey);
         setIsDataLoaded(true);
       }
     } catch (error: any) {
@@ -145,14 +163,9 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
   useEffect(() => {
     if (id) {
       fetchProductData(id);
-    } else {
-      // For new projects, check draft immediately
-      const savedDraft = localStorage.getItem(autosaveKey);
-      if (!savedDraft) {
-        setIsDataLoaded(true);
-      }
     }
-  }, [id, autosaveKey]);
+    // Create mode draft check is handled in the first useEffect above
+  }, [id]);
 
   const onSubmit = async (formSubmitData: any) => {
     try {
@@ -226,9 +239,7 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
         <div className="flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-xl font-medium">
             <IoArrowBackOutline
-              onClick={() => {
-                navigate(-1);
-              }}
+              onClick={() => { clearSaved(); navigate(-1); }}
               className="cursor-pointer"
             />
             {id ? "Edit Project" : "Create Project"}
@@ -383,7 +394,7 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
             <Button
               type="button"
               className="px-6 py-3 !bg-white border-2 border-gray-400 !text-gray-800 hover:bg-gray-100 hover:border-gray-500 hover:!text-gray-900 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 min-w-[120px] justify-center"
-              onClick={() => navigate(-1)}
+              onClick={() => { clearSaved(); navigate(-1); }}
             >
               Cancel
             </Button>

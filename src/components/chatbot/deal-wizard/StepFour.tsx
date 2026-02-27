@@ -18,12 +18,10 @@ interface StepFourProps {
 }
 
 // Parameter definitions for display
-// UPDATED Feb 2026: Simplified to core utility parameters only
+// UPDATED Feb 2026: Simplified to 5 core utility parameters
 const STEP2_PARAMETERS = [
   { id: "targetUnitPrice", name: "Total Target Price", source: "step2" as const },
   { id: "maxAcceptablePrice", name: "Total Max Price", source: "step2" as const },
-  { id: "volumeDiscountExpectation", name: "Volume Discount", source: "step2" as const },
-  { id: "advancePaymentLimit", name: "Advance Payment Limit", source: "step2" as const },
   { id: "deliveryDate", name: "Delivery Date", source: "step2" as const },
 ];
 
@@ -33,17 +31,28 @@ const STEP3_PARAMETERS = [
 ];
 
 // Default weights distribution (AI-suggested)
-// Updated Feb 2026: Simplified to 7 core utility parameters
-// Removed: paymentTermsRange, partialDelivery, lateDeliveryPenalty, maxRounds, walkawayThreshold
+// Updated Feb 2026: Simplified to 5 core utility parameters
+// Removed: volumeDiscountExpectation, advancePaymentLimit, paymentTermsRange, partialDelivery, lateDeliveryPenalty, maxRounds, walkawayThreshold
 const getDefaultWeights = (): Record<string, number> => ({
-  targetUnitPrice: 35,
-  maxAcceptablePrice: 20,
-  volumeDiscountExpectation: 10,
-  advancePaymentLimit: 5,
+  targetUnitPrice: 40,
+  maxAcceptablePrice: 25,
   deliveryDate: 15,
-  warrantyPeriod: 10,
+  warrantyPeriod: 15,
   qualityStandards: 5,
 });
+
+type StepSizeOption = 2 | 5 | 10 | 1;
+
+const STEP_SIZE_OPTIONS: { value: StepSizeOption; label: string }[] = [
+  { value: 2, label: "2%" },
+  { value: 5, label: "5%" },
+  { value: 10, label: "10%" },
+  { value: 1, label: "Custom" },
+];
+
+const snapToStep = (value: number, step: number): number => {
+  return Math.round(value / step) * step;
+};
 
 /**
  * Weight Slider Component
@@ -54,9 +63,10 @@ const WeightSlider: React.FC<{
   weight: number;
   color: string;
   isLocked: boolean;
+  stepSize: number;
   onChange: (weight: number) => void;
   onToggleLock: () => void;
-}> = ({ parameterId: _parameterId, parameterName, weight, color, isLocked, onChange, onToggleLock }) => {
+}> = ({ parameterId: _parameterId, parameterName, weight, color, isLocked, stepSize, onChange, onToggleLock }) => {
   const percentage = weight;
 
   return (
@@ -107,8 +117,9 @@ const WeightSlider: React.FC<{
           type="range"
           min={0}
           max={100}
+          step={stepSize}
           value={weight}
-          onChange={(e) => onChange(parseInt(e.target.value))}
+          onChange={(e) => onChange(snapToStep(parseInt(e.target.value), stepSize))}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />
         {/* Thumb indicator */}
@@ -150,6 +161,8 @@ export default function StepFour({
 }: StepFourProps) {
   // Track which parameters are locked (manually adjusted)
   const [lockedParams, setLockedParams] = useState<Set<string>>(new Set());
+  // Step size for weight sliders (default 10%)
+  const [stepSize, setStepSize] = useState<StepSizeOption>(10);
 
   // Build list of all parameters based on Steps 2 & 3
   const allParameters = useMemo(() => {
@@ -198,11 +211,11 @@ export default function StepFour({
     }
   }, [allParameters, filteredWeights.length]);
 
-  const initializeWeights = () => {
+  const initializeWeights = (step: StepSizeOption = stepSize) => {
     const defaultWeights = getDefaultWeights();
     const customParamCount = allParameters.filter((p) => p.source === "custom").length;
 
-    // Distribute weights
+    // Distribute weights and snap to step size
     const weights: ParameterWeight[] = allParameters.map((param, index) => {
       let defaultWeight = defaultWeights[param.id] || 0;
 
@@ -215,18 +228,74 @@ export default function StepFour({
       return {
         parameterId: param.id,
         parameterName: param.name,
-        weight: defaultWeight,
+        weight: snapToStep(defaultWeight, step),
         source: param.source,
         color: CHART_COLORS[index % CHART_COLORS.length],
       };
     });
 
-    // Calculate total
-    const totalWeight = weights.reduce((sum, w) => sum + w.weight, 0);
+    // Fix total to 100% after snapping
+    let totalWeight = weights.reduce((sum, w) => sum + w.weight, 0);
+    if (totalWeight !== 100) {
+      const diff = 100 - totalWeight;
+      const sorted = [...weights].sort((a, b) => b.weight - a.weight);
+      let remaining = diff;
+      let idx = 0;
+      while (remaining !== 0 && sorted.length > 0) {
+        const increment = remaining > 0 ? 1 : -1;
+        const target = sorted[idx % sorted.length];
+        const w = weights.find((w) => w.parameterId === target.parameterId)!;
+        w.weight = Math.max(0, w.weight + increment);
+        remaining -= increment;
+        idx++;
+        if (idx > 200) break;
+      }
+      totalWeight = weights.reduce((sum, w) => sum + w.weight, 0);
+    }
 
     onChange({
       weights,
       aiSuggested: true,
+      totalWeight,
+    });
+  };
+
+  // Re-snap all weights when stepSize changes
+  const reSnapWeights = (newStep: StepSizeOption) => {
+    if (data.weights.length === 0) return;
+
+    const snapped = data.weights.map((w) => ({
+      ...w,
+      weight: snapToStep(w.weight, newStep),
+    }));
+
+    // Fix total to 100%
+    let totalWeight = snapped.reduce((sum, w) => sum + w.weight, 0);
+    if (totalWeight !== 100) {
+      const diff = 100 - totalWeight;
+      const sorted = [...snapped]
+        .filter((w) => !lockedParams.has(w.parameterId))
+        .sort((a, b) => b.weight - a.weight);
+      // Fall back to all params if all are locked
+      const targets = sorted.length > 0 ? sorted : [...snapped].sort((a, b) => b.weight - a.weight);
+      let remaining = diff;
+      let idx = 0;
+      while (remaining !== 0 && targets.length > 0) {
+        const increment = remaining > 0 ? 1 : -1;
+        const targetId = targets[idx % targets.length].parameterId;
+        const w = snapped.find((w) => w.parameterId === targetId)!;
+        w.weight = Math.max(0, w.weight + increment);
+        remaining -= increment;
+        idx++;
+        if (idx > 200) break;
+      }
+      totalWeight = snapped.reduce((sum, w) => sum + w.weight, 0);
+    }
+
+    onChange({
+      ...data,
+      weights: snapped,
+      aiSuggested: false,
       totalWeight,
     });
   };
@@ -254,6 +323,9 @@ export default function StepFour({
    * - Real-time: Adjust immediately on slider change
    */
   const handleWeightChange = (parameterId: string, newWeight: number) => {
+    // Snap newWeight to step size
+    newWeight = snapToStep(newWeight, stepSize);
+
     // Find the current weight of the parameter being changed
     const currentParam = data.weights.find((w) => w.parameterId === parameterId);
     if (!currentParam) return;
@@ -321,19 +393,20 @@ export default function StepFour({
       return { ...w, weight: adjustedWeight };
     });
 
-    // Round all weights to integers for cleaner display
-    updatedWeights = updatedWeights.map((w) => ({
-      ...w,
-      weight: Math.round(w.weight),
-    }));
+    // Snap all unlocked weights to step size
+    updatedWeights = updatedWeights.map((w) => {
+      if (w.parameterId === parameterId || lockedParams.has(w.parameterId)) {
+        return w;
+      }
+      return { ...w, weight: snapToStep(w.weight, stepSize) };
+    });
 
-    // Calculate the new total (may not be exactly 100 due to rounding)
+    // Calculate the new total (may not be exactly 100 due to snapping)
     let totalWeight = updatedWeights.reduce((sum, w) => sum + w.weight, 0);
 
-    // Fix any rounding errors by adjusting the largest unlocked adjustable parameter
+    // Fix any remainder by distributing across unlocked adjustable parameters
     if (totalWeight !== 100) {
       const diff = 100 - totalWeight;
-      // Find the largest unlocked adjustable parameter (not the one we just changed)
       const sortedAdjustable = updatedWeights
         .filter(
           (w) =>
@@ -344,13 +417,23 @@ export default function StepFour({
         .sort((a, b) => b.weight - a.weight);
 
       if (sortedAdjustable.length > 0) {
-        const targetId = sortedAdjustable[0].parameterId;
-        updatedWeights = updatedWeights.map((w) =>
-          w.parameterId === targetId
-            ? { ...w, weight: Math.max(0, w.weight + diff) }
-            : w
-        );
-        totalWeight = 100;
+        // Distribute remainder 1% at a time across unlocked params
+        let remaining = diff;
+        let idx = 0;
+        while (remaining !== 0 && sortedAdjustable.length > 0) {
+          const increment = remaining > 0 ? 1 : -1;
+          const targetId = sortedAdjustable[idx % sortedAdjustable.length].parameterId;
+          updatedWeights = updatedWeights.map((w) =>
+            w.parameterId === targetId
+              ? { ...w, weight: Math.max(0, w.weight + increment) }
+              : w
+          );
+          remaining -= increment;
+          idx++;
+          // Safety: prevent infinite loop
+          if (idx > 200) break;
+        }
+        totalWeight = updatedWeights.reduce((sum, w) => sum + w.weight, 0);
       }
     }
 
@@ -363,9 +446,16 @@ export default function StepFour({
   };
 
   const handleResetToDefaults = () => {
-    // Clear all locks when resetting
+    // Clear all locks and reset step size when resetting
     setLockedParams(new Set());
-    initializeWeights();
+    setStepSize(10);
+    initializeWeights(10);
+  };
+
+  // Handle step size change: re-snap all weights
+  const handleStepSizeChange = (newStep: StepSizeOption) => {
+    setStepSize(newStep);
+    reSnapWeights(newStep);
   };
 
   return (
@@ -390,6 +480,27 @@ export default function StepFour({
         )}
       </div>
 
+      {/* Step Size Selector */}
+      <div className="flex items-center gap-3">
+        <span className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary">Step Size:</span>
+        <div className="flex gap-2">
+          {STEP_SIZE_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => handleStepSizeChange(option.value)}
+              className={`px-3 py-1.5 text-sm font-medium rounded-full transition-colors ${
+                stepSize === option.value
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border text-gray-700 dark:text-dark-text-secondary hover:border-blue-400 dark:hover:border-blue-500'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Main Content: Sliders aligned with Donut Chart Card */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         {/* Sliders Column - centered vertically within card-like container */}
@@ -403,6 +514,7 @@ export default function StepFour({
                 weight={weight.weight}
                 color={weight.color || CHART_COLORS[0]}
                 isLocked={lockedParams.has(weight.parameterId)}
+                stepSize={stepSize}
                 onChange={(newWeight) => handleWeightChange(weight.parameterId, newWeight)}
                 onToggleLock={() => toggleLock(weight.parameterId)}
               />

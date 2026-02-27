@@ -213,14 +213,16 @@
   @apply bg-dark-bg;
 }
 
-/* Root element should allow scrolling */
+/* Root element should allow vertical scrolling only */
 html, body {
   height: 100%;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 #root {
   min-height: 100%;
+  overflow-x: hidden;
 }
 
 body {

@@ -4,12 +4,12 @@ import { VerticalStepProgress, Step } from "../shared";
 import BasicInformation from "./BasicInformation";
 import ProductDetails from "./ProductDetails";
 import VendorDetails from "./VendorDetails";
+import StartDeals from "./StartDeals";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { authApi } from "../../api";
 
 interface Requisition {
   id: string;
-  benchmarkingDate?: string;
   subject?: string;
   category?: string;
   deliveryDate?: string;
@@ -25,9 +25,6 @@ interface Requisition {
   prePaymentPercentage?: string;
   postPaymentPercentage?: string;
   discountTerms?: string;
-  pricePriority?: number;
-  deliveryPriority?: number;
-  paymentTermsPriority?: number;
   productData?: any[];
   RequisitionProduct?: any[];
   RequisitionAttachment?: any[];
@@ -52,7 +49,7 @@ const AddRequisition: React.FC = () => {
       const savedStep = localStorage.getItem(`requisition_step_${id}`);
       if (savedStep) {
         const step = parseInt(savedStep, 10);
-        if (step >= 1 && step <= 3) return step;
+        if (step >= 1 && step <= 4) return step;
       }
     }
     return 1;
@@ -71,7 +68,7 @@ const AddRequisition: React.FC = () => {
   }, [currentStep, id]);
 
   const nextStep = () => {
-    if (currentStep < 3) setCurrentStep(currentStep + 1);
+    if (currentStep < 4) setCurrentStep(currentStep + 1);
   };
 
   const prevStep = () => {
@@ -114,6 +111,15 @@ const AddRequisition: React.FC = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [id]);
 
+  const clearRequisitionDrafts = () => {
+    if (!id) {
+      // Only clear in create mode — edit mode drafts should persist
+      const projectKey = state?.id || 'new';
+      localStorage.removeItem(`requisition_step1_new_project_${projectKey}`);
+      localStorage.removeItem(`requisition_step2_new`);
+    }
+  };
+
   // Define steps for VerticalStepProgress
   const steps: Step[] = [
     {
@@ -131,17 +137,20 @@ const AddRequisition: React.FC = () => {
       title: 'Vendor Details',
       description: 'Vendor selection and negotiation'
     },
+    {
+      id: 4,
+      title: 'Start Deals',
+      description: 'Configure and launch negotiations'
+    },
   ];
 
   return (
-    <div className="flex flex-col min-h-full">
+    <div className="flex flex-col min-h-full w-full max-w-full">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-8 xl:px-16 pb-4 flex-shrink-0">
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0">
         <p className="text-xl font-semibold text-gray-800 flex items-center gap-2">
           <IoArrowBackOutline
-            onClick={() => {
-              navigate(-1);
-            }}
+            onClick={() => { clearRequisitionDrafts(); navigate(-1); }}
             className="cursor-pointer"
           />
           {id ? "Edit" : "Add"} Requisition
@@ -149,10 +158,10 @@ const AddRequisition: React.FC = () => {
       </div>
 
       {/* Form Content */}
-      <div className="flex-1 px-8 xl:px-16 pb-6">
-        <div className="flex flex-wrap xl:flex-nowrap pt-4 gap-6">
+      <div className="flex-1 px-6 pb-6 w-full max-w-full">
+        <div className="flex flex-wrap xl:flex-nowrap pt-4 gap-6 w-full max-w-full">
           {/* Step Progress Sidebar */}
-          <div className="xl:w-[20%] w-full">
+          <div className="xl:w-[20%] w-full flex-shrink-0">
             <div className="h-fit mt-4 rounded p-6 border-2 bg-white">
               <h2 className="text-lg font-semibold border-b-2 pb-2 mb-4">Details</h2>
               <VerticalStepProgress
@@ -165,7 +174,7 @@ const AddRequisition: React.FC = () => {
           </div>
 
           {/* Step Content */}
-          <div className="flex-1 p-4">
+          <div className="flex-1 min-w-0 p-4">
             {currentStep === 1 && (
               <BasicInformation
                 currentStep={currentStep}
@@ -193,6 +202,14 @@ const AddRequisition: React.FC = () => {
                 nextStep={nextStep}
                 requisition={requisition}
                 requisitionId={id ?? requisition?.id ?? ""}
+              />
+            )}
+            {currentStep === 4 && (
+              <StartDeals
+                currentStep={currentStep}
+                prevStep={prevStep}
+                requisitionId={id ?? requisition?.id ?? ""}
+                requisition={requisition}
               />
             )}
           </div>

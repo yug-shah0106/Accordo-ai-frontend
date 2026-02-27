@@ -74,34 +74,6 @@ const Test = () => {
     },
     {
       type: "button" as const,
-      label: "Create Bench Mark",
-      icon: <FaPlus />,
-      condition: (row: any) => {
-        if (row.status === "Benchmarked") {
-          return false;
-        }
-        return true;
-      },
-      onClick: (_row: any) => {
-        // handleCreateBenchMark(row);
-      },
-    },
-    {
-      type: "button" as const,
-      label: "View Bench Mark",
-      icon: <FaRegEye />,
-      condition: (row: any) => {
-        if (row.status === "Benchmarked") {
-          return true;
-        }
-        return false;
-      },
-      onClick: (_row: any) => {
-        // setBenchMarkModal(row);
-      },
-    },
-    {
-      type: "button" as const,
       label: "Cancel Requisition",
       icon: <RiDeleteBin5Line />,
       onClick: (_row: any) => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import FormInput from '../FormInput';
+import FormInput from '../../../src/components/shared/FormInput';
 
 describe('FormInput', () => {
   describe('Rendering', () => {

@@ -1,15 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderWithProviders, waitFor, screen } from '../utils';
-import NewDealPage from '../../src/pages/chatbot/NewDealPage';
-import { createMockSmartDefaults, createMockRequisition } from '../factories';
+import { renderWithProviders, waitFor, screen } from '../../helpers/utils';
+import NewDealPage from '../../../src/pages/chatbot/NewDealPage';
+import { createMockSmartDefaults, createMockRequisition } from '../../helpers/factories';
 
 // Mock the chatbot service
-vi.mock('../../services/chatbot.service', () => ({
+vi.mock('../../../src/services/chatbot.service', () => ({
   getSmartDefaults: vi.fn(),
   getRequisitionsForNegotiation: vi.fn(),
 }));
 
-import * as chatbotService from '../../src/services/chatbot.service';
+import * as chatbotService from '../../../src/services/chatbot.service';
 
 // Mock react-router-dom
 vi.mock('react-router-dom', async () => {

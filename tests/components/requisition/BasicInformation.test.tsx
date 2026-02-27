@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import BasicInformation from '../BasicInformation';
+import BasicInformation from '../../../src/components/Requisition/BasicInformation';
 
 // Mock API
-vi.mock('../../../api', () => ({
+vi.mock('../../../src/api', () => ({
   authApi: {
     get: vi.fn(),
     post: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock('../../../api', () => ({
   },
 }));
 
-import { authApi, authMultiFormApi } from '../../../api';
+import { authApi, authMultiFormApi } from '../../../src/api';
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
@@ -212,7 +212,6 @@ describe('BasicInformation', () => {
       deliveryDate: '2026-04-01T00:00:00.000Z',
       maximumDeliveryDate: '2026-04-15T00:00:00.000Z',
       negotiationClosureDate: '2026-03-20T00:00:00.000Z',
-      benchmarkingDate: '2026-02-28T00:00:00.000Z',
       typeOfCurrency: 'INR',
       projectId: '1',
     };
@@ -271,14 +270,14 @@ describe('BasicInformation', () => {
       const categoryInput = screen.getByLabelText(/^Requisition Category/);
       const deliveryInput = screen.getByLabelText(/^Delivery Date/i, { selector: 'input[name="deliveryDate"]' });
       const negotiationInput = screen.getByLabelText(/^Negotiation Closure Date/);
-      const benchmarkingInput = screen.getByLabelText(/^Benchmarking days/);
+
       const currencySelect = screen.getByLabelText(/^Currency/);
 
       fireEvent.change(nameInput, { target: { value: 'New Requisition' } });
       fireEvent.change(categoryInput, { target: { value: 'IT Equipment' } });
       fireEvent.change(deliveryInput, { target: { value: '2026-04-01' } });
       fireEvent.change(negotiationInput, { target: { value: '2026-03-15' } });
-      fireEvent.change(benchmarkingInput, { target: { value: '30' } });
+
       fireEvent.change(currencySelect, { target: { value: 'INR' } });
 
       // Wait for project to load and select it
@@ -314,7 +313,6 @@ describe('BasicInformation', () => {
           category: 'Original Category',
           deliveryDate: '2026-04-01T00:00:00.000Z',
           negotiationClosureDate: '2026-03-20T00:00:00.000Z',
-          benchmarkingDate: '2026-02-28T00:00:00.000Z',
           typeOfCurrency: 'INR',
           projectId: '1',
         },
@@ -348,14 +346,14 @@ describe('BasicInformation', () => {
       const categoryInput = screen.getByLabelText(/^Requisition Category/);
       const deliveryInput = screen.getByLabelText(/^Delivery Date/i, { selector: 'input[name="deliveryDate"]' });
       const negotiationInput = screen.getByLabelText(/^Negotiation Closure Date/);
-      const benchmarkingInput = screen.getByLabelText(/^Benchmarking days/);
+
       const currencySelect = screen.getByLabelText(/^Currency/);
 
       fireEvent.change(nameInput, { target: { value: 'Test Req' } });
       fireEvent.change(categoryInput, { target: { value: 'Test Cat' } });
       fireEvent.change(deliveryInput, { target: { value: '2026-04-01' } });
       fireEvent.change(negotiationInput, { target: { value: '2026-03-15' } });
-      fireEvent.change(benchmarkingInput, { target: { value: '30' } });
+
       fireEvent.change(currencySelect, { target: { value: 'INR' } });
 
       await waitFor(() => expect(authApi.get).toHaveBeenCalled());
@@ -382,14 +380,14 @@ describe('BasicInformation', () => {
       const categoryInput = screen.getByLabelText(/^Requisition Category/);
       const deliveryInput = screen.getByLabelText(/^Delivery Date/i, { selector: 'input[name="deliveryDate"]' });
       const negotiationInput = screen.getByLabelText(/^Negotiation Closure Date/);
-      const benchmarkingInput = screen.getByLabelText(/^Benchmarking days/);
+
       const currencySelect = screen.getByLabelText(/^Currency/);
 
       fireEvent.change(nameInput, { target: { value: 'Test' } });
       fireEvent.change(categoryInput, { target: { value: 'Test' } });
       fireEvent.change(deliveryInput, { target: { value: '2026-04-01' } });
       fireEvent.change(negotiationInput, { target: { value: '2026-03-15' } });
-      fireEvent.change(benchmarkingInput, { target: { value: '30' } });
+
       fireEvent.change(currencySelect, { target: { value: 'INR' } });
 
       await waitFor(() => expect(authApi.get).toHaveBeenCalled());
@@ -419,14 +417,14 @@ describe('BasicInformation', () => {
       const categoryInput = screen.getByLabelText(/^Requisition Category/);
       const deliveryInput = screen.getByLabelText(/^Delivery Date/i, { selector: 'input[name="deliveryDate"]' });
       const negotiationInput = screen.getByLabelText(/^Negotiation Closure Date/);
-      const benchmarkingInput = screen.getByLabelText(/^Benchmarking days/);
+
       const currencySelect = screen.getByLabelText(/^Currency/);
 
       fireEvent.change(nameInput, { target: { value: 'Test' } });
       fireEvent.change(categoryInput, { target: { value: 'Test' } });
       fireEvent.change(deliveryInput, { target: { value: '2026-04-01' } });
       fireEvent.change(negotiationInput, { target: { value: '2026-03-15' } });
-      fireEvent.change(benchmarkingInput, { target: { value: '30' } });
+
       fireEvent.change(currencySelect, { target: { value: 'INR' } });
 
       await waitFor(() => expect(authApi.get).toHaveBeenCalled());
@@ -459,14 +457,14 @@ describe('BasicInformation', () => {
       const categoryInput = screen.getByLabelText(/^Requisition Category/);
       const deliveryInput = screen.getByLabelText(/^Delivery Date/i, { selector: 'input[name="deliveryDate"]' });
       const negotiationInput = screen.getByLabelText(/^Negotiation Closure Date/);
-      const benchmarkingInput = screen.getByLabelText(/^Benchmarking days/);
+
       const currencySelect = screen.getByLabelText(/^Currency/);
 
       fireEvent.change(nameInput, { target: { value: 'Test' } });
       fireEvent.change(categoryInput, { target: { value: 'Test' } });
       fireEvent.change(deliveryInput, { target: { value: '2026-04-01' } });
       fireEvent.change(negotiationInput, { target: { value: '2026-03-15' } });
-      fireEvent.change(benchmarkingInput, { target: { value: '30' } });
+
       fireEvent.change(currencySelect, { target: { value: 'INR' } });
 
       await waitFor(() => expect(authApi.get).toHaveBeenCalled());
@@ -494,14 +492,14 @@ describe('BasicInformation', () => {
       const categoryInput = screen.getByLabelText(/^Requisition Category/);
       const deliveryInput = screen.getByLabelText(/^Delivery Date/i, { selector: 'input[name="deliveryDate"]' });
       const negotiationInput = screen.getByLabelText(/^Negotiation Closure Date/);
-      const benchmarkingInput = screen.getByLabelText(/^Benchmarking days/);
+
       const currencySelect = screen.getByLabelText(/^Currency/);
 
       fireEvent.change(nameInput, { target: { value: 'Test' } });
       fireEvent.change(categoryInput, { target: { value: 'Test' } });
       fireEvent.change(deliveryInput, { target: { value: '2026-04-01' } });
       fireEvent.change(negotiationInput, { target: { value: '2026-03-15' } });
-      fireEvent.change(benchmarkingInput, { target: { value: '30' } });
+
       fireEvent.change(currencySelect, { target: { value: 'INR' } });
 
       await waitFor(() => expect(authApi.get).toHaveBeenCalled());
@@ -532,14 +530,14 @@ describe('BasicInformation', () => {
       const categoryInput = screen.getByLabelText(/^Requisition Category/);
       const deliveryInput = screen.getByLabelText(/^Delivery Date/i, { selector: 'input[name="deliveryDate"]' });
       const negotiationInput = screen.getByLabelText(/^Negotiation Closure Date/);
-      const benchmarkingInput = screen.getByLabelText(/^Benchmarking days/);
+
       const currencySelect = screen.getByLabelText(/^Currency/);
 
       fireEvent.change(nameInput, { target: { value: 'Test' } });
       fireEvent.change(categoryInput, { target: { value: 'Test' } });
       fireEvent.change(deliveryInput, { target: { value: '2026-04-01' } });
       fireEvent.change(negotiationInput, { target: { value: '2026-03-15' } });
-      fireEvent.change(benchmarkingInput, { target: { value: '30' } });
+
       fireEvent.change(currencySelect, { target: { value: 'INR' } });
 
       await waitFor(() => expect(authApi.get).toHaveBeenCalled());
@@ -557,11 +555,17 @@ describe('BasicInformation', () => {
   });
 
   describe('User Experience', () => {
-    it('should display help text for optional fields', async () => {
+    it('should render all date fields as required', async () => {
       await renderComponent();
 
-      // Maximum delivery date is optional and should have help text
-      expect(screen.getByText(/optional/i)).toBeInTheDocument();
+      // All date fields are required in the current implementation
+      const deliveryDate = screen.getByLabelText(/^Delivery Date/i, { selector: 'input[name="deliveryDate"]' });
+      const maxDeliveryDate = screen.getByLabelText(/^Maximum Delivery Date/);
+      const negotiationDate = screen.getByLabelText(/^Negotiation Closure Date/);
+
+      expect(deliveryDate).toBeInTheDocument();
+      expect(maxDeliveryDate).toBeInTheDocument();
+      expect(negotiationDate).toBeInTheDocument();
     });
   });
 
