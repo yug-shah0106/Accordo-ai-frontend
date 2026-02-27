@@ -73,9 +73,20 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
   const selectedVendor = vendors.find(v => v.id === data.stepOne.vendorId);
   const selectedAddress = addresses.find(a => a.id === data.stepTwo.delivery.locationId);
 
+  // Currency resolution priority:
+  // 1. formData currency (set from SmartDefaults, persists across tab switches/draft restore)
+  // 2. selectedRfq.currency (from the requisition directly — now returned by backend)
+  // 3. currency prop (from smartDefaults passed by parent)
+  // 4. 'USD' as final fallback
+  const resolvedCurrency =
+    data.stepTwo.priceQuantity.currency ??
+    selectedRfq?.currency ??
+    currency ??
+    'USD';
+
   const formatCurrency = (value: number | null) => {
     if (value === null) return '—';
-    const currencyCode = ['USD', 'INR', 'EUR', 'GBP', 'AUD'].includes(currency) ? currency : 'USD';
+    const currencyCode = ['USD', 'INR', 'EUR', 'GBP', 'AUD'].includes(resolvedCurrency) ? resolvedCurrency : 'USD';
     const currencySymbol = CURRENCY_SYMBOL_MAP[currencyCode] ?? currencyCode + ' ';
     return currencySymbol + new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 2,

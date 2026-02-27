@@ -268,7 +268,8 @@ const StepTwo: React.FC<StepTwoProps> = ({
   onAddNewAddress,
   vendorId,
 }) => {
-  const currencySymbol = CURRENCY_SYMBOL_MAP[smartDefaults?.currency ?? ''] ?? '$';
+  const currencyCode = smartDefaults?.currency ?? data.priceQuantity.currency ?? '';
+  const currencySymbol = CURRENCY_SYMBOL_MAP[currencyCode] ?? '$';
   const updatePriceQuantity = (
     field: keyof typeof data.priceQuantity,
     value: number | null

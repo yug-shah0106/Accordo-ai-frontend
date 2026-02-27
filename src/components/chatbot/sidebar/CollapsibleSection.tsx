@@ -162,6 +162,7 @@ export function ParameterRow({
   utilityInfo,
   rangeMin,
   rangeMax,
+  currencyCode = "USD",
 }: {
   label: string;
   value: string | number | boolean | null | undefined;
@@ -170,6 +171,7 @@ export function ParameterRow({
   utilityInfo?: ParameterUtilityInfo;
   rangeMin?: number;
   rangeMax?: number;
+  currencyCode?: string;
 }) {
   if (value === null || value === undefined || value === "" || value === 0) {
     return null; // Hide zero/empty values per requirements
@@ -183,7 +185,7 @@ export function ParameterRow({
         return typeof value === "number"
           ? new Intl.NumberFormat("en-US", {
               style: "currency",
-              currency: "USD",
+              currency: currencyCode,
               minimumFractionDigits: 2,
             }).format(value)
           : String(value);
@@ -294,7 +296,7 @@ export function ParameterRow({
               {type === "currency"
                 ? new Intl.NumberFormat("en-US", {
                     style: "currency",
-                    currency: "USD",
+                    currency: currencyCode,
                     maximumFractionDigits: 0,
                   }).format(rangeMin)
                 : rangeMin}
@@ -303,7 +305,7 @@ export function ParameterRow({
               {type === "currency"
                 ? new Intl.NumberFormat("en-US", {
                     style: "currency",
-                    currency: "USD",
+                    currency: currencyCode,
                     maximumFractionDigits: 0,
                   }).format(rangeMax)
                 : rangeMax}

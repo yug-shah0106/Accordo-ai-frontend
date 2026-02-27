@@ -490,7 +490,8 @@ export interface CustomParameter {
  */
 export interface DealWizardStepOne {
   requisitionId: number | null;
-  vendorId: number | null;
+  vendorId: number | null;     // Primary vendor (SmartDefaults + single-vendor flows)
+  vendorIds?: number[];        // All selected vendors (multi-vendor batch mode)
   title: string;
   mode: DealMode;
   priority: NegotiationPriority;
@@ -505,6 +506,8 @@ export interface PriceQuantityParams {
   maxAcceptablePrice: number | null;
   minOrderQuantity: number | null;
   preferredQuantity: number | null;
+  /** Currency code selected in Step 2 (e.g. "USD", "INR", "EUR"). Persisted in formData so it survives tab switches and draft restoration. */
+  currency: string | null;
 }
 
 /**
@@ -715,6 +718,8 @@ export interface RequisitionSummary {
   projectName: string;
   status: string;
   estimatedValue: number;
+  /** Currency code for estimatedValue, from the requisition (e.g. "USD", "INR", "EUR") */
+  currency?: string;
   negotiationClosureDate: string | null;
   vendorCount: number;
   productCount: number;
@@ -823,6 +828,7 @@ export interface RequisitionWithDeals {
   projectId: number;
   projectName: string;
   estimatedValue: number | null;
+  typeOfCurrency?: string | null;
   deadline: string | null;
   createdAt: string;
   vendorCount: number;
@@ -957,6 +963,7 @@ export const DEFAULT_WIZARD_FORM_DATA: DealWizardFormData = {
   stepOne: {
     requisitionId: null,
     vendorId: null,
+    vendorIds: [],
     title: '',
     mode: 'CONVERSATION',
     priority: 'MEDIUM',
@@ -968,6 +975,7 @@ export const DEFAULT_WIZARD_FORM_DATA: DealWizardFormData = {
       maxAcceptablePrice: null,
       minOrderQuantity: null,
       preferredQuantity: null,
+      currency: null,
     },
     paymentTerms: {
       minDays: 30,

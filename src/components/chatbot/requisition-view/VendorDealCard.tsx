@@ -3,6 +3,7 @@ import { FiMessageCircle, FiCheckCircle, FiXCircle, FiAlertTriangle, FiTrendingU
 
 interface VendorDealCardProps {
   deal: VendorDealSummary;
+  currency?: string;
   onClick: (dealId: string, status: DealStatus, vendorId: number) => void;
   onViewSummary?: (dealId: string, vendorId: number) => void;
   onArchive?: (e: React.MouseEvent, deal: VendorDealSummary) => void;
@@ -16,7 +17,7 @@ interface VendorDealCardProps {
  * Displays a vendor deal card for the requisition deals page
  * Shows: Vendor name, company, status, latest offer, utility score, last activity
  */
-export default function VendorDealCard({ deal, onClick, onViewSummary, onArchive, showArchiveButton = false, onUnarchive, showUnarchiveButton = false }: VendorDealCardProps) {
+export default function VendorDealCard({ deal, currency, onClick, onViewSummary, onArchive, showArchiveButton = false, onUnarchive, showUnarchiveButton = false }: VendorDealCardProps) {
   const {
     dealId,
     vendorId,
@@ -36,7 +37,7 @@ export default function VendorDealCard({ deal, onClick, onViewSummary, onArchive
     if (value === null) return "N/A";
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: currency || "USD",
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(value);

@@ -1466,6 +1466,7 @@ export default function NegotiationRoom() {
                       label="Target Unit Price"
                       value={wizardConfig?.priceQuantity?.targetUnitPrice || adaptiveConfig?.parameters?.unit_price?.target}
                       type="currency"
+                      currencyCode={dealCurrencyCode}
                       utilityInfo={getParamUtilityInfo('unit_price')}
                       rangeMin={adaptiveConfig?.parameters?.unit_price?.anchor}
                       rangeMax={wizardConfig?.priceQuantity?.maxAcceptablePrice || adaptiveConfig?.parameters?.unit_price?.max_acceptable}
@@ -1475,6 +1476,7 @@ export default function NegotiationRoom() {
                       label="Max Acceptable Price"
                       value={wizardConfig?.priceQuantity?.maxAcceptablePrice || adaptiveConfig?.parameters?.unit_price?.max_acceptable}
                       type="currency"
+                      currencyCode={dealCurrencyCode}
                     />
                     {/* Min Order Quantity: only from wizardConfig */}
                     <ParameterRow
@@ -1494,6 +1496,7 @@ export default function NegotiationRoom() {
                       label="Anchor Price"
                       value={adaptiveConfig?.parameters?.unit_price?.anchor}
                       type="currency"
+                      currencyCode={dealCurrencyCode}
                       highlight
                     />
                     {/* Concession Step from engine config */}
@@ -1501,6 +1504,7 @@ export default function NegotiationRoom() {
                       label="Concession Step"
                       value={adaptiveConfig?.parameters?.unit_price?.concession_step}
                       type="currency"
+                      currencyCode={dealCurrencyCode}
                     />
                   </div>
                 </CollapsibleSection>
@@ -1621,6 +1625,7 @@ export default function NegotiationRoom() {
                           label="Min Partial Value"
                           value={wizardConfig.delivery.partialDelivery.minValue}
                           type="currency"
+                          currencyCode={dealCurrencyCode}
                         />
                       </>
                     )}

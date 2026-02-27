@@ -18,6 +18,7 @@ export default function RequisitionCard({ requisition, onClick }: RequisitionCar
     title,
     projectName,
     estimatedValue,
+    typeOfCurrency,
     deadline,
     vendorCount,
     statusCounts,
@@ -29,7 +30,7 @@ export default function RequisitionCard({ requisition, onClick }: RequisitionCar
     if (value === null) return "N/A";
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: typeOfCurrency || "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);

@@ -173,8 +173,14 @@ export function getParameterDisplayName(parameterId: string): string {
     unit_price: "Total Price",  // Legacy support - map to Total Price
     target_price: "Target Price",
     max_acceptable_price: "Max Acceptable Price",
+    maxAcceptablePrice: "Max Acceptable Price",   // legacy camelCase
     anchor_price: "Anchor Price",
     payment_terms: "Payment Terms",
+    paymentTerms: "Payment Terms",                // Feb 2026: replaces maxAcceptablePrice in Step 4
+    targetUnitPrice: "Total Target Price",
+    deliveryDate: "Delivery Date",
+    warrantyPeriod: "Warranty Period",
+    qualityStandards: "Quality Standards",
     delivery_date: "Delivery Date",
     warranty_period: "Warranty Period",
     late_delivery_penalty: "Late Delivery Penalty",

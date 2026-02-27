@@ -1,21 +1,9 @@
-console.log('[NewDealPage] === MODULE LOADING START ===');
-
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-console.log('[NewDealPage] React hooks imported');
-
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-console.log('[NewDealPage] React Router imported');
-
 import { ArrowLeft, Loader2, Save, AlertCircle, CheckCircle, Mail, X, RefreshCw } from 'lucide-react';
-console.log('[NewDealPage] Lucide icons imported');
-
 import toast from 'react-hot-toast';
 import axios from 'axios';
-console.log('[NewDealPage] react-hot-toast imported');
-
 import chatbotService from '../../services/chatbot.service';
-console.log('[NewDealPage] chatbotService imported');
-
 import {
   StepProgress,
   StepOne,
@@ -23,10 +11,7 @@ import {
   StepThree,
   StepFour,
   ReviewStep,
-  CHART_COLORS,
 } from '../../components/chatbot/deal-wizard';
-console.log('[NewDealPage] Wizard components imported');
-
 import type {
   DealWizardFormData,
   DealWizardStepOne,
@@ -38,14 +23,8 @@ import type {
   DeliveryAddress,
   QualityCertification,
   SmartDefaults,
-  ParameterWeight,
 } from '../../types';
-console.log('[NewDealPage] Types imported');
-
 import { DEFAULT_WIZARD_FORM_DATA } from '../../types';
-console.log('[NewDealPage] DEFAULT_WIZARD_FORM_DATA imported:', !!DEFAULT_WIZARD_FORM_DATA);
-
-console.log('[NewDealPage] === ALL IMPORTS SUCCESSFUL ===');
 
 const WIZARD_STEPS = [
   { id: 1, title: 'Basic Info', description: 'RFQ & Vendor' },
@@ -58,6 +37,11 @@ const WIZARD_STEPS = [
 const DRAFT_KEY_PREFIX = 'accordo_deal_draft';
 const AUTO_SAVE_INTERVAL = 30000; // 30 seconds
 
+// Single stable key used for the wizard-in-progress draft.
+// localStorage (not sessionStorage) so the draft survives tab switches,
+// sidebar navigation, and browser restarts.
+const WIZARD_DRAFT_KEY = `${DRAFT_KEY_PREFIX}_wizard_active`;
+
 // Generate dynamic draft key based on RFQ+Vendor combination
 const getDraftKey = (rfqId: number | null, vendorId: number | null): string => {
   if (rfqId && vendorId) {
@@ -67,29 +51,41 @@ const getDraftKey = (rfqId: number | null, vendorId: number | null): string => {
   return `${DRAFT_KEY_PREFIX}_temp`;
 };
 
-// Parameter definitions for Step 4 (must match StepFour.tsx)
-// Updated Feb 2026: Simplified to 5 core utility parameters
-const STEP2_PARAMETERS = [
-  { id: 'targetUnitPrice', name: 'Total Target Price', source: 'step2' as const, category: 'price' },
-  { id: 'maxAcceptablePrice', name: 'Total Max Price', source: 'step2' as const, category: 'price' },
-  { id: 'deliveryDate', name: 'Delivery Date', source: 'step2' as const, category: 'delivery' },
-];
+// Read the active wizard draft synchronously (used in lazy useState initialisers).
+const readWizardDraft = (): { data: DealWizardFormData; currentStep: number; savedAt: string } | null => {
+  try {
+    const raw = localStorage.getItem(WIZARD_DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed?.data && typeof parsed.currentStep === 'number') return parsed;
+  } catch { /* ignore */ }
+  return null;
+};
 
-const STEP3_PARAMETERS = [
-  { id: 'warrantyPeriod', name: 'Warranty Period', source: 'step3' as const, category: 'contract' },
-  { id: 'qualityStandards', name: 'Quality Standards', source: 'step3' as const, category: 'contract' },
-];
+// Write the active wizard draft synchronously.
+const writeWizardDraft = (data: DealWizardFormData, currentStep: number): void => {
+  try {
+    localStorage.setItem(WIZARD_DRAFT_KEY, JSON.stringify({
+      data,
+      currentStep,
+      savedAt: new Date().toISOString(),
+    }));
+  } catch { /* ignore */ }
+};
+
+// Clear the active wizard draft (called on successful submit or explicit discard).
+const clearWizardDraft = (): void => {
+  try { localStorage.removeItem(WIZARD_DRAFT_KEY); } catch { /* ignore */ }
+};
+
 
 /**
  * NewDealPage - Multi-step wizard for creating a new negotiation deal
  * Replaces the simple form with a comprehensive configuration wizard
  */
 export default function NewDealPage() {
-  console.log('[NewDealPage] Component mounting...');
   const navigate = useNavigate();
-  console.log('[NewDealPage] navigate hook loaded');
   const [searchParams] = useSearchParams();
-  console.log('[NewDealPage] searchParams loaded:', searchParams.toString());
   const location = useLocation();
 
   // Support both 'requisitionId' and 'requisition' query params for flexibility
@@ -107,8 +103,6 @@ export default function NewDealPage() {
   // Optional: previousContractId from "Re-negotiate" on escalated contract
   // When provided, a new contract will be created referencing the old one
   const urlPreviousContractId = searchParams.get('previousContractId');
-
-  console.log('[NewDealPage] URL params:', { urlRfqId, urlVendorId, urlVendorName, urlLocked, urlReturnTo, urlContractId, urlPreviousContractId });
 
   // Handle router state from VendorDetails "Start Negotiation" flow
   const routerState = location.state as {
@@ -153,9 +147,30 @@ export default function NewDealPage() {
     };
   }, [preselectedRequisitionId, returnToPath, urlRfqId]);
 
-  // Form state
-  const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<DealWizardFormData>(DEFAULT_WIZARD_FORM_DATA);
+  // Form state — lazy initialisers read from localStorage synchronously so the
+  // correct step and formData are available on the very first render, before any
+  // useEffect fires. localStorage survives tab switches, sidebar navigation, and
+  // browser restarts — eliminating all remount-related resets.
+  const [currentStep, setCurrentStep] = useState<number>(() => {
+    const draft = readWizardDraft();
+    if (draft && draft.currentStep >= 1 && draft.currentStep <= 5) return draft.currentStep;
+    return 1;
+  });
+  const [formData, setFormData] = useState<DealWizardFormData>(() => {
+    const draft = readWizardDraft();
+    if (draft?.data) {
+      const validParamIds = new Set(['targetUnitPrice', 'paymentTerms', 'maxAcceptablePrice', 'deliveryDate', 'warrantyPeriod', 'qualityStandards']);
+      const hasOutdatedParams = draft.data.stepFour?.weights?.some(
+        (w: { parameterId: string }) => !validParamIds.has(w.parameterId)
+      );
+      return {
+        ...DEFAULT_WIZARD_FORM_DATA,
+        ...draft.data,
+        stepFour: hasOutdatedParams ? DEFAULT_WIZARD_FORM_DATA.stepFour : (draft.data.stepFour || DEFAULT_WIZARD_FORM_DATA.stepFour),
+      };
+    }
+    return DEFAULT_WIZARD_FORM_DATA;
+  });
 
   // Data sources
   const [requisitions, setRequisitions] = useState<RequisitionSummary[]>([]);
@@ -180,6 +195,13 @@ export default function NewDealPage() {
 
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Multi-vendor mode: activated when no vendor is pre-locked via URL or router state
+  const multiVendorMode = !urlVendorId && !prefilledVendor;
+
+  // Batch deal creation results
+  type BatchDealResult = { vendorId: number; vendorName: string; status: 'fulfilled' | 'rejected'; error?: string };
+  const [batchResults, setBatchResults] = useState<BatchDealResult[] | null>(null);
+
   // Email failure modal state
   const [showEmailFailedModal, setShowEmailFailedModal] = useState(false);
   const [emailFailureError, setEmailFailureError] = useState<string | null>(null);
@@ -192,15 +214,11 @@ export default function NewDealPage() {
 
   // Load initial data
   useEffect(() => {
-    console.log('[NewDealPage] useEffect for loadInitialData triggered');
     const loadInitialData = async () => {
-      console.log('[NewDealPage] loadInitialData starting...');
       try {
         // Load requisitions
         try {
-          console.log('[NewDealPage] Calling getRequisitions...');
           const rfqRes = await chatbotService.getRequisitions();
-          console.log('[NewDealPage] getRequisitions response:', rfqRes);
           setRequisitions(rfqRes.data || []);
         } catch (err) {
           console.warn('[NewDealPage] Failed to load requisitions:', err);
@@ -237,37 +255,12 @@ export default function NewDealPage() {
 
     loadInitialData();
 
-    // Load draft from sessionStorage - always attempt to load temp draft on initial mount
-    const tempDraft = sessionStorage.getItem(getDraftKey(null, null));
-    if (tempDraft) {
-      try {
-        const parsed = JSON.parse(tempDraft);
-        if (parsed.data) {
-          // Check if stepFour has outdated parameters (more than 5 or has deprecated ones)
-          const validParamIds = new Set([
-            'targetUnitPrice', 'maxAcceptablePrice',
-            'deliveryDate', 'warrantyPeriod', 'qualityStandards'
-          ]);
-          const hasOutdatedParams = parsed.data.stepFour?.weights?.some(
-            (w: { parameterId: string }) => !validParamIds.has(w.parameterId)
-          );
-
-          // Reset stepFour if it has outdated parameters
-          const stepFourData = hasOutdatedParams
-            ? DEFAULT_WIZARD_FORM_DATA.stepFour
-            : (parsed.data.stepFour || DEFAULT_WIZARD_FORM_DATA.stepFour);
-
-          // Merge with defaults to ensure all fields exist (especially stepFour for older drafts)
-          setFormData({
-            ...DEFAULT_WIZARD_FORM_DATA,
-            ...parsed.data,
-            stepFour: stepFourData,
-          });
-          setLastSaved(parsed.savedAt ? new Date(parsed.savedAt) : null);
-        }
-      } catch (err) {
-        console.warn('Failed to parse temp draft:', err);
-      }
+    // Restore savedAt timestamp from draft (formData and currentStep are already
+    // loaded by the lazy useState initialisers above — no need to call setFormData/
+    // setCurrentStep again here, which would cause an extra render).
+    const draft = readWizardDraft();
+    if (draft?.savedAt) {
+      setLastSaved(new Date(draft.savedAt));
     }
 
     // Cleanup function
@@ -283,29 +276,38 @@ export default function NewDealPage() {
     return getDraftKey(formData.stepOne.requisitionId, formData.stepOne.vendorId);
   }, [formData.stepOne.requisitionId, formData.stepOne.vendorId]);
 
-  // Auto-save to sessionStorage with dynamic key
+  // Auto-save draft — writes to localStorage (primary, survives navigation) and
+  // sessionStorage (secondary, legacy compatibility).
   const saveDraftToSessionStorage = useCallback(() => {
     setDraftSaving(true);
     try {
       const draftData = JSON.stringify({
         data: formData,
+        currentStep,
         savedAt: new Date().toISOString(),
       });
-
-      // Save to current key (RFQ+Vendor specific or temp)
+      // Primary: localStorage — survives tab switches and sidebar navigation
+      writeWizardDraft(formData, currentStep);
+      // Secondary: sessionStorage — keep for any legacy reads
       sessionStorage.setItem(currentDraftKey, draftData);
-
-      // Also save to temp key for recovery on page reload
       sessionStorage.setItem(getDraftKey(null, null), draftData);
-
       setLastSaved(new Date());
     } catch (err) {
       console.warn('Failed to save draft:', err);
     }
     setDraftSaving(false);
-  }, [formData, currentDraftKey]);
+  }, [formData, currentStep, currentDraftKey]);
 
-  // Setup auto-save timer
+  // Save to localStorage immediately whenever currentStep changes — synchronous,
+  // no timer, no race. The correct step is persisted before any navigation occurs.
+  useEffect(() => {
+    writeWizardDraft(formData, currentStep);
+  // formData intentionally omitted — step changes are what matter here; formData
+  // changes are handled by the 30s auto-save timer below.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep]);
+
+  // Setup auto-save timer for formData changes (throttled — step is already saved above)
   useEffect(() => {
     if (autoSaveTimerRef.current) {
       clearTimeout(autoSaveTimerRef.current);
@@ -320,29 +322,32 @@ export default function NewDealPage() {
         clearTimeout(autoSaveTimerRef.current);
       }
     };
-  }, [formData, saveDraftToSessionStorage]);
+  }, [formData, currentStep, saveDraftToSessionStorage]);
 
-  // Save draft on page unload (beforeunload event)
+  // Save draft on every formData change to localStorage (the primary store).
+  // Also fires on visibility hidden and beforeunload for belt-and-suspenders.
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      // Synchronously save to sessionStorage before page unloads
+    writeWizardDraft(formData, currentStep);
+  }, [formData, currentStep]);
+
+  // Belt-and-suspenders: also save on tab hide and page unload via sessionStorage
+  useEffect(() => {
+    const save = () => {
+      writeWizardDraft(formData, currentStep);
       try {
-        const draftData = JSON.stringify({
-          data: formData,
-          savedAt: new Date().toISOString(),
-        });
+        const draftData = JSON.stringify({ data: formData, currentStep, savedAt: new Date().toISOString() });
         sessionStorage.setItem(currentDraftKey, draftData);
         sessionStorage.setItem(getDraftKey(null, null), draftData);
-      } catch {
-        // Ignore errors during unload
-      }
+      } catch { /* ignore */ }
     };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    const onVisibility = () => { if (document.visibilityState === 'hidden') save(); };
+    window.addEventListener('beforeunload', save);
+    document.addEventListener('visibilitychange', onVisibility);
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('beforeunload', save);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, [formData, currentDraftKey]);
+  }, [formData, currentStep, currentDraftKey]);
 
   // Load vendors when RFQ changes
   const handleRequisitionChange = useCallback(async (rfqId: number | null) => {
@@ -368,13 +373,13 @@ export default function NewDealPage() {
   // Track if we've initialized from router state (locked mode)
   const [routerStateInitialized, setRouterStateInitialized] = useState(false);
 
+  // True when a localStorage draft was loaded at mount — means all URL-param-based
+  // initialization effects should be skipped to avoid overwriting the restored draft.
+  const hasDraftRef = useRef<boolean>(readWizardDraft() !== null);
+
   // Initialize form from router state (VendorDetails "Start Negotiation" flow)
   useEffect(() => {
-    if (isLockedMode && prefilledRequisition && prefilledVendor && !routerStateInitialized) {
-      console.log('[NewDealPage] Initializing from router state (locked mode):', {
-        requisition: prefilledRequisition,
-        vendor: prefilledVendor,
-      });
+    if (isLockedMode && prefilledRequisition && prefilledVendor && !routerStateInitialized && !hasDraftRef.current) {
 
       // Set form data from router state
       setFormData(prev => ({
@@ -402,19 +407,16 @@ export default function NewDealPage() {
 
       if (hasAddresses) {
         // Vendor has addresses, use directly
-        console.log('[NewDealPage] Prefilled vendor has addresses, using directly');
         setVendors([prefilledVendor as VendorSummary]);
         setLoadingVendors(false);
       } else {
         // Vendor doesn't have addresses - fetch from API to get complete data
-        console.log('[NewDealPage] Prefilled vendor missing addresses, fetching from API...');
         setLoadingVendors(true);
 
         // Fetch vendors for the requisition to get complete data including addresses
         chatbotService.getRequisitionVendors(prefilledRequisition.id)
           .then(res => {
             const fetchedVendors = res.data || [];
-            console.log('[NewDealPage] Fetched vendors from API:', fetchedVendors.length);
 
             // Try to find matching vendor by multiple criteria (ID mismatch workaround)
             // VendorDetails passes vendorId, but API returns user.id, so match by name/email
@@ -425,7 +427,6 @@ export default function NewDealPage() {
             );
 
             if (fullVendorData) {
-              console.log('[NewDealPage] Found vendor with addresses:', fullVendorData.addresses?.length || 0);
               // Update the form's vendorId to match the API's vendor ID
               setFormData(prev => ({
                 ...prev,
@@ -438,7 +439,6 @@ export default function NewDealPage() {
             } else if (fetchedVendors.length > 0) {
               // Vendor not matched by ID/email/name, but we have vendors for this requisition
               // Use the first vendor as fallback (API already filtered by requisition)
-              console.log('[NewDealPage] Using first vendor from API response');
               setVendors(fetchedVendors);
             } else {
               // No vendors from API, use prefilled (will have no addresses)
@@ -468,7 +468,14 @@ export default function NewDealPage() {
       if (!urlRfqId || !urlVendorId) return;
       if (routerStateInitialized) return;
 
-      console.log('[NewDealPage] Initializing from URL params:', { rfqId: urlRfqId, vendorId: urlVendorId });
+      // Skip if a localStorage draft was loaded at mount — the draft is always the
+      // source of truth and takes priority over URL params on remount.
+      if (hasDraftRef.current) {
+        setRouterStateInitialized(true);
+        setVendorsLoadedForPreselection(true);
+        return;
+      }
+
 
       try {
         setLoadingVendors(true);
@@ -479,12 +486,10 @@ export default function NewDealPage() {
         setRequisitions(rfqList);
 
         const selectedRfq = rfqList.find(r => r.id === parseInt(urlRfqId));
-        console.log('[NewDealPage] Found RFQ from URL:', selectedRfq);
 
         // Fetch vendors for the requisition - this returns vendors with addresses
         const vendorRes = await chatbotService.getRequisitionVendors(parseInt(urlRfqId));
         const vendorList = vendorRes.data || [];
-        console.log('[NewDealPage] Fetched vendors for RFQ:', vendorList.length);
 
         // Find the specific vendor using multi-criteria matching
         // Priority: 1. ID match, 2. vendorId match, 3. name match (case-insensitive)
@@ -497,14 +502,6 @@ export default function NewDealPage() {
         );
 
         if (selectedVendor) {
-          console.log('[NewDealPage] Found vendor match:', {
-            id: selectedVendor.id,
-            name: selectedVendor.name,
-            addressCount: selectedVendor.addresses?.length || 0,
-            matchedBy: selectedVendor.id === parseInt(urlVendorId) ? 'id' :
-                       selectedVendor.id?.toString() === urlVendorId ? 'id-string' :
-                       selectedVendor.vendorId?.toString() === urlVendorId ? 'vendorId' : 'name'
-          });
 
           // Set vendors state - show ONLY this vendor in locked mode
           setVendors([selectedVendor]);
@@ -529,7 +526,6 @@ export default function NewDealPage() {
           );
 
           if (partialMatch) {
-            console.log('[NewDealPage] Found vendor via partial name match:', partialMatch.name);
             setVendors([partialMatch]);
             setFormData(prev => ({
               ...prev,
@@ -599,6 +595,7 @@ export default function NewDealPage() {
 
   // Auto-populate requisition from URL query param (requisitionId=X scenario - NOT locked)
   useEffect(() => {
+    if (hasDraftRef.current) return; // Draft loaded at mount — don't overwrite with URL params
     if (preselectedRequisitionId && requisitions.length > 0) {
       const rfqId = parseInt(preselectedRequisitionId);
       const rfq = requisitions.find(r => r.id === rfqId);
@@ -650,24 +647,11 @@ export default function NewDealPage() {
 
       try {
         const res = await chatbotService.getSmartDefaults(requisitionId, vendorId);
-        console.log('[SmartDefaults] Raw response:', res);
-        console.log('[SmartDefaults] res.data:', res.data);
-        console.log('[SmartDefaults] priceQuantity:', res.data?.priceQuantity);
-        console.log('[SmartDefaults] delivery:', res.data?.delivery);
         setSmartDefaults(res.data);
 
         // Apply smart defaults to form data if available
         if (res.data) {
-          console.log('[SmartDefaults] Applying to form. totalTargetPrice:', res.data.priceQuantity?.totalTargetPrice);
-          console.log('[SmartDefaults] Applying to form. totalMaxPrice:', res.data.priceQuantity?.totalMaxPrice);
-          console.log('[SmartDefaults] Applying to form. totalQuantity:', res.data.priceQuantity?.totalQuantity);
-          console.log('[SmartDefaults] Applying to form. maxDeliveryDate:', res.data.delivery?.maxDeliveryDate);
           setFormData((prev) => {
-            console.log('[SmartDefaults] Previous targetUnitPrice:', prev.stepTwo.priceQuantity.targetUnitPrice);
-            console.log('[SmartDefaults] Previous maxAcceptablePrice:', prev.stepTwo.priceQuantity.maxAcceptablePrice);
-            console.log('[SmartDefaults] Previous minOrderQuantity:', prev.stepTwo.priceQuantity.minOrderQuantity);
-            console.log('[SmartDefaults] Previous requiredDate:', prev.stepTwo.delivery.requiredDate);
-
             // Helper to check if a value is empty (null, undefined, 0, or empty string)
             const isEmpty = (val: unknown): boolean => val === null || val === undefined || val === 0 || val === '';
 
@@ -689,6 +673,8 @@ export default function NewDealPage() {
                 minOrderQuantity: isEmpty(prev.stepTwo.priceQuantity.minOrderQuantity)
                   ? res.data.priceQuantity.totalQuantity
                   : prev.stepTwo.priceQuantity.minOrderQuantity,
+                // Always write currency from SmartDefaults (requisition source of truth)
+                currency: res.data.currency ?? prev.stepTwo.priceQuantity.currency ?? null,
               },
               paymentTerms: {
                 ...prev.stepTwo.paymentTerms,
@@ -799,8 +785,14 @@ export default function NewDealPage() {
     if (!stepOne.requisitionId) {
       newErrors.requisitionId = 'Please select an RFQ';
     }
-    if (!stepOne.vendorId) {
-      newErrors.vendorId = 'Please select a vendor';
+    if (multiVendorMode) {
+      if (!stepOne.vendorIds?.length) {
+        newErrors.vendorId = 'Please select at least one vendor';
+      }
+    } else {
+      if (!stepOne.vendorId) {
+        newErrors.vendorId = 'Please select a vendor';
+      }
     }
     if (!stepOne.title.trim()) {
       newErrors.title = 'Deal title is required';
@@ -895,8 +887,14 @@ export default function NewDealPage() {
     if (!formData.stepOne.requisitionId) {
       allErrors.step1_requisitionId = ['Please select an RFQ'];
     }
-    if (!formData.stepOne.vendorId) {
-      allErrors.step1_vendorId = ['Please select a vendor'];
+    if (multiVendorMode) {
+      if (!formData.stepOne.vendorIds?.length) {
+        allErrors.step1_vendorId = ['Please select at least one vendor'];
+      }
+    } else {
+      if (!formData.stepOne.vendorId) {
+        allErrors.step1_vendorId = ['Please select a vendor'];
+      }
     }
     if (!formData.stepOne.title.trim()) {
       allErrors.step1_title = ['Deal title is required'];
@@ -986,7 +984,6 @@ export default function NewDealPage() {
       });
 
       const rfqId = formData.stepOne.requisitionId!;
-      const vendorId = formData.stepOne.vendorId!;
 
       // Sanitize delivery dates: convert empty strings to null for Joi isoDate validation
       const sanitizedDelivery = {
@@ -1023,49 +1020,101 @@ export default function NewDealPage() {
         minOrderQuantity: formData.stepTwo.priceQuantity.minOrderQuantity ?? 0,
       };
 
-      const createInput = {
-        title: formData.stepOne.title,
-        counterparty: vendors.find((v) => v.id === vendorId)?.name,
-        mode: formData.stepOne.mode,
-        priority: formData.stepOne.priority,
-        priceQuantity: sanitizedPriceQuantity,
-        paymentTerms: formData.stepTwo.paymentTerms,
-        delivery: sanitizedDelivery,
-        contractSla: sanitizedContractSla,
-        negotiationControl: sanitizedNegotiationControl,
-        customParameters: formData.stepThree.customParameters,
-        parameterWeights,
-        // Include contractId or previousContractId from VendorDetails
-        ...(urlPreviousContractId
-          ? { previousContractId: parseInt(urlPreviousContractId, 10) }
-          : urlContractId
-            ? { contractId: parseInt(urlContractId, 10) }
-            : {}),
-      };
+      // Determine which vendor IDs to create deals for
+      const vendorIds = multiVendorMode
+        ? (formData.stepOne.vendorIds ?? [])
+        : [formData.stepOne.vendorId!];
 
-      const response = await chatbotService.createDealWithConfig(rfqId, vendorId, createInput);
+      if (vendorIds.length === 1) {
+        // Single-vendor flow: existing behaviour (navigate to deal room + email modal)
+        const vendorId = vendorIds[0];
+        const createInput = {
+          title: formData.stepOne.title,
+          counterparty: vendors.find((v) => v.id === vendorId)?.name,
+          mode: formData.stepOne.mode,
+          priority: formData.stepOne.priority,
+          priceQuantity: sanitizedPriceQuantity,
+          paymentTerms: formData.stepTwo.paymentTerms,
+          delivery: sanitizedDelivery,
+          contractSla: sanitizedContractSla,
+          negotiationControl: sanitizedNegotiationControl,
+          customParameters: formData.stepThree.customParameters,
+          parameterWeights,
+          // Include contractId or previousContractId from VendorDetails
+          ...(urlPreviousContractId
+            ? { previousContractId: parseInt(urlPreviousContractId, 10) }
+            : urlContractId
+              ? { contractId: parseInt(urlContractId, 10) }
+              : {}),
+        };
 
-      // Clear drafts on successful creation (both specific and temp)
-      sessionStorage.removeItem(currentDraftKey);
-      sessionStorage.removeItem(getDraftKey(null, null));
+        const response = await chatbotService.createDealWithConfig(rfqId, vendorId, createInput);
 
-      // Check email status from response
-      const emailStatus = (response.data as any).emailStatus;
-      const dealId = response.data.id;
+        // Clear drafts on successful creation
+        clearWizardDraft();
+        sessionStorage.removeItem(currentDraftKey);
+        sessionStorage.removeItem(getDraftKey(null, null));
 
-      if (emailStatus && !emailStatus.success) {
-        // Email failed - show warning modal with retry option
-        setEmailFailureError(emailStatus.error || 'Unknown error');
-        setPendingDealNavigation({ rfqId, vendorId, dealId });
-        setShowEmailFailedModal(true);
-        setSubmitting(false);
+        // Check email status from response
+        const emailStatus = (response.data as any).emailStatus;
+        const dealId = response.data.id;
+
+        if (emailStatus && !emailStatus.success) {
+          // Email failed - show warning modal with retry option
+          setEmailFailureError(emailStatus.error || 'Unknown error');
+          setPendingDealNavigation({ rfqId, vendorId, dealId });
+          setShowEmailFailedModal(true);
+          setSubmitting(false);
+        } else {
+          // Email sent successfully (or no email status returned) - show toast and navigate
+          toast.success('Deal created! Email notification sent to vendor', {
+            duration: 4000,
+            icon: '✉️',
+          });
+          navigate(`/chatbot/requisitions/${rfqId}/vendors/${vendorId}/deals/${dealId}`);
+        }
       } else {
-        // Email sent successfully (or no email status returned) - show toast and navigate
-        toast.success('Deal created! Email notification sent to vendor', {
-          duration: 4000,
-          icon: '✉️',
+        // Multi-vendor batch: parallel create → results summary panel
+        const promises = vendorIds.map(vendorId => {
+          const createInput = {
+            title: formData.stepOne.title,
+            counterparty: vendors.find((v) => v.id === vendorId)?.name,
+            mode: formData.stepOne.mode,
+            priority: formData.stepOne.priority,
+            priceQuantity: sanitizedPriceQuantity,
+            paymentTerms: formData.stepTwo.paymentTerms,
+            delivery: sanitizedDelivery,
+            contractSla: sanitizedContractSla,
+            negotiationControl: sanitizedNegotiationControl,
+            customParameters: formData.stepThree.customParameters,
+            parameterWeights,
+          };
+          return chatbotService.createDealWithConfig(rfqId, vendorId, createInput)
+            .then(() => ({
+              vendorId,
+              vendorName: vendors.find(v => v.id === vendorId)?.name ?? 'Vendor',
+              status: 'fulfilled' as const,
+            }))
+            .catch((err: any) => ({
+              vendorId,
+              vendorName: vendors.find(v => v.id === vendorId)?.name ?? 'Vendor',
+              status: 'rejected' as const,
+              error: err?.response?.data?.message ?? err?.message ?? 'Unknown error',
+            }));
         });
-        navigate(`/chatbot/requisitions/${rfqId}/vendors/${vendorId}/deals/${dealId}`);
+
+        const rawResults = await Promise.allSettled(promises);
+        const dealResults: BatchDealResult[] = rawResults.map(r =>
+          r.status === 'fulfilled'
+            ? r.value
+            : { vendorId: 0, vendorName: 'Unknown', status: 'rejected' as const, error: 'Promise rejected' }
+        );
+
+        clearWizardDraft();
+        sessionStorage.removeItem(currentDraftKey);
+        sessionStorage.removeItem(getDraftKey(null, null));
+        setBatchResults(dealResults);
+        setSubmitting(false);
       }
     } catch (err: unknown) {
       console.error('Failed to create deal:', err);
@@ -1091,9 +1140,10 @@ export default function NewDealPage() {
   // Clear draft
   const handleClearDraft = () => {
     if (confirm('Are you sure you want to clear your saved draft? This cannot be undone.')) {
-      // Clear both specific and temp drafts from sessionStorage
+      clearWizardDraft();
       sessionStorage.removeItem(currentDraftKey);
       sessionStorage.removeItem(getDraftKey(null, null));
+      hasDraftRef.current = false;
       setFormData(DEFAULT_WIZARD_FORM_DATA);
       setLastSaved(null);
       setCurrentStep(1);
@@ -1153,6 +1203,7 @@ export default function NewDealPage() {
             onRequisitionChange={handleRequisitionChange}
             errors={errors}
             lockedFields={isLockedMode}
+            multiVendorMode={multiVendorMode}
           />
         );
       case 2:
@@ -1205,7 +1256,6 @@ export default function NewDealPage() {
     }
   };
 
-  console.log('[NewDealPage] About to render JSX, currentStep:', currentStep);
 
   return (
     <div className="flex flex-col min-h-full bg-gray-100">
@@ -1215,7 +1265,7 @@ export default function NewDealPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <button
-                onClick={() => navigate(backButtonConfig.path)}
+                onClick={() => { clearWizardDraft(); navigate(backButtonConfig.path); }}
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-2 flex items-center gap-1"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -1270,7 +1320,55 @@ export default function NewDealPage() {
       <div className="flex-1 px-6 py-6">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-lg shadow-sm p-6">
-            {renderStepContent()}
+            {batchResults ? (
+              /* Batch Results Panel */
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-gray-700">Deal Creation Results</h3>
+
+                {batchResults.filter(r => r.status === 'fulfilled').length > 0 && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                    <span className="text-sm text-green-700">
+                      {batchResults.filter(r => r.status === 'fulfilled').length} deal(s) created successfully
+                    </span>
+                  </div>
+                )}
+
+                {batchResults.filter(r => r.status === 'rejected').length > 0 && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+                    <span className="text-sm text-red-700">
+                      {batchResults.filter(r => r.status === 'rejected').length} deal(s) failed
+                    </span>
+                  </div>
+                )}
+
+                <div className="divide-y divide-gray-100 border border-gray-200 rounded-lg overflow-hidden">
+                  {batchResults.map((r, idx) => (
+                    <div key={r.vendorId || idx} className={`flex items-center justify-between px-4 py-3 ${r.status === 'fulfilled' ? 'bg-white' : 'bg-red-50'}`}>
+                      <div className="flex items-center gap-3 min-w-0">
+                        {r.status === 'fulfilled' ? (
+                          <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{r.vendorName}</p>
+                          {r.status === 'rejected' && r.error && (
+                            <p className="text-xs text-red-600 truncate">{r.error}</p>
+                          )}
+                        </div>
+                      </div>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${r.status === 'fulfilled' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {r.status === 'fulfilled' ? 'Created' : 'Failed'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              renderStepContent()
+            )}
           </div>
 
           {/* Submit Error */}
@@ -1288,58 +1386,88 @@ export default function NewDealPage() {
 
           {/* Navigation Buttons */}
           <div className="mt-6 flex items-center justify-between">
-            <div>
-              {currentStep > 1 && (
-                <button
-                  type="button"
-                  onClick={handleBack}
-                  disabled={submitting}
-                  className="px-6 py-3 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-                >
-                  Back
-                </button>
-              )}
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => navigate(backButtonConfig.path)}
-                disabled={submitting}
-                className="px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-
-              {currentStep < 5 ? (
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Next Step
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={submitting}
-                  className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Creating Deal...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4" />
-                      Create Deal
-                    </>
+            {batchResults ? (
+              /* Batch results mode: show Finish (and Retry Failed if any failed) */
+              <>
+                <div />
+                <div className="flex items-center gap-3">
+                  {batchResults.some(r => r.status === 'rejected') && (
+                    <button
+                      type="button"
+                      onClick={() => setBatchResults(null)}
+                      className="px-6 py-3 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      Retry Failed
+                    </button>
                   )}
-                </button>
-              )}
-            </div>
+                  <button
+                    type="button"
+                    onClick={() => navigate(backButtonConfig.path)}
+                    className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Finish
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* Normal wizard navigation */
+              <>
+                <div>
+                  {currentStep > 1 && (
+                    <button
+                      type="button"
+                      onClick={handleBack}
+                      disabled={submitting}
+                      className="px-6 py-3 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    >
+                      Back
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => { clearWizardDraft(); navigate(backButtonConfig.path); }}
+                    disabled={submitting}
+                    className="px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+
+                  {currentStep < 5 ? (
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Next Step
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleSubmit}
+                      disabled={submitting}
+                      className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Creating Deal...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4" />
+                          Create Deal
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

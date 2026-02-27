@@ -435,6 +435,7 @@ export default function RequisitionDealsPage() {
               <VendorDealCard
                 key={deal.dealId}
                 deal={deal}
+                currency={requisitionCurrency}
                 onClick={handleDealClick}
                 onViewSummary={handleViewSummary}
                 onArchive={handleArchiveDealClick}

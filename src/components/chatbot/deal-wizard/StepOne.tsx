@@ -19,6 +19,8 @@ interface StepOneProps {
   lockedFields?: boolean;
   /** When multiple vendors are selected (batch deal creation), show chips instead of dropdown */
   selectedVendorNames?: string[];
+  /** When true, show checkbox list for multi-vendor batch selection */
+  multiVendorMode?: boolean;
 }
 
 /**
@@ -36,6 +38,7 @@ const StepOne: React.FC<StepOneProps> = ({
   errors = {},
   lockedFields = false,
   selectedVendorNames,
+  multiVendorMode = false,
 }) => {
   // Ensure arrays are always arrays (defensive coding)
   const safeRequisitions = Array.isArray(requisitions) ? requisitions : [];
@@ -84,10 +87,23 @@ const StepOne: React.FC<StepOneProps> = ({
     onChange({ ...data, priority });
   };
 
-  const formatCurrency = (value: number) => {
+  const handleVendorToggle = (vendorId: number) => {
+    const current = data.vendorIds ?? [];
+    const updated = current.includes(vendorId)
+      ? current.filter(id => id !== vendorId)
+      : [...current, vendorId];
+    onChange({ ...data, vendorId: updated[0] ?? null, vendorIds: updated });
+  };
+
+  const SUPPORTED_CURRENCIES = ['USD', 'INR', 'EUR', 'GBP', 'AUD'];
+
+  const formatCurrency = (value: number, currencyCode?: string) => {
+    const resolvedCode = currencyCode && SUPPORTED_CURRENCIES.includes(currencyCode)
+      ? currencyCode
+      : 'USD';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: resolvedCode,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
@@ -121,7 +137,7 @@ const StepOne: React.FC<StepOneProps> = ({
             <option value="">Select an RFQ...</option>
             {safeRequisitions.map((rfq) => (
               <option key={rfq.id} value={rfq.id}>
-                {rfq.rfqNumber} - {rfq.title} ({formatCurrency(rfq.estimatedValue)})
+                {rfq.rfqNumber} - {rfq.title} ({formatCurrency(rfq.estimatedValue, rfq.currency)})
               </option>
             ))}
           </select>
@@ -152,7 +168,7 @@ const StepOne: React.FC<StepOneProps> = ({
                 <p className="font-medium text-blue-900">{selectedRfq.title}</p>
                 <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-blue-700">
                   <span>Project: {selectedRfq.projectName}</span>
-                  <span>Value: {formatCurrency(selectedRfq.estimatedValue)}</span>
+                  <span>Value: {formatCurrency(selectedRfq.estimatedValue, selectedRfq.currency)}</span>
                   <span>Products: {selectedRfq.productCount}</span>
                   <span>Vendors: {selectedRfq.vendorCount}</span>
                 </div>
@@ -197,7 +213,7 @@ const StepOne: React.FC<StepOneProps> = ({
           htmlFor="vendorId"
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          {selectedVendorNames && selectedVendorNames.length > 1 ? 'Vendors' : 'Vendor'} <span className="text-red-500">*</span>
+          {(multiVendorMode && (data.vendorIds ?? []).length > 1) || (selectedVendorNames && selectedVendorNames.length > 1) ? 'Vendors' : 'Vendor'} <span className="text-red-500">*</span>
           {(lockedFields || data.vendorLocked) && (
             <span className="ml-2 inline-flex items-center">
               <Lock className="w-3.5 h-3.5 text-amber-500" />
@@ -205,7 +221,7 @@ const StepOne: React.FC<StepOneProps> = ({
           )}
         </label>
 
-        {/* Multi-vendor chip display (batch deal creation) */}
+        {/* Multi-vendor chip display (batch deal creation from DealWizardModal) */}
         {selectedVendorNames && selectedVendorNames.length > 0 && lockedFields ? (
           <div className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-100">
             <div className="flex flex-wrap gap-2">
@@ -219,6 +235,39 @@ const StepOne: React.FC<StepOneProps> = ({
                 </span>
               ))}
             </div>
+          </div>
+        ) : multiVendorMode ? (
+          /* Multi-vendor checkbox list (NewDealPage batch mode) */
+          <div className={`border rounded-lg max-h-48 overflow-y-auto divide-y divide-gray-100 ${errors.vendorId ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}>
+            {loadingVendors ? (
+              <div className="flex items-center justify-center gap-2 p-4 text-sm text-gray-500">
+                <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                Loading vendors...
+              </div>
+            ) : !data.requisitionId ? (
+              <p className="p-3 text-sm text-gray-500">Select an RFQ first...</p>
+            ) : safeVendors.length === 0 ? (
+              <p className="p-3 text-sm text-gray-500">No vendors attached to this RFQ</p>
+            ) : (
+              safeVendors.map(vendor => {
+                const isChecked = (data.vendorIds ?? []).includes(vendor.id);
+                return (
+                  <label key={vendor.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => handleVendorToggle(vendor.id)}
+                      className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium text-gray-900">{vendor.name}</span>
+                    {vendor.companyName && <span className="text-xs text-gray-500">({vendor.companyName})</span>}
+                    {vendor.pastDealsCount > 0 && (
+                      <span className="ml-auto text-xs text-gray-400">{vendor.pastDealsCount} past deals</span>
+                    )}
+                  </label>
+                );
+              })
+            )}
           </div>
         ) : (
           /* Single vendor dropdown (standard deal creation) */
@@ -272,8 +321,8 @@ const StepOne: React.FC<StepOneProps> = ({
           </p>
         )}
 
-        {/* Vendor warning if no vendors */}
-        {!selectedVendorNames?.length && data.requisitionId && !loadingVendors && vendors.length === 0 && (
+        {/* Vendor warning if no vendors (single-vendor mode only) */}
+        {!multiVendorMode && !selectedVendorNames?.length && data.requisitionId && !loadingVendors && vendors.length === 0 && (
           <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <div className="flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />

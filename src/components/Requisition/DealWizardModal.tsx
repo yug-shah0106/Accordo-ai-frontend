@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import chatbotService from '../../services/chatbot.service';
@@ -94,9 +94,24 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
 
+  // Track whether the modal was already open on the previous render so we only
+  // reset + reload data when the modal transitions from closed → open.
+  // This prevents tab switches or parent re-renders from resetting the wizard mid-flow.
+  const wasOpenRef = useRef(false);
+
   // Load data when modal opens, then pre-populate form
   useEffect(() => {
-    if (!isOpen) return;
+    // Only reset/load when modal transitions from closed → open
+    if (!isOpen) {
+      wasOpenRef.current = false;
+      return;
+    }
+    if (wasOpenRef.current) {
+      // Modal was already open — a parent re-render or tab switch caused this effect
+      // to fire again. Do NOT reset the wizard state.
+      return;
+    }
+    wasOpenRef.current = true;
 
     // Reset state on open
     setWizardStep(1);

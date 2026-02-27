@@ -19,9 +19,10 @@ interface StepFourProps {
 
 // Parameter definitions for display
 // UPDATED Feb 2026: Simplified to 5 core utility parameters
+// paymentTerms replaces maxAcceptablePrice (avoids double-counting price dimension)
 const STEP2_PARAMETERS = [
   { id: "targetUnitPrice", name: "Total Target Price", source: "step2" as const },
-  { id: "maxAcceptablePrice", name: "Total Max Price", source: "step2" as const },
+  { id: "paymentTerms", name: "Payment Terms", source: "step2" as const },
   { id: "deliveryDate", name: "Delivery Date", source: "step2" as const },
 ];
 
@@ -31,13 +32,14 @@ const STEP3_PARAMETERS = [
 ];
 
 // Default weights distribution (AI-suggested)
-// Updated Feb 2026: Simplified to 5 core utility parameters
-// Removed: volumeDiscountExpectation, advancePaymentLimit, paymentTermsRange, partialDelivery, lateDeliveryPenalty, maxRounds, walkawayThreshold
+// Updated Feb 2026: paymentTerms replaces maxAcceptablePrice
+// Primary (85%): targetUnitPrice(40) + paymentTerms(25) + deliveryDate(20)
+// Secondary (15%): warrantyPeriod(10) + qualityStandards(5)
 const getDefaultWeights = (): Record<string, number> => ({
   targetUnitPrice: 40,
-  maxAcceptablePrice: 25,
-  deliveryDate: 15,
-  warrantyPeriod: 15,
+  paymentTerms: 25,
+  deliveryDate: 20,
+  warrantyPeriod: 10,
   qualityStandards: 5,
 });
 
@@ -211,11 +213,14 @@ export default function StepFour({
     }
   }, [allParameters, filteredWeights.length]);
 
-  const initializeWeights = (step: StepSizeOption = stepSize) => {
+  const initializeWeights = (_step: StepSizeOption = stepSize) => {
     const defaultWeights = getDefaultWeights();
     const customParamCount = allParameters.filter((p) => p.source === "custom").length;
 
-    // Distribute weights and snap to step size
+    // Do NOT snap defaults to stepSize — the preset values (40/25/20/10/5) are
+    // exact and already sum to 100. Snapping them to the nearest 10% would
+    // corrupt 25→30 and 5→0, requiring a messy correction loop that produces
+    // wrong values (38/28/18/8/8). Snapping only applies when the user drags.
     const weights: ParameterWeight[] = allParameters.map((param, index) => {
       let defaultWeight = defaultWeights[param.id] || 0;
 
@@ -228,30 +233,13 @@ export default function StepFour({
       return {
         parameterId: param.id,
         parameterName: param.name,
-        weight: snapToStep(defaultWeight, step),
+        weight: defaultWeight,
         source: param.source,
         color: CHART_COLORS[index % CHART_COLORS.length],
       };
     });
 
-    // Fix total to 100% after snapping
-    let totalWeight = weights.reduce((sum, w) => sum + w.weight, 0);
-    if (totalWeight !== 100) {
-      const diff = 100 - totalWeight;
-      const sorted = [...weights].sort((a, b) => b.weight - a.weight);
-      let remaining = diff;
-      let idx = 0;
-      while (remaining !== 0 && sorted.length > 0) {
-        const increment = remaining > 0 ? 1 : -1;
-        const target = sorted[idx % sorted.length];
-        const w = weights.find((w) => w.parameterId === target.parameterId)!;
-        w.weight = Math.max(0, w.weight + increment);
-        remaining -= increment;
-        idx++;
-        if (idx > 200) break;
-      }
-      totalWeight = weights.reduce((sum, w) => sum + w.weight, 0);
-    }
+    const totalWeight = weights.reduce((sum, w) => sum + w.weight, 0);
 
     onChange({
       weights,
