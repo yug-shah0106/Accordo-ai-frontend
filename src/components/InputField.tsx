@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, ReactNode } from "react";
+import { useState, ReactNode, InputHTMLAttributes } from "react";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { FieldError, UseFormRegister } from "react-hook-form";
 
@@ -7,8 +7,8 @@ interface InputFieldProps {
   type?: string;
   name: string;
   value?: string | number;
-  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
-  onInput?: (e: ChangeEvent<HTMLInputElement>) => void;
+  onChange?: InputHTMLAttributes<HTMLInputElement>["onChange"];
+  onInput?: InputHTMLAttributes<HTMLInputElement>["onInput"];
   placeholder?: string;
   register?: UseFormRegister<any>;
   error?: FieldError;
