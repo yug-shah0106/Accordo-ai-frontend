@@ -25,6 +25,10 @@ export default function DecisionChips({ decisions, onSelect }: DecisionChipsProp
         return `${baseStyles} bg-orange-100 text-orange-800 hover:bg-orange-200 border border-orange-300`;
       case 'ASK_CLARIFY':
         return `${baseStyles} bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border border-yellow-300`;
+      case 'REDIRECT':
+        return `${baseStyles} bg-purple-100 text-purple-800 hover:bg-purple-200 border border-purple-300`;
+      case 'ERROR_RECOVERY':
+        return `${baseStyles} bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300`;
       default:
         return `${baseStyles} bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-300`;
     }
@@ -42,13 +46,21 @@ export default function DecisionChips({ decisions, onSelect }: DecisionChipsProp
         return '⇧';
       case 'ASK_CLARIFY':
         return '?';
+      case 'REDIRECT':
+        return '↩';
+      case 'ERROR_RECOVERY':
+        return '🛡';
       default:
         return '•';
     }
   };
 
   const getDecisionLabel = (decision: DecisionAction): string => {
-    return decision.replace(/_/g, ' ');
+    switch (decision) {
+      case 'REDIRECT': return 'Redirected';
+      case 'ERROR_RECOVERY': return 'Recovery';
+      default: return decision.replace(/_/g, ' ');
+    }
   };
 
   return (

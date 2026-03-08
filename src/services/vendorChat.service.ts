@@ -5,7 +5,7 @@
  */
 
 import api from "../api";
-import type { MesoResult } from "../types/chatbot";
+import type { MesoResult, DecisionAction } from "../types/chatbot";
 
 const VENDOR_CHAT_BASE = "/vendor-chat";
 
@@ -98,7 +98,7 @@ export interface VendorDealData {
  * PM decision structure
  */
 export interface PMDecision {
-  action: "ACCEPT" | "COUNTER" | "ESCALATE" | "WALK_AWAY";
+  action: DecisionAction;
   utilityScore: number;
   counterOffer?: {
     unit_price?: number | null;
