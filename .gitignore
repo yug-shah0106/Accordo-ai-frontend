@@ -46,3 +46,4 @@ coverage
 CLAUDE.md
 .claude/
 openmemory.md
+.cursor/rules/openmemory.mdc
