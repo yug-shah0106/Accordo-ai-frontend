@@ -36,6 +36,7 @@ import type {
   DealMode,
   DealContext,
   QualityCertification,
+  DecisionAction,
 } from "../types";
 
 // Re-export DealContext for convenience
@@ -641,7 +642,7 @@ export const chatbotService = {
     data: {
       pmMessage: Message;
       decision: {
-        action: 'ACCEPT' | 'COUNTER' | 'ESCALATE' | 'WALK_AWAY';
+        action: DecisionAction;
         utilityScore: number;
         counterOffer?: {
           unit_price: number | null;
@@ -667,7 +668,7 @@ export const chatbotService = {
       data: {
         pmMessage: Message;
         decision: {
-          action: 'ACCEPT' | 'COUNTER' | 'ESCALATE' | 'WALK_AWAY';
+          action: DecisionAction;
           utilityScore: number;
           counterOffer?: {
             unit_price: number | null;
@@ -712,7 +713,7 @@ export const chatbotService = {
     data: {
       pmMessage: Message;
       decision: {
-        action: 'ACCEPT' | 'COUNTER' | 'ESCALATE' | 'WALK_AWAY';
+        action: DecisionAction;
         utilityScore: number;
         counterOffer?: {
           unit_price: number | null;
@@ -730,7 +731,7 @@ export const chatbotService = {
       data: {
         pmMessage: Message;
         decision: {
-          action: 'ACCEPT' | 'COUNTER' | 'ESCALATE' | 'WALK_AWAY';
+          action: DecisionAction;
           utilityScore: number;
           counterOffer?: {
             unit_price: number | null;
@@ -836,7 +837,7 @@ export const chatbotService = {
       vendorMessage: Message;
       pmResponse: Message;
       pmDecision: {
-        action: 'ACCEPT' | 'COUNTER' | 'ESCALATE' | 'WALK_AWAY';
+        action: DecisionAction;
         utilityScore: number;
         counterOffer?: {
           price: number;

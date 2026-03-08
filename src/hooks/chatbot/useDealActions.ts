@@ -14,14 +14,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { chatbotService } from '../../services/chatbot.service';
-import type { Deal, Message, ExtendedNegotiationConfig, DealContext, DealMode } from '../../types';
+import type { Deal, Message, ExtendedNegotiationConfig, DealContext, DealMode, DecisionAction } from '../../types';
 
 // Timeout for PM response before falling back to deterministic response
 const PM_RESPONSE_TIMEOUT_MS = 5000;
 
 // AI-PM decision response from vendor message
 export interface PmDecision {
-  action: 'ACCEPT' | 'COUNTER' | 'ESCALATE' | 'WALK_AWAY';
+  action: DecisionAction;
   utilityScore: number;
   counterOffer?: {
     price: number;
@@ -360,6 +360,13 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
         }
       }
 
+      // Show toast for REDIRECT and ERROR_RECOVERY actions
+      if (decision?.action === 'REDIRECT') {
+        toast('Message was off-topic — redirected back to negotiation', { icon: '↩️' });
+      } else if (decision?.action === 'ERROR_RECOVERY') {
+        toast('Something went wrong, but we recovered gracefully', { icon: '🛡️' });
+      }
+
       // Store decision for display
       if (decision) {
         setLastPmDecision({
@@ -460,6 +467,10 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
           toast.success(`Buyer accepted your offer! (${utilityPercent}% utility)`);
         } else if (action === 'ESCALATE') {
           toast('Buyer escalated to management', { icon: '⚠️' });
+        } else if (action === 'REDIRECT') {
+          toast('Message was off-topic — redirected back to negotiation', { icon: '↩️' });
+        } else if (action === 'ERROR_RECOVERY') {
+          toast('Something went wrong, but we recovered gracefully', { icon: '🛡️' });
         }
       }
 

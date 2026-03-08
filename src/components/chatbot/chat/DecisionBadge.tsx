@@ -40,6 +40,18 @@ const QuestionIcon = () => (
   </svg>
 );
 
+const RedirectIcon = () => (
+  <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+    <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a2 2 0 012 2v4a1 1 0 11-2 0v-4H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
+  </svg>
+);
+
+const RecoveryIcon = () => (
+  <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+    <path fillRule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 10-2 0v3a1 1 0 102 0V7z" clipRule="evenodd" />
+  </svg>
+);
+
 const ChartIcon = () => (
   <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
     <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
@@ -81,6 +93,18 @@ export default function DecisionBadge({ decision }: DecisionBadgeProps) {
           className: "bg-yellow-100 text-yellow-700 border-yellow-300",
           icon: <QuestionIcon />,
           label: "Ask Clarify"
+        };
+      case "REDIRECT":
+        return {
+          className: "bg-purple-100 text-purple-700 border-purple-300",
+          icon: <RedirectIcon />,
+          label: "Redirected"
+        };
+      case "ERROR_RECOVERY":
+        return {
+          className: "bg-amber-100 text-amber-700 border-amber-300",
+          icon: <RecoveryIcon />,
+          label: "Recovery"
         };
       default:
         return {

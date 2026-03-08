@@ -532,12 +532,16 @@ export default function VendorChat() {
           }
 
           // Show notification based on decision
-          if (pmResponse.data.decision.action === "ACCEPT") {
+          if (pmResponse.data.decision?.action === "ACCEPT") {
             toast.success("Your offer has been accepted!");
-          } else if (pmResponse.data.decision.action === "WALK_AWAY") {
+          } else if (pmResponse.data.decision?.action === "WALK_AWAY") {
             toast.error("The procurement manager has walked away from this negotiation.");
-          } else if (pmResponse.data.decision.action === "ESCALATE") {
+          } else if (pmResponse.data.decision?.action === "ESCALATE") {
             toast("This negotiation has been escalated for review.", { icon: "⚠️" });
+          } else if (pmResponse.data.decision?.action === "REDIRECT") {
+            toast("Your message was redirected back to the negotiation topic.", { icon: "↩️" });
+          } else if (pmResponse.data.decision?.action === "ERROR_RECOVERY") {
+            toast("Something went wrong, but the system recovered. Please continue.", { icon: "🛡️" });
           }
         } catch (pmError) {
           console.error("Failed to get PM response:", pmError);
@@ -653,6 +657,10 @@ export default function VendorChat() {
         toast.error("The procurement manager has walked away from this negotiation.");
       } else if (response.data.decision?.action === "ESCALATE") {
         toast("This negotiation has been escalated for review.", { icon: "⚠️" });
+      } else if (response.data.decision?.action === "REDIRECT") {
+        toast("Your message was redirected back to the negotiation topic.", { icon: "↩️" });
+      } else if (response.data.decision?.action === "ERROR_RECOVERY") {
+        toast("Something went wrong, but the system recovered. Please continue.", { icon: "🛡️" });
       }
     } catch (err: any) {
       console.error('[VendorChat] Others submission error:', err);
@@ -751,6 +759,10 @@ export default function VendorChat() {
         toast.error("The procurement manager has walked away from this negotiation.");
       } else if (pmResponse.data.decision?.action === "ESCALATE") {
         toast("This negotiation has been escalated for review.", { icon: "⚠️" });
+      } else if (pmResponse.data.decision?.action === "REDIRECT") {
+        toast("Your message was redirected back to the negotiation topic.", { icon: "↩️" });
+      } else if (pmResponse.data.decision?.action === "ERROR_RECOVERY") {
+        toast("Something went wrong, but the system recovered. Please continue.", { icon: "🛡️" });
       }
     } catch (err: any) {
       console.error("[VendorChat] Error sending message:", err);
