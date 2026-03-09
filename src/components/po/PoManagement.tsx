@@ -19,6 +19,7 @@ import type {
   FilterOption,
   UseFetchDataReturn
 } from "../../types/management.types";
+import { env } from "@/utils/env";
 
 const PoManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -115,7 +116,7 @@ const PoManagement = () => {
       label: "Download PO",
       icon: <BsDownload />,
       link: (row: PurchaseOrder) =>
-        `${import.meta.env.VITE_BACKEND_URL}/po/download/${row.id}`,
+        `${env("VITE_BACKEND_URL")}/po/download/${row.id}`,
     },
     {
       type: "button",

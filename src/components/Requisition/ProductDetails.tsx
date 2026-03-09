@@ -12,6 +12,7 @@ import { step2 } from "../../schema/requisition";
 // import { useNavigate } from "react-router-dom"; // Unused - commented out
 import { useAutoSave } from "../../hooks/useAutoSave";
 import AutosaveIndicator from "../AutosaveIndicator";
+import { env } from "@/utils/env";
 
 interface ProductData {
   productId: string;
@@ -751,7 +752,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                     <img
                       src={
                         file?.attachmentUrl
-                          ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${file?.attachmentUrl}`
+                          ? `${env("VITE_ASSEST_URL")}/uploads/${file?.attachmentUrl}`
                           : URL.createObjectURL(file)
                       }
                       className="w-12 h-12"

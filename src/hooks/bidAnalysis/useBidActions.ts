@@ -7,6 +7,7 @@ import { bidAnalysisService } from '../../services/bidAnalysis.service';
 import { tokenStorage } from '../../utils/tokenStorage';
 import type { SelectBidResult, RejectBidResult, RestoreBidResult } from '../../types/bidAnalysis';
 import toast from 'react-hot-toast';
+import { env } from '@/utils/env';
 
 interface UseBidActionsResult {
   loading: boolean;
@@ -97,7 +98,7 @@ export function useBidActions(): UseBidActionsResult {
       }
 
       // Build full URL with backend base
-      const backendUrl = (import.meta.env.VITE_BACKEND_URL || '').trim().replace(/\/+$/, '');
+      const backendUrl = (env("VITE_BACKEND_URL") || '').trim().replace(/\/+$/, '');
       const pdfPath = bidAnalysisService.getPdfDownloadUrl(requisitionId);
       const pdfUrl = backendUrl ? `${backendUrl}${pdfPath}` : pdfPath;
 

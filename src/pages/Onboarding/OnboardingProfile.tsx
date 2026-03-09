@@ -8,6 +8,7 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { FiUser } from "react-icons/fi";
 import toast from "react-hot-toast";
 import Modal from "../../components/Modal";
+import { env } from "@/utils/env";
 
 interface OnboardingFormData {
   profileData?: {
@@ -96,7 +97,7 @@ const OnboardingProfile = ({
 
           if (userData.profilePic) {
             setPreview(
-              `${import.meta.env.VITE_ASSEST_URL}/uploads/${userData.profilePic}`
+              `${env("VITE_ASSEST_URL")}/uploads/${userData.profilePic}`
             );
           }
         }

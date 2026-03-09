@@ -15,6 +15,7 @@ import img from "../../assets/defaultImage.png";
 import { FiX } from "react-icons/fi";
 import { useAutoSave } from "../../hooks/useAutoSave";
 import AutosaveIndicator from "../AutosaveIndicator";
+import { env } from "@/utils/env";
 
 interface CreateProjectFormProps {
   onSave?: () => void;
@@ -357,7 +358,7 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
                 {watch("pointOfContact")?.map((i) => {
                   const matchPoc = data?.find((poc) => poc?.id == i);
                   const profilePic = matchPoc?.profilePic
-                    ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${matchPoc?.profilePic}`
+                    ? `${env("VITE_ASSEST_URL")}/uploads/${matchPoc?.profilePic}`
                     : img;
 
                   return (

@@ -4,6 +4,7 @@ import Button from "../Button";
 import { authApi } from "../../api";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
+import { env } from "@/utils/env";
 
 interface Company {
   id?: string;
@@ -191,7 +192,7 @@ const VendorBankDetails: React.FC<VendorBankDetailsProps> = ({
             <div>
               {company?.cancelledChequeURL && (
                 <img
-                  src={`${import.meta.env.VITE_ASSEST_URL}/uploads/${company.cancelledChequeURL}`}
+                  src={`${env("VITE_ASSEST_URL")}/uploads/${company.cancelledChequeURL}`}
                   alt="Cancelled Cheque"
                   className="w-[50%] h-auto"
                 />

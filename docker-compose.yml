@@ -8,14 +8,14 @@
 #   docker compose --profile dev logs -f frontend
 #   docker compose --profile dev down
 #
-# Production (nginx serving static build):
+# Production (nginx serving static build, env vars injected at runtime):
 #   VITE_BACKEND_URL=https://api.accordo.com \
 #   VITE_FRONTEND_URL=https://app.accordo.com \
 #   docker compose --profile prod up -d --build
 #   docker compose --profile prod logs -f frontend-prod
 #   docker compose --profile prod down
 #
-# Required env vars for production:
+# Env vars are injected at container startup (no rebuild needed to change URLs):
 #   VITE_BACKEND_URL, VITE_FRONTEND_URL
 #
 # Optional overrides:
@@ -70,22 +70,22 @@ services:
   # ─────────────────────────────────────────
   # Frontend — Production
   # nginx serving static Vite build
+  # Env vars are injected at container start via docker/env.sh
   # ─────────────────────────────────────────
   frontend-prod:
     profiles: [prod]
     build:
       context: .
       dockerfile: Dockerfile
-      target: prod
-      args:
-        VITE_BACKEND_URL: ${VITE_BACKEND_URL:-}       # REQUIRED for prod
-        VITE_FRONTEND_URL: ${VITE_FRONTEND_URL:-}     # REQUIRED for prod
-        VITE_ASSEST_URL: ${VITE_ASSEST_URL:-}
+      target: runtime
     container_name: accordo-frontend
     ports:
       - "${FRONTEND_PORT:-5001}:5001"
     environment:
       NODE_ENV: production
+      VITE_BACKEND_URL: ${VITE_BACKEND_URL:-}         # Injected at runtime
+      VITE_FRONTEND_URL: ${VITE_FRONTEND_URL:-}       # Injected at runtime
+      VITE_ASSEST_URL: ${VITE_ASSEST_URL:-}           # Injected at runtime
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
       interval: 30s
