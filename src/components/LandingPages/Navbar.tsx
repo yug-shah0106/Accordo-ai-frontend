@@ -32,7 +32,7 @@ const Navbar = () => {
       label: "Resources",
       href: "#",
       dropdown: [
-        { label: "Case Studies", href: "#case-studies" },
+        // { label: "Case Studies", href: "#case-studies" }, // TODO: Re-enable when case studies content is ready
         { label: "FAQ", href: "#faq" },
       ],
     },

@@ -24,7 +24,7 @@ const footerLinks = {
   resources: {
     title: "Resources",
     links: [
-      { label: "Case Studies", href: "#case-studies" },
+      // { label: "Case Studies", href: "#case-studies" }, // TODO: Re-enable when case studies content is ready
       { label: "FAQ", href: "#faq" },
       { label: "Documentation", href: "#" },
       { label: "API Reference", href: "#" },

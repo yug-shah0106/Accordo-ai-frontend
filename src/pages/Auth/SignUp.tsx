@@ -57,7 +57,7 @@ export default function SignUp() {
       console.log({ response });
       navigate("/sign-in");
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Something went wrong");
+      toast.error(error.response?.data?.message || error.response?.data?.error || "Something went wrong");
     }
   };
 
@@ -124,7 +124,7 @@ export default function SignUp() {
           </p>
         </div>
 
-        <Button type="submit" disabled={isSubmitting} loading={isSubmitting}>
+        <Button type="submit" disabled={!terms || isSubmitting} loading={isSubmitting}>
           To Register
         </Button>
       </form>
