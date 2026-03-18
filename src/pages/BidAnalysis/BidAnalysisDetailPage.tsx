@@ -167,12 +167,12 @@ export const BidAnalysisDetailPage: React.FC = () => {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
+      <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 py-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={handleBack}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 text-gray-500 dark:text-dark-text-secondary hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
             >
               <MdArrowBack size={24} />
             </button>
@@ -186,9 +186,9 @@ export const BidAnalysisDetailPage: React.FC = () => {
                   </span>
                 )}
               </div>
-              <h1 className="text-xl font-bold text-gray-900 mt-1">{requisition.subject}</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-dark-text mt-1">{requisition.subject}</h1>
               {requisition.projectName && (
-                <p className="text-sm text-gray-500">{requisition.projectName}</p>
+                <p className="text-sm text-gray-500 dark:text-dark-text-secondary">{requisition.projectName}</p>
               )}
             </div>
           </div>
@@ -196,7 +196,7 @@ export const BidAnalysisDetailPage: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => reqId && _downloadPdf(reqId)}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-dark-text-secondary bg-gray-100 dark:bg-dark-bg rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               <MdDownload size={18} />
               Export PDF
@@ -211,7 +211,7 @@ export const BidAnalysisDetailPage: React.FC = () => {
                 }
               }}
               disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-dark-text-secondary bg-gray-100 dark:bg-dark-bg rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
             >
               <MdRefresh className={loading ? 'animate-spin' : ''} size={18} />
               Refresh
@@ -220,25 +220,25 @@ export const BidAnalysisDetailPage: React.FC = () => {
         </div>
 
         {/* Price Range Bar */}
-        <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-100">
+        <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-100 dark:border-dark-border">
           <div className="flex items-center gap-2">
             <MdTrendingDown className="text-green-600" size={20} />
-            <span className="text-sm text-gray-500">Lowest:</span>
+            <span className="text-sm text-gray-500 dark:text-dark-text-secondary">Lowest:</span>
             <span className="font-semibold text-green-700">{formatCurrency(priceRange.lowest)}</span>
           </div>
           <div className="flex items-center gap-2">
             <MdTrendingUp className="text-red-500" size={20} />
-            <span className="text-sm text-gray-500">Highest:</span>
+            <span className="text-sm text-gray-500 dark:text-dark-text-secondary">Highest:</span>
             <span className="font-semibold text-red-600">{formatCurrency(priceRange.highest)}</span>
           </div>
           {priceRange.targetPrice && (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">Target:</span>
-              <span className="font-semibold text-gray-700">{formatCurrency(priceRange.targetPrice)}</span>
+              <span className="text-sm text-gray-500 dark:text-dark-text-secondary">Target:</span>
+              <span className="font-semibold text-gray-700 dark:text-dark-text-secondary">{formatCurrency(priceRange.targetPrice)}</span>
             </div>
           )}
           <div className="flex-1" />
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 dark:text-dark-text-secondary">
             Deadline: {formatDate(requisition.negotiationClosureDate)}
           </div>
         </div>
@@ -250,28 +250,28 @@ export const BidAnalysisDetailPage: React.FC = () => {
         <div className="flex-1 overflow-y-auto px-6 py-6">
           {/* Overview Section */}
           {(priceRange.targetPrice || priceRange.maxAcceptablePrice) && (
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-gray-900 mb-3">Price Comparison</h3>
+            <div className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg p-4 mb-6">
+              <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-3">Price Comparison</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {priceRange.targetPrice && (
                   <div>
-                    <span className="text-sm text-gray-500">Target Price</span>
-                    <p className="font-semibold text-gray-900">{formatCurrency(priceRange.targetPrice)}</p>
+                    <span className="text-sm text-gray-500 dark:text-dark-text-secondary">Target Price</span>
+                    <p className="font-semibold text-gray-900 dark:text-dark-text">{formatCurrency(priceRange.targetPrice)}</p>
                   </div>
                 )}
                 {priceRange.maxAcceptablePrice && (
                   <div>
-                    <span className="text-sm text-gray-500">Max Acceptable</span>
-                    <p className="font-semibold text-gray-900">{formatCurrency(priceRange.maxAcceptablePrice)}</p>
+                    <span className="text-sm text-gray-500 dark:text-dark-text-secondary">Max Acceptable</span>
+                    <p className="font-semibold text-gray-900 dark:text-dark-text">{formatCurrency(priceRange.maxAcceptablePrice)}</p>
                   </div>
                 )}
                 <div>
-                  <span className="text-sm text-gray-500">Best Offer</span>
+                  <span className="text-sm text-gray-500 dark:text-dark-text-secondary">Best Offer</span>
                   <p className="font-semibold text-green-700">{formatCurrency(priceRange.lowest)}</p>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-500">Average Offer</span>
-                  <p className="font-semibold text-gray-700">{formatCurrency(priceRange.average)}</p>
+                  <span className="text-sm text-gray-500 dark:text-dark-text-secondary">Average Offer</span>
+                  <p className="font-semibold text-gray-700 dark:text-dark-text-secondary">{formatCurrency(priceRange.average)}</p>
                 </div>
               </div>
             </div>
@@ -280,7 +280,7 @@ export const BidAnalysisDetailPage: React.FC = () => {
           {/* Top 3 Bids Section */}
           {topBids.length > 0 && (
             <div className="mb-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Top Bids</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-4">Top Bids</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {topBids.map((bid) => (
                   <TopBidCard
@@ -299,8 +299,8 @@ export const BidAnalysisDetailPage: React.FC = () => {
 
           {/* Allocation Summary Table */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">All Bids</h3>
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-4">All Bids</h3>
+            <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg overflow-hidden">
               <AllocationTable
                 bids={allBids}
                 selectedBidId={selectedBid?.bidId || null}
@@ -312,7 +312,7 @@ export const BidAnalysisDetailPage: React.FC = () => {
         </div>
 
         {/* Approvals Sidebar */}
-        <div className="w-80 bg-white border-l border-gray-200 flex-shrink-0 overflow-hidden">
+        <div className="w-80 bg-white dark:bg-dark-surface border-l border-gray-200 dark:border-dark-border flex-shrink-0 overflow-hidden">
           <ApprovalsSidebar
             selectedBid={selectedBid}
             history={history}

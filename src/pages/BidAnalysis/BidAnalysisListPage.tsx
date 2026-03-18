@@ -46,13 +46,13 @@ export const BidAnalysisListPage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-full">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 pt-6 pb-4 flex-shrink-0">
+      <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 pt-6 pb-4 flex-shrink-0">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <MdVerified className="text-blue-500" size={28} />
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Bid Analysis</h1>
-              <p className="text-sm text-gray-500">Compare and analyze vendor bids</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-dark-text">Bid Analysis</h1>
+              <p className="text-sm text-gray-500 dark:text-dark-text-secondary">Compare and analyze vendor bids</p>
             </div>
           </div>
           <button
@@ -65,7 +65,7 @@ export const BidAnalysisListPage: React.FC = () => {
               }
             }}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-dark-text-secondary bg-gray-100 dark:bg-dark-bg rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
           >
             <MdRefresh className={loading ? 'animate-spin' : ''} size={18} />
             Refresh
@@ -77,24 +77,24 @@ export const BidAnalysisListPage: React.FC = () => {
           {/* Search */}
           <div className="flex-1 min-w-[250px]">
             <div className="relative">
-              <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={20} />
               <input
                 type="text"
                 value={filters.search || ''}
                 onChange={handleSearchChange}
                 placeholder="Search by RFQ ID or subject..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-dark-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-gray-500"
               />
             </div>
           </div>
 
           {/* Status Filter */}
           <div className="flex items-center gap-2">
-            <MdFilterList className="text-gray-400" size={20} />
+            <MdFilterList className="text-gray-400 dark:text-gray-500" size={20} />
             <select
               value={filters.status}
               onChange={handleStatusChange}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-dark-bg dark:text-dark-text"
             >
               {STATUS_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -141,11 +141,11 @@ export const BidAnalysisListPage: React.FC = () => {
         {/* Empty State */}
         {!loading && !error && requisitions.length === 0 && (
           <div className="text-center py-16">
-            <MdVerified className="mx-auto text-gray-300 mb-4" size={64} />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <MdVerified className="mx-auto text-gray-300 dark:text-gray-600 mb-4" size={64} />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-dark-text mb-2">
               No requisitions found
             </h3>
-            <p className="text-gray-500 mb-4">
+            <p className="text-gray-500 dark:text-dark-text-secondary mb-4">
               {filters.search || filters.status !== 'all'
                 ? 'Try adjusting your filters'
                 : 'Requisitions with completed bids will appear here'}
@@ -176,8 +176,8 @@ export const BidAnalysisListPage: React.FC = () => {
 
             {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
-                <p className="text-sm text-gray-500">
+              <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200 dark:border-dark-border">
+                <p className="text-sm text-gray-500 dark:text-dark-text-secondary">
                   Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
                   {Math.min(pagination.page * pagination.limit, pagination.totalItems)} of{' '}
                   {pagination.totalItems} requisitions
@@ -186,14 +186,14 @@ export const BidAnalysisListPage: React.FC = () => {
                   <button
                     onClick={() => goToPage(pagination.page - 1)}
                     disabled={!pagination.hasPrevPage}
-                    className="px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors dark:text-dark-text"
                   >
                     Previous
                   </button>
                   <button
                     onClick={() => goToPage(pagination.page + 1)}
                     disabled={!pagination.hasNextPage}
-                    className="px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors dark:text-dark-text"
                   >
                     Next
                   </button>

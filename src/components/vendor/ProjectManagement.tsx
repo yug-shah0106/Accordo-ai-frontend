@@ -212,13 +212,13 @@ const ProjectManagement = () => {
 
   return (
     <ErrorBoundary>
-      <div className="flex flex-col bg-white rounded-lg min-h-full">
+      <div className="flex flex-col bg-white dark:bg-dark-surface rounded-lg min-h-full">
         {/* Sticky Header Section */}
-        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0">
+        <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border pt-6 px-6 pb-4 flex-shrink-0">
           {/* Header */}
           <div className="mb-4">
             <div className="flex justify-between items-center">
-              <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+              <h1 className="text-xl font-semibold text-gray-800 dark:text-dark-text flex items-center gap-2">
                 <LuTwitch className="text-xl" /> Project Management
               </h1>
               {hasPermission("project", "C") && (
@@ -241,28 +241,28 @@ const ProjectManagement = () => {
                   onChange={(e) => handleSearchChange(e.target.value)}
                   type="text"
                   placeholder="Search by ID, name, category, tenure, POC..."
-                  className="w-full px-4 py-2 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#234BF3] focus:border-transparent transition-all duration-200"
+                  className="w-full px-4 py-2 pr-10 border border-gray-200 dark:border-dark-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#234BF3] focus:border-transparent transition-all duration-200 dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-gray-500"
                 />
                 {searchTerm ? (
                   <button
                     onClick={clearSearch}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
                     title="Clear search"
                   >
                     <IoCloseCircle className="text-lg" />
                   </button>
                 ) : (
-                  <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                 )}
               </div>
               <div className="flex items-center gap-3">
-                <div className="bg-gray-50 px-3 py-1.5 rounded-lg">
-                  <span className="text-sm text-gray-600">Total: </span>
-                  <span className="font-semibold text-gray-900">{totalDoc}</span>
+                <div className="bg-gray-50 dark:bg-dark-bg/50 px-3 py-1.5 rounded-lg">
+                  <span className="text-sm text-gray-600 dark:text-dark-text-secondary">Total: </span>
+                  <span className="font-semibold text-gray-900 dark:text-dark-text">{totalDoc}</span>
                 </div>
-                <div className="bg-gray-50 px-3 py-1.5 rounded-lg">
-                  <span className="text-sm text-gray-600">Page: </span>
-                  <span className="font-semibold text-gray-900">{page}/{Math.ceil(totalCount / limit)}</span>
+                <div className="bg-gray-50 dark:bg-dark-bg/50 px-3 py-1.5 rounded-lg">
+                  <span className="text-sm text-gray-600 dark:text-dark-text-secondary">Page: </span>
+                  <span className="font-semibold text-gray-900 dark:text-dark-text">{page}/{Math.ceil(totalCount / limit)}</span>
                 </div>
               </div>
             </div>
@@ -274,7 +274,7 @@ const ProjectManagement = () => {
         <div className="flex-1 px-6 pb-6">
           <div className="flex flex-col justify-between mt-4">
             {/* Table Section */}
-            <div className="border border-gray-100 rounded-lg overflow-hidden shadow-sm">
+            <div className="border border-gray-100 dark:border-dark-border rounded-lg overflow-hidden shadow-sm">
               <div className="overflow-auto hide-scrollbar">
                 <Table
                   data={projects}
@@ -283,7 +283,7 @@ const ProjectManagement = () => {
                   onRowClick={handleRowClick}
                   loading={loading}
                   currentPage={page}
-                  style="bg-white"
+                  style="bg-white dark:bg-dark-surface"
                   itemsPerPage={10}
                 />
               </div>
@@ -307,7 +307,7 @@ const ProjectManagement = () => {
         {isSidebarOpen && selectedProject && (
           <div
             ref={menuRef}
-            className={`fixed top-0 right-0 w-1/3 pt-6 px-6 pb-0 bg-white shadow-xl h-full z-10 transition-transform transform ${
+            className={`fixed top-0 right-0 w-1/3 pt-6 px-6 pb-0 bg-white dark:bg-dark-surface shadow-xl h-full z-10 transition-transform transform ${
               isSidebarOpen ? "translate-x-0" : "translate-x-full"
             }`}
           >
@@ -316,46 +316,46 @@ const ProjectManagement = () => {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={closeSidebar}
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors duration-200"
                   >
-                    <FaArrowLeft className="text-gray-600" />
+                    <FaArrowLeft className="text-gray-600 dark:text-dark-text-secondary" />
                   </button>
-                  <h2 className="text-xl font-semibold text-gray-800">Project Details</h2>
+                  <h2 className="text-xl font-semibold text-gray-800 dark:text-dark-text">Project Details</h2>
                 </div>
-                <span className="text-sm text-gray-500">ID: {selectedProject.projectId}</span>
+                <span className="text-sm text-gray-500 dark:text-dark-text-secondary">ID: {selectedProject.projectId}</span>
               </div>
 
               <div className="space-y-4">
                 {/* Basic Information Section */}
-                <div className="bg-gray-50 rounded-lg px-4 py-2">
+                <div className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg px-4 py-2">
                   <div
-                    className="flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded px-2 -mx-2 py-2"
+                    className="flex justify-between items-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-2 -mx-2 py-2"
                     onClick={() => toggleSection('basicInfo')}
                   >
-                    <h3 className="text-lg font-medium text-gray-800">Basic Information</h3>
+                    <h3 className="text-lg font-medium text-gray-800 dark:text-dark-text">Basic Information</h3>
                     {expandedSections.basicInfo ? (
-                      <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                      <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                     ) : (
-                      <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                      <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                     )}
                   </div>
                   {expandedSections.basicInfo && (
                     <div className="grid grid-cols-2 gap-4 mt-4 pb-4">
                       <div className="space-y-1">
-                        <p className="text-sm text-gray-500">Project Name</p>
-                        <p className="font-medium text-gray-900">{selectedProject.projectName}</p>
+                        <p className="text-sm text-gray-500 dark:text-dark-text-secondary">Project Name</p>
+                        <p className="font-medium text-gray-900 dark:text-dark-text">{selectedProject.projectName}</p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm text-gray-500">Project Type</p>
-                        <p className="font-medium text-gray-900">{selectedProject.typeOfProject}</p>
+                        <p className="text-sm text-gray-500 dark:text-dark-text-secondary">Project Type</p>
+                        <p className="font-medium text-gray-900 dark:text-dark-text">{selectedProject.typeOfProject}</p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm text-gray-500">Address</p>
-                        <p className="font-medium text-gray-900">{selectedProject.projectAddress}</p>
+                        <p className="text-sm text-gray-500 dark:text-dark-text-secondary">Address</p>
+                        <p className="font-medium text-gray-900 dark:text-dark-text">{selectedProject.projectAddress}</p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm text-gray-500">Tenure</p>
-                        <p className="font-medium text-gray-900">
+                        <p className="text-sm text-gray-500 dark:text-dark-text-secondary">Tenure</p>
+                        <p className="font-medium text-gray-900 dark:text-dark-text">
                           {selectedProject.tenureInDays} Day{selectedProject.tenureInDays > 1 && "s"}
                         </p>
                       </div>
@@ -364,16 +364,16 @@ const ProjectManagement = () => {
                 </div>
 
                 {/* Point of Contact Section */}
-                <div className="bg-gray-50 rounded-lg px-4 py-2">
+                <div className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg px-4 py-2">
                   <div
-                    className="flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded px-2 -mx-2 py-2"
+                    className="flex justify-between items-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-2 -mx-2 py-2"
                     onClick={() => toggleSection('pocInfo')}
                   >
-                    <h3 className="text-lg font-medium text-gray-800">Point of Contact</h3>
+                    <h3 className="text-lg font-medium text-gray-800 dark:text-dark-text">Point of Contact</h3>
                     {expandedSections.pocInfo ? (
-                      <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                      <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                     ) : (
-                      <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                      <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                     )}
                   </div>
                   {expandedSections.pocInfo && (
@@ -382,11 +382,11 @@ const ProjectManagement = () => {
                         selectedProject.ProjectPoc.map((poc: any) => (
                           <div key={poc?.userId} className="flex items-center gap-2">
                             <div className="w-2 h-2 bg-[#234BF3] rounded-full"></div>
-                            <span className="text-gray-900">{poc?.User?.name}</span>
+                            <span className="text-gray-900 dark:text-dark-text">{poc?.User?.name}</span>
                           </div>
                         ))
                       ) : (
-                        <p className="text-gray-500 text-sm">No POC assigned</p>
+                        <p className="text-gray-500 dark:text-dark-text-secondary text-sm">No POC assigned</p>
                       )}
                     </div>
                   )}
@@ -409,8 +409,8 @@ const ProjectManagement = () => {
             onClose={closeDeleteModal}
             body={
               <div className="py-4">
-                <p className="text-gray-600 mb-2">Are you sure you want to delete this project?</p>
-                <p className="text-sm text-gray-500">This action cannot be undone.</p>
+                <p className="text-gray-600 dark:text-dark-text-secondary mb-2">Are you sure you want to delete this project?</p>
+                <p className="text-sm text-gray-500 dark:text-dark-text-secondary">This action cannot be undone.</p>
               </div>
             }
           />

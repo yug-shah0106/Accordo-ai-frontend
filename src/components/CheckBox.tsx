@@ -41,10 +41,10 @@ const Checkbox = ({
         checked={checked}
         disabled={disabled}
         {...(register ? register(name) : { onChange: handleChange })}
-        className="w-5 h-5 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+        className="w-5 h-5 text-blue-500 border-gray-300 dark:border-dark-border dark:bg-dark-bg rounded focus:ring-blue-500"
       />
       {label && (
-        <label htmlFor={name} className="text-gray-700">
+        <label htmlFor={name} className="text-gray-700 dark:text-dark-text">
           {label}
         </label>
       )}

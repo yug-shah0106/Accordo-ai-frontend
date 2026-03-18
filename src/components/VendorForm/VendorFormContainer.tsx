@@ -528,15 +528,15 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
     <div className="flex flex-col min-h-full">
       {showDraftDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Restore Draft?</h3>
-            <p className="text-gray-600 mb-4">
+          <div className="bg-white dark:bg-dark-surface rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text mb-2">Restore Draft?</h3>
+            <p className="text-gray-600 dark:text-dark-text-secondary mb-4">
               You have an unsaved vendor draft from a previous session. Would you like to restore it?
             </p>
             <div className="flex justify-end gap-3">
               <button
                 type="button"
-                className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg font-medium transition-all"
+                className="px-4 py-2 bg-gray-100 dark:bg-dark-bg text-gray-700 dark:text-dark-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg font-medium transition-all"
                 onClick={discardDraft}
               >
                 Start Fresh
@@ -554,21 +554,21 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
       )}
 
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 pt-6 pb-4 flex-shrink-0">
+      <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 pt-6 pb-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => { clearSaved(); navigate('/vendor-management'); }}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               aria-label="Back to vendor management"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
+              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-dark-text-secondary" />
             </button>
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">
+              <h1 className="text-2xl font-semibold text-gray-900 dark:text-dark-text">
                 {isCreateMode ? 'Add New Vendor' : 'Edit Vendor'}
               </h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1">
                 {isCreateMode
                   ? 'Create vendor and company profile - data is saved at each step'
                   : 'Edit vendor and company details'
@@ -593,7 +593,7 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
                 ) : null}
               </div>
             )}
-            <div className="text-xs text-gray-500 font-medium">
+            <div className="text-xs text-gray-500 dark:text-dark-text-secondary font-medium">
               Step {currentStep} of {steps.length}
             </div>
           </div>
@@ -603,7 +603,7 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar with Step Progress */}
-        <div className="w-80 bg-white border-r border-gray-200 flex-shrink-0 overflow-y-auto p-6">
+        <div className="w-80 bg-white dark:bg-dark-surface border-r border-gray-200 dark:border-dark-border flex-shrink-0 overflow-y-auto p-6">
           <VerticalStepProgress
             steps={steps}
             currentStep={currentStep}
@@ -613,14 +613,14 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
         </div>
 
         {/* Form Content */}
-        <div className="flex-1 overflow-y-auto bg-gray-100">
+        <div className="flex-1 overflow-y-auto bg-gray-100 dark:bg-dark-bg">
           <div className="max-w-4xl mx-auto px-6 py-8">
             {/* Step Component */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm p-6 mb-6">
               {isLoadingCompany ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                  <span className="ml-3 text-gray-600">Loading vendor details...</span>
+                  <span className="ml-3 text-gray-600 dark:text-dark-text-secondary">Loading vendor details...</span>
                 </div>
               ) : (
                 renderStep()

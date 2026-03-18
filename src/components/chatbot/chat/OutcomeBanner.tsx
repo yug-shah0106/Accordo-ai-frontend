@@ -1,4 +1,5 @@
 import type { DealStatus, Offer } from '../../../types';
+import { getUtilityTextColor } from '../../../constants/colors';
 
 /**
  * OutcomeBanner Component
@@ -97,12 +98,7 @@ export default function OutcomeBanner({
       ? (finalUtility * 100).toFixed(0)
       : null;
 
-  // Get utility color based on score
-  const getUtilityColor = (utility: number) => {
-    if (utility < 0.3) return 'text-red-600';
-    if (utility < 0.7) return 'text-yellow-600';
-    return 'text-green-600';
-  };
+  const getUtilityColor = (utility: number) => getUtilityTextColor(utility);
 
   return (
     <div

@@ -673,7 +673,7 @@ export default function NegotiationRoom() {
   // Early return for invalid deal ID (all hooks have been called above)
   if (isInvalidDeal) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-dark-bg">
+      <div className="flex items-center justify-center min-h-full bg-gray-100 dark:bg-dark-bg">
         <div className="text-center p-8">
           <div className="text-red-600 mb-4">
             <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -697,7 +697,7 @@ export default function NegotiationRoom() {
 
   if (loading && !deal) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-dark-bg">
+      <div className="flex items-center justify-center min-h-full bg-gray-100 dark:bg-dark-bg">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-dark-text-secondary">Loading deal...</p>
@@ -708,7 +708,7 @@ export default function NegotiationRoom() {
 
   if (error && !deal) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-dark-bg">
+      <div className="flex items-center justify-center min-h-full bg-gray-100 dark:bg-dark-bg">
         <div className="text-center">
           <div className="text-red-600 mb-4">
             <svg
@@ -745,7 +745,7 @@ export default function NegotiationRoom() {
   // Fallback: If loading is done but deal is still null (no error set), show error state
   if (!loading && !error && !deal) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-dark-bg">
+      <div className="flex items-center justify-center min-h-full bg-gray-100 dark:bg-dark-bg">
         <div className="text-center">
           <div className="text-red-600 mb-4">
             <svg
@@ -779,7 +779,7 @@ export default function NegotiationRoom() {
 
   if (isCompletedDeal) {
     return (
-      <div className="flex flex-col overflow-y-auto bg-gray-100 dark:bg-dark-bg" style={{ height: 'calc(100vh - 2rem)' }}>
+      <div className="flex flex-col overflow-y-auto bg-gray-100 dark:bg-dark-bg flex-1 min-h-0">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 pt-6 pb-4 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -880,7 +880,7 @@ export default function NegotiationRoom() {
   }
 
   return (
-    <div className="flex flex-col bg-gray-100 dark:bg-dark-bg overflow-hidden" style={{ height: 'calc(100vh - 2rem)' }}>
+    <div className="flex flex-col bg-gray-100 dark:bg-dark-bg overflow-hidden flex-1 min-h-0">
       {/* Header - Fixed at top */}
       <div className="flex-shrink-0 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 py-4">
         <div className="flex items-center justify-between">

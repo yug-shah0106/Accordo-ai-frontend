@@ -170,14 +170,14 @@ export default function AuthPage() {
   return (
     <div className="w-full max-w-sm px-6 py-4 mx-auto">
       {/* Pill/Button Tabs */}
-      <div className="flex bg-gray-100 rounded-full p-1 mb-6">
+      <div className="flex bg-gray-100 dark:bg-dark-bg rounded-full p-1 mb-6">
         <button
           type="button"
           onClick={() => handleTabChange("login")}
           className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-all duration-200 ${
             activeTab === "login"
               ? "bg-[#234BF3] text-white shadow-sm"
-              : "text-gray-600 hover:text-gray-800"
+              : "text-gray-600 dark:text-dark-text-secondary hover:text-gray-800 dark:hover:text-dark-text"
           }`}
         >
           Login
@@ -188,7 +188,7 @@ export default function AuthPage() {
           className={`flex-1 py-2 px-4 text-sm font-medium rounded-full transition-all duration-200 ${
             activeTab === "signup"
               ? "bg-[#234BF3] text-white shadow-sm"
-              : "text-gray-600 hover:text-gray-800"
+              : "text-gray-600 dark:text-dark-text-secondary hover:text-gray-800 dark:hover:text-dark-text"
           }`}
         >
           Sign Up
@@ -283,14 +283,14 @@ export default function AuthPage() {
             />
             <p
               onClick={() => openModal()}
-              className="text-gray-700 cursor-pointer flex-1"
+              className="text-gray-700 dark:text-dark-text-secondary cursor-pointer flex-1"
             >
               I agree to{" "}
-              <span className="font-bold text-[#000] cursor-pointer">
+              <span className="font-bold text-[#000] dark:text-dark-text cursor-pointer">
                 Terms of Use
               </span>{" "}
               and{" "}
-              <span className="font-bold text-[#000] cursor-pointer">
+              <span className="font-bold text-[#000] dark:text-dark-text cursor-pointer">
                 Privacy Policy
               </span>
             </p>

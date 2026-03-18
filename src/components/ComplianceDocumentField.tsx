@@ -97,7 +97,7 @@ const ComplianceDocumentField: React.FC<ComplianceDocumentFieldProps> = ({
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary">{label}</label>
 
       {/* Input field with upload icon */}
       <div className="relative">
@@ -111,11 +111,12 @@ const ComplianceDocumentField: React.FC<ComplianceDocumentFieldProps> = ({
           className={`
             w-full px-4 py-2.5 pr-12
             border rounded-lg
-            text-sm text-gray-900
-            placeholder-gray-400
+            text-sm text-gray-900 dark:text-dark-text
+            placeholder-gray-400 dark:placeholder-gray-500
+            bg-white dark:bg-dark-bg
             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-            disabled:bg-gray-50 disabled:cursor-not-allowed
-            ${error ? 'border-red-500' : 'border-gray-300'}
+            disabled:bg-gray-50 dark:disabled:bg-dark-bg/50 disabled:cursor-not-allowed
+            ${error ? 'border-red-500' : 'border-gray-300 dark:border-dark-border'}
             ${hasFile ? 'border-green-500' : ''}
           `}
         />
@@ -130,9 +131,9 @@ const ComplianceDocumentField: React.FC<ComplianceDocumentFieldProps> = ({
             p-2 rounded-md transition-colors
             ${isExtracting
               ? 'cursor-not-allowed'
-              : 'hover:bg-gray-100 cursor-pointer'
+              : 'hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer'
             }
-            ${hasFile ? 'text-green-600' : 'text-gray-400 hover:text-gray-600'}
+            ${hasFile ? 'text-green-600' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400'}
           `}
           title={hasFile ? 'Document uploaded' : 'Upload document'}
         >

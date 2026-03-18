@@ -161,11 +161,11 @@ console.log({products});
   }, []);
 
   return (
-    <div className="flex flex-col bg-white rounded-lg h-full overflow-hidden">
+    <div className="flex flex-col bg-white dark:bg-dark-surface rounded-lg h-full overflow-hidden">
       {/* Sticky Header Section */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0">
+      <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border pt-6 px-6 pb-4 flex-shrink-0">
         <div className="mb-4">
-          <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+          <h1 className="text-xl font-semibold text-gray-800 dark:text-dark-text flex items-center gap-2">
             <RiBox3Line className="text-xl" />
             Product Management
           </h1>
@@ -178,18 +178,18 @@ console.log({products});
               onChange={(e) => handleSearchChange(e.target.value)}
               type="text"
               placeholder="Search by category, name, brand, HSN/SAC..."
-              className="w-full border border-gray-300 rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 px-4"
+              className="w-full border border-gray-300 dark:border-dark-border rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 px-4 dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-gray-500"
             />
             {searchTerm ? (
               <button
                 onClick={clearSearch}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 title="Clear search"
               >
                 <IoCloseCircle className="text-lg" />
               </button>
             ) : (
-              <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+              <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-dark-text-secondary" />
             )}
           </div>
           <div className="flex gap-6">
@@ -208,8 +208,8 @@ console.log({products});
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto px-6 pb-6">
         <div className="flex flex-col justify-between">
-          <div className="border rounded-md hide-scrollbar overflow-auto">
-            <Table data={products} columns={columns} actions={actions} loading={loading} style={'bg-gray-100 '} currentPage={page}
+          <div className="border dark:border-dark-border rounded-md hide-scrollbar overflow-auto">
+            <Table data={products} columns={columns} actions={actions} loading={loading} style={'bg-gray-100 dark:bg-dark-bg '} currentPage={page}
             itemsPerPage={10}/>
           </div>
 
@@ -228,14 +228,14 @@ console.log({products});
 
       {/* View Details Sidebar */}
       <div
-        className={`fixed top-0 right-0 w-2/6 p-6 bg-white shadow-lg h-full z-20 transition-transform transform ${
+        className={`fixed top-0 right-0 w-2/6 p-6 bg-white dark:bg-dark-surface shadow-lg h-full z-20 transition-transform transform ${
           isSidebarOpen ? "translate-x-0" : "translate-x-full"
         } overflow-y-auto`}
       >
         {selectedProduct && (
           <>
             <div className="flex justify-between mb-6 mt-8 items-center">
-              <p className="text-md font-semibold flex items-center gap-2">
+              <p className="text-md font-semibold flex items-center gap-2 dark:text-dark-text">
                 <button onClick={closeSidebar}>
                   <FaArrowLeft />
                 </button>
@@ -245,87 +245,87 @@ console.log({products});
 
             {/* Basic Info Section */}
             <div
-              className="flex justify-between items-center cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2 py-2"
+              className="flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 rounded px-2 -mx-2 py-2"
               onClick={() => toggleSection("basicInfo")}
             >
-              <h3 className="text-lg font-medium">Basic Information</h3>
+              <h3 className="text-lg font-medium dark:text-dark-text">Basic Information</h3>
               {expandedSections.basicInfo ? (
-                <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
               ) : (
-                <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
               )}
             </div>
             {expandedSections.basicInfo && (
               <div className="grid grid-cols-2 text-sm gap-4 mt-4 mb-6">
                 <div className="space-y-1">
-                  <p className="text-gray-500">Product Name</p>
-                  <p className="font-medium">{selectedProduct.productName}</p>
+                  <p className="text-gray-500 dark:text-dark-text-secondary">Product Name</p>
+                  <p className="font-medium dark:text-dark-text">{selectedProduct.productName}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-gray-500">Category</p>
-                  <p className="font-medium">{selectedProduct.category}</p>
+                  <p className="text-gray-500 dark:text-dark-text-secondary">Category</p>
+                  <p className="font-medium dark:text-dark-text">{selectedProduct.category}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-gray-500">Brand</p>
-                  <p className="font-medium">{selectedProduct.brandName || "-"}</p>
+                  <p className="text-gray-500 dark:text-dark-text-secondary">Brand</p>
+                  <p className="font-medium dark:text-dark-text">{selectedProduct.brandName || "-"}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-gray-500">Type</p>
-                  <p className="font-medium">{selectedProduct.type}</p>
+                  <p className="text-gray-500 dark:text-dark-text-secondary">Type</p>
+                  <p className="font-medium dark:text-dark-text">{selectedProduct.type}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-gray-500">UOM</p>
-                  <p className="font-medium">{selectedProduct.UOM}</p>
+                  <p className="text-gray-500 dark:text-dark-text-secondary">UOM</p>
+                  <p className="font-medium dark:text-dark-text">{selectedProduct.UOM}</p>
                 </div>
               </div>
             )}
 
             {/* Specifications Section */}
             <div
-              className="flex justify-between items-center cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2 py-2 border-t pt-4"
+              className="flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 rounded px-2 -mx-2 py-2 border-t dark:border-dark-border pt-4"
               onClick={() => toggleSection("specifications")}
             >
-              <h3 className="text-lg font-medium">Specifications</h3>
+              <h3 className="text-lg font-medium dark:text-dark-text">Specifications</h3>
               {expandedSections.specifications ? (
-                <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
               ) : (
-                <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
               )}
             </div>
             {expandedSections.specifications && (
               <div className="text-sm mt-4 mb-6">
-                <p className="text-gray-500 mb-1">Description</p>
-                <p className="font-medium">{selectedProduct.description || "No description available"}</p>
+                <p className="text-gray-500 dark:text-dark-text-secondary mb-1">Description</p>
+                <p className="font-medium dark:text-dark-text">{selectedProduct.description || "No description available"}</p>
               </div>
             )}
 
             {/* Tax Info Section */}
             <div
-              className="flex justify-between items-center cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2 py-2 border-t pt-4"
+              className="flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 rounded px-2 -mx-2 py-2 border-t dark:border-dark-border pt-4"
               onClick={() => toggleSection("taxInfo")}
             >
-              <h3 className="text-lg font-medium">Tax Information</h3>
+              <h3 className="text-lg font-medium dark:text-dark-text">Tax Information</h3>
               {expandedSections.taxInfo ? (
-                <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
               ) : (
-                <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
               )}
             </div>
             {expandedSections.taxInfo && (
               <div className="grid grid-cols-2 text-sm gap-4 mt-4">
                 <div className="space-y-1">
-                  <p className="text-gray-500">GST Type</p>
-                  <p className="font-medium">{selectedProduct.gstType}</p>
+                  <p className="text-gray-500 dark:text-dark-text-secondary">GST Type</p>
+                  <p className="font-medium dark:text-dark-text">{selectedProduct.gstType}</p>
                 </div>
                 {selectedProduct.gstType === "GST" && (
                   <div className="space-y-1">
-                    <p className="text-gray-500">GST Percentage</p>
-                    <p className="font-medium">{selectedProduct.gstPercentage}%</p>
+                    <p className="text-gray-500 dark:text-dark-text-secondary">GST Percentage</p>
+                    <p className="font-medium dark:text-dark-text">{selectedProduct.gstPercentage}%</p>
                   </div>
                 )}
                 <div className="space-y-1">
-                  <p className="text-gray-500">HSN/SAC Code</p>
-                  <p className="font-medium">{selectedProduct.tds || "-"}</p>
+                  <p className="text-gray-500 dark:text-dark-text-secondary">HSN/SAC Code</p>
+                  <p className="font-medium dark:text-dark-text">{selectedProduct.tds || "-"}</p>
                 </div>
               </div>
             )}

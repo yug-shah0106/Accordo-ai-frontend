@@ -10,10 +10,9 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import Modal from "../Modal";
 import chatbotService from "../../services/chatbot.service";
-import type { DealStatus, VendorDealSummary } from "../../types/chatbot";
+import type { VendorDealSummary } from "../../types/chatbot";
 import { env } from "@/utils/env";
-
-type ContractStatus = 'Created' | 'Active' | 'Opened' | 'Completed' | 'Verified' | 'Accepted' | 'Rejected' | 'Expired' | 'Escalated' | 'InitialQuotation';
+import { DEAL_STATUS_COLORS, getContractStatusColors, type ContractStatus } from "../../constants/colors";
 
 interface Contract {
   id: string;
@@ -92,116 +91,7 @@ interface VendorGroup {
   completedDeals: number;
 }
 
-// Deal status configuration with labels and colors
-const statusConfig: Record<DealStatus, { label: string; bg: string; text: string; cardBg: string; cardBorder: string }> = {
-  NEGOTIATING: {
-    label: 'Active',
-    bg: 'bg-blue-100',
-    text: 'text-blue-700',
-    cardBg: 'bg-blue-50',
-    cardBorder: 'border-blue-200'
-  },
-  ACCEPTED: {
-    label: 'Won',
-    bg: 'bg-green-100',
-    text: 'text-green-700',
-    cardBg: 'bg-green-50',
-    cardBorder: 'border-green-200'
-  },
-  WALKED_AWAY: {
-    label: 'Lost',
-    bg: 'bg-gray-100',
-    text: 'text-gray-700',
-    cardBg: 'bg-gray-50',
-    cardBorder: 'border-gray-200'
-  },
-  ESCALATED: {
-    label: 'Escalated',
-    bg: 'bg-orange-100',
-    text: 'text-orange-700',
-    cardBg: 'bg-orange-50',
-    cardBorder: 'border-orange-200'
-  },
-};
-
-// Contract status configuration with labels and colors
-const contractStatusConfig: Record<ContractStatus, { label: string; bg: string; text: string; cardBg: string; cardBorder: string }> = {
-  Created: {
-    label: 'Pending',
-    bg: 'bg-purple-100',
-    text: 'text-purple-700',
-    cardBg: 'bg-purple-50',
-    cardBorder: 'border-purple-200'
-  },
-  Active: {
-    label: 'Negotiating',
-    bg: 'bg-blue-100',
-    text: 'text-blue-700',
-    cardBg: 'bg-blue-50',
-    cardBorder: 'border-blue-200'
-  },
-  Escalated: {
-    label: 'Escalated',
-    bg: 'bg-orange-100',
-    text: 'text-orange-700',
-    cardBg: 'bg-orange-50',
-    cardBorder: 'border-orange-200'
-  },
-  Accepted: {
-    label: 'Accepted',
-    bg: 'bg-green-100',
-    text: 'text-green-700',
-    cardBg: 'bg-green-50',
-    cardBorder: 'border-green-200'
-  },
-  Rejected: {
-    label: 'Rejected',
-    bg: 'bg-gray-100',
-    text: 'text-gray-700',
-    cardBg: 'bg-gray-50',
-    cardBorder: 'border-gray-200'
-  },
-  Opened: {
-    label: 'Opened',
-    bg: 'bg-cyan-100',
-    text: 'text-cyan-700',
-    cardBg: 'bg-cyan-50',
-    cardBorder: 'border-cyan-200'
-  },
-  Completed: {
-    label: 'Completed',
-    bg: 'bg-green-100',
-    text: 'text-green-700',
-    cardBg: 'bg-green-50',
-    cardBorder: 'border-green-200'
-  },
-  Verified: {
-    label: 'Verified',
-    bg: 'bg-teal-100',
-    text: 'text-teal-700',
-    cardBg: 'bg-teal-50',
-    cardBorder: 'border-teal-200'
-  },
-  Expired: {
-    label: 'Expired',
-    bg: 'bg-red-100',
-    text: 'text-red-700',
-    cardBg: 'bg-red-50',
-    cardBorder: 'border-red-200'
-  },
-  InitialQuotation: {
-    label: 'Quotation',
-    bg: 'bg-indigo-100',
-    text: 'text-indigo-700',
-    cardBg: 'bg-indigo-50',
-    cardBorder: 'border-indigo-200'
-  },
-};
-
-// Helper to get contract status config with fallback
-const getContractStatusConfig = (status?: ContractStatus) => {
-  return contractStatusConfig[status || 'Created'] || contractStatusConfig.Created;
-};
+const statusConfig = DEAL_STATUS_COLORS;
 
 // Helper to get deal counts by status for a vendor
 const getVendorDealCounts = (vendorId: string, deals: VendorDealSummary[]): { active: number; completed: number } => {
@@ -523,9 +413,9 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
   const activeGroup = vendorGroups.find(g => g.vendorId === activeVendorTab);
 
   return (
-    <div className="border-2 rounded p-4 w-full max-w-full overflow-hidden">
-      <h3 className="text-lg font-semibold">Vendor Details</h3>
-      <p className="font-normal text-[#46403E] py-2 text-sm">
+    <div className="border-2 rounded p-4 w-full max-w-full overflow-hidden dark:border-dark-border dark:bg-dark-surface">
+      <h3 className="text-lg font-semibold dark:text-dark-text">Vendor Details</h3>
+      <p className="font-normal text-[#46403E] dark:text-dark-text-secondary py-2 text-sm">
         Select a vendor and start a negotiation deal
       </p>
       <form onSubmit={handleSubmit(onSubmit)} className="w-full">
@@ -557,14 +447,14 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
         {/* Tabbed Vendor View with Timeline */}
         {(vendorGroups.length > 0 || loadingDeals) && (
           <div className="mt-5">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3">Vendor Negotiations</h4>
+            <h4 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary mb-3">Vendor Negotiations</h4>
 
             {loadingDeals ? (
-              <div className="text-sm text-gray-500 p-4 bg-gray-50 rounded-lg">Loading...</div>
+              <div className="text-sm text-gray-500 dark:text-dark-text-secondary p-4 bg-gray-50 dark:bg-dark-bg/50 rounded-lg">Loading...</div>
             ) : (
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="border border-gray-200 dark:border-dark-border rounded-lg overflow-hidden">
                 {/* Tab Headers - Horizontal scroll */}
-                <div className="flex border-b border-gray-200 bg-gray-50 overflow-x-auto">
+                <div className="flex border-b border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-bg/50 overflow-x-auto">
                   {vendorGroups.map((group) => (
                     <button
                       key={group.vendorId}
@@ -572,14 +462,14 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                       onClick={() => setActiveVendorTab(group.vendorId)}
                       className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors flex-shrink-0 ${
                         activeVendorTab === group.vendorId
-                          ? 'border-blue-500 text-blue-600 bg-white'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                          ? 'border-blue-500 text-blue-600 bg-white dark:bg-dark-surface'
+                          : 'border-transparent text-gray-500 dark:text-dark-text-secondary hover:text-gray-700 dark:hover:text-dark-text hover:bg-gray-100 dark:hover:bg-gray-700'
                       }`}
                     >
                       <div className="flex items-center gap-2">
                         <FiUser className="w-4 h-4" />
                         <span className="max-w-[120px] truncate">{group.vendorName}</span>
-                        <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 text-gray-600">
+                        <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-dark-text-secondary">
                           {group.dealCount}
                         </span>
                       </div>
@@ -589,11 +479,11 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
 
                 {/* Tab Content - Timeline View */}
                 {activeGroup && (
-                  <div className="p-4 bg-white">
+                  <div className="p-4 bg-white dark:bg-dark-surface">
                     {/* Vendor Summary Header */}
-                    <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100 gap-3">
+                    <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100 dark:border-dark-border gap-3">
                       <div className="min-w-0 flex-1">
-                        <h5 className="font-medium text-gray-900 text-base truncate">{activeGroup.vendorName}</h5>
+                        <h5 className="font-medium text-gray-900 dark:text-dark-text text-base truncate">{activeGroup.vendorName}</h5>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {activeGroup.activeDeals > 0 && (
@@ -623,13 +513,13 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                       return (
                         <div className="mb-4">
                           <div className="flex items-center gap-2 mb-2">
-                            <h6 className="text-sm font-semibold text-gray-700">Deals</h6>
-                            <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 text-gray-600">
+                            <h6 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary">Deals</h6>
+                            <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-dark-text-secondary">
                               {dealItems.length}
                             </span>
                           </div>
                           {dealItems.length === 0 ? (
-                            <p className="text-sm text-gray-400 italic">No deals yet</p>
+                            <p className="text-sm text-gray-400 dark:text-gray-500 italic">No deals yet</p>
                           ) : (
                             <div className="space-y-2">
                               {dealItems.map((item) => (
@@ -642,10 +532,10 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                                       <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${statusConfig[item.deal!.status].bg} ${statusConfig[item.deal!.status].text}`}>
                                         {statusConfig[item.deal!.status].label}
                                       </span>
-                                      <span className="text-xs text-gray-500 flex-shrink-0">
+                                      <span className="text-xs text-gray-500 dark:text-dark-text-secondary flex-shrink-0">
                                         Round {item.deal!.currentRound}/{item.deal!.maxRounds}
                                       </span>
-                                      <span className="text-xs text-gray-400 flex-shrink-0">
+                                      <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
                                         {formatDate(item.createdAt)}
                                       </span>
                                     </div>
@@ -672,17 +562,17 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                       return (
                         <div>
                           <div className="flex items-center gap-2 mb-2">
-                            <h6 className="text-sm font-semibold text-gray-700">Contracts</h6>
-                            <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 text-gray-600">
+                            <h6 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary">Contracts</h6>
+                            <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-dark-text-secondary">
                               {contractItems.length}
                             </span>
                           </div>
                           {contractItems.length === 0 ? (
-                            <p className="text-sm text-gray-400 italic">No contracts</p>
+                            <p className="text-sm text-gray-400 dark:text-gray-500 italic">No contracts</p>
                           ) : (
                             <div className="space-y-2">
                               {contractItems.map((item) => {
-                                const contractStatus = getContractStatusConfig(item.contract!.status);
+                                const contractStatus = getContractStatusColors(item.contract!.status);
                                 const isSuperseded = item.contract!.status === 'Escalated' &&
                                   activeGroup.items.some(other =>
                                     other.type === 'contract' && other.contract?.previousContractId?.toString() === item.contract!.id.toString()
@@ -698,19 +588,19 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                                           {contractStatus.label}
                                         </span>
                                         {isSuperseded && (
-                                          <span className="text-xs text-gray-400 italic flex-shrink-0">(Superseded)</span>
+                                          <span className="text-xs text-gray-400 dark:text-gray-500 italic flex-shrink-0">(Superseded)</span>
                                         )}
-                                        <span className="text-xs text-gray-400 flex-shrink-0">
+                                        <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
                                           {formatDate(item.createdAt)}
                                         </span>
                                       </div>
                                       <button
                                         type="button"
                                         onClick={() => handleOpenContractLink(item.contract!)}
-                                        className="p-1.5 rounded border border-gray-300 bg-white hover:bg-gray-100 transition-colors flex-shrink-0"
+                                        className="p-1.5 rounded border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-surface hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
                                         title="Open link"
                                       >
-                                        <FiExternalLink className="w-4 h-4 text-gray-700" />
+                                        <FiExternalLink className="w-4 h-4 text-gray-700 dark:text-dark-text-secondary" />
                                       </button>
                                     </div>
                                   </div>
@@ -731,8 +621,8 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
         {/* Pending Contracts Section */}
         {pendingContracts.length > 0 && (
           <div className="mt-5">
-            <h4 className="text-sm font-semibold text-gray-700 mb-2">Pending Contracts</h4>
-            <p className="text-xs text-gray-500 mb-3">Vendors added but no negotiation started</p>
+            <h4 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary mb-2">Pending Contracts</h4>
+            <p className="text-xs text-gray-500 dark:text-dark-text-secondary mb-3">Vendors added but no negotiation started</p>
             <ul className="space-y-2">
               {pendingContracts.map((contract) => {
                 const matchedVendor = data?.find(
@@ -747,9 +637,9 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                     className="bg-amber-50 px-4 py-3 flex items-center justify-between gap-3 border border-amber-200 rounded-lg"
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="font-medium text-gray-900 text-sm truncate">{vendorName}</span>
+                      <span className="font-medium text-gray-900 dark:text-dark-text text-sm truncate">{vendorName}</span>
                       <span
-                        className="text-xs text-gray-500 truncate max-w-[140px] cursor-help"
+                        className="text-xs text-gray-500 dark:text-dark-text-secondary truncate max-w-[140px] cursor-help"
                         title={fullLink}
                       >
                         ...{truncateToken(contract?.uniqueToken)}
@@ -759,18 +649,18 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                       <button
                         type="button"
                         onClick={() => handleCopyLink(contract)}
-                        className="p-1.5 rounded border border-gray-300 bg-white hover:bg-gray-100 transition-colors"
+                        className="p-1.5 rounded border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-surface hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         title="Copy link"
                       >
-                        <FiCopy className="w-4 h-4 text-gray-700" />
+                        <FiCopy className="w-4 h-4 text-gray-700 dark:text-dark-text-secondary" />
                       </button>
                       <button
                         type="button"
                         onClick={() => handleOpenContractLink(contract)}
-                        className="p-1.5 rounded border border-gray-300 bg-white hover:bg-gray-100 transition-colors"
+                        className="p-1.5 rounded border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-surface hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         title="Open link"
                       >
-                        <FiExternalLink className="w-4 h-4 text-gray-700" />
+                        <FiExternalLink className="w-4 h-4 text-gray-700 dark:text-dark-text-secondary" />
                       </button>
                       <button
                         type="button"

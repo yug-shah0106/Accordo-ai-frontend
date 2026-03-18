@@ -63,7 +63,7 @@ export const RequisitionCard: React.FC<RequisitionCardProps> = ({ requisition, o
   return (
     <div
       onClick={handleClick}
-      className="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-md transition-shadow cursor-pointer"
+      className="bg-white dark:bg-dark-surface rounded-lg border border-gray-200 dark:border-dark-border p-5 hover:shadow-md transition-shadow cursor-pointer"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
@@ -74,28 +74,28 @@ export const RequisitionCard: React.FC<RequisitionCardProps> = ({ requisition, o
               <MdVerified className="text-blue-500" size={16} />
             )}
           </div>
-          <h3 className="font-semibold text-gray-900 line-clamp-1">{requisition.subject}</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-dark-text line-clamp-1">{requisition.subject}</h3>
           {requisition.projectName && (
-            <p className="text-sm text-gray-500 mt-0.5">{requisition.projectName}</p>
+            <p className="text-sm text-gray-500 dark:text-dark-text-secondary mt-0.5">{requisition.projectName}</p>
           )}
         </div>
         {getStatusBadge()}
       </div>
 
       {/* Bid Stats */}
-      <div className="grid grid-cols-3 gap-4 py-3 border-y border-gray-100">
+      <div className="grid grid-cols-3 gap-4 py-3 border-y border-gray-100 dark:border-dark-border">
         <div className="text-center">
-          <div className="flex items-center justify-center gap-1 text-gray-500 mb-1">
+          <div className="flex items-center justify-center gap-1 text-gray-500 dark:text-dark-text-secondary mb-1">
             <MdPeople size={14} />
             <span className="text-xs">Bids</span>
           </div>
-          <p className="font-semibold text-gray-900">{requisition.bidsCount}</p>
-          <p className="text-xs text-gray-500">
+          <p className="font-semibold text-gray-900 dark:text-dark-text">{requisition.bidsCount}</p>
+          <p className="text-xs text-gray-500 dark:text-dark-text-secondary">
             {requisition.completedBidsCount} complete
           </p>
         </div>
 
-        <div className="text-center border-x border-gray-100">
+        <div className="text-center border-x border-gray-100 dark:border-dark-border">
           <div className="flex items-center justify-center gap-1 text-green-600 mb-1">
             <MdTrendingDown size={14} />
             <span className="text-xs">Lowest</span>
@@ -117,7 +117,7 @@ export const RequisitionCard: React.FC<RequisitionCardProps> = ({ requisition, o
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between mt-3 text-sm text-gray-500">
+      <div className="flex items-center justify-between mt-3 text-sm text-gray-500 dark:text-dark-text-secondary">
         <div className="flex items-center gap-1">
           <MdAccessTime size={14} />
           <span>Deadline: {formatDate(requisition.negotiationClosureDate)}</span>

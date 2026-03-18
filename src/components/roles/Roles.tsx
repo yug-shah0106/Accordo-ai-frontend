@@ -146,20 +146,20 @@ function Roles() {
   }));
 
   return (
-    <div className="h-full bg-gray-50 pt-6 px-6 pb-0">
+    <div className="h-full bg-gray-50 dark:bg-dark-bg pt-6 px-6 pb-0">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
-        <div className="bg-white rounded-lg shadow-sm pt-6 px-6 pb-0 mb-6">
+        <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm pt-6 px-6 pb-0 mb-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => navigate(-1)}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
                 >
-                  <IoArrowBackOutline className="text-2xl text-gray-600" />
+                  <IoArrowBackOutline className="text-2xl text-gray-600 dark:text-dark-text-secondary" />
                 </button>
-                <h1 className="text-2xl font-semibold text-gray-800">Roles</h1>
+                <h1 className="text-2xl font-semibold text-gray-800 dark:text-dark-text">Roles</h1>
               </div>
               <span className="px-3 pt-1 pb-0 bg-blue-100 text-blue-600 rounded-full text-sm">
                 {roles.length} Total Roles
@@ -179,15 +179,15 @@ function Roles() {
         </div>
 
         {/* Table Section */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-gray-50 border-b">
+                <tr className="bg-gray-50 dark:bg-dark-bg/50 border-b dark:border-dark-border">
                   {columns.map((column, index) => (
                     <th
                       key={index}
-                      className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider"
                       style={{ width: column.width }}
                     >
                       {column.header}
@@ -195,16 +195,16 @@ function Roles() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-dark-border">
                 {tableData.map((row, _rowIndex) => (
                   <tr
                     key={row.id}
-                    className="hover:bg-gray-50 transition-colors"
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     {columns.map((column, colIndex) => (
                       <td
                         key={colIndex}
-                        className="px-6 pt-4 pb-0 whitespace-nowrap text-sm text-gray-900"
+                        className="px-6 pt-4 pb-0 whitespace-nowrap text-sm text-gray-900 dark:text-dark-text"
                       >
                         {column.Cell ? column.Cell({ value: row[column.accessor] as any }) : (row[column.accessor] as React.ReactNode)}
                       </td>

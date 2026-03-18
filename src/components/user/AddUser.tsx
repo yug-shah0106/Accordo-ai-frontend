@@ -137,20 +137,20 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-gray-50">
+    <div className="flex flex-col h-full overflow-hidden bg-gray-50 dark:bg-dark-bg">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0 shadow-sm">
+      <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border pt-6 px-6 pb-4 flex-shrink-0 shadow-sm">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
             >
-              <IoArrowBackOutline className="text-2xl text-gray-600" />
+              <IoArrowBackOutline className="text-2xl text-gray-600 dark:text-dark-text-secondary" />
             </button>
             <div className="flex items-center gap-2">
               <BiUserCheck className="text-2xl text-blue-500" />
-              <h1 className="text-2xl font-semibold text-gray-800">
+              <h1 className="text-2xl font-semibold text-gray-800 dark:text-dark-text">
                 {id ? "Edit User" : "Create New User"}
               </h1>
             </div>
@@ -161,7 +161,7 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
       {/* Scrollable Form Content */}
       <div className="flex-1 overflow-y-auto px-6 pb-6 pt-6">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm">
             <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
               <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -207,7 +207,7 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
 
                 {/* Role Selection */}
                 <div className="mt-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2">
                     User Role <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
@@ -215,7 +215,7 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
                       value={selectedRole}
                       onChange={(e) => setSelectedRole(e.target.value)}
                       disabled={rolesLoading}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="w-full border border-gray-300 dark:border-dark-border rounded-lg px-4 py-3 text-sm text-gray-900 dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white dark:bg-dark-bg disabled:bg-gray-100 dark:disabled:bg-dark-bg/50 disabled:cursor-not-allowed"
                     >
                       <option value="">
                         {rolesLoading ? "Loading roles..." : "Select a role"}
@@ -230,7 +230,7 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
                       {rolesLoading ? (
                         <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
                       ) : (
-                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                         </svg>
                       )}
@@ -245,7 +245,7 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
               </div>
 
               {/* Form Actions - Matching Project Form Style */}
-              <div className="flex justify-end gap-4 p-6 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+              <div className="flex justify-end gap-4 p-6 bg-gray-50 dark:bg-dark-bg/50 border-t border-gray-200 dark:border-dark-border rounded-b-lg">
                 <Button
                   type="button"
                   className="!w-auto px-6 py-3 !bg-white border-2 border-gray-400 !text-gray-800 hover:!bg-gray-100 hover:border-gray-500 hover:!text-gray-900 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 min-w-[120px] justify-center"

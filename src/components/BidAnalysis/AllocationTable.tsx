@@ -54,36 +54,36 @@ export const AllocationTable: React.FC<AllocationTableProps> = ({
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-border">
+        <thead className="bg-gray-50 dark:bg-dark-bg/50">
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider">
               Rank
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider">
               Vendor
             </th>
-            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider">
               Price
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider">
               Terms
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider">
               Delivery
             </th>
-            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider">
               Utility
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider">
               Status
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider">
               Chat
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white dark:bg-dark-surface divide-y divide-gray-200 dark:divide-dark-border">
           {bids.map((bid) => {
             const isSelected = bid.bidId === selectedBidId;
             const rankLabel = RANK_LABELS[bid.rank] || `L${bid.rank}`;
@@ -92,9 +92,9 @@ export const AllocationTable: React.FC<AllocationTableProps> = ({
               <tr
                 key={bid.bidId}
                 className={`
-                  ${isSelected ? 'bg-blue-50' : ''}
-                  ${bid.isRejected ? 'bg-gray-50 text-gray-400' : ''}
-                  hover:bg-gray-50 transition-colors
+                  ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
+                  ${bid.isRejected ? 'bg-gray-50 dark:bg-dark-bg/50 text-gray-400 dark:text-gray-500' : ''}
+                  hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors
                 `}
               >
                 {/* Rank */}
@@ -102,7 +102,7 @@ export const AllocationTable: React.FC<AllocationTableProps> = ({
                   <div className="flex items-center gap-2">
                     <span className={`
                       px-2 py-1 text-xs font-bold rounded
-                      ${bid.rank <= 3 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}
+                      ${bid.rank <= 3 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 dark:bg-dark-bg text-gray-600 dark:text-dark-text-secondary'}
                     `}>
                       {rankLabel}
                     </span>
@@ -114,30 +114,30 @@ export const AllocationTable: React.FC<AllocationTableProps> = ({
                 {/* Vendor */}
                 <td className="px-4 py-3">
                   <div className="flex flex-col">
-                    <span className={`font-medium ${bid.isRejected ? 'text-gray-400' : 'text-gray-900'}`}>
+                    <span className={`font-medium ${bid.isRejected ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-dark-text'}`}>
                       {bid.vendorName}
                     </span>
-                    <span className="text-xs text-gray-500">{bid.vendorEmail}</span>
+                    <span className="text-xs text-gray-500 dark:text-dark-text-secondary">{bid.vendorEmail}</span>
                   </div>
                 </td>
 
                 {/* Price */}
-                <td className={`px-4 py-3 text-right font-medium ${bid.isRejected ? 'text-gray-400' : 'text-gray-900'}`}>
+                <td className={`px-4 py-3 text-right font-medium ${bid.isRejected ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-dark-text'}`}>
                   {formatCurrency(bid.finalPrice)}
                 </td>
 
                 {/* Terms */}
-                <td className={`px-4 py-3 ${bid.isRejected ? 'text-gray-400' : 'text-gray-600'}`}>
+                <td className={`px-4 py-3 ${bid.isRejected ? 'text-gray-400 dark:text-gray-500' : 'text-gray-600 dark:text-dark-text-secondary'}`}>
                   {bid.paymentTerms || '-'}
                 </td>
 
                 {/* Delivery */}
-                <td className={`px-4 py-3 ${bid.isRejected ? 'text-gray-400' : 'text-gray-600'}`}>
+                <td className={`px-4 py-3 ${bid.isRejected ? 'text-gray-400 dark:text-gray-500' : 'text-gray-600 dark:text-dark-text-secondary'}`}>
                   {formatDate(bid.deliveryDate)}
                 </td>
 
                 {/* Utility */}
-                <td className={`px-4 py-3 text-right font-medium ${bid.isRejected ? 'text-gray-400' : 'text-gray-900'}`}>
+                <td className={`px-4 py-3 text-right font-medium ${bid.isRejected ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-dark-text'}`}>
                   {formatUtility(bid.utilityScore)}
                 </td>
 
@@ -150,7 +150,7 @@ export const AllocationTable: React.FC<AllocationTableProps> = ({
                 <td className="px-4 py-3 text-center">
                   <button
                     onClick={() => onChatClick(bid.dealId, bid.vendorId, requisitionId)}
-                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                    className="p-2 text-gray-400 dark:text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors"
                     title="View chat"
                   >
                     <MdChat size={18} />
@@ -163,7 +163,7 @@ export const AllocationTable: React.FC<AllocationTableProps> = ({
       </table>
 
       {bids.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-500 dark:text-dark-text-secondary">
           No bids available
         </div>
       )}

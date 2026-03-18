@@ -147,8 +147,8 @@ const AddRequisition: React.FC = () => {
   return (
     <div className="flex flex-col min-h-full w-full max-w-full">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0">
-        <p className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+      <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border pt-6 px-6 pb-4 flex-shrink-0">
+        <p className="text-xl font-semibold text-gray-800 dark:text-dark-text flex items-center gap-2">
           <IoArrowBackOutline
             onClick={() => { clearRequisitionDrafts(); navigate(-1); }}
             className="cursor-pointer"
@@ -162,8 +162,8 @@ const AddRequisition: React.FC = () => {
         <div className="flex flex-wrap xl:flex-nowrap pt-4 gap-6 w-full max-w-full">
           {/* Step Progress Sidebar */}
           <div className="xl:w-[20%] w-full flex-shrink-0">
-            <div className="h-fit mt-4 rounded p-6 border-2 bg-white">
-              <h2 className="text-lg font-semibold border-b-2 pb-2 mb-4">Details</h2>
+            <div className="h-fit mt-4 rounded p-6 border-2 bg-white dark:bg-dark-surface dark:border-dark-border">
+              <h2 className="text-lg font-semibold border-b-2 pb-2 mb-4 dark:text-dark-text dark:border-dark-border">Details</h2>
               <VerticalStepProgress
                 steps={steps}
                 currentStep={currentStep}

@@ -1258,9 +1258,9 @@ export default function NewDealPage() {
 
 
   return (
-    <div className="flex flex-col min-h-full bg-gray-100">
+    <div className="flex flex-col min-h-full bg-gray-100 dark:bg-dark-bg">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 pt-6 pb-4 flex-shrink-0">
+      <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 pt-6 pb-4 flex-shrink-0">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -1271,8 +1271,8 @@ export default function NewDealPage() {
                 <ArrowLeft className="w-4 h-4" />
                 {backButtonConfig.label}
               </button>
-              <h1 className="text-2xl font-bold text-gray-900">Create New Deal</h1>
-              <p className="text-gray-600 text-sm mt-1">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-dark-text">Create New Deal</h1>
+              <p className="text-gray-600 dark:text-dark-text-secondary text-sm mt-1">
                 Configure your negotiation parameters
               </p>
             </div>
@@ -1280,7 +1280,7 @@ export default function NewDealPage() {
             {/* Draft Status */}
             <div className="flex items-center gap-3">
               {lastSaved && (
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-dark-text-secondary">
                   {draftSaving ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -1299,7 +1299,7 @@ export default function NewDealPage() {
               <button
                 type="button"
                 onClick={handleClearDraft}
-                className="text-sm text-gray-500 hover:text-red-600 transition-colors"
+                className="text-sm text-gray-500 dark:text-dark-text-secondary hover:text-red-600 transition-colors"
               >
                 Clear Draft
               </button>
@@ -1319,11 +1319,11 @@ export default function NewDealPage() {
       {/* Content */}
       <div className="flex-1 px-6 py-6">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm dark:border dark:border-dark-border p-6">
             {batchResults ? (
               /* Batch Results Panel */
               <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-gray-700">Deal Creation Results</h3>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary">Deal Creation Results</h3>
 
                 {batchResults.filter(r => r.status === 'fulfilled').length > 0 && (
                   <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center gap-2">
@@ -1343,9 +1343,9 @@ export default function NewDealPage() {
                   </div>
                 )}
 
-                <div className="divide-y divide-gray-100 border border-gray-200 rounded-lg overflow-hidden">
+                <div className="divide-y divide-gray-100 dark:divide-dark-border border border-gray-200 dark:border-dark-border rounded-lg overflow-hidden">
                   {batchResults.map((r, idx) => (
-                    <div key={r.vendorId || idx} className={`flex items-center justify-between px-4 py-3 ${r.status === 'fulfilled' ? 'bg-white' : 'bg-red-50'}`}>
+                    <div key={r.vendorId || idx} className={`flex items-center justify-between px-4 py-3 ${r.status === 'fulfilled' ? 'bg-white dark:bg-dark-surface' : 'bg-red-50'}`}>
                       <div className="flex items-center gap-3 min-w-0">
                         {r.status === 'fulfilled' ? (
                           <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -1353,7 +1353,7 @@ export default function NewDealPage() {
                           <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
                         )}
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{r.vendorName}</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-dark-text truncate">{r.vendorName}</p>
                           {r.status === 'rejected' && r.error && (
                             <p className="text-xs text-red-600 truncate">{r.error}</p>
                           )}
@@ -1395,7 +1395,7 @@ export default function NewDealPage() {
                     <button
                       type="button"
                       onClick={() => setBatchResults(null)}
-                      className="px-6 py-3 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                      className="px-6 py-3 bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border text-gray-700 dark:text-dark-text-secondary font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
                     >
                       <RefreshCw className="w-4 h-4" />
                       Retry Failed
@@ -1420,7 +1420,7 @@ export default function NewDealPage() {
                       type="button"
                       onClick={handleBack}
                       disabled={submitting}
-                      className="px-6 py-3 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                      className="px-6 py-3 bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border text-gray-700 dark:text-dark-text-secondary font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                     >
                       Back
                     </button>
@@ -1432,7 +1432,7 @@ export default function NewDealPage() {
                     type="button"
                     onClick={() => { clearWizardDraft(); navigate(backButtonConfig.path); }}
                     disabled={submitting}
-                    className="px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                    className="px-6 py-3 bg-gray-100 dark:bg-dark-bg text-gray-700 dark:text-dark-text-secondary font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>
@@ -1475,7 +1475,7 @@ export default function NewDealPage() {
       {/* Email Failed Modal */}
       {showEmailFailedModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
+          <div className="bg-white dark:bg-dark-surface rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
             {/* Modal Header */}
             <div className="bg-amber-50 border-b border-amber-200 px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1486,7 +1486,7 @@ export default function NewDealPage() {
               </div>
               <button
                 onClick={handleContinueWithoutEmail}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1494,7 +1494,7 @@ export default function NewDealPage() {
 
             {/* Modal Body */}
             <div className="px-6 py-5">
-              <p className="text-gray-700 mb-4">
+              <p className="text-gray-700 dark:text-dark-text-secondary mb-4">
                 Your deal was created successfully, but we couldn't send the email notification to the vendor.
               </p>
 
@@ -1507,17 +1507,17 @@ export default function NewDealPage() {
                 </div>
               )}
 
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-dark-text-secondary">
                 You can retry sending the email or continue to the deal page. The vendor will need to be notified manually if you choose to continue.
               </p>
             </div>
 
             {/* Modal Footer */}
-            <div className="bg-gray-50 border-t border-gray-200 px-6 py-4 flex items-center justify-end gap-3">
+            <div className="bg-gray-50 dark:bg-dark-bg/50 border-t border-gray-200 dark:border-dark-border px-6 py-4 flex items-center justify-end gap-3">
               <button
                 onClick={handleContinueWithoutEmail}
                 disabled={retryingEmail}
-                className="px-4 py-2 text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                className="px-4 py-2 text-gray-700 dark:text-dark-text-secondary font-medium rounded-lg border border-gray-300 dark:border-dark-border hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
               >
                 Continue Anyway
               </button>

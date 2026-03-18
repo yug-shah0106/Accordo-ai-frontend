@@ -1,5 +1,6 @@
 import type { VendorDealSummary, DealStatus } from "../../../types/chatbot";
 import { FiMessageCircle, FiCheckCircle, FiXCircle, FiAlertTriangle, FiTrendingUp, FiFileText, FiArchive, FiRotateCcw } from "react-icons/fi";
+import { getDealStatusColors } from "../../../constants/colors";
 
 interface VendorDealCardProps {
   deal: VendorDealSummary;
@@ -61,57 +62,28 @@ export default function VendorDealCard({ deal, currency, onClick, onViewSummary,
     });
   };
 
-  const getStatusConfig = (status: DealStatus) => {
-    switch (status) {
-      case "NEGOTIATING":
-        return {
-          color: "blue",
-          bgColor: "bg-blue-100 dark:bg-blue-900/30",
-          textColor: "text-blue-700 dark:text-blue-300",
-          borderColor: "border-blue-500",
-          icon: FiMessageCircle,
-          label: "Negotiating",
-        };
-      case "ACCEPTED":
-        return {
-          color: "green",
-          bgColor: "bg-green-100 dark:bg-green-900/30",
-          textColor: "text-green-700 dark:text-green-300",
-          borderColor: "border-green-500",
-          icon: FiCheckCircle,
-          label: "Accepted",
-        };
-      case "WALKED_AWAY":
-        return {
-          color: "red",
-          bgColor: "bg-red-100 dark:bg-red-900/30",
-          textColor: "text-red-700 dark:text-red-300",
-          borderColor: "border-red-500",
-          icon: FiXCircle,
-          label: "Walked Away",
-        };
-      case "ESCALATED":
-        return {
-          color: "orange",
-          bgColor: "bg-orange-100 dark:bg-orange-900/30",
-          textColor: "text-orange-700 dark:text-orange-300",
-          borderColor: "border-orange-500",
-          icon: FiAlertTriangle,
-          label: "Escalated",
-        };
-      default:
-        return {
-          color: "gray",
-          bgColor: "bg-gray-100 dark:bg-gray-900/30",
-          textColor: "text-gray-700 dark:text-gray-300",
-          borderColor: "border-gray-500",
-          icon: FiMessageCircle,
-          label: status,
-        };
-    }
+  const STATUS_ICONS: Record<DealStatus, React.ComponentType<{ className?: string }>> = {
+    NEGOTIATING: FiMessageCircle,
+    ACCEPTED: FiCheckCircle,
+    WALKED_AWAY: FiXCircle,
+    ESCALATED: FiAlertTriangle,
   };
 
-  const statusConfig = getStatusConfig(status);
+  const CARD_LABELS: Record<DealStatus, string> = {
+    NEGOTIATING: 'Negotiating',
+    ACCEPTED: 'Accepted',
+    WALKED_AWAY: 'Walked Away',
+    ESCALATED: 'Escalated',
+  };
+
+  const s = getDealStatusColors(status);
+  const statusConfig = {
+    bgColor: `${s.bg} ${s.darkBg}`,
+    textColor: `${s.text} ${s.darkText}`,
+    borderColor: s.borderColor,
+    icon: STATUS_ICONS[status] || FiMessageCircle,
+    label: CARD_LABELS[status] || status,
+  };
   const StatusIcon = statusConfig.icon;
 
   const getUtilityScoreColor = (score: number | null): string => {
@@ -128,17 +100,7 @@ export default function VendorDealCard({ deal, currency, onClick, onViewSummary,
       className="bg-white dark:bg-dark-surface rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer border border-gray-200 dark:border-dark-border overflow-hidden group"
     >
       {/* Status Bar at Top */}
-      <div className={`h-2 ${
-        status === "NEGOTIATING"
-          ? "bg-blue-500"
-          : status === "ACCEPTED"
-          ? "bg-green-500"
-          : status === "WALKED_AWAY"
-          ? "bg-red-500"
-          : status === "ESCALATED"
-          ? "bg-orange-500"
-          : "bg-gray-400"
-      }`} />
+      <div className={`h-2 ${s.statusBarColor}`} />
 
       <div className="p-5">
         {/* Vendor Name & Status Badge */}

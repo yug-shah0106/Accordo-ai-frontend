@@ -27,10 +27,10 @@ class NewDealErrorBoundary extends Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-full bg-white p-8">
+        <div className="min-h-full bg-white dark:bg-dark-surface p-8">
           <div className="max-w-2xl mx-auto">
             <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-              <h1 className="text-2xl font-bold text-red-800 mb-4">
+              <h1 className="text-2xl font-bold text-red-800 dark:text-red-400 mb-4">
                 Error Loading NewDealPage
               </h1>
               <p className="text-red-700 mb-4">
@@ -65,10 +65,10 @@ class NewDealErrorBoundary extends Component<
 // Loading fallback
 function LoadingFallback() {
   return (
-    <div className="min-h-full bg-white flex items-center justify-center">
+    <div className="min-h-full bg-white dark:bg-dark-surface flex items-center justify-center">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading...</p>
+        <p className="text-gray-600 dark:text-dark-text-secondary">Loading...</p>
       </div>
     </div>
   );

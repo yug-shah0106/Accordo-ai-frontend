@@ -8,6 +8,7 @@ import vendorChatService, {
 } from "../../services/vendorChat.service";
 import { MesoOptions } from "../../components/chatbot/MesoOptions";
 import type { MesoResult, MesoOption, NegotiationPhase } from "../../types/chatbot";
+import { DEAL_STATUS_COLORS } from "../../constants/colors";
 
 /**
  * VendorChat Page
@@ -26,13 +27,15 @@ import type { MesoResult, MesoOption, NegotiationPhase } from "../../types/chatb
  */
 type InputMode = 'text' | 'disabled' | 'others_form';
 
-// Status badge colors
-const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  NEGOTIATING: { bg: "bg-blue-100", text: "text-blue-800", label: "In Progress" },
-  ACCEPTED: { bg: "bg-green-100", text: "text-green-800", label: "Accepted" },
-  WALKED_AWAY: { bg: "bg-red-100", text: "text-red-800", label: "Walked Away" },
-  ESCALATED: { bg: "bg-orange-100", text: "text-orange-800", label: "Escalated" },
+const VENDOR_STATUS_LABELS: Record<string, string> = {
+  NEGOTIATING: 'In Progress',
+  ACCEPTED: 'Accepted',
+  WALKED_AWAY: 'Walked Away',
+  ESCALATED: 'Escalated',
 };
+const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }> = Object.fromEntries(
+  Object.entries(DEAL_STATUS_COLORS).map(([k, v]) => [k, { bg: v.bg, text: v.text, label: VENDOR_STATUS_LABELS[k] || v.label }])
+);
 
 /**
  * Status Badge Component

@@ -75,7 +75,7 @@ const Pagination = ({
   return (
     <div className="flex justify-between items-center py-4">
       <div className="flex items-center gap-4">
-        <p className="text-sm font-medium text-gray-500">
+        <p className="text-sm font-medium text-gray-500 dark:text-dark-text-secondary">
           {Math.min(currentPage * limit, totalDoc) === 0
             ? "No entries found"
             : `Showing ${currentPage * limit - limit + 1} to ${Math.min(
@@ -86,11 +86,11 @@ const Pagination = ({
 
         {onLimitChange && (
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">Items per page:</label>
+            <label className="text-sm text-gray-600 dark:text-dark-text-secondary">Items per page:</label>
             <select
               value={limit}
               onChange={(e) => handleLimitChange(Number(e.target.value))}
-              className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-1 text-sm border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg text-gray-900 dark:text-dark-text rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value={10}>10</option>
               <option value={15}>15</option>
@@ -106,8 +106,8 @@ const Pagination = ({
           disabled={currentPage === 1}
           className={`p-2 rounded-md transition-colors ${
             currentPage === 1
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 cursor-pointer"
+              ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+              : "text-gray-600 dark:text-dark-text-secondary hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
           }`}
           aria-label="Previous page"
         >
@@ -117,7 +117,7 @@ const Pagination = ({
         {pageNumbers.map((page, index) => {
           if (page === "...") {
             return (
-              <span key={`ellipsis-${index}`} className="px-2 text-gray-400">
+              <span key={`ellipsis-${index}`} className="px-2 text-gray-400 dark:text-gray-500">
                 ...
               </span>
             );
@@ -129,8 +129,8 @@ const Pagination = ({
               onClick={() => handlePageClick(page as number)}
               className={`px-3 py-1 text-sm rounded-md transition-colors ${
                 currentPage === page
-                  ? "bg-blue-100 text-blue-600 font-medium"
-                  : "text-gray-700 hover:bg-gray-100"
+                  ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
+                  : "text-gray-700 dark:text-dark-text-secondary hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
             >
               {page}
@@ -143,8 +143,8 @@ const Pagination = ({
           disabled={currentPage === totalPages}
           className={`p-2 rounded-md transition-colors ${
             currentPage === totalPages
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 cursor-pointer"
+              ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+              : "text-gray-600 dark:text-dark-text-secondary hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
           }`}
           aria-label="Next page"
         >

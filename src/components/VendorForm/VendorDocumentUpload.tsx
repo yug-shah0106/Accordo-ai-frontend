@@ -19,16 +19,16 @@ const VendorDocumentUpload: React.FC<VendorDocumentUploadProps> = ({
 }) => {
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-dark-text mb-4">
         Document Upload
       </h2>
-      <p className="text-sm text-gray-600 mb-6">
+      <p className="text-sm text-gray-600 dark:text-dark-text-secondary mb-6">
         Upload required documents for vendor registration.
       </p>
 
       {/* Document upload will be implemented here */}
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-        <p className="text-gray-500">
+      <div className="border-2 border-dashed border-gray-300 dark:border-dark-border rounded-lg p-8 text-center">
+        <p className="text-gray-500 dark:text-dark-text-secondary">
           Document upload functionality coming soon...
         </p>
       </div>

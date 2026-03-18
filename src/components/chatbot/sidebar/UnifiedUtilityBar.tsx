@@ -19,6 +19,7 @@
 
 import { useState, useMemo } from "react";
 import { FiCheckCircle, FiXCircle, FiAlertTriangle } from "react-icons/fi";
+import { getUtilityBarColor, getDealStatusColors } from "../../../constants/colors";
 
 /** Recommendation action types */
 export type RecommendationAction = "ACCEPT" | "COUNTER" | "ESCALATE" | "WALK_AWAY";
@@ -54,82 +55,43 @@ export interface UnifiedUtilityBarProps {
 /**
  * Get the color class for the dot indicator based on percentage and thresholds
  */
-const getDotColor = (percentage: number, thresholds: { accept: number; escalate: number; walkAway: number }): string => {
-  const utilityDecimal = percentage / 100;
-  if (utilityDecimal >= thresholds.accept) return "bg-green-500";
-  if (utilityDecimal >= thresholds.escalate) return "bg-blue-500";
-  if (utilityDecimal >= thresholds.walkAway) return "bg-orange-500";
-  return "bg-red-500";
+const getDotColor = (percentage: number, _thresholds: { accept: number; escalate: number; walkAway: number }): string => {
+  return getUtilityBarColor(percentage / 100);
 };
 
 /**
  * Get the recommendation display config
  */
-const getRecommendationConfig = (recommendation: RecommendationAction) => {
-  switch (recommendation) {
-    case "ACCEPT":
-      return {
-        label: "Accept",
-        color: "text-green-600 dark:text-green-400",
-        bgColor: "bg-green-50 dark:bg-green-900/20",
-      };
-    case "COUNTER":
-      return {
-        label: "Counter",
-        color: "text-blue-600 dark:text-blue-400",
-        bgColor: "bg-blue-50 dark:bg-blue-900/20",
-      };
-    case "ESCALATE":
-      return {
-        label: "Escalate",
-        color: "text-orange-600 dark:text-orange-400",
-        bgColor: "bg-orange-50 dark:bg-orange-900/20",
-      };
-    case "WALK_AWAY":
-      return {
-        label: "Walk Away",
-        color: "text-red-600 dark:text-red-400",
-        bgColor: "bg-red-50 dark:bg-red-900/20",
-      };
-    default:
-      return {
-        label: "Evaluating",
-        color: "text-gray-600 dark:text-gray-400",
-        bgColor: "bg-gray-50 dark:bg-gray-900/20",
-      };
-  }
+const RECOMMENDATION_STYLES: Record<string, { label: string; color: string; bgColor: string }> = {
+  ACCEPT:    { label: "Accept",    color: "text-green-600 dark:text-green-400",  bgColor: "bg-green-50 dark:bg-green-900/20" },
+  COUNTER:   { label: "Counter",   color: "text-blue-600 dark:text-blue-400",   bgColor: "bg-blue-50 dark:bg-blue-900/20" },
+  ESCALATE:  { label: "Escalate",  color: "text-orange-600 dark:text-orange-400", bgColor: "bg-orange-50 dark:bg-orange-900/20" },
+  WALK_AWAY: { label: "Walk Away", color: "text-red-600 dark:text-red-400",    bgColor: "bg-red-50 dark:bg-red-900/20" },
 };
+const DEFAULT_REC = { label: "Evaluating", color: "text-gray-600 dark:text-gray-400", bgColor: "bg-gray-50 dark:bg-gray-900/20" };
+const getRecommendationConfig = (recommendation: RecommendationAction) => RECOMMENDATION_STYLES[recommendation] || DEFAULT_REC;
 
 /**
  * Outcome Badge Component for terminal states
  */
-const OutcomeBadge = ({ status }: { status: DealStatus }) => {
-  const config = {
-    ACCEPTED: {
-      icon: FiCheckCircle,
-      text: "Deal Accepted",
-      bgColor: "bg-green-100 dark:bg-green-900/30",
-      textColor: "text-green-700 dark:text-green-300",
-      iconColor: "text-green-600 dark:text-green-400",
-    },
-    WALKED_AWAY: {
-      icon: FiXCircle,
-      text: "Walked Away",
-      bgColor: "bg-red-100 dark:bg-red-900/30",
-      textColor: "text-red-700 dark:text-red-300",
-      iconColor: "text-red-600 dark:text-red-400",
-    },
-    ESCALATED: {
-      icon: FiAlertTriangle,
-      text: "Escalated",
-      bgColor: "bg-orange-100 dark:bg-orange-900/30",
-      textColor: "text-orange-700 dark:text-orange-300",
-      iconColor: "text-orange-600 dark:text-orange-400",
-    },
-    NEGOTIATING: null,
-  };
+const OUTCOME_CONFIG: Record<string, { icon: React.ComponentType<{ className?: string }>; text: string } | null> = {
+  ACCEPTED:    { icon: FiCheckCircle,   text: "Deal Accepted" },
+  WALKED_AWAY: { icon: FiXCircle,       text: "Walked Away" },
+  ESCALATED:   { icon: FiAlertTriangle, text: "Escalated" },
+  NEGOTIATING: null,
+};
 
-  const statusConfig = config[status];
+const OutcomeBadge = ({ status }: { status: DealStatus }) => {
+  const outcomeInfo = OUTCOME_CONFIG[status];
+  if (!outcomeInfo) return null;
+
+  const s = getDealStatusColors(status);
+  const statusConfig = {
+    ...outcomeInfo,
+    bgColor: `${s.bg} ${s.darkBg}`,
+    textColor: `${s.text} ${s.darkText}`,
+    iconColor: `${s.textAccent}`,
+  };
   if (!statusConfig) return null;
 
   const Icon = statusConfig.icon;

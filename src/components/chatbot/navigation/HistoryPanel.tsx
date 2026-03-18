@@ -26,6 +26,7 @@
 import React from 'react';
 import { useHistoryTracking, getRelativeTime } from '../../../hooks/chatbot/useHistoryTracking';
 import type { DealStatus } from '../../../types/chatbot';
+import { getDealStatusColors } from '../../../constants/colors';
 
 // ============================================================================
 // Types
@@ -245,29 +246,8 @@ function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
     md: 'text-sm px-2.5 pt-1 pb-0',
   };
 
-  const statusConfig: Record<
-    DealStatus,
-    { label: string; color: string }
-  > = {
-    NEGOTIATING: {
-      label: 'Active',
-      color: 'bg-blue-100 text-blue-700 border-blue-300',
-    },
-    ACCEPTED: {
-      label: 'Accepted',
-      color: 'bg-green-100 text-green-700 border-green-300',
-    },
-    WALKED_AWAY: {
-      label: 'Walked Away',
-      color: 'bg-gray-100 text-gray-700 border-gray-300',
-    },
-    ESCALATED: {
-      label: 'Escalated',
-      color: 'bg-orange-100 text-orange-700 border-orange-300',
-    },
-  };
-
-  const config = statusConfig[status];
+  const s = getDealStatusColors(status);
+  const config = { label: s.label === 'Won' ? 'Accepted' : s.label === 'Lost' ? 'Walked Away' : s.label, color: `${s.bg} ${s.text} ${s.cardBorder}` };
 
   return (
     <span

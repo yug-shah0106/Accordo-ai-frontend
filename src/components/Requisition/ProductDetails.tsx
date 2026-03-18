@@ -438,11 +438,11 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
   return (
     <div className="space-y-6 w-full max-w-full">
-      <div className="border-2 rounded p-4 w-full max-w-full overflow-hidden">
+      <div className="border-2 rounded p-4 w-full max-w-full overflow-hidden dark:border-dark-border dark:bg-dark-surface">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="text-lg font-semibold">Product Details</h3>
-            <p className="font-normal text-[#46403E] py-2">
+            <h3 className="text-lg font-semibold dark:text-dark-text">Product Details</h3>
+            <p className="font-normal text-[#46403E] dark:text-dark-text-secondary py-2">
               Your details will be used for Product Details
             </p>
           </div>
@@ -475,7 +475,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 return (
                   <li
                     key={index}
-                    className="bg-[#F3F3F3] px-[10px] mb-4 py-[10px] border-1 border-[#DDDDDD] select-none"
+                    className="bg-[#F3F3F3] dark:bg-dark-bg px-[10px] mb-4 py-[10px] border-1 border-[#DDDDDD] dark:border-dark-border select-none"
                   >
                     <div className="d-flex flex-md-row flex-column flex-grow mb-3">
                       <span className="md:text-base flex-grow text-[13px] font-[590]">
@@ -485,7 +485,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                     <div className="flex items-center gap-4">
                       {/* Quantity Field */}
                       <div className="flex flex-col">
-                        <span className="text-xs text-gray-600 mb-1 font-medium">Quantity</span>
+                        <span className="text-xs text-gray-600 dark:text-dark-text-secondary mb-1 font-medium">Quantity</span>
                         <FormInput
                           placeholder="Enter quantity"
                           type="number"
@@ -508,7 +508,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
                       {/* Target Unit Price Field */}
                       <div className="flex flex-col">
-                        <span className="text-xs text-gray-600 mb-1 font-medium">Target Unit Price</span>
+                        <span className="text-xs text-gray-600 dark:text-dark-text-secondary mb-1 font-medium">Target Unit Price</span>
                         <FormInput
                           placeholder="Enter target Price"
                           type="number"
@@ -541,7 +541,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
                       {/* Maximum Acceptable Price Field */}
                       <div className="flex flex-col">
-                        <span className="text-xs text-gray-600 mb-1 font-medium">Maximum Acceptable Price</span>
+                        <span className="text-xs text-gray-600 dark:text-dark-text-secondary mb-1 font-medium">Maximum Acceptable Price</span>
                         <FormInput
                           placeholder="Enter max acceptable price"
                           type="number"
@@ -573,7 +573,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
                       {/* Delete Button */}
                       <div className="flex flex-col items-center justify-center">
-                        <span className="text-xs text-gray-600 mb-1 font-medium">Delete</span>
+                        <span className="text-xs text-gray-600 dark:text-dark-text-secondary mb-1 font-medium">Delete</span>
                         <RiDeleteBinLine
                           onClick={() => handleDeleteProduct(product?.productId)}
                           className="cursor-pointer text-red-500 hover:text-red-700"
@@ -703,13 +703,13 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
           <div className="flex flex-col justify-center w-full ">
             <label
               htmlFor={"files"}
-              className={`block text-white-600 font-medium mb-2`}
+              className={`block text-white-600 dark:text-dark-text font-medium mb-2`}
             >
-              Attachments <span className="font-normal text-gray-500">(Optional)</span>
+              Attachments <span className="font-normal text-gray-500 dark:text-dark-text-secondary">(Optional)</span>
             </label>
             <label
               htmlFor="dropzone-file"
-              className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-100 rounded-lg cursor-pointer  hover:bg-gray-100"
+              className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-100 dark:border-dark-border rounded-lg cursor-pointer  hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <div className="flex flex-col items-center justify-center py-5">
                 <svg

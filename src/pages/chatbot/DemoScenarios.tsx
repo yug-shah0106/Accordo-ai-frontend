@@ -188,19 +188,19 @@ export default function DemoScenarios() {
   };
 
   return (
-    <div className="h-full bg-gray-50 pt-6 px-6 pb-0">
+    <div className="h-full bg-gray-50 dark:bg-dark-bg pt-6 px-6 pb-0">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Demo Scenarios</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-dark-text mb-2">Demo Scenarios</h1>
+          <p className="text-gray-600 dark:text-dark-text-secondary">
             Run automated negotiation scenarios to see Accordo AI in action. Each scenario demonstrates
             different negotiation patterns and decision-making strategies.
           </p>
         </div>
 
         {/* Info Banner */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg pt-4 px-4 pb-0 mb-8">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg pt-4 px-4 pb-0 mb-8">
           <div className="flex items-start">
             <svg
               className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0"
@@ -214,8 +214,8 @@ export default function DemoScenarios() {
               />
             </svg>
             <div>
-              <h3 className="text-sm font-semibold text-blue-900 mb-1">About Demo Mode</h3>
-              <p className="text-sm text-blue-800">
+              <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-1">About Demo Mode</h3>
+              <p className="text-sm text-blue-800 dark:text-blue-400">
                 Demo scenarios run in autopilot mode with pre-configured vendor responses. This allows you to
                 see the full negotiation flow without manual input. Each scenario typically completes in 3-5 rounds.
               </p>
@@ -227,8 +227,8 @@ export default function DemoScenarios() {
           {/* Left Column: Scenario Selection & Deal Selector */}
           <div className="lg:col-span-1 space-y-6">
             {/* Deal Selector */}
-            <div className="bg-white border border-gray-200 rounded-lg pt-5 px-5 pb-0 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Deal</h3>
+            <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg pt-5 px-5 pb-0 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text mb-4">Select Deal</h3>
 
               {loadingDeals ? (
                 <div className="flex items-center justify-center pt-8 pb-0">
@@ -236,7 +236,7 @@ export default function DemoScenarios() {
                 </div>
               ) : deals.length === 0 ? (
                 <div className="text-center pt-6 pb-0">
-                  <p className="text-sm text-gray-600 mb-4">No negotiating deals available</p>
+                  <p className="text-sm text-gray-600 dark:text-dark-text-secondary mb-4">No negotiating deals available</p>
                   <button
                     onClick={() => navigate('/chatbot/requisitions/deals/new')}
                     className="px-4 pt-2 pb-0 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
@@ -248,7 +248,7 @@ export default function DemoScenarios() {
                 <select
                   value={selectedDeal || ''}
                   onChange={(e) => setSelectedDeal(e.target.value)}
-                  className="w-full px-3 pt-2 pb-0 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  className="w-full px-3 pt-2 pb-0 border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg text-gray-900 dark:text-dark-text rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 >
                   {deals.map((deal) => (
                     <option key={deal.id} value={deal.id}>
@@ -261,7 +261,7 @@ export default function DemoScenarios() {
 
             {/* Scenario Cards */}
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-gray-900">Scenario Type</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Scenario Type</h3>
               {scenarios.map((scenario) => (
                 <button
                   key={scenario.type}
@@ -270,13 +270,13 @@ export default function DemoScenarios() {
                   className={`w-full text-left rounded-lg border-2 pt-4 px-4 pb-0 transition-all duration-200 ${
                     selectedScenario === scenario.type
                       ? `${scenario.borderColor} ${scenario.bgColor} shadow-md`
-                      : 'border-gray-200 bg-white hover:border-gray-300'
+                      : 'border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface hover:border-gray-300 dark:hover:border-gray-600'
                   } ${isRunning ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
-                  <h4 className={`text-sm font-bold mb-1 ${selectedScenario === scenario.type ? scenario.color : 'text-gray-900'}`}>
+                  <h4 className={`text-sm font-bold mb-1 ${selectedScenario === scenario.type ? scenario.color : 'text-gray-900 dark:text-dark-text'}`}>
                     {scenario.title}
                   </h4>
-                  <p className="text-xs text-gray-600 leading-relaxed">
+                  <p className="text-xs text-gray-600 dark:text-dark-text-secondary leading-relaxed">
                     {scenario.description}
                   </p>
                 </button>
@@ -325,15 +325,15 @@ export default function DemoScenarios() {
 
           {/* Right Column: Progress & Results Panel */}
           <div className="lg:col-span-2">
-            <div className="bg-white border border-gray-200 rounded-lg shadow-sm min-h-[500px]">
+            <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg shadow-sm min-h-[500px]">
               {demoResults ? (
                 /* Results View */
                 <div className="p-6">
                   {/* Results Header */}
-                  <div className="flex items-center justify-between mb-6 pb-0 border-b border-gray-200">
+                  <div className="flex items-center justify-between mb-6 pb-0 border-b border-gray-200 dark:border-dark-border">
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">Demo Results</h3>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-dark-text">Demo Results</h3>
+                      <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1">
                         {selectedScenario} Scenario - {demoResults.totalRounds} rounds completed
                       </p>
                     </div>
@@ -357,7 +357,7 @@ export default function DemoScenarios() {
                   }`}>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-sm font-semibold text-gray-700 mb-1">Final Status</h4>
+                        <h4 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary mb-1">Final Status</h4>
                         <p className={`text-2xl font-bold ${
                           demoResults.finalStatus === 'ACCEPTED'
                             ? 'text-green-700'
@@ -372,7 +372,7 @@ export default function DemoScenarios() {
                       </div>
                       {demoResults.finalUtility !== null && (
                         <div className="text-right">
-                          <h4 className="text-sm font-semibold text-gray-700 mb-1">Final Utility</h4>
+                          <h4 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary mb-1">Final Utility</h4>
                           <p className="text-2xl font-bold text-purple-700">
                             {(demoResults.finalUtility * 100).toFixed(0)}%
                           </p>
@@ -383,25 +383,25 @@ export default function DemoScenarios() {
 
                   {/* Transcript Replay */}
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-700 mb-3">Negotiation Transcript</h4>
+                    <h4 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary mb-3">Negotiation Transcript</h4>
                     <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
                       {demoResults.steps.map((step, idx) => (
                         <div key={idx} className="border-l-4 border-blue-300 pl-4 pt-2 pb-0">
-                          <div className="text-xs font-semibold text-gray-500 mb-2">Round {step.round}</div>
+                          <div className="text-xs font-semibold text-gray-500 dark:text-dark-text-secondary mb-2">Round {step.round}</div>
 
                           {/* Vendor Message */}
-                          <div className="mb-3 bg-gray-50 rounded-lg pt-3 px-3 pb-0">
-                            <div className="text-xs font-medium text-gray-600 mb-1">Vendor</div>
-                            <p className="text-sm text-gray-800">{step.vendorMessage.content}</p>
+                          <div className="mb-3 bg-gray-50 dark:bg-dark-bg/50 rounded-lg pt-3 px-3 pb-0">
+                            <div className="text-xs font-medium text-gray-600 dark:text-dark-text-secondary mb-1">Vendor</div>
+                            <p className="text-sm text-gray-800 dark:text-dark-text">{step.vendorMessage.content}</p>
                             {step.vendorMessage.extractedOffer && (
-                              <div className="mt-2 text-xs text-gray-600">
+                              <div className="mt-2 text-xs text-gray-600 dark:text-dark-text-secondary">
                                 Offer: ${step.vendorMessage.extractedOffer.unit_price} • {step.vendorMessage.extractedOffer.payment_terms}
                               </div>
                             )}
                           </div>
 
                           {/* Accordo Response */}
-                          <div className="bg-blue-50 rounded-lg pt-3 px-3 pb-0">
+                          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg pt-3 px-3 pb-0">
                             <div className="text-xs font-medium text-blue-700 mb-1">Accordo</div>
                             {step.accordoMessage.engineDecision && (
                               <div className="mb-2">
@@ -423,7 +423,7 @@ export default function DemoScenarios() {
                                 )}
                               </div>
                             )}
-                            <p className="text-sm text-gray-800">{step.accordoMessage.content}</p>
+                            <p className="text-sm text-gray-800 dark:text-dark-text">{step.accordoMessage.content}</p>
                           </div>
                         </div>
                       ))}
@@ -434,11 +434,11 @@ export default function DemoScenarios() {
                 /* Running State */
                 <div className="flex flex-col items-center justify-center h-full pt-20 pb-0">
                   <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-6" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Running Demo...</h3>
-                  <p className="text-sm text-gray-600 mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-dark-text mb-2">Running Demo...</h3>
+                  <p className="text-sm text-gray-600 dark:text-dark-text-secondary mb-4">
                     Simulating {selectedScenario} negotiation scenario
                   </p>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-dark-text-secondary">
                     <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse" />
                     <span>Processing vendor responses</span>
                   </div>
@@ -446,18 +446,18 @@ export default function DemoScenarios() {
               ) : (
                 /* Empty State */
                 <div className="flex flex-col items-center justify-center h-full pt-20 pb-0 text-center px-6">
-                  <svg className="w-20 h-20 text-gray-300 mb-4" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-20 h-20 text-gray-300 dark:text-gray-600 mb-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                   </svg>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Demo Running</h3>
-                  <p className="text-sm text-gray-600 max-w-md">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text mb-2">No Demo Running</h3>
+                  <p className="text-sm text-gray-600 dark:text-dark-text-secondary max-w-md">
                     Select a deal and scenario type, then click "Run Demo" to start an automated negotiation simulation.
                   </p>
                 </div>
               )}
 
               {error && (
-                <div className="mx-6 mb-6 bg-red-50 border border-red-200 rounded-lg pt-4 px-4 pb-0">
+                <div className="mx-6 mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg pt-4 px-4 pb-0">
                   <p className="text-sm text-red-800">
                     <strong>Error:</strong> {error}
                   </p>
@@ -468,36 +468,36 @@ export default function DemoScenarios() {
         </div>
 
         {/* Additional Info */}
-        <div className="mt-8 bg-white rounded-lg border border-gray-200 pt-6 px-6 pb-0">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">What to Expect</h3>
+        <div className="mt-8 bg-white dark:bg-dark-surface rounded-lg border border-gray-200 dark:border-dark-border pt-6 px-6 pb-0">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text mb-4">What to Expect</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">Soft Negotiation</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary mb-2">Soft Negotiation</h4>
+              <ul className="text-sm text-gray-600 dark:text-dark-text-secondary space-y-1">
                 <li>• Vendor starts with reasonable offer</li>
                 <li>• Quick convergence to target price</li>
                 <li>• Deal typically accepted in 2-3 rounds</li>
               </ul>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">Hard Negotiation</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary mb-2">Hard Negotiation</h4>
+              <ul className="text-sm text-gray-600 dark:text-dark-text-secondary space-y-1">
                 <li>• Vendor starts with high price</li>
                 <li>• Multiple counter-offers required</li>
                 <li>• May require 4-5 rounds to reach agreement</li>
               </ul>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">Walk Away</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary mb-2">Walk Away</h4>
+              <ul className="text-sm text-gray-600 dark:text-dark-text-secondary space-y-1">
                 <li>• Vendor exceeds max acceptable price</li>
                 <li>• Accordo identifies deal-breaker early</li>
                 <li>• Negotiation ends with WALK_AWAY decision</li>
               </ul>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">Key Features</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary mb-2">Key Features</h4>
+              <ul className="text-sm text-gray-600 dark:text-dark-text-secondary space-y-1">
                 <li>• Real-time utility score calculation</li>
                 <li>• Decision explainability at each step</li>
                 <li>• Full audit trail of all negotiations</li>

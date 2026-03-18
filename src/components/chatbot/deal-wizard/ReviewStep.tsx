@@ -127,7 +127,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center gap-2">
         {icon}
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">{title}</h3>
         {hasStepErrors(step) && (
           <AlertTriangle className="w-4 h-4 text-amber-500" />
         )}
@@ -135,7 +135,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
       <button
         type="button"
         onClick={() => onEditStep(step)}
-        className="inline-flex items-center gap-1 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium"
+        className="inline-flex items-center gap-1 px-3 py-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors text-sm font-medium"
       >
         <Edit2 className="w-3.5 h-3.5" />
         Edit
@@ -148,9 +148,9 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
     value: React.ReactNode;
     highlight?: boolean;
   }> = ({ label, value, highlight = false }) => (
-    <div className="flex justify-between py-2 border-b border-gray-100 last:border-0">
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className={`text-sm ${highlight ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
+    <div className="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border/50 last:border-0">
+      <span className="text-sm text-gray-500 dark:text-dark-text-secondary">{label}</span>
+      <span className={`text-sm ${highlight ? 'font-semibold text-gray-900 dark:text-dark-text' : 'text-gray-700 dark:text-dark-text-secondary'}`}>
         {value || '—'}
       </span>
     </div>
@@ -159,14 +159,14 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
   return (
     <div className="space-y-6">
       {/* Summary Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-4 border border-blue-100 dark:border-blue-800">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <CheckCircle2 className="w-6 h-6 text-blue-600" />
+          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+            <CheckCircle2 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Review Your Deal Configuration</h2>
-            <p className="text-sm text-gray-600">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Review Your Deal Configuration</h2>
+            <p className="text-sm text-gray-600 dark:text-dark-text-secondary">
               Please review all the information below before creating your deal
             </p>
           </div>
@@ -174,9 +174,9 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
       </div>
 
       {/* Step 1: Basic Information */}
-      <section className="bg-white rounded-lg border border-gray-200 p-5">
+      <section className="bg-white dark:bg-dark-surface rounded-lg border border-gray-200 dark:border-dark-border p-5">
         <SectionHeader
-          icon={<Building2 className="w-5 h-5 text-gray-600" />}
+          icon={<Building2 className="w-5 h-5 text-gray-600 dark:text-dark-text-secondary" />}
           title="Basic Information"
           step={1}
         />
@@ -223,19 +223,19 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
       </section>
 
       {/* Step 2: Commercial Parameters */}
-      <section className="bg-white rounded-lg border border-gray-200 p-5">
+      <section className="bg-white dark:bg-dark-surface rounded-lg border border-gray-200 dark:border-dark-border p-5">
         <SectionHeader
-          icon={<DollarSign className="w-5 h-5 text-gray-600" />}
+          icon={<DollarSign className="w-5 h-5 text-gray-600 dark:text-dark-text-secondary" />}
           title="Commercial Parameters"
           step={2}
         />
 
         {/* Price & Quantity */}
         <div className="mb-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2 flex items-center gap-1">
             <DollarSign className="w-4 h-4" /> Price & Quantity
           </h4>
-          <div className="bg-gray-50 rounded-lg p-3">
+          <div className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg p-3">
             <div className="grid grid-cols-2 gap-x-6">
               <DataRow
                 label="Target Unit Price"
@@ -260,10 +260,10 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
 
         {/* Payment Terms */}
         <div className="mb-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2 flex items-center gap-1">
             <CreditCard className="w-4 h-4" /> Payment Terms
           </h4>
-          <div className="bg-gray-50 rounded-lg p-3">
+          <div className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg p-3">
             <DataRow
               label="Payment Days Range"
               value={`${data.stepTwo.paymentTerms.minDays} - ${data.stepTwo.paymentTerms.maxDays} days`}
@@ -283,10 +283,10 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
 
         {/* Delivery */}
         <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2 flex items-center gap-1">
             <Truck className="w-4 h-4" /> Delivery Parameters
           </h4>
-          <div className="bg-gray-50 rounded-lg p-3">
+          <div className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg p-3">
             <DataRow
               label="Required Delivery Date"
               value={formatDate(data.stepTwo.delivery.requiredDate)}
@@ -317,19 +317,19 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
       </section>
 
       {/* Step 3: Contract & Control */}
-      <section className="bg-white rounded-lg border border-gray-200 p-5">
+      <section className="bg-white dark:bg-dark-surface rounded-lg border border-gray-200 dark:border-dark-border p-5">
         <SectionHeader
-          icon={<FileText className="w-5 h-5 text-gray-600" />}
+          icon={<FileText className="w-5 h-5 text-gray-600 dark:text-dark-text-secondary" />}
           title="Contract & Control"
           step={3}
         />
 
         {/* Contract & SLA */}
         <div className="mb-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2 flex items-center gap-1">
             <Shield className="w-4 h-4" /> Contract & SLA
           </h4>
-          <div className="bg-gray-50 rounded-lg p-3">
+          <div className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg p-3">
             <DataRow
               label="Warranty Period"
               value={
@@ -363,8 +363,8 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
               }
             />
             {data.stepThree.contractSla.qualityStandards.length > 0 && (
-              <div className="pt-2 mt-2 border-t border-gray-200">
-                <span className="text-sm text-gray-500">Quality Standards:</span>
+              <div className="pt-2 mt-2 border-t border-gray-200 dark:border-dark-border">
+                <span className="text-sm text-gray-500 dark:text-dark-text-secondary">Quality Standards:</span>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {data.stepThree.contractSla.qualityStandards.map(cert => (
                     <span
@@ -382,10 +382,10 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
 
         {/* Negotiation Control */}
         <div className="mb-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2 flex items-center gap-1">
             <Settings2 className="w-4 h-4" /> Negotiation Control
           </h4>
-          <div className="bg-gray-50 rounded-lg p-3">
+          <div className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg p-3">
             <DataRow
               label="Deadline"
               value={formatDateTime(data.stepThree.negotiationControl.deadline)}
@@ -404,17 +404,17 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
         {/* Custom Parameters */}
         {data.stepThree.customParameters.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2 flex items-center gap-1">
               <Plus className="w-4 h-4" /> Custom Parameters
             </h4>
             <div className="bg-gray-50 rounded-lg p-3 space-y-2">
               {data.stepThree.customParameters.map(param => (
                 <div
                   key={param.id}
-                  className="flex items-center justify-between py-2 border-b border-gray-200 last:border-0"
+                  className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-dark-border last:border-0"
                 >
                   <div>
-                    <span className="text-sm font-medium text-gray-700">{param.name}</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary">{param.name}</span>
                     <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${
                       param.flexibility === 'FIXED'
                         ? 'bg-red-100 text-red-700'
@@ -430,7 +430,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
                       </span>
                     )}
                   </div>
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-dark-text-secondary">
                     {param.type === 'BOOLEAN'
                       ? (param.targetValue ? 'Yes' : 'No')
                       : String(param.targetValue)}
@@ -444,16 +444,16 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
 
       {/* Step 4: Parameter Weights */}
       {data.stepFour && data.stepFour.weights && data.stepFour.weights.length > 0 && (
-        <section className="bg-white rounded-lg border border-gray-200 p-5">
+        <section className="bg-white dark:bg-dark-surface rounded-lg border border-gray-200 dark:border-dark-border p-5">
           <SectionHeader
-            icon={<Scale className="w-5 h-5 text-gray-600" />}
+            icon={<Scale className="w-5 h-5 text-gray-600 dark:text-dark-text-secondary" />}
             title="Parameter Weights"
             step={4}
           />
 
           {/* AI Suggested Badge */}
           {data.stepFour.aiSuggested && (
-            <div className="mb-4 flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm w-fit">
+            <div className="mb-4 flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-sm w-fit">
               <Sparkles className="w-4 h-4" />
               <span>AI Suggested Weights</span>
             </div>
@@ -462,7 +462,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
           {/* Weight Summary */}
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-500">Total Weight:</span>
+              <span className="text-sm text-gray-500 dark:text-dark-text-secondary">Total Weight:</span>
               <span className={`text-sm font-semibold ${
                 Math.abs(data.stepFour.totalWeight - 100) < 0.01
                   ? 'text-green-600'
@@ -474,7 +474,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
           </div>
 
           {/* Weight List */}
-          <div className="bg-gray-50 rounded-lg p-3">
+          <div className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg p-3">
             <div className="grid grid-cols-2 gap-4">
               {data.stepFour.weights
                 .filter(w => w.weight > 0)
@@ -489,7 +489,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
                         className="w-2 h-2 rounded-full"
                         style={{ backgroundColor: weight.color || '#3B82F6' }}
                       />
-                      <span className="text-sm text-gray-700">{weight.parameterName}</span>
+                      <span className="text-sm text-gray-700 dark:text-dark-text-secondary">{weight.parameterName}</span>
                     </div>
                     <span
                       className="text-sm font-medium px-2 py-0.5 rounded"
@@ -504,8 +504,8 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
                 ))}
             </div>
             {data.stepFour.weights.filter(w => w.weight === 0).length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-200">
-                <span className="text-xs text-gray-400">
+              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-dark-border">
+                <span className="text-xs text-gray-400 dark:text-gray-500">
                   {data.stepFour.weights.filter(w => w.weight === 0).length} parameters with 0% weight (ignored in negotiation)
                 </span>
               </div>
@@ -516,12 +516,12 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
 
       {/* Validation Warnings */}
       {Object.keys(validationErrors).length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
           <div className="flex items-start gap-2">
-            <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
             <div>
-              <h4 className="text-sm font-medium text-amber-800">Please fix the following issues:</h4>
-              <ul className="mt-2 text-sm text-amber-700 list-disc list-inside">
+              <h4 className="text-sm font-medium text-amber-800 dark:text-amber-200">Please fix the following issues:</h4>
+              <ul className="mt-2 text-sm text-amber-700 dark:text-amber-300 list-disc list-inside">
                 {Object.entries(validationErrors).map(([field, errors]) =>
                   errors.map((error, idx) => (
                     <li key={`${field}-${idx}`}>{error}</li>

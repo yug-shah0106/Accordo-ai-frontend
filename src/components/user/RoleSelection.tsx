@@ -149,21 +149,21 @@ const RoleSelectionModal = ({ onClose, edit_role, onSuccess }: RoleSelectionModa
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white w-[700px] rounded-lg shadow-lg max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-dark-surface w-[700px] rounded-lg shadow-lg max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex justify-between items-center p-4 border-b flex-shrink-0">
-          <h2 className="text-xl font-bold">
+        <div className="flex justify-between items-center p-4 border-b dark:border-dark-border flex-shrink-0">
+          <h2 className="text-xl font-bold dark:text-dark-text">
             {edit_role ? "Edit Role" : "Create New Role"}
           </h2>
           <IoClose
-            className="text-2xl cursor-pointer hover:text-gray-600 transition-colors"
+            className="text-2xl cursor-pointer hover:text-gray-600 dark:text-dark-text-secondary dark:hover:text-dark-text transition-colors"
             onClick={onClose}
           />
         </div>
 
         <div className="p-6 overflow-y-auto flex-1">
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2">
               Role Name <span className="text-red-500">*</span>
             </label>
             <input
@@ -171,20 +171,20 @@ const RoleSelectionModal = ({ onClose, edit_role, onSuccess }: RoleSelectionModa
               value={roleName}
               onChange={(e) => setRoleName(e.target.value)}
               placeholder="Enter role name"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-gray-500"
             />
           </div>
 
           {/* Module Level Permissions */}
-          <h3 className="text-sm font-bold mb-4 text-gray-700">Module Permissions</h3>
+          <h3 className="text-sm font-bold mb-4 text-gray-700 dark:text-dark-text-secondary">Module Permissions</h3>
           <div className="space-y-4">
             {modules.map((module) => (
               <div
                 key={module.id}
-                className="border border-gray-200 rounded-lg p-4 bg-gray-50"
+                className="border border-gray-200 dark:border-dark-border rounded-lg p-4 bg-gray-50 dark:bg-dark-bg/50"
               >
                 {/* Module Name */}
-                <h3 className="text-md font-semibold text-gray-800 mb-3">
+                <h3 className="text-md font-semibold text-gray-800 dark:text-dark-text mb-3">
                   {module.name}
                 </h3>
 
@@ -195,8 +195,8 @@ const RoleSelectionModal = ({ onClose, edit_role, onSuccess }: RoleSelectionModa
                       key={permission}
                       className={`flex items-center gap-2 cursor-pointer p-2 rounded-md transition-colors ${
                         given_permissions[parseInt(module.id) - 1] === permission
-                          ? "bg-blue-100 border border-blue-300"
-                          : "hover:bg-gray-100"
+                          ? "bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-500"
+                          : "hover:bg-gray-100 dark:hover:bg-gray-700"
                       }`}
                     >
                       <input
@@ -207,7 +207,7 @@ const RoleSelectionModal = ({ onClose, edit_role, onSuccess }: RoleSelectionModa
                         onChange={() => handlePermissionChange(permission, module.id)}
                         className="text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="text-xs font-medium text-gray-700">
+                      <span className="text-xs font-medium text-gray-700 dark:text-dark-text-secondary">
                         {ENUM[permission]}
                       </span>
                     </label>
@@ -219,7 +219,7 @@ const RoleSelectionModal = ({ onClose, edit_role, onSuccess }: RoleSelectionModa
         </div>
 
         {/* Footer Buttons */}
-        <div className="flex justify-end gap-4 p-4 border-t bg-gray-50 rounded-b-lg flex-shrink-0">
+        <div className="flex justify-end gap-4 p-4 border-t dark:border-dark-border bg-gray-50 dark:bg-dark-bg/50 rounded-b-lg flex-shrink-0">
           <Button
             type="button"
             className="!w-auto px-6 py-3 !bg-white border-2 border-gray-400 !text-gray-800 hover:!bg-gray-100 hover:border-gray-500 hover:!text-gray-900 rounded-lg font-medium transition-all duration-200 min-w-[100px]"

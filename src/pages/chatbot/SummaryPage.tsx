@@ -163,7 +163,7 @@ export default function SummaryPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">Loading summary...</p>
@@ -174,7 +174,7 @@ export default function SummaryPage() {
 
   if (!deal) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <p className="text-red-600 dark:text-red-400">Deal not found</p>
           <button

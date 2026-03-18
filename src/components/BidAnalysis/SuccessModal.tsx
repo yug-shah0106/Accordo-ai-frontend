@@ -41,7 +41,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     };
   }, [isOpen, onClose]);
 
@@ -130,7 +130,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
     >
       <div
         ref={dialogRef}
-        className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 overflow-hidden animate-in fade-in zoom-in duration-200"
+        className="bg-white dark:bg-dark-surface rounded-lg shadow-xl max-w-md w-full mx-4 overflow-hidden animate-in fade-in zoom-in duration-200"
       >
         {/* Header with Icon */}
         <div className={`${config.iconBg} p-6 flex items-center justify-center`}>
@@ -141,20 +141,20 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
 
         {/* Content */}
         <div className="p-6">
-          <h2 className="text-xl font-semibold text-gray-900 text-center mb-2">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-dark-text text-center mb-2">
             {config.title}
           </h2>
-          <p className="text-sm text-gray-600 text-center mb-4">
+          <p className="text-sm text-gray-600 dark:text-dark-text-secondary text-center mb-4">
             {config.description}
           </p>
 
           {/* Details */}
           {config.details.length > 0 && (
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+            <div className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg p-4 space-y-2">
               {config.details.map((detail, index) => (
                 <div key={index} className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">{detail.label}</span>
-                  <span className="text-sm font-medium text-gray-900">{detail.value}</span>
+                  <span className="text-sm text-gray-500 dark:text-dark-text-secondary">{detail.label}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-dark-text">{detail.value}</span>
                 </div>
               ))}
             </div>
@@ -163,13 +163,13 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="mt-6 w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm font-medium"
+            className="mt-6 w-full py-2 px-4 bg-gray-100 dark:bg-dark-bg text-gray-700 dark:text-dark-text-secondary rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
           >
             Close
           </button>
 
           {/* Auto-close indicator */}
-          <p className="text-xs text-gray-400 text-center mt-2">
+          <p className="text-xs text-gray-400 dark:text-gray-500 text-center mt-2">
             This dialog will close automatically
           </p>
         </div>

@@ -40,10 +40,10 @@ const VerticalStepProgress: React.FC<VerticalStepProgressProps> = ({
       return `${baseClasses} bg-blue-600 text-white ${allowNavigation ? 'cursor-pointer hover:bg-blue-700' : ''}`;
     }
     if (status === 'current') {
-      return `${baseClasses} bg-blue-600 text-white ring-4 ring-blue-100`;
+      return `${baseClasses} bg-blue-600 text-white ring-4 ring-blue-100 dark:ring-blue-900/50`;
     }
     // future
-    return `${baseClasses} bg-gray-200 text-gray-500 cursor-not-allowed`;
+    return `${baseClasses} bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed`;
   };
 
   const getTitleClasses = (status: 'completed' | 'current' | 'future') => {
@@ -53,9 +53,9 @@ const VerticalStepProgress: React.FC<VerticalStepProgressProps> = ({
       return `${baseClasses} text-blue-600`;
     }
     if (status === 'completed') {
-      return `${baseClasses} text-gray-700`;
+      return `${baseClasses} text-gray-700 dark:text-dark-text-secondary`;
     }
-    return `${baseClasses} text-gray-400`;
+    return `${baseClasses} text-gray-400 dark:text-gray-500`;
   };
 
   const getDescriptionClasses = (status: 'completed' | 'current' | 'future') => {
@@ -65,9 +65,9 @@ const VerticalStepProgress: React.FC<VerticalStepProgressProps> = ({
       return `${baseClasses} text-blue-500`;
     }
     if (status === 'completed') {
-      return `${baseClasses} text-gray-600`;
+      return `${baseClasses} text-gray-600 dark:text-dark-text-secondary`;
     }
-    return `${baseClasses} text-gray-400`;
+    return `${baseClasses} text-gray-400 dark:text-gray-500`;
   };
 
   return (
@@ -102,7 +102,7 @@ const VerticalStepProgress: React.FC<VerticalStepProgressProps> = ({
                 <div
                   className={`
                     w-0.5 h-12 my-1 transition-all duration-300
-                    ${isCompleted || status === 'current' ? 'bg-blue-600' : 'bg-gray-200'}
+                    ${isCompleted || status === 'current' ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}
                   `}
                 />
               )}
