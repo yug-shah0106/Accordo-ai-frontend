@@ -27,7 +27,7 @@ export default function Button({
       onClick={onClick}
       disabled={disabled || loading}
       className={`${baseStyles} ${defaultStyles} ${
-        disabled || loading ? "cursor-not-allowed" : ""
+        disabled || loading ? "cursor-not-allowed opacity-50" : ""
       } ${className}`}
     >
       {loading ? (

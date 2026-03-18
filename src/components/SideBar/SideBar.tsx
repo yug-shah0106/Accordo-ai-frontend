@@ -271,13 +271,6 @@ const Sidebar = ({ logo }: SidebarProps) => {
       isActive: true,
     },
     {
-      name: "Requisition Management",
-      icon: <LuGitPullRequest className="text-xl" />,
-      link: "requisition-management",
-      permissionKey: "requisitionPermission",
-      isActive: true,
-    },
-    {
       name: "Product Management",
       icon: <RiBox3Line className="text-xl" />,
       link: "product-management",
@@ -292,10 +285,11 @@ const Sidebar = ({ logo }: SidebarProps) => {
       isActive: true,
     },
     {
-      name: "User Management",
-      icon: <BiUserCheck className="text-xl" />,
-      link: "user-management",
-      permissionKey: "userPermission",
+      name: "Requisition Management",
+      icon: <LuGitPullRequest className="text-xl" />,
+      link: "requisition-management",
+      permissionKey: "requisitionPermission",
+      isActive: true,
     },
     {
       name: "Negotiations",
@@ -316,6 +310,13 @@ const Sidebar = ({ logo }: SidebarProps) => {
       icon: <VscFeedback className="text-xl" />,
       link: "feedback",
       permissionKey: null,
+      isActive: true,
+    },
+    {
+      name: "User Management",
+      icon: <BiUserCheck className="text-xl" />,
+      link: "user-management",
+      permissionKey: "userPermission",
       isActive: true,
     },
     {

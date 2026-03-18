@@ -1234,9 +1234,17 @@ export default function NegotiationRoom() {
                                 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
                                 : item.action === "COUNTER"
                                 ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                                : item.action === "ESCALATE"
+                                ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
+                                : item.action === "WALK_AWAY"
+                                ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                                : item.action === "REDIRECT"
+                                ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+                                : item.action === "ERROR_RECOVERY"
+                                ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
                                 : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300"
                             }`}>
-                              {item.action}
+                              {item.action === "REDIRECT" ? "Redirected" : item.action === "ERROR_RECOVERY" ? "Recovery" : item.action?.replace('_', ' ')}
                             </span>
                           </div>
                         ))}
@@ -1341,6 +1349,8 @@ export default function NegotiationRoom() {
                                 item.action === 'COUNTER' ? 'bg-blue-500' :
                                 item.action === 'ESCALATE' ? 'bg-orange-500' :
                                 item.action === 'WALK_AWAY' ? 'bg-red-500' :
+                                item.action === 'REDIRECT' ? 'bg-purple-500' :
+                                item.action === 'ERROR_RECOVERY' ? 'bg-amber-500' :
                                 'bg-gray-400'
                               }`} />
 
@@ -1354,9 +1364,11 @@ export default function NegotiationRoom() {
                                   item.action === 'COUNTER' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
                                   item.action === 'ESCALATE' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
                                   item.action === 'WALK_AWAY' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
+                                  item.action === 'REDIRECT' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' :
+                                  item.action === 'ERROR_RECOVERY' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
                                   'bg-gray-100 text-gray-600'
                                 }`}>
-                                  {item.action?.replace('_', ' ')}
+                                  {item.action === 'REDIRECT' ? 'Redirected' : item.action === 'ERROR_RECOVERY' ? 'Recovery' : item.action?.replace('_', ' ')}
                                 </span>
                                 {item.utilityScore && (
                                   <span className="text-[10px] text-emerald-600 dark:text-emerald-400">

@@ -152,7 +152,7 @@ export default function AuthPage() {
         });
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Something went wrong");
+      toast.error(error.response?.data?.message || error.response?.data?.error || "Something went wrong");
     }
   };
 
@@ -298,7 +298,7 @@ export default function AuthPage() {
 
           <Button
             type="submit"
-            disabled={registerForm.formState.isSubmitting}
+            disabled={!terms || registerForm.formState.isSubmitting}
             loading={registerForm.formState.isSubmitting}
           >
             Sign Up

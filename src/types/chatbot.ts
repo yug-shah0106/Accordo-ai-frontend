@@ -74,7 +74,7 @@ export interface ListDealsParams {
 // ============================================================================
 
 export type MessageRole = 'VENDOR' | 'ACCORDO' | 'SYSTEM';
-export type DecisionAction = 'ACCEPT' | 'COUNTER' | 'WALK_AWAY' | 'ESCALATE' | 'ASK_CLARIFY';
+export type DecisionAction = 'ACCEPT' | 'COUNTER' | 'WALK_AWAY' | 'ESCALATE' | 'ASK_CLARIFY' | 'REDIRECT' | 'ERROR_RECOVERY';
 
 export interface Message {
   id: string;
