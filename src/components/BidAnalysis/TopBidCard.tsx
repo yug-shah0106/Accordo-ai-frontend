@@ -57,9 +57,9 @@ export const TopBidCard: React.FC<TopBidCardProps> = ({
     <div
       onClick={handleSelect}
       className={`
-        relative bg-white rounded-lg border-2 p-4 transition-all
-        ${isSelected ? 'border-blue-500 shadow-md' : 'border-gray-200'}
-        ${bid.isRejected ? 'opacity-50 bg-gray-50' : 'cursor-pointer hover:border-blue-300'}
+        relative bg-white dark:bg-dark-surface rounded-lg border-2 p-4 transition-all
+        ${isSelected ? 'border-blue-500 shadow-md' : 'border-gray-200 dark:border-dark-border'}
+        ${bid.isRejected ? 'opacity-50 bg-gray-50 dark:bg-dark-bg/50' : 'cursor-pointer hover:border-blue-300'}
         ${disabled ? 'cursor-not-allowed' : ''}
       `}
     >
@@ -95,12 +95,12 @@ export const TopBidCard: React.FC<TopBidCardProps> = ({
 
         <div className="flex-1 min-w-0">
           {/* Vendor Name */}
-          <h4 className="font-semibold text-gray-900 truncate">{bid.vendorName}</h4>
-          <p className="text-sm text-gray-500 truncate">{bid.vendorEmail}</p>
+          <h4 className="font-semibold text-gray-900 dark:text-dark-text truncate">{bid.vendorName}</h4>
+          <p className="text-sm text-gray-500 dark:text-dark-text-secondary truncate">{bid.vendorEmail}</p>
 
           {/* Price */}
           <div className="mt-3">
-            <span className="text-2xl font-bold text-gray-900">
+            <span className="text-2xl font-bold text-gray-900 dark:text-dark-text">
               {formatCurrency(bid.finalPrice)}
             </span>
           </div>
@@ -108,12 +108,12 @@ export const TopBidCard: React.FC<TopBidCardProps> = ({
           {/* Details Grid */}
           <div className="grid grid-cols-2 gap-2 mt-3 text-sm">
             <div>
-              <span className="text-gray-500">Terms:</span>
-              <span className="ml-1 text-gray-900">{bid.paymentTerms || 'N/A'}</span>
+              <span className="text-gray-500 dark:text-dark-text-secondary">Terms:</span>
+              <span className="ml-1 text-gray-900 dark:text-dark-text">{bid.paymentTerms || 'N/A'}</span>
             </div>
             <div>
-              <span className="text-gray-500">Utility:</span>
-              <span className="ml-1 text-gray-900">{formatUtility(bid.utilityScore)}</span>
+              <span className="text-gray-500 dark:text-dark-text-secondary">Utility:</span>
+              <span className="ml-1 text-gray-900 dark:text-dark-text">{formatUtility(bid.utilityScore)}</span>
             </div>
           </div>
 
@@ -121,7 +121,7 @@ export const TopBidCard: React.FC<TopBidCardProps> = ({
           <div className="flex gap-2 mt-4">
             <button
               onClick={handleChatClick}
-              className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm"
+              className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 dark:bg-dark-bg text-gray-700 dark:text-dark-text-secondary rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
             >
               <MdChat size={16} />
               <span>Chat</span>
@@ -132,7 +132,7 @@ export const TopBidCard: React.FC<TopBidCardProps> = ({
 
       {/* Selected Indicator */}
       {isSelected && !bid.isRejected && (
-        <div className="absolute -top-3 right-4 z-10 bg-white rounded-full">
+        <div className="absolute -top-3 right-4 z-10 bg-white dark:bg-dark-surface rounded-full">
           <MdCheckCircle className="text-blue-500" size={24} />
         </div>
       )}

@@ -169,7 +169,7 @@ const VendorReview: React.FC<VendorReviewProps> = ({
     return (
       <div className="flex items-center justify-center py-12">
         <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <span className="ml-3 text-gray-600">Loading vendor details...</span>
+        <span className="ml-3 text-gray-600 dark:text-dark-text-secondary">Loading vendor details...</span>
       </div>
     );
   }
@@ -246,8 +246,8 @@ const VendorReview: React.FC<VendorReviewProps> = ({
   return (
     <div>
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Review & Submit</h3>
-        <p className="text-sm text-gray-600 mt-1">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Review & Submit</h3>
+        <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1">
           {isCreateMode
             ? "Please review all information before creating the vendor"
             : "Please review all information before submitting"
@@ -257,48 +257,48 @@ const VendorReview: React.FC<VendorReviewProps> = ({
 
       <div className="space-y-6">
         {/* Step 1: Basic & Company Information */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h4 className="text-md font-semibold text-gray-900 mb-4">Step 1: Basic & Company Information</h4>
+        <div className="bg-white dark:bg-dark-surface rounded-lg border border-gray-200 dark:border-dark-border p-6">
+          <h4 className="text-md font-semibold text-gray-900 dark:text-dark-text mb-4">Step 1: Basic & Company Information</h4>
 
           <div className="space-y-4">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-2">Contact Details</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-dark-text-secondary mb-2">Contact Details</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500">Name</p>
-                  <p className="text-sm font-medium text-gray-900">{vendorInfo.name || 'N/A'}</p>
+                  <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Name</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">{vendorInfo.name || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Email</p>
-                  <p className="text-sm font-medium text-gray-900">{vendorInfo.email || 'N/A'}</p>
+                  <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Email</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">{vendorInfo.email || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Phone</p>
-                  <p className="text-sm font-medium text-gray-900">{vendorInfo.phone || 'N/A'}</p>
+                  <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Phone</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">{vendorInfo.phone || 'N/A'}</p>
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-gray-200 pt-4">
-              <p className="text-sm font-medium text-gray-500 mb-2">Company Details</p>
+            <div className="border-t border-gray-200 dark:border-dark-border pt-4">
+              <p className="text-sm font-medium text-gray-500 dark:text-dark-text-secondary mb-2">Company Details</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500">Company Name</p>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Company Name</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">
                     {isCreateMode ? formData?.companyName : companyData?.companyName || 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Establishment Date</p>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Establishment Date</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">
                     {(isCreateMode ? formData?.establishmentDate : companyData?.establishmentDate)
                       ? new Date(isCreateMode ? formData?.establishmentDate! : companyData?.establishmentDate!).toLocaleDateString()
                       : 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Nature of Business</p>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Nature of Business</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">
                     {isCreateMode ? formData?.nature : (companyData?.nature || companyData?.type) || 'N/A'}
                   </p>
                 </div>
@@ -308,92 +308,92 @@ const VendorReview: React.FC<VendorReviewProps> = ({
         </div>
 
         {/* Step 2: Location Details */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h4 className="text-md font-semibold text-gray-900 mb-4">Step 2: Location Details</h4>
+        <div className="bg-white dark:bg-dark-surface rounded-lg border border-gray-200 dark:border-dark-border p-6">
+          <h4 className="text-md font-semibold text-gray-900 dark:text-dark-text mb-4">Step 2: Location Details</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <p className="text-xs text-gray-500">Address</p>
-              <p className="text-sm font-medium text-gray-900">{addressInfo.address || 'N/A'}</p>
+              <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Address</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-dark-text">{addressInfo.address || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">City</p>
-              <p className="text-sm font-medium text-gray-900">{addressInfo.city || 'N/A'}</p>
+              <p className="text-xs text-gray-500 dark:text-dark-text-secondary">City</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-dark-text">{addressInfo.city || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">State</p>
-              <p className="text-sm font-medium text-gray-900">{addressInfo.state || 'N/A'}</p>
+              <p className="text-xs text-gray-500 dark:text-dark-text-secondary">State</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-dark-text">{addressInfo.state || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Zip Code</p>
-              <p className="text-sm font-medium text-gray-900">{addressInfo.zipCode || 'N/A'}</p>
+              <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Zip Code</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-dark-text">{addressInfo.zipCode || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Country</p>
-              <p className="text-sm font-medium text-gray-900">{addressInfo.country || 'N/A'}</p>
+              <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Country</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-dark-text">{addressInfo.country || 'N/A'}</p>
             </div>
           </div>
         </div>
 
         {/* Step 3: Financial & Banking */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h4 className="text-md font-semibold text-gray-900 mb-4">Step 3: Financial & Banking</h4>
+        <div className="bg-white dark:bg-dark-surface rounded-lg border border-gray-200 dark:border-dark-border p-6">
+          <h4 className="text-md font-semibold text-gray-900 dark:text-dark-text mb-4">Step 3: Financial & Banking</h4>
 
           <div className="space-y-4">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-2">Currency</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-dark-text-secondary mb-2">Currency</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500">Type of Currency</p>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Type of Currency</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">
                     {isCreateMode ? formData?.typeOfCurrency : companyData?.typeOfCurrency || 'N/A'}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-gray-200 pt-4">
-              <p className="text-sm font-medium text-gray-500 mb-2">Banking Information</p>
+            <div className="border-t border-gray-200 dark:border-dark-border pt-4">
+              <p className="text-sm font-medium text-gray-500 dark:text-dark-text-secondary mb-2">Banking Information</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500">Bank Name</p>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Bank Name</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">
                     {isCreateMode ? formData?.bankName : companyData?.bankName || 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Beneficiary Name</p>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Beneficiary Name</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">
                     {isCreateMode ? formData?.beneficiaryName : companyData?.beneficiaryName || 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Account Number</p>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Account Number</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">
                     {isCreateMode ? formData?.accountNumber : companyData?.accountNumber || 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">IFSC Code</p>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-xs text-gray-500 dark:text-dark-text-secondary">IFSC Code</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">
                     {isCreateMode ? formData?.ifscCode : companyData?.ifscCode || 'N/A'}
                   </p>
                 </div>
                 {(formData?.swiftCode || companyData?.swiftCode) && (
                   <div>
-                    <p className="text-xs text-gray-500">Swift Code</p>
-                    <p className="text-sm font-medium text-gray-900">{formData?.swiftCode || companyData?.swiftCode}</p>
+                    <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Swift Code</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-dark-text">{formData?.swiftCode || companyData?.swiftCode}</p>
                   </div>
                 )}
                 {(formData?.iBanNumber || companyData?.iBanNumber) && (
                   <div>
-                    <p className="text-xs text-gray-500">IBAN</p>
-                    <p className="text-sm font-medium text-gray-900">{formData?.iBanNumber || companyData?.iBanNumber}</p>
+                    <p className="text-xs text-gray-500 dark:text-dark-text-secondary">IBAN</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-dark-text">{formData?.iBanNumber || companyData?.iBanNumber}</p>
                   </div>
                 )}
                 {!isCreateMode && companyData?.fullAddress && (
                   <div>
-                    <p className="text-xs text-gray-500">Bank Address</p>
-                    <p className="text-sm font-medium text-gray-900">{companyData.fullAddress}</p>
+                    <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Bank Address</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-dark-text">{companyData.fullAddress}</p>
                   </div>
                 )}
                 {!isCreateMode && companyData?.cancelledChequeURL && (
@@ -402,7 +402,7 @@ const VendorReview: React.FC<VendorReviewProps> = ({
                     <img
                       src={`${env("VITE_ASSEST_URL")}/uploads/${companyData.cancelledChequeURL}`}
                       alt="Cancelled Cheque"
-                      className="w-32 h-auto border border-gray-300 rounded"
+                      className="w-32 h-auto border border-gray-300 dark:border-dark-border rounded"
                     />
                   </div>
                 )}
@@ -412,49 +412,49 @@ const VendorReview: React.FC<VendorReviewProps> = ({
         </div>
 
         {/* Step 4: Contact & Documents */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h4 className="text-md font-semibold text-gray-900 mb-4">Step 4: Contact & Documents</h4>
+        <div className="bg-white dark:bg-dark-surface rounded-lg border border-gray-200 dark:border-dark-border p-6">
+          <h4 className="text-md font-semibold text-gray-900 dark:text-dark-text mb-4">Step 4: Contact & Documents</h4>
 
           <div className="space-y-4">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-2">Point of Contact</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-dark-text-secondary mb-2">Point of Contact</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500">Contact Person</p>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Contact Person</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">
                     {isCreateMode ? formData?.pocName : companyData?.pocName || 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Designation</p>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Designation</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">
                     {isCreateMode ? formData?.pocDesignation : companyData?.pocDesignation || 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Email</p>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Email</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">
                     {isCreateMode ? formData?.pocEmail : companyData?.pocEmail || 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Phone Number</p>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Phone Number</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">
                     {isCreateMode ? formData?.pocPhone : companyData?.pocPhone || 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Website</p>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Website</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-dark-text">
                     {isCreateMode ? formData?.pocWebsite : companyData?.pocWebsite || 'N/A'}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-gray-200 pt-4">
-              <p className="text-sm font-medium text-gray-500 mb-2">Documents</p>
-              <div className="text-sm text-gray-600">
+            <div className="border-t border-gray-200 dark:border-dark-border pt-4">
+              <p className="text-sm font-medium text-gray-500 dark:text-dark-text-secondary mb-2">Documents</p>
+              <div className="text-sm text-gray-600 dark:text-dark-text-secondary">
                 <p>Supporting documents will be displayed here once uploaded.</p>
               </div>
             </div>
@@ -467,7 +467,7 @@ const VendorReview: React.FC<VendorReviewProps> = ({
         <button
           type="button"
           onClick={prevStep}
-          className="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+          className="px-6 py-2.5 border border-gray-300 dark:border-dark-border rounded-lg text-gray-700 dark:text-dark-text-secondary font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
           Previous
         </button>

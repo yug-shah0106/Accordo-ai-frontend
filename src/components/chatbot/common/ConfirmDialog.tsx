@@ -39,7 +39,7 @@ export default function ConfirmDialog({
 
     return () => {
       document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
     };
   }, [isOpen, onCancel]);
 

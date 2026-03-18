@@ -216,7 +216,7 @@ const UpdateProfile = ({
         {/* Profile Photo Preview */}
         <div className="mb-3">
           {preview ? (
-            <div className="w-24 h-24 rounded-full overflow-hidden border-3 border-gray-200 shadow-sm">
+            <div className="w-24 h-24 rounded-full overflow-hidden border-3 border-gray-200 dark:border-dark-border shadow-sm">
               <img
                 src={preview}
                 alt="Profile Preview"
@@ -224,8 +224,8 @@ const UpdateProfile = ({
               />
             </div>
           ) : (
-            <div className="w-24 h-24 rounded-full bg-gray-100 border-2 border-gray-200 flex items-center justify-center shadow-sm">
-              <FiUser className="w-10 h-10 text-gray-400" />
+            <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-dark-bg border-2 border-gray-200 dark:border-dark-border flex items-center justify-center shadow-sm">
+              <FiUser className="w-10 h-10 text-gray-400 dark:text-gray-500" />
             </div>
           )}
         </div>
@@ -255,8 +255,8 @@ const UpdateProfile = ({
 
       {/* Section Header */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
-        <p className="text-sm text-gray-600 mt-1">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Basic Information</h3>
+        <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1">
           Update your personal details
         </p>
       </div>
@@ -304,10 +304,10 @@ const UpdateProfile = ({
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+        <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-dark-border">
           <Button
             type="button"
-            className="!w-auto px-6 py-3 !bg-white border-2 border-gray-300 !text-gray-700 hover:!bg-gray-50 hover:border-gray-400 rounded-lg font-medium transition-all duration-200 min-w-[100px]"
+            className="!w-auto px-6 py-3 !bg-white dark:!bg-dark-bg border-2 border-gray-300 dark:border-dark-border !text-gray-700 dark:!text-dark-text-secondary hover:!bg-gray-50 dark:hover:!bg-gray-700 hover:border-gray-400 rounded-lg font-medium transition-all duration-200 min-w-[100px]"
             onClick={() => prevStep()}
             disabled={isSubmitting || currentStep === 1}
           >

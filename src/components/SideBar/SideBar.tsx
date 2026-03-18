@@ -446,9 +446,9 @@ const Sidebar = ({ logo }: SidebarProps) => {
               title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
               {isDark ? (
-                <FiSun className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                <FiSun className="w-5 h-5 text-gray-700 dark:text-white" />
               ) : (
-                <FiMoon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                <FiMoon className="w-5 h-5 text-gray-700 dark:text-white" />
               )}
             </button>
           )}
@@ -482,14 +482,14 @@ const Sidebar = ({ logo }: SidebarProps) => {
                 <div
                   className={`flex items-center w-full px-4 py-2.5 rounded-md ${activeItem?.includes(item.link) || activeItem === item.link
                     ? "bg-[#234BF3] text-white"
-                    : "text-gray-700 hover:bg-gray-100"
+                    : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                     }`}
                 >
                   <span className="mr-2 relative">
                     {item.icon}
                     {/* Onboarding badge on Settings */}
                     {item.link === "setting" && showOnboardingBadge && (
-                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-dark-surface"></span>
                     )}
                   </span>
                   {sidebarOpen && (

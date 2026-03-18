@@ -358,16 +358,16 @@ const CompanyProfile = ({
         {/* Company Logo Preview */}
         <div className="mb-3">
           {imagePreviews.companyLogo ? (
-            <div className="w-24 h-24 rounded-lg overflow-hidden border-2 border-gray-200 shadow-sm">
+            <div className="w-24 h-24 rounded-lg overflow-hidden border-2 border-gray-200 dark:border-dark-border shadow-sm">
               <img
                 src={imagePreviews.companyLogo}
                 alt="Company Logo"
-                className="w-full h-full object-contain bg-white"
+                className="w-full h-full object-contain bg-white dark:bg-dark-bg"
               />
             </div>
           ) : (
-            <div className="w-24 h-24 rounded-lg bg-gray-100 border-2 border-gray-200 flex items-center justify-center shadow-sm">
-              <BsBuilding className="w-10 h-10 text-gray-400" />
+            <div className="w-24 h-24 rounded-lg bg-gray-100 dark:bg-dark-bg border-2 border-gray-200 dark:border-dark-border flex items-center justify-center shadow-sm">
+              <BsBuilding className="w-10 h-10 text-gray-400 dark:text-gray-500" />
             </div>
           )}
         </div>
@@ -398,8 +398,8 @@ const CompanyProfile = ({
       <form onSubmit={onSubmit}>
         {/* General Information Section */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900">General Information</h3>
-          <p className="text-sm text-gray-600 mt-1 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">General Information</h3>
+          <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1 mb-6">
             Basic company details and registration information
           </p>
 
@@ -457,9 +457,9 @@ const CompanyProfile = ({
         />
 
         {/* Business Details Section */}
-        <div className="mb-8 pt-6 border-t border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Business Details</h3>
-          <p className="text-sm text-gray-600 mt-1 mb-6">
+        <div className="mb-8 pt-6 border-t border-gray-200 dark:border-dark-border">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Business Details</h3>
+          <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1 mb-6">
             Employee count, turnover, and compliance documents
           </p>
 
@@ -538,8 +538,8 @@ const CompanyProfile = ({
 
           {/* Compliance Documents */}
           <div className="mt-6 space-y-4">
-            <h4 className="text-sm font-medium text-gray-700">Compliance Documents</h4>
-            <p className="text-xs text-gray-500">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary">Compliance Documents</h4>
+            <p className="text-xs text-gray-500 dark:text-gray-500">
               Enter the number manually or upload a document to auto-extract
             </p>
 
@@ -612,9 +612,9 @@ const CompanyProfile = ({
         </div>
 
         {/* Point of Contact Section */}
-        <div className="mb-8 pt-6 border-t border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Point of Contact</h3>
-          <p className="text-sm text-gray-600 mt-1 mb-6">
+        <div className="mb-8 pt-6 border-t border-gray-200 dark:border-dark-border">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Point of Contact</h3>
+          <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1 mb-6">
             Primary contact person details
           </p>
 
@@ -677,9 +677,9 @@ const CompanyProfile = ({
         </div>
 
         {/* Bank Details Section */}
-        <div className="mb-8 pt-6 border-t border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Bank Details</h3>
-          <p className="text-sm text-gray-600 mt-1 mb-6">
+        <div className="mb-8 pt-6 border-t border-gray-200 dark:border-dark-border">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Bank Details</h3>
+          <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1 mb-6">
             Banking and payment information
           </p>
 
@@ -772,7 +772,7 @@ const CompanyProfile = ({
             />
 
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2">
                 Cancelled Cheque
               </label>
               <input
@@ -780,7 +780,7 @@ const CompanyProfile = ({
                 name="cancelledChequeURL"
                 accept="image/*,.pdf"
                 onChange={handleChange}
-                className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-blue-50 file:text-blue-600 file:font-medium hover:file:bg-blue-100"
+                className="block w-full text-sm text-gray-700 dark:text-dark-text-secondary border border-gray-300 dark:border-dark-border rounded-lg cursor-pointer file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-blue-50 dark:file:bg-blue-900/30 file:text-blue-600 file:font-medium hover:file:bg-blue-100 dark:hover:file:bg-blue-900/50"
               />
               {imagePreviews.cancelledChequeURL && (
                 <img
@@ -794,9 +794,9 @@ const CompanyProfile = ({
         </div>
 
         {/* Escalation Matrix Section */}
-        <div className="mb-8 pt-6 border-t border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Escalation Matrix</h3>
-          <p className="text-sm text-gray-600 mt-1 mb-6">
+        <div className="mb-8 pt-6 border-t border-gray-200 dark:border-dark-border">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Escalation Matrix</h3>
+          <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1 mb-6">
             Secondary contact for escalations
           </p>
 
@@ -848,10 +848,10 @@ const CompanyProfile = ({
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+        <div className="flex justify-end gap-4 pt-6 border-t border-gray-200 dark:border-dark-border">
           <Button
             type="button"
-            className="!w-auto px-6 py-3 !bg-white border-2 border-gray-300 !text-gray-700 hover:!bg-gray-50 hover:border-gray-400 rounded-lg font-medium transition-all duration-200 min-w-[100px]"
+            className="!w-auto px-6 py-3 !bg-white dark:!bg-dark-bg border-2 border-gray-300 dark:border-dark-border !text-gray-700 dark:!text-dark-text-secondary hover:!bg-gray-50 dark:hover:!bg-gray-700 hover:border-gray-400 rounded-lg font-medium transition-all duration-200 min-w-[100px]"
             onClick={() => prevStep()}
             disabled={isSubmitting}
           >

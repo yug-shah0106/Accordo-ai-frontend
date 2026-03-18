@@ -125,14 +125,14 @@ const NegotiationParameters = ({ requisitionId, onUpdate }: NegotiationParameter
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        <div className="bg-white dark:bg-dark-surface rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-dark-text mb-4">
                 Negotiation Parameters
             </h3>
             
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2">
                         BATNA (Best Alternative To a Negotiated Agreement)
                     </label>
                     <input
@@ -143,15 +143,15 @@ const NegotiationParameters = ({ requisitionId, onUpdate }: NegotiationParameter
                         placeholder="Enter BATNA value"
                         step="0.01"
                         min="0"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-dark-bg dark:text-dark-text"
                     />
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-gray-500 dark:text-dark-text-secondary">
                         Target price for negotiation. This is the minimum acceptable price.
                     </p>
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2">
                         Maximum Discount (%)
                     </label>
                     <input
@@ -163,15 +163,15 @@ const NegotiationParameters = ({ requisitionId, onUpdate }: NegotiationParameter
                         step="0.1"
                         min="0"
                         max="100"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-dark-bg dark:text-dark-text"
                     />
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-gray-500 dark:text-dark-text-secondary">
                         Maximum discount percentage acceptable (0-100%).
                     </p>
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2">
                         Current Discounted Value
                     </label>
                     <input
@@ -182,9 +182,9 @@ const NegotiationParameters = ({ requisitionId, onUpdate }: NegotiationParameter
                         placeholder="Enter current discounted value"
                         step="0.01"
                         min="0"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-dark-bg dark:text-dark-text"
                     />
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-gray-500 dark:text-dark-text-secondary">
                         Current discounted price achieved through negotiation.
                     </p>
                 </div>
@@ -202,7 +202,7 @@ const NegotiationParameters = ({ requisitionId, onUpdate }: NegotiationParameter
                             type="button"
                             onClick={() => setFormData({ ...originalData })}
                             disabled={loading}
-                            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50"
+                            className="px-6 py-2 bg-gray-200 dark:bg-dark-bg text-gray-700 dark:text-dark-text-secondary rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                         >
                             Cancel
                         </button>
@@ -211,19 +211,19 @@ const NegotiationParameters = ({ requisitionId, onUpdate }: NegotiationParameter
             </form>
 
             {formData.batna && formData.discountedValue && (
-                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                    <h4 className="text-sm font-semibold text-blue-900 mb-2">Negotiation Status</h4>
+                <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">Negotiation Status</h4>
                     <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                            <span className="text-gray-600">BATNA Target:</span>
+                            <span className="text-gray-600 dark:text-dark-text-secondary">BATNA Target:</span>
                             <span className="font-semibold">{formData.batna}</span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-gray-600">Current Value:</span>
+                            <span className="text-gray-600 dark:text-dark-text-secondary">Current Value:</span>
                             <span className="font-semibold">{formData.discountedValue}</span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-gray-600">Difference:</span>
+                            <span className="text-gray-600 dark:text-dark-text-secondary">Difference:</span>
                             <span className={`font-semibold ${
                                 Number(formData.discountedValue) <= Number(formData.batna)
                                     ? "text-green-600"

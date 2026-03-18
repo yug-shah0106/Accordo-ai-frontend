@@ -129,9 +129,9 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
   }, [company, reset]);
 
   return (
-    <div className="border-2 rounded pt-4 px-4 pb-0">
-      <h3 className="text-lg font-semibold">Vendor Details</h3>
-      <p className="font-normal text-[#46403E] pt-2 pb-0">
+    <div className="border-2 rounded pt-4 px-4 pb-0 dark:border-dark-border dark:bg-dark-surface">
+      <h3 className="text-lg font-semibold dark:text-dark-text">Vendor Details</h3>
+      <p className="font-normal text-[#46403E] dark:text-dark-text-secondary pt-2 pb-0">
         Your details will be used for vendor registration.
       </p>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -152,7 +152,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
               id="file-upload-gst"
               type="file"
               {...register("gstFile")}
-              className="block  text-sm text-gray-700 border border-gray-300 rounded shadow-sm file:border-0 file:px-3 file:py-2.5"
+              className="block  text-sm text-gray-700 dark:text-dark-text border border-gray-300 dark:border-dark-border rounded shadow-sm file:border-0 file:px-3 file:py-2.5 dark:bg-dark-bg"
             />
           </div>
             {company?.gstFileUrl && (
@@ -181,7 +181,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
               id="file-upload-pan"
               type="file"
               {...register("panFile")}
-              className="block text-sm text-gray-700 border border-gray-300 rounded shadow-sm file:border-0 file:px-3 file:py-2.5"
+              className="block text-sm text-gray-700 dark:text-dark-text border border-gray-300 dark:border-dark-border rounded shadow-sm file:border-0 file:px-3 file:py-2.5 dark:bg-dark-bg"
             />
           </div>
           {company?.panFileUrl && (
@@ -210,7 +210,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
               id="file-upload-msme"
               type="file"
               {...register("msmeFile")}
-              className="block text-sm text-gray-700 border border-gray-300 rounded shadow-sm file:border-0 file:px-3 file:py-2.5"
+              className="block text-sm text-gray-700 dark:text-dark-text border border-gray-300 dark:border-dark-border rounded shadow-sm file:border-0 file:px-3 file:py-2.5 dark:bg-dark-bg"
             />
           </div>
           {company?.msmeFileUrl && (
@@ -241,7 +241,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
               id="file-upload-ci"
               type="file"
               {...register("ciFile")}
-              className="block text-sm text-gray-700 border border-gray-300 rounded shadow-sm file:border-0 file:px-3 file:py-2.5"
+              className="block text-sm text-gray-700 dark:text-dark-text border border-gray-300 dark:border-dark-border rounded shadow-sm file:border-0 file:px-3 file:py-2.5 dark:bg-dark-bg"
             />
           </div>
           {company?.ciFileUrl && (

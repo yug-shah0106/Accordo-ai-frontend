@@ -216,11 +216,11 @@ const GroupSummary = () => {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm pt-6 px-6 pb-0 mb-6">
+      <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm pt-6 px-6 pb-0 mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Contract Summary</h1>
-            <p className="mt-1 text-gray-600">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-dark-text">Contract Summary</h1>
+            <p className="mt-1 text-gray-600 dark:text-dark-text-secondary">
               {loading ? 'Loading...' : `Contracts with Accepted/Rejected Status (${procurementData.companies.length})`}
             </p>
           </div>
@@ -229,18 +229,18 @@ const GroupSummary = () => {
               <input
                 type="text"
                 placeholder="Search vendors..."
-                className="pl-10 pr-4 pt-2 pb-0 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="pl-10 pr-4 pt-2 pb-0 border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg text-gray-900 dark:text-dark-text rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 disabled={loading}
               />
-              <FiSearch className="absolute left-3 top-3 text-gray-400" />
+              <FiSearch className="absolute left-3 top-3 text-gray-400 dark:text-gray-500" />
             </div>
-            <button className="p-2 text-gray-600 hover:text-gray-900" disabled={loading}>
+            <button className="p-2 text-gray-600 dark:text-dark-text-secondary hover:text-gray-900 dark:hover:text-white" disabled={loading}>
               <FiFilter className="w-5 h-5" />
             </button>
             <button
               onClick={fetchRequisitionData}
               disabled={loading}
-              className="p-2 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-2 text-gray-600 dark:text-dark-text-secondary hover:text-gray-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
               title="Refresh data"
             >
               <FiRefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
@@ -251,18 +251,18 @@ const GroupSummary = () => {
 
       {/* Loading State */}
       {loading && (
-        <div className="bg-white rounded-lg shadow-sm pt-12 px-12 pb-0">
+        <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm pt-12 px-12 pb-0">
           <div className="flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-            <span className="ml-3 text-gray-600">Loading requisition data...</span>
+            <span className="ml-3 text-gray-600 dark:text-dark-text-secondary">Loading requisition data...</span>
           </div>
         </div>
       )}
 
       {/* Error State */}
       {error && (
-        <div className="bg-white rounded-lg shadow-sm pt-6 px-6 pb-0 mb-6">
-          <div className="bg-red-50 border border-red-200 rounded-lg pt-4 px-4 pb-0">
+        <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm pt-6 px-6 pb-0 mb-6">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg pt-4 px-4 pb-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
@@ -290,11 +290,11 @@ const GroupSummary = () => {
 
       {/* Empty State */}
       {!loading && procurementData.companies.length === 0 && (
-        <div className="bg-white rounded-lg shadow-sm pt-12 px-12 pb-0">
+        <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm pt-12 px-12 pb-0">
           <div className="text-center">
-            <FiFileText className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No requisition found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <FiFileText className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-dark-text">No requisition found</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-dark-text-secondary">
               The requested requisition could not be found or may not exist.
             </p>
           </div>
@@ -303,18 +303,18 @@ const GroupSummary = () => {
 
       {/* Procurement Table */}
       {!loading && procurementData.companies.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-border">
+            <thead className="bg-gray-50 dark:bg-dark-bg">
               <tr>
-                <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider">
                   Rank
                 </th>
-                <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider">
                   Vendor Name
                 </th>
                 <th 
-                  className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort('totalAmount')}
                 >
                   <div className="flex items-center space-x-1">
@@ -325,7 +325,7 @@ const GroupSummary = () => {
                   </div>
                 </th>
                 <th 
-                  className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort('agreedAmount')}
                 >
                   <div className="flex items-center space-x-1">
@@ -336,7 +336,7 @@ const GroupSummary = () => {
                   </div>
                 </th>
                 <th 
-                  className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort('savings')}
                 >
                   <div className="flex items-center space-x-1">
@@ -346,18 +346,18 @@ const GroupSummary = () => {
                     )}
                   </div>
                 </th>
-                {/* <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {/* <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider">
                   Items
                 </th> */}
-                <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 pt-3 pb-0 text-left text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider">
                   Agreed Delivery Date
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-dark-surface divide-y divide-gray-200 dark:divide-dark-border">
               {sortedAndRankedCompanies.map((company) => (
-                <tr key={company.id} className="hover:bg-gray-50">
-                  <td className="px-6 pt-4 pb-0 whitespace-nowrap text-sm text-gray-900">
+                <tr key={company.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <td className="px-6 pt-4 pb-0 whitespace-nowrap text-sm text-gray-900 dark:text-dark-text">
                     <div className="relative flex items-center justify-center w-12 h-12">
                       {getRankIcon(company.rank)}
                       <span className={`absolute text-lg font-bold ${getRankColor(company.rank)}`}>
@@ -365,13 +365,13 @@ const GroupSummary = () => {
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 pt-4 pb-0 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <td className="px-6 pt-4 pb-0 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-dark-text">
                     {company.companyName}
                   </td>
-                  <td className="px-6 pt-4 pb-0 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 pt-4 pb-0 whitespace-nowrap text-sm text-gray-900 dark:text-dark-text">
                     ₹{company.totalAmount.toLocaleString('en-IN')}
                   </td>
-                  <td className="px-6 pt-4 pb-0 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 pt-4 pb-0 whitespace-nowrap text-sm text-gray-900 dark:text-dark-text">
                     ₹{company.agreedAmount.toLocaleString('en-IN')}
                   </td>
                   <td className="px-6 pt-4 pb-0 whitespace-nowrap">
@@ -379,12 +379,12 @@ const GroupSummary = () => {
                       <span className={`text-sm font-medium ${company.savings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         ₹{company.savings.toLocaleString('en-IN')}
                       </span>
-                      <span className={`text-xs ${company.savingsPercentage >= 0 ? 'text-gray-500' : 'text-red-500'}`}>
+                      <span className={`text-xs ${company.savingsPercentage >= 0 ? 'text-gray-500 dark:text-dark-text-secondary' : 'text-red-500'}`}>
                         {company.savingsPercentage.toFixed(2)}%
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 pt-4 pb-0 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 pt-4 pb-0 whitespace-nowrap text-sm text-gray-500 dark:text-dark-text-secondary">
                     {company.lastUpdated}
                   </td>
                 </tr>

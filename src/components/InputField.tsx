@@ -58,7 +58,7 @@ export default function InputField({
         <div className="flex justify-between">
           <label
             htmlFor={name}
-            className={`block text-sm text-gray-600 font-medium mb-2 ${labelClassName || ""}`}
+            className={`block text-sm text-gray-600 dark:text-dark-text-secondary font-medium mb-2 ${labelClassName || ""}`}
           >
             {label}
             {required && <span className="text-red-500 ml-1">*</span>}
@@ -89,7 +89,7 @@ export default function InputField({
             register(name, {
               ...(validation && validation),
             }))}
-          className={`w-full border border-gray-300 px-4 py-3 text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${error ? "border-red-500" : ""
+          className={`w-full border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg text-gray-900 dark:text-dark-text px-4 py-3 text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 ${error ? "border-red-500" : ""
             } ${className || ""}`}
         />
         {type === "password" && (

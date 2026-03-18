@@ -74,9 +74,9 @@ const VendorContactDetails: React.FC<VendorContactDetailsProps> = ({
   }, [company, reset]);
 
   return (
-    <div className="border-2 rounded p-4">
-      <h3 className="text-lg font-semibold">Point of Contact Details</h3>
-      <p className="font-normal text-[#46403E] py-2">
+    <div className="border-2 rounded p-4 dark:border-dark-border dark:bg-dark-surface">
+      <h3 className="text-lg font-semibold dark:text-dark-text">Point of Contact Details</h3>
+      <p className="font-normal text-[#46403E] dark:text-dark-text-secondary py-2">
         Your details will be used for contact details
       </p>
       <form onSubmit={handleSubmit(onSubmit)}>
