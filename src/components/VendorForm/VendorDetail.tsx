@@ -4,6 +4,7 @@ import { authMultiFormApi } from "../../api";
 import { useEffect } from "react";
 import InputField from "../InputField";
 import toast from "react-hot-toast";
+import { env } from "@/utils/env";
 
 interface Company {
   id?: string;
@@ -156,7 +157,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
           </div>
             {company?.gstFileUrl && (
               <img
-                src={`${import.meta.env.VITE_ASSEST_URL}/uploads/${company.gstFileUrl}`}
+                src={`${env("VITE_ASSEST_URL")}/uploads/${company.gstFileUrl}`}
                 alt="GST File"
                 className="w-[10%] h-auto"
               />
@@ -185,7 +186,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
           </div>
           {company?.panFileUrl && (
             <img
-              src={`${import.meta.env.VITE_ASSEST_URL}/uploads/${company.panFileUrl}`}
+              src={`${env("VITE_ASSEST_URL")}/uploads/${company.panFileUrl}`}
               alt="PAN File"
               className="w-[10%] h-auto"
             />
@@ -214,7 +215,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
           </div>
           {company?.msmeFileUrl && (
             <img
-              src={`${import.meta.env.VITE_ASSEST_URL}/uploads/${company.msmeFileUrl}`}
+              src={`${env("VITE_ASSEST_URL")}/uploads/${company.msmeFileUrl}`}
               alt="MSME File"
               className="w-[10%] h-auto"
             />
@@ -245,7 +246,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
           </div>
           {company?.ciFileUrl && (
             <img
-              src={`${import.meta.env.VITE_ASSEST_URL}/uploads/${company.ciFileUrl}`}
+              src={`${env("VITE_ASSEST_URL")}/uploads/${company.ciFileUrl}`}
               alt="CI File"
               className="w-[10%] h-auto"
             />

@@ -13,6 +13,7 @@ import ComplianceDocumentField from "../ComplianceDocumentField";
 import AddressSection from "./AddressSection";
 import { AddressData } from "../../types/address";
 import { FieldError } from "react-hook-form";
+import { env } from "@/utils/env";
 
 // Helper to convert string error to FieldError format
 const toFieldError = (error: string | undefined): FieldError | undefined => {
@@ -123,22 +124,22 @@ const CompanyProfile = ({
 
         setImagePreviews({
           gstFile: companyData.gstFileUrl
-            ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${companyData.gstFileUrl}`
+            ? `${env("VITE_ASSEST_URL")}/uploads/${companyData.gstFileUrl}`
             : null,
           panFile: companyData.panFileUrl
-            ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${companyData.panFileUrl}`
+            ? `${env("VITE_ASSEST_URL")}/uploads/${companyData.panFileUrl}`
             : null,
           msmeFile: companyData.msmeFileUrl
-            ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${companyData.msmeFileUrl}`
+            ? `${env("VITE_ASSEST_URL")}/uploads/${companyData.msmeFileUrl}`
             : null,
           ciFile: companyData.ciFileUrl
-            ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${companyData.ciFileUrl}`
+            ? `${env("VITE_ASSEST_URL")}/uploads/${companyData.ciFileUrl}`
             : null,
           cancelledChequeURL: companyData.cancelledChequeURL
-            ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${companyData.cancelledChequeURL}`
+            ? `${env("VITE_ASSEST_URL")}/uploads/${companyData.cancelledChequeURL}`
             : null,
           companyLogo: companyData.companyLogo
-            ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${companyData.companyLogo}`
+            ? `${env("VITE_ASSEST_URL")}/uploads/${companyData.companyLogo}`
             : null,
         });
 

@@ -1,8 +1,9 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from "axios";
 import { tokenStorage } from "../utils/tokenStorage";
+import { env } from "../utils/env";
 
 const buildBaseUrl = (): string => {
-  const rawBaseUrl = (import.meta.env.VITE_BACKEND_URL || "").trim();
+  const rawBaseUrl = (env("VITE_BACKEND_URL") || "").trim();
   if (!rawBaseUrl) {
     return "/api";
   }

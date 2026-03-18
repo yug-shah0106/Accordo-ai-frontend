@@ -11,6 +11,7 @@ import { BsBuilding } from "react-icons/bs";
 import Modal from "../../components/Modal";
 import AddressSection from "../../components/settingForm/AddressSection";
 import { AddressData } from "../../types/address";
+import { env } from "@/utils/env";
 
 interface OnboardingFormData {
   profileData?: any;
@@ -112,7 +113,7 @@ const OnboardingCompany = ({
 
         setImagePreviews({
           companyLogo: companyData.companyLogo
-            ? `${import.meta.env.VITE_ASSEST_URL}/uploads/${companyData.companyLogo}`
+            ? `${env("VITE_ASSEST_URL")}/uploads/${companyData.companyLogo}`
             : null,
         });
 

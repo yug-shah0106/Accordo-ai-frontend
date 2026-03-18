@@ -17,6 +17,7 @@ import Filter from "../Filter";
 import Badge from "../badge";
 import Breadcrumb from "../BreadeCrum";
 import { LuGitPullRequest } from "react-icons/lu";
+import { env } from "@/utils/env";
 
 const RequisitionsManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<any>(false);
@@ -659,7 +660,7 @@ const RequisitionsManagement = () => {
                   key={attachment.id}
                   className="h-10 w-10"
                   src={
-                    import.meta.env.VITE_ASSEST_URL +
+                    env("VITE_ASSEST_URL") +
                     "/uploads/" +
                     attachment?.attachmentUrl
                   }

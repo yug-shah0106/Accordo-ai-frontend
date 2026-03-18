@@ -11,6 +11,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import Modal from "../Modal";
 import chatbotService from "../../services/chatbot.service";
 import type { DealStatus, VendorDealSummary } from "../../types/chatbot";
+import { env } from "@/utils/env";
 
 type ContractStatus = 'Created' | 'Active' | 'Opened' | 'Completed' | 'Verified' | 'Accepted' | 'Rejected' | 'Expired' | 'Escalated' | 'InitialQuotation';
 
@@ -430,13 +431,13 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
 
   // Open contract link in new window
   const handleOpenContractLink = (contract: Contract): void => {
-    const link = `${import.meta.env.VITE_FRONTEND_URL}/vendor-contract/${contract?.uniqueToken}`;
+    const link = `${env("VITE_FRONTEND_URL")}/vendor-contract/${contract?.uniqueToken}`;
     window.open(link, '_blank');
   };
 
   // Copy link to clipboard
   const handleCopyLink = (contract: Contract): void => {
-    const link = `${import.meta.env.VITE_FRONTEND_URL}/vendor-contract/${contract?.uniqueToken}`;
+    const link = `${env("VITE_FRONTEND_URL")}/vendor-contract/${contract?.uniqueToken}`;
     navigator.clipboard.writeText(link);
     toast.success("Link copied to clipboard");
   };
@@ -738,7 +739,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                   (v) => v?.vendorId?.toString() === contract?.vendorId?.toString()
                 );
                 const vendorName = matchedVendor?.Vendor?.name || matchedVendor?.Vendor?.companyName || 'Unknown Vendor';
-                const fullLink = `${import.meta.env.VITE_FRONTEND_URL}/vendor-contract/${contract?.uniqueToken}`;
+                const fullLink = `${env("VITE_FRONTEND_URL")}/vendor-contract/${contract?.uniqueToken}`;
 
                 return (
                   <li

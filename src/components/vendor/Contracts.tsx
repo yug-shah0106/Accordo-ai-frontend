@@ -17,6 +17,7 @@ import Filter from "../Filter";
 import Modal from "../Modal";
 import Breadcrumb from "../BreadeCrum";
 import toast from "react-hot-toast";
+import { env } from "@/utils/env";
 
 const Contracts = () => {
   const { state } = useLocation();
@@ -91,7 +92,7 @@ const Contracts = () => {
     {
       header: "Link",
       accessor: "uniqueToken",
-      isLink: `${import.meta.env.VITE_FRONTEND_URL}/vendor-contract/`,
+      isLink: `${env("VITE_FRONTEND_URL")}/vendor-contract/`,
     },
     {
       header: "Created On",
@@ -490,7 +491,7 @@ JSON.parse(row.contractDetails);
                           <div>
                             <p className="text-gray-500">Contract Link</p>
                             <a
-                              href={`${import.meta.env.VITE_FRONTEND_URL}/vendor-contract/${contractModel?.uniqueToken}`}
+                              href={`${env("VITE_FRONTEND_URL")}/vendor-contract/${contractModel?.uniqueToken}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="font-medium text-blue-600 hover:underline"
@@ -610,7 +611,7 @@ JSON.parse(row.contractDetails);
                           <div>
                             <p className="text-gray-500">Contract Link</p>
                             <a
-                              href={`${import.meta.env.VITE_FRONTEND_URL}/vendor-contract/${contractModel?.uniqueToken}`}
+                              href={`${env("VITE_FRONTEND_URL")}/vendor-contract/${contractModel?.uniqueToken}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="font-medium text-blue-600 hover:underline"

@@ -10,6 +10,7 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { FiUser } from "react-icons/fi";
 import toast from "react-hot-toast";
 import Modal from "../Modal";
+import { env } from "@/utils/env";
 
 interface SettingsFormData {
   profileData?: {
@@ -95,7 +96,7 @@ const UpdateProfile = ({
           // Set preview from server data if available
           if (userData.profilePic) {
             setPreview(
-              `${import.meta.env.VITE_ASSEST_URL}/uploads/${userData.profilePic}`
+              `${env("VITE_ASSEST_URL")}/uploads/${userData.profilePic}`
             );
           } else {
             setPreview(null);
