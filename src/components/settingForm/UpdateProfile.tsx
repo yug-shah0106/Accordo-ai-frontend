@@ -65,6 +65,7 @@ const UpdateProfile = ({
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [userRoleName, setUserRoleName] = useState<string>("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -92,6 +93,16 @@ const UpdateProfile = ({
             phone: userData.phone || "",
             email: userData.email || "",
           });
+
+          // Set user role name
+          if (userData.Role?.name) {
+            setUserRoleName(userData.Role.name);
+          } else if (userData.roleId) {
+            try {
+              const roleRes = await authApi.get(`/role/get/${userData.roleId}`);
+              setUserRoleName(roleRes.data?.data?.name || "");
+            } catch { /* ignore */ }
+          }
 
           // Set preview from server data if available
           if (userData.profilePic) {
@@ -301,6 +312,19 @@ const UpdateProfile = ({
             }}
             className="text-sm text-gray-900"
           />
+
+          {/* User Role - Read Only */}
+          <div className="my-4">
+            <label className="block text-sm text-gray-600 font-medium mb-2">
+              User Role
+            </label>
+            <input
+              type="text"
+              value={userRoleName || "Not assigned"}
+              disabled
+              className="w-full border border-gray-300 px-4 py-3 text-base rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
+            />
+          </div>
         </div>
 
         {/* Form Actions */}
