@@ -84,7 +84,7 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
       const roles = response.data.data || [];
       const filtered = roles.filter((role: Role) => {
         const name = (role.name || '').toLowerCase().trim();
-        return name !== 'super admin' && name !== 'admin';
+        return name !== 'super admin';
       });
       setUserRoles(filtered);
     } catch (error: any) {

@@ -5,6 +5,11 @@ import Button from "../Button";
 import { authApi } from "../../api";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
+import {
+  getCountries,
+  getStatesForCountry,
+  getCitiesForState,
+} from "../../types/address";
 
 interface Company {
   id?: string;
@@ -36,11 +41,9 @@ interface LocationDetailsProps {
   prevStep: () => void;
   companyId: string;
   company: Company | null;
-  // New props for create mode
   isCreateMode?: boolean;
   formData?: VendorFormData;
   updateFormData?: (data: Partial<VendorFormData>) => void;
-  // Step submission handler for progressive save
   onStepSubmit?: (data: VendorFormData) => Promise<void>;
   isSubmitting?: boolean;
   projectId?: any;
@@ -72,6 +75,7 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
     handleSubmit,
     watch,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     defaultValues: {
@@ -83,6 +87,15 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
     },
   });
 
+  const selectedCountry = watch("country");
+  const selectedState = watch("state");
+
+  const countryOptions = getCountries();
+  const stateOptions = selectedCountry ? getStatesForCountry(selectedCountry) : [];
+  const cityOptions = selectedCountry && selectedState
+    ? getCitiesForState(selectedCountry, selectedState)
+    : [];
+
   const validationSchema = {
     address: {
       required: "Address is required",
@@ -91,14 +104,10 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
       required: "City is required",
     },
     state: {
-      required: "State is required",
+      required: "State / Province is required",
     },
     zipCode: {
-      required: "Zip code is required",
-      pattern: {
-        value: /^[0-9]{5,6}$/,
-        message: "Zip code must be 5-6 digits",
-      },
+      required: "Postal code is required",
     },
     country: {
       required: "Country is required",
@@ -115,15 +124,12 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
         country: data.country,
       };
 
-      // If we have a step submit handler (progressive save mode), use it
       if (onStepSubmit) {
         await onStepSubmit(stepData);
         return;
       }
 
-      // CREATE MODE (legacy): Accumulate data and move to next step
       if (isCreateMode && updateFormData) {
-        // Convert to address array format expected by the unified endpoint
         const addressData: AddressData = {
           label: 'Primary Address',
           address: data.address,
@@ -138,12 +144,10 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
           addresses: [addressData],
         });
 
-        // Move to next step without making API calls
         nextStep();
         return;
       }
 
-      // EDIT MODE: Save data immediately via API
       await authApi.put(`/company/update/${companyId}`, data);
       nextStep();
     } catch (error) {
@@ -153,7 +157,6 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
   };
 
   useEffect(() => {
-    // In create mode, populate from parent form data if available
     if (isCreateMode && parentFormData?.addresses?.[0]) {
       const addr = parentFormData.addresses[0];
       reset({
@@ -166,9 +169,7 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
       return;
     }
 
-    // In edit mode, populate from company data
     if (company) {
-      // Address data is in the Addresses array from the backend
       const companyAddr = (company as any)?.Addresses?.[0];
       if (companyAddr) {
         reset({
@@ -179,7 +180,6 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
           country: companyAddr.country || "",
         });
       } else {
-        // Fallback to legacy format (direct fields on company)
         reset({
           address: (company as any)?.address || "",
           city: (company as any)?.city || "",
@@ -201,7 +201,6 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Location Section */}
         <div>
           <h4 className="text-md font-medium text-gray-900 mb-3">Company Address</h4>
           <div className="grid grid-cols-1 gap-4">
@@ -219,67 +218,72 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* City */}
-              <InputField
-                label="City"
-                name="city"
-                placeholder="Enter City"
-                type="text"
+              {/* Country */}
+              <SelectField
+                label="Country"
+                name="country"
+                placeholder="Select country"
                 register={register}
-                error={errors.city}
-                validation={{ required: validationSchema.city.required }}
+                value={selectedCountry}
+                onChange={(e) => {
+                  setValue("country", e.target.value);
+                  setValue("state", "");
+                  setValue("city", "");
+                }}
+                error={errors.country}
+                validation={{ required: validationSchema.country.required }}
+                options={countryOptions}
                 wholeInputClassName="my-1"
                 required
               />
 
-              {/* State */}
-              <InputField
-                label="State"
+              {/* State / Province */}
+              <SelectField
+                label="State / Province"
                 name="state"
-                placeholder="Enter State"
-                type="text"
+                placeholder="Select state"
                 register={register}
+                value={selectedState}
+                onChange={(e) => {
+                  setValue("state", e.target.value);
+                  setValue("city", "");
+                }}
                 error={errors.state}
                 validation={{ required: validationSchema.state.required }}
+                options={stateOptions}
                 wholeInputClassName="my-1"
                 required
               />
 
-              {/* Zip Code */}
+              {/* City */}
+              <SelectField
+                label="City"
+                name="city"
+                placeholder="Select city"
+                register={register}
+                value={watch("city")}
+                onChange={(e) => {
+                  setValue("city", e.target.value);
+                }}
+                error={errors.city}
+                validation={{ required: validationSchema.city.required }}
+                options={cityOptions}
+                wholeInputClassName="my-1"
+                required
+              />
+
+              {/* Postal Code */}
               <InputField
-                label="Zip Code"
+                label="Postal Code"
                 name="zipCode"
-                placeholder="Enter Zip Code"
+                placeholder="Enter postal code"
                 type="text"
                 register={register}
                 error={errors.zipCode}
                 validation={{
                   required: validationSchema.zipCode.required,
-                  pattern: validationSchema.zipCode.pattern,
                 }}
                 wholeInputClassName="my-1"
-                required
-              />
-
-              {/* Country */}
-              <SelectField
-                label="Country"
-                name="country"
-                placeholder="Select Country"
-                register={register}
-                value={watch("country")}
-                error={errors.country}
-                validation={{ required: validationSchema.country.required }}
-                options={[
-                  { value: "India", label: "India" },
-                  { value: "USA", label: "United States" },
-                  { value: "UK", label: "United Kingdom" },
-                  { value: "Canada", label: "Canada" },
-                  { value: "Australia", label: "Australia" },
-                  { value: "Other", label: "Other" },
-                ]}
-                optionValue="value"
-                optionKey="label"
                 required
               />
             </div>

@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form";
 import InputField from "../InputField";
+import SelectField from "../SelectField";
 import Button from "../Button";
 import { authApi } from "../../api";
 import { useEffect } from "react";
@@ -49,6 +50,7 @@ const VendorBankDetails: React.FC<VendorBankDetailsProps> = ({
   const {
     register,
     handleSubmit,
+    watch,
     reset,
     formState: { errors, isSubmitting },
     watch: _watch,
@@ -166,14 +168,18 @@ const VendorBankDetails: React.FC<VendorBankDetailsProps> = ({
             wholeInputClassName={`my-1`}
           />
 
-          <InputField
+          <SelectField
             label="Bank Account Type"
             name="bankAccountType"
-            placeholder="Enter Bank Account Type"
-            type="text"
+            placeholder="Select account type"
             register={register}
+            value={watch("bankAccountType")}
             error={errors.bankAccountType}
-            wholeInputClassName={`my-1`}
+            options={[
+              { value: "Current", label: "Current" },
+              { value: "Savings", label: "Savings" },
+            ]}
+            wholeInputClassName="my-1"
           />
 
          

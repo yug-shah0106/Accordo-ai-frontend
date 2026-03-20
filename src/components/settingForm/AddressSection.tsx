@@ -7,8 +7,9 @@ import SelectField from "../SelectField";
 import {
   AddressData,
   ADDRESS_LABELS,
-  COUNTRIES,
+  getCountries,
   getStatesForCountry,
+  getCitiesForState,
 } from "../../types/address";
 
 interface AddressSectionProps {
@@ -32,7 +33,7 @@ const AddressSection = ({ addresses, onChange, errors }: AddressSectionProps) =>
       address: "",
       city: "",
       state: "",
-      country: "India",
+      country: "",
       postalCode: "",
       isDefault: addresses.filter((a) => !a._delete).length === 0,
     };
@@ -88,9 +89,15 @@ const AddressSection = ({ addresses, onChange, errors }: AddressSectionProps) =>
       if (i === index) {
         const updated = { ...addr, [field]: value };
 
-        // If country changes, reset state
+        // If country changes, reset state and city
         if (field === "country") {
           updated.state = "";
+          updated.city = "";
+        }
+
+        // If state changes, reset city
+        if (field === "state") {
+          updated.city = "";
         }
 
         // If setting as primary, unset other primaries
@@ -162,6 +169,9 @@ const AddressSection = ({ addresses, onChange, errors }: AddressSectionProps) =>
             if (address._delete) return null;
 
             const stateOptions = getStatesForCountry(address.country);
+            const cityOptions = address.country && address.state
+              ? getCitiesForState(address.country, address.state)
+              : [];
             const isExpanded = expandedIndex === index;
 
             return (
@@ -258,6 +268,7 @@ const AddressSection = ({ addresses, onChange, errors }: AddressSectionProps) =>
                           onChange={(e) =>
                             handleFieldChange(index, "customLabel", e.target.value)
                           }
+                          wholeInputClassName="!my-0"
                           className="text-sm text-gray-900"
                         />
                       )}
@@ -273,23 +284,11 @@ const AddressSection = ({ addresses, onChange, errors }: AddressSectionProps) =>
                           onChange={(e) =>
                             handleFieldChange(index, "address", e.target.value)
                           }
+                          wholeInputClassName="!my-0"
                           className="text-sm text-gray-900"
                           required
                         />
                       </div>
-
-                      {/* City */}
-                      <InputField
-                        label="City"
-                        name={`city-${index}`}
-                        placeholder="Enter city"
-                        type="text"
-                        value={address.city}
-                        onChange={(e) =>
-                          handleFieldChange(index, "city", e.target.value)
-                        }
-                        className="text-sm text-gray-900"
-                      />
 
                       {/* Country Dropdown */}
                       <SelectField
@@ -299,36 +298,36 @@ const AddressSection = ({ addresses, onChange, errors }: AddressSectionProps) =>
                         onChange={(e) =>
                           handleFieldChange(index, "country", e.target.value)
                         }
-                        options={COUNTRIES}
+                        options={getCountries()}
+                        placeholder="Select country"
                         wholeInputClassName="!my-0"
                       />
 
-                      {/* State Dropdown */}
-                      {stateOptions.length > 0 ? (
-                        <SelectField
-                          label="State / Province"
-                          name={`state-${index}`}
-                          value={address.state}
-                          onChange={(e) =>
-                            handleFieldChange(index, "state", e.target.value)
-                          }
-                          options={stateOptions}
-                          placeholder="Select state"
-                          wholeInputClassName="!my-0"
-                        />
-                      ) : (
-                        <InputField
-                          label="State / Province"
-                          name={`state-${index}`}
-                          placeholder="Enter state"
-                          type="text"
-                          value={address.state}
-                          onChange={(e) =>
-                            handleFieldChange(index, "state", e.target.value)
-                          }
-                          className="text-sm text-gray-900"
-                        />
-                      )}
+                      {/* State / Province Dropdown */}
+                      <SelectField
+                        label="State / Province"
+                        name={`state-${index}`}
+                        value={address.state}
+                        onChange={(e) =>
+                          handleFieldChange(index, "state", e.target.value)
+                        }
+                        options={stateOptions}
+                        placeholder="Select state"
+                        wholeInputClassName="!my-0"
+                      />
+
+                      {/* City Dropdown */}
+                      <SelectField
+                        label="City"
+                        name={`city-${index}`}
+                        value={address.city}
+                        onChange={(e) =>
+                          handleFieldChange(index, "city", e.target.value)
+                        }
+                        options={cityOptions}
+                        placeholder="Select city"
+                        wholeInputClassName="!my-0"
+                      />
 
                       {/* Postal Code */}
                       <InputField
@@ -340,6 +339,7 @@ const AddressSection = ({ addresses, onChange, errors }: AddressSectionProps) =>
                         onChange={(e) =>
                           handleFieldChange(index, "postalCode", e.target.value)
                         }
+                        wholeInputClassName="!my-0"
                         className="text-sm text-gray-900"
                       />
                     </div>

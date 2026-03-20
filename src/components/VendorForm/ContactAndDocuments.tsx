@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form";
 import InputField from "../InputField";
+import SelectField from "../SelectField";
 import Button from "../Button";
 import { authApi } from "../../api";
 import { useEffect, useState } from "react";
@@ -67,6 +68,7 @@ const ContactAndDocuments: React.FC<ContactAndDocumentsProps> = ({
   const {
     register,
     handleSubmit,
+    watch,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
@@ -309,13 +311,21 @@ const ContactAndDocuments: React.FC<ContactAndDocumentsProps> = ({
               wholeInputClassName="my-1"
             />
 
-            <InputField
+            <SelectField
               label="Designation"
               name="pocDesignation"
-              placeholder="Enter Designation"
-              type="text"
+              placeholder="Select designation"
               register={register}
+              value={watch("pocDesignation")}
               error={errors.pocDesignation}
+              options={[
+                { value: "CEO", label: "CEO" },
+                { value: "CFO", label: "CFO" },
+                { value: "HOD", label: "HOD" },
+                { value: "Admin", label: "Admin" },
+                { value: "Procurement Manager", label: "Procurement Manager" },
+                { value: "Procurement Manager Approver", label: "Procurement Manager Approver" },
+              ]}
               wholeInputClassName="my-1"
             />
 

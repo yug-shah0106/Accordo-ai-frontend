@@ -197,7 +197,7 @@ const UserInfo = () => {
               <ArrowLeft className="w-5 h-5 text-gray-600" />
             </button>
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Settings</h1>
+              <h1 className="text-2xl font-semibold text-gray-900">User Profile</h1>
               <p className="text-sm text-gray-600 mt-1">
                 Manage your profile, company details, and security settings
               </p>
