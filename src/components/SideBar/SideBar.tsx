@@ -197,13 +197,14 @@
 
 
 import { useEffect, useState, useRef } from "react";
-import { FiBarChart2, FiGitBranch, FiMessageSquare, FiSun, FiMoon } from "react-icons/fi";
+import { FiBarChart2, FiMessageSquare, FiSun, FiMoon } from "react-icons/fi";
 import { VscFeedback } from "react-icons/vsc";
 import { BiUserCheck } from "react-icons/bi";
 import { MdVerified } from "react-icons/md";
 import { useLocation, useNavigate } from "react-router-dom";
 import { RiBox3Line } from "react-icons/ri";
-import { SlSettings } from "react-icons/sl";
+import { FiUser } from "react-icons/fi";
+import { HiOutlineBuildingStorefront } from "react-icons/hi2";
 // import { PiFramerLogo } from "react-icons/pi"; // Unused
 import { LuGitPullRequest, LuTwitch } from "react-icons/lu";
 import { CiLogout } from "react-icons/ci";
@@ -279,7 +280,7 @@ const Sidebar = ({ logo }: SidebarProps) => {
     },
     {
       name: "Vendor Management",
-      icon: <FiGitBranch className="text-xl" />,
+      icon: <HiOutlineBuildingStorefront className="text-xl" />,
       link: "vendor-management",
       permissionKey: "vendorPermission",
       isActive: true,
@@ -320,8 +321,8 @@ const Sidebar = ({ logo }: SidebarProps) => {
       isActive: true,
     },
     {
-      name: "Settings",
-      icon: <SlSettings className="text-xl" />,
+      name: "User Profile",
+      icon: <FiUser className="text-xl" />,
       link: "setting",
       permissionKey: null,
       isActive: true,

@@ -25,6 +25,12 @@ interface RegisterFormData {
   confirmPassword: string;
 }
 
+const USER_TYPES = [
+  { value: "admin", label: "Admin" },
+  { value: "procurement", label: "Procurement" },
+  { value: "vendor", label: "Vendor" },
+];
+
 interface RolePermission {
   project?: string;
   requisition?: string;
@@ -53,6 +59,7 @@ export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<TabType>("login");
   const [terms, setTerms] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selectedUserType, setSelectedUserType] = useState<string>("");
 
   // Login form
   const loginForm = useForm<LoginFormData>({
@@ -117,7 +124,10 @@ export default function AuthPage() {
       const { confirmPassword, ...registerData } = data;
 
       // Register the user
-      await api.post("/auth/register", registerData);
+      await api.post("/auth/register", {
+        ...registerData,
+        ...(selectedUserType ? { userType: selectedUserType } : {}),
+      });
 
       // Auto-login after registration
       const loginResponse = await api.post<LoginResponse>("/auth/login", {
@@ -268,6 +278,32 @@ export default function AuthPage() {
             error={registerForm.formState.errors.confirmPassword}
             placeholder="Enter password"
           />
+          {/* User Type Selection */}
+          <div className="my-4">
+            <label className="block text-sm text-gray-600 font-medium mb-2">
+              User Type
+            </label>
+            <div className="relative">
+              <select
+                value={selectedUserType}
+                onChange={(e) => setSelectedUserType(e.target.value)}
+                className="w-full border border-gray-300 px-4 py-3 text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white"
+              >
+                <option value="">Select a user type</option>
+                {USER_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
           <div className="flex items-center gap-4 my-2 w-full mt-2">
             <Checkbox
               name="terms"

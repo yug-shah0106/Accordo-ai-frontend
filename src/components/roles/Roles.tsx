@@ -66,7 +66,7 @@ function Roles() {
     try {
       const response = await authApi.get(`/role/get-all`);
       if (response.status === 201) {
-        setRoles(response.data.data);
+        setRoles((response.data.data || []).filter((role: Role) => role.name !== 'Super Admin'));
       }
     } catch (error) {
       console.error("Error fetching roles:", error);

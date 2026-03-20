@@ -95,14 +95,14 @@ export const step1 = (_tenureInDays?: number | undefined) =>
       ]),
     })
     .refine(
-      (data) => data.negotiationClosureDate < data.deliveryDate,
+      (data) => data.negotiationClosureDate.getTime() < data.deliveryDate.getTime(),
       {
         message: "Negotiation closure date must be before the delivery date",
         path: ["negotiationClosureDate"],
       }
     )
     .refine(
-      (data) => !data.maxDeliveryDate || data.maxDeliveryDate > data.deliveryDate,
+      (data) => !data.maxDeliveryDate || data.maxDeliveryDate.getTime() >= data.deliveryDate.getTime(),
       {
         message: "Maximum delivery date must be after the delivery date",
         path: ["maxDeliveryDate"],
