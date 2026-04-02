@@ -88,7 +88,7 @@ export default function SignUp() {
 
   return (
     <div className="w-full max-w-sm px-6 py-4 mx-auto">
-      <h2 className="text-2xl font-bold text-center text-gray-800">Register</h2>
+      <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-dark-text">Register</h2>
 
       <form className="mt-6" onSubmit={handleSubmit(onSubmit)}>
         <InputField
@@ -166,14 +166,14 @@ export default function SignUp() {
           />
           <p
             onClick={() => openModal()}
-            className="text-gray-700 cursor-pointer flex-1"
+            className="text-gray-700 dark:text-dark-text-secondary cursor-pointer flex-1"
           >
             I agree to{" "}
-            <span className="font-bold text-[#000] cursor-pointer">
+            <span className="font-bold text-[#000] dark:text-dark-text cursor-pointer">
               Terms of Use
             </span>{" "}
             and{" "}
-            <span className="font-bold text-[#000] cursor-pointer">
+            <span className="font-bold text-[#000] dark:text-dark-text cursor-pointer">
               Privacy Policy
             </span>
           </p>
@@ -195,8 +195,8 @@ export default function SignUp() {
         />
       )}
 
-      <div className="mt-6 text-center text-sm text-gray-600">
-        <div className="bg-[#D3DBFD33]/[20%] pt-3 pb-0 rounded-md text-[#18100E]">
+      <div className="mt-6 text-center text-sm text-gray-600 dark:text-dark-text-secondary">
+        <div className="bg-[#D3DBFD33]/[20%] pt-3 pb-0 rounded-md text-[#18100E] dark:text-dark-text">
           <p>
             Don't have an account?{" "}
             <Link to="/sign-in" className=" hover:underline font-bold">

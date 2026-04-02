@@ -68,13 +68,13 @@ export const ApprovalsSidebar: React.FC<ApprovalsSidebarProps> = ({
   return (
     <div className="flex flex-col h-full">
       {/* Tab Headers */}
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b border-gray-200 dark:border-dark-border">
         <button
           onClick={() => setActiveTab('approvals')}
           className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
             activeTab === 'approvals'
               ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
+              : 'text-gray-500 dark:text-dark-text-secondary hover:text-gray-700 dark:hover:text-white'
           }`}
         >
           Approvals
@@ -84,7 +84,7 @@ export const ApprovalsSidebar: React.FC<ApprovalsSidebarProps> = ({
           className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
             activeTab === 'history'
               ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
+              : 'text-gray-500 dark:text-dark-text-secondary hover:text-gray-700 dark:hover:text-white'
           }`}
         >
           History
@@ -141,8 +141,8 @@ const ApprovalsTab: React.FC<ApprovalsTabProps> = ({
     return (
       <div className="text-center py-8">
         <MdCheck className="mx-auto text-green-500 mb-2" size={48} />
-        <p className="text-gray-600 font-medium">Requisition Awarded</p>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-gray-600 dark:text-dark-text-secondary font-medium">Requisition Awarded</p>
+        <p className="text-sm text-gray-500 dark:text-dark-text-secondary mt-1">
           A vendor has been selected for this requisition
         </p>
       </div>
@@ -151,7 +151,7 @@ const ApprovalsTab: React.FC<ApprovalsTabProps> = ({
 
   if (!selectedBid) {
     return (
-      <div className="text-center py-8 text-gray-500">
+      <div className="text-center py-8 text-gray-500 dark:text-dark-text-secondary">
         <MdPerson className="mx-auto mb-2 opacity-50" size={48} />
         <p>Select a bid to review</p>
       </div>
@@ -161,8 +161,8 @@ const ApprovalsTab: React.FC<ApprovalsTabProps> = ({
   return (
     <div className="space-y-4">
       {/* Selected Vendor Card */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-500 mb-2">Selected Vendor</h4>
+      <div className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg p-4">
+        <h4 className="text-sm font-medium text-gray-500 dark:text-dark-text-secondary mb-2">Selected Vendor</h4>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
             <span className="text-blue-600 font-semibold">
@@ -170,20 +170,20 @@ const ApprovalsTab: React.FC<ApprovalsTabProps> = ({
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-gray-900 truncate">{selectedBid.vendorName}</p>
-            <p className="text-sm text-gray-500 truncate">{selectedBid.vendorEmail}</p>
+            <p className="font-medium text-gray-900 dark:text-dark-text truncate">{selectedBid.vendorName}</p>
+            <p className="text-sm text-gray-500 dark:text-dark-text-secondary truncate">{selectedBid.vendorEmail}</p>
           </div>
         </div>
 
         {/* Bid Details */}
-        <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-gray-200">
+        <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-dark-border">
           <div>
-            <span className="text-xs text-gray-500">Price</span>
-            <p className="font-semibold text-gray-900">{formatCurrency(selectedBid.finalPrice)}</p>
+            <span className="text-xs text-gray-500 dark:text-dark-text-secondary">Price</span>
+            <p className="font-semibold text-gray-900 dark:text-dark-text">{formatCurrency(selectedBid.finalPrice)}</p>
           </div>
           <div>
-            <span className="text-xs text-gray-500">Terms</span>
-            <p className="font-semibold text-gray-900">{selectedBid.paymentTerms || 'N/A'}</p>
+            <span className="text-xs text-gray-500 dark:text-dark-text-secondary">Terms</span>
+            <p className="font-semibold text-gray-900 dark:text-dark-text">{selectedBid.paymentTerms || 'N/A'}</p>
           </div>
         </div>
 
@@ -210,7 +210,7 @@ const ApprovalsTab: React.FC<ApprovalsTabProps> = ({
       {!selectedBid.isRejected && (
         <>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-1">
               Remarks <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -218,12 +218,12 @@ const ApprovalsTab: React.FC<ApprovalsTabProps> = ({
               onChange={(e) => setRemarks(e.target.value)}
               placeholder="Enter your remarks (required)..."
               rows={3}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${
-                remarks.trim() === '' ? 'border-gray-300' : 'border-gray-300'
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-gray-500 ${
+                remarks.trim() === '' ? 'border-gray-300 dark:border-dark-border' : 'border-gray-300 dark:border-dark-border'
               }`}
             />
             {remarks.trim() === '' && (
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-500 dark:text-dark-text-secondary">
                 Please provide remarks before accepting or rejecting
               </p>
             )}
@@ -272,13 +272,13 @@ const HistoryTab: React.FC<HistoryTabProps> = ({ history, formatTimeAgo }) => {
       case 'RESTORED':
         return <MdRefresh className="text-blue-500" size={16} />;
       default:
-        return <MdAccessTime className="text-gray-400" size={16} />;
+        return <MdAccessTime className="text-gray-400 dark:text-gray-500" size={16} />;
     }
   };
 
   if (history.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
+      <div className="text-center py-8 text-gray-500 dark:text-dark-text-secondary">
         <MdAccessTime className="mx-auto mb-2 opacity-50" size={48} />
         <p>No history yet</p>
       </div>
@@ -290,25 +290,25 @@ const HistoryTab: React.FC<HistoryTabProps> = ({ history, formatTimeAgo }) => {
       {history.map((entry) => (
         <div
           key={entry.id}
-          className="flex gap-3 p-3 bg-gray-50 rounded-lg"
+          className="flex gap-3 p-3 bg-gray-50 dark:bg-dark-bg/50 rounded-lg"
         >
           <div className="flex-shrink-0 mt-0.5">
             {getActionIcon(entry.action)}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
-              <span className="font-medium text-gray-900 text-sm">{entry.actionLabel}</span>
-              <span className="text-xs text-gray-500 whitespace-nowrap">
+              <span className="font-medium text-gray-900 dark:text-dark-text text-sm">{entry.actionLabel}</span>
+              <span className="text-xs text-gray-500 dark:text-dark-text-secondary whitespace-nowrap">
                 {formatTimeAgo(entry.createdAt)}
               </span>
             </div>
             {entry.vendorName && (
-              <p className="text-sm text-gray-600 mt-0.5">{entry.vendorName}</p>
+              <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-0.5">{entry.vendorName}</p>
             )}
             {entry.remarks && (
-              <p className="text-sm text-gray-500 mt-1 italic">"{entry.remarks}"</p>
+              <p className="text-sm text-gray-500 dark:text-dark-text-secondary mt-1 italic">"{entry.remarks}"</p>
             )}
-            <p className="text-xs text-gray-400 mt-1">by {entry.userName}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">by {entry.userName}</p>
           </div>
         </div>
       ))}

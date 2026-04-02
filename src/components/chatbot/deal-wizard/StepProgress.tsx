@@ -52,8 +52,8 @@ const StepProgress: React.FC<StepProgressProps> = ({
                     ${isCompleted
                       ? 'bg-blue-600 text-white cursor-pointer hover:bg-blue-700'
                       : isCurrent
-                        ? 'bg-blue-600 text-white ring-4 ring-blue-100'
-                        : 'bg-gray-200 text-gray-500'
+                        ? 'bg-blue-600 text-white ring-4 ring-blue-100 dark:ring-blue-900/50'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                     }
                     ${isClickable ? 'cursor-pointer' : 'cursor-default'}
                   `}
@@ -69,12 +69,12 @@ const StepProgress: React.FC<StepProgressProps> = ({
                 <div className="mt-2 text-center">
                   <p className={`
                     text-sm font-medium
-                    ${isCurrent ? 'text-blue-600' : isCompleted ? 'text-gray-700' : 'text-gray-400'}
+                    ${isCurrent ? 'text-blue-600 dark:text-blue-400' : isCompleted ? 'text-gray-700 dark:text-dark-text-secondary' : 'text-gray-400 dark:text-gray-500'}
                   `}>
                     {step.title}
                   </p>
                   {step.description && (
-                    <p className="text-xs text-gray-400 mt-0.5 max-w-[100px]">
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 max-w-[100px]">
                       {step.description}
                     </p>
                   )}
@@ -86,7 +86,7 @@ const StepProgress: React.FC<StepProgressProps> = ({
                 <div className="flex-1 mx-4 mt-[-24px]">
                   <div className={`
                     h-1 rounded-full transition-all duration-300
-                    ${step.id < currentStep ? 'bg-blue-600' : 'bg-gray-200'}
+                    ${step.id < currentStep ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}
                   `} />
                 </div>
               )}

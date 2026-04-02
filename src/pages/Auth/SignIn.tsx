@@ -80,7 +80,7 @@ export default function SignIn() {
 
   return (
     <div className="w-full max-w-sm px-6 py-4 mx-auto">
-      <h2 className="text-2xl font-bold text-center text-gray-800">Log in</h2>
+      <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-dark-text">Log in</h2>
 
       <form className="mt-6" onSubmit={handleSubmit(onSubmit)}>
         <InputField
@@ -113,7 +113,7 @@ export default function SignIn() {
         </Button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-gray-600">
+      <div className="mt-6 text-center text-sm text-gray-600 dark:text-dark-text-secondary">
         {/* <div className="flex items-center my-3">
           <div className="flex-1 border-[#000000]/[50%] border"></div>
           <p className="mx-2">Other login options</p>

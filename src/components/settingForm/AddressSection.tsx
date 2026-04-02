@@ -130,11 +130,11 @@ const AddressSection = ({ addresses, onChange, errors }: AddressSectionProps) =>
   const canDelete = activeAddresses.length > 1;
 
   return (
-    <div className="mb-8 pt-6 border-t border-gray-200">
+    <div className="mb-8 pt-6 border-t border-gray-200 dark:border-dark-border">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Company Addresses</h3>
-          <p className="text-sm text-gray-600 mt-1">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Company Addresses</h3>
+          <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1">
             Manage your company office locations
           </p>
         </div>
@@ -153,8 +153,8 @@ const AddressSection = ({ addresses, onChange, errors }: AddressSectionProps) =>
       )}
 
       {activeAddresses.length === 0 ? (
-        <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-          <p className="text-gray-500">No addresses added yet.</p>
+        <div className="text-center py-8 bg-gray-50 dark:bg-dark-bg/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-dark-border">
+          <p className="text-gray-500 dark:text-dark-text-secondary">No addresses added yet.</p>
           <button
             type="button"
             onClick={handleAddAddress}
@@ -177,16 +177,16 @@ const AddressSection = ({ addresses, onChange, errors }: AddressSectionProps) =>
             return (
               <div
                 key={address.id ?? `new-${index}`}
-                className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
+                className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg shadow-sm overflow-hidden"
               >
                 {/* Accordion Header */}
                 <button
                   type="button"
                   onClick={() => toggleAccordion(index)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-dark-bg/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-gray-900 dark:text-dark-text">
                       {getDisplayLabel(address)}
                     </span>
                     {address.isDefault && (
@@ -195,7 +195,7 @@ const AddressSection = ({ addresses, onChange, errors }: AddressSectionProps) =>
                       </span>
                     )}
                     {address.city && (
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-500 dark:text-dark-text-secondary">
                         {address.city}
                         {address.state && `, ${address.state}`}
                       </span>
@@ -209,23 +209,23 @@ const AddressSection = ({ addresses, onChange, errors }: AddressSectionProps) =>
                           e.stopPropagation();
                           handleDeleteAddress(index);
                         }}
-                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                        className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                         title="Delete address"
                       >
                         <RiDeleteBin6Line className="w-4 h-4" />
                       </button>
                     )}
                     {isExpanded ? (
-                      <MdOutlineKeyboardArrowDown className="w-6 h-6 text-gray-400" />
+                      <MdOutlineKeyboardArrowDown className="w-6 h-6 text-gray-400 dark:text-gray-500" />
                     ) : (
-                      <MdKeyboardArrowRight className="w-6 h-6 text-gray-400" />
+                      <MdKeyboardArrowRight className="w-6 h-6 text-gray-400 dark:text-gray-500" />
                     )}
                   </div>
                 </button>
 
                 {/* Accordion Content */}
                 {isExpanded && (
-                  <div className="p-4 border-t border-gray-200">
+                  <div className="p-4 border-t border-gray-200 dark:border-dark-border">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Primary Selection */}
                       <div className="col-span-2">
@@ -237,9 +237,9 @@ const AddressSection = ({ addresses, onChange, errors }: AddressSectionProps) =>
                             onChange={() =>
                               handleFieldChange(index, "isDefault", true)
                             }
-                            className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                            className="w-4 h-4 text-blue-600 border-gray-300 dark:border-dark-border dark:bg-dark-bg focus:ring-blue-500"
                           />
-                          <span className="text-sm text-gray-700">
+                          <span className="text-sm text-gray-700 dark:text-dark-text-secondary">
                             Set as primary address
                           </span>
                         </label>

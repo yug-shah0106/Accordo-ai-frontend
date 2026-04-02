@@ -161,11 +161,11 @@ const UserManagement = () => {
   const [selectedRow, setSelectedRow] = useState<{ element: HTMLElement | null; user: User | null }>({ element: null, user: null });
 
   return (
-    <div className="flex flex-col bg-white rounded-lg min-h-full">
+    <div className="flex flex-col bg-white dark:bg-dark-surface rounded-lg min-h-full">
       {/* Sticky Header Section */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0">
+      <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border pt-6 px-6 pb-4 flex-shrink-0">
         {/* Header Section */}
-        <div className="bg-white rounded-lg shadow-sm pt-6 px-6 pb-4 mb-6">
+        <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm pt-6 px-6 pb-4 mb-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-8">
               {/* User Management Section */}
@@ -174,7 +174,7 @@ const UserManagement = () => {
                   <div className="p-2 bg-blue-50 rounded-lg">
                     <BiUserCheck className="text-2xl text-blue-600" />
                   </div>
-                  <h1 className="text-2xl font-semibold text-gray-800">User Management</h1>
+                  <h1 className="text-2xl font-semibold text-gray-800 dark:text-dark-text">User Management</h1>
                 </div>
                 <Link
                   to="/user-management/create-user"
@@ -184,7 +184,7 @@ const UserManagement = () => {
                 </Link>
               </div>
 
-              <div className="h-10 w-px bg-gray-200"></div>
+              <div className="h-10 w-px bg-gray-200 dark:bg-dark-border"></div>
 
               {/* Roles Section */}
               <div className="flex items-center gap-6">
@@ -192,11 +192,11 @@ const UserManagement = () => {
                   <div className="p-2 bg-blue-50 rounded-lg">
                     <VscSettings className="text-2xl text-blue-600" />
                   </div>
-                  <h1 className="text-2xl font-semibold text-gray-800">Roles</h1>
+                  <h1 className="text-2xl font-semibold text-gray-800 dark:text-dark-text">Roles</h1>
                 </div>
                 <Link
                   to="/user-management/edit-roles"
-                  className="inline-flex items-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition-all duration-200 text-sm font-medium border border-blue-200 hover:border-blue-300"
+                  className="inline-flex items-center gap-2 bg-white dark:bg-dark-surface text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition-all duration-200 text-sm font-medium border border-blue-200 dark:border-blue-500 hover:border-blue-300"
                 >
                   <FaPlus className="text-sm" /> Manage Roles
                 </Link>
@@ -212,10 +212,10 @@ const UserManagement = () => {
               <input
                 type="text"
                 placeholder="Search by name, email, phone, role..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-80"
+                className="pl-10 pr-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg text-sm text-gray-900 dark:text-dark-text dark:bg-dark-bg dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-80"
                 onChange={(e) => debounce(e.target.value)}
               />
-              <IoSearchOutline className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <IoSearchOutline className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             </div>
           </div>
         </div>
@@ -226,27 +226,27 @@ const UserManagement = () => {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 border-b">
+              <tr className="bg-gray-50 dark:bg-dark-bg/50 border-b dark:border-dark-border">
                 {columns.map((column, index) => (
                   <th
                     key={index}
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-text-secondary uppercase tracking-wider"
                   >
                     {column.header}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-dark-border">
               {users?.map((row, _rowIndex) => (
                 <tr
                   key={row.id}
-                  className="hover:bg-gray-50 transition-colors"
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   {columns.map((column, colIndex) => (
                     <td
                       key={colIndex}
-                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-dark-text"
                     >
                       {column.isBadge ? (
                         <Badge
@@ -263,7 +263,7 @@ const UserManagement = () => {
                       )}
                     </td>
                   ))}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-dark-text">
                     <div className="relative">
                       <PiDotsThreeBold
                         className="text-xl cursor-pointer hover:text-blue-500 transition-colors"
@@ -321,9 +321,9 @@ const UserManagement = () => {
           </table>
         </div>
 
-        <div className="px-6 py-4 border-t border-gray-200">
+        <div className="px-6 py-4 border-t border-gray-200 dark:border-dark-border">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-dark-text-secondary">
               {totalDoc > 0 ? (
                 `Showing ${((page - 1) * limit) + 1} to ${Math.min(page * limit, totalDoc)} of ${totalDoc} entries`
               ) : (

@@ -12,6 +12,7 @@
 
 import { FiTarget } from "react-icons/fi";
 import { useMemo } from "react";
+import { DECISION_ACTION_COLORS, GAUGE_ZONE_MAP, getActionColors } from "../../../constants/colors";
 
 export interface DecisionThresholds {
   accept: number; // default 0.7
@@ -45,22 +46,10 @@ function getCurrentZone(
   return "walk";
 }
 
-/**
- * Get zone label and styles
- */
 function getZoneInfo(zoneId: string): { label: string; textColor: string; bgColor: string } {
-  switch (zoneId) {
-    case "accept":
-      return { label: "Accept", textColor: "text-green-700", bgColor: "bg-green-100" };
-    case "counter":
-      return { label: "Counter", textColor: "text-blue-700", bgColor: "bg-blue-100" };
-    case "escalate":
-      return { label: "Escalate", textColor: "text-orange-700", bgColor: "bg-orange-100" };
-    case "walk":
-      return { label: "Walk Away", textColor: "text-red-700", bgColor: "bg-red-100" };
-    default:
-      return { label: "Unknown", textColor: "text-gray-700", bgColor: "bg-gray-100" };
-  }
+  const actionKey = GAUGE_ZONE_MAP[zoneId as keyof typeof GAUGE_ZONE_MAP];
+  const c = actionKey ? DECISION_ACTION_COLORS[actionKey] : getActionColors('');
+  return { label: c.label, textColor: c.text, bgColor: c.bg };
 }
 
 export default function DecisionThresholdZones({
@@ -87,28 +76,28 @@ export default function DecisionThresholdZones({
       {
         id: "walk",
         label: "Walk",
-        color: "#FCA5A5", // red-300
+        color: DECISION_ACTION_COLORS.WALK_AWAY.svgHex,
         startAngle: -90,
         endAngle: -90 + walkAwayPercent * 180,
       },
       {
         id: "escalate",
         label: "Esc",
-        color: "#FDBA74", // orange-300
+        color: DECISION_ACTION_COLORS.ESCALATE.svgHex,
         startAngle: -90 + walkAwayPercent * 180,
         endAngle: -90 + escalatePercent * 180,
       },
       {
         id: "counter",
         label: "Cnt",
-        color: "#93C5FD", // blue-300
+        color: DECISION_ACTION_COLORS.COUNTER.svgHex,
         startAngle: -90 + escalatePercent * 180,
         endAngle: -90 + acceptPercent * 180,
       },
       {
         id: "accept",
         label: "Acc",
-        color: "#86EFAC", // green-300
+        color: DECISION_ACTION_COLORS.ACCEPT.svgHex,
         startAngle: -90 + acceptPercent * 180,
         endAngle: 90,
       },
@@ -273,12 +262,10 @@ export function CompactThresholdZones({
 }: DecisionThresholdZonesProps) {
   const currentZone = getCurrentZone(currentUtility, thresholds);
 
-  const zones: { id: string; label: string; bg: string; text: string }[] = [
-    { id: "walk", label: "Walk", bg: "bg-red-100", text: "text-red-700" },
-    { id: "escalate", label: "Esc", bg: "bg-orange-100", text: "text-orange-700" },
-    { id: "counter", label: "Cnt", bg: "bg-blue-100", text: "text-blue-700" },
-    { id: "accept", label: "Acc", bg: "bg-green-100", text: "text-green-700" },
-  ];
+  const zones = (['walk', 'escalate', 'counter', 'accept'] as const).map((id) => {
+    const c = DECISION_ACTION_COLORS[GAUGE_ZONE_MAP[id]];
+    return { id, label: id === 'walk' ? 'Walk' : id === 'escalate' ? 'Esc' : id === 'counter' ? 'Cnt' : 'Acc', bg: c.bg, text: c.text };
+  });
 
   return (
     <div className="flex gap-1">

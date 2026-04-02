@@ -186,19 +186,19 @@ const UserInfo = () => {
   return (
     <div className="flex flex-col min-h-full">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 pt-6 pb-4 flex-shrink-0">
+      <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 pt-6 pb-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               aria-label="Go back"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
+              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-dark-text-secondary" />
             </button>
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">User Profile</h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <h1 className="text-2xl font-semibold text-gray-900 dark:text-dark-text">Settings</h1>
+              <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1">
                 Manage your profile, company details, and security settings
               </p>
             </div>
@@ -220,7 +220,7 @@ const UserInfo = () => {
                 ) : null}
               </div>
             )}
-            <div className="text-xs text-gray-500 font-medium">
+            <div className="text-xs text-gray-500 dark:text-gray-500 font-medium">
               Step {currentStep} of {steps.length}
             </div>
           </div>
@@ -230,7 +230,7 @@ const UserInfo = () => {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar with Step Progress */}
-        <div className="w-80 bg-white border-r border-gray-200 flex-shrink-0 overflow-y-auto p-6">
+        <div className="w-80 bg-white dark:bg-dark-surface border-r border-gray-200 dark:border-dark-border flex-shrink-0 overflow-y-auto p-6">
           <VerticalStepProgress
             steps={steps}
             currentStep={currentStep}
@@ -240,14 +240,14 @@ const UserInfo = () => {
         </div>
 
         {/* Form Content */}
-        <div className="flex-1 overflow-y-auto bg-gray-50">
+        <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-dark-bg/50">
           <div className="max-w-4xl mx-auto px-6 py-8">
             {/* Step Component */}
-            <div className="bg-white rounded-lg shadow-sm">
+            <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm">
               {isLoading ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                  <span className="ml-3 text-gray-600">Loading...</span>
+                  <span className="ml-3 text-gray-600 dark:text-dark-text-secondary">Loading...</span>
                 </div>
               ) : (
                 renderStep()

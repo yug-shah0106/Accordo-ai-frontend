@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
 import { FiX, FiChevronLeft, FiChevronRight, FiDollarSign, FiClock } from "react-icons/fi";
+import { getActionColors, getUtilityBarColor } from "../../../constants/colors";
 
 export interface ReasoningTimelineItem {
   round: number;
@@ -30,14 +31,14 @@ interface AiReasoningModalProps {
   onNavigate: (index: number) => void;
 }
 
-const ACTION_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
-  ACCEPT: { bg: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300", text: "text-green-700 dark:text-green-300", dot: "bg-green-500" },
-  COUNTER: { bg: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300", text: "text-blue-700 dark:text-blue-300", dot: "bg-blue-500" },
-  ESCALATE: { bg: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300", text: "text-orange-700 dark:text-orange-300", dot: "bg-orange-500" },
-  WALK_AWAY: { bg: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300", text: "text-red-700 dark:text-red-300", dot: "bg-red-500" },
-};
-
-const DEFAULT_STYLE = { bg: "bg-gray-100 text-gray-600", text: "text-gray-600", dot: "bg-gray-400" };
+function getActionStyle(action: string) {
+  const c = getActionColors(action);
+  return {
+    bg: `${c.bg} ${c.text} ${c.darkBg} ${c.darkText}`,
+    text: `${c.text} ${c.darkText}`,
+    dot: c.dot,
+  };
+}
 
 function formatTimestamp(ts: string): string {
   const date = new Date(ts);
@@ -75,7 +76,7 @@ export default function AiReasoningModal({
     }
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
     };
   }, [isOpen, handleKeyDown]);
 
@@ -84,7 +85,7 @@ export default function AiReasoningModal({
   const item = timeline[currentIndex];
   if (!item) return null;
 
-  const style = ACTION_STYLES[item.action] || DEFAULT_STYLE;
+  const style = getActionStyle(item.action);
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (dialogRef.current && !dialogRef.current.contains(e.target as Node)) {
@@ -247,12 +248,7 @@ export default function AiReasoningModal({
                 </div>
                 <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all ${
-                      item.utilityScore >= 0.7 ? "bg-green-500" :
-                      item.utilityScore >= 0.5 ? "bg-blue-500" :
-                      item.utilityScore >= 0.3 ? "bg-orange-500" :
-                      "bg-red-500"
-                    }`}
+                    className={`h-full rounded-full transition-all ${getUtilityBarColor(item.utilityScore)}`}
                     style={{ width: `${Math.min(item.utilityScore * 100, 100)}%` }}
                   />
                 </div>

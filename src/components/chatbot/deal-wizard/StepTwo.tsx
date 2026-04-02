@@ -134,12 +134,12 @@ const CalendarPopup: React.FC<{
         className={`
           h-9 w-9 rounded-full text-sm font-medium transition-all
           ${disabled
-            ? 'text-gray-300 cursor-not-allowed'
+            ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
             : selected
               ? 'bg-blue-500 text-white'
               : todayClass
-                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                : 'text-gray-700 hover:bg-gray-100'
+                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50'
+                : 'text-gray-700 dark:text-dark-text-secondary hover:bg-gray-100 dark:hover:bg-gray-700'
           }
         `}
       >
@@ -150,7 +150,7 @@ const CalendarPopup: React.FC<{
 
   return (
     <div ref={containerRef} className="relative">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-1">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
 
@@ -161,11 +161,11 @@ const CalendarPopup: React.FC<{
         className={`
           w-full flex items-center gap-2 px-4 py-2.5 border rounded-lg text-left
           focus:outline-none focus:ring-2 focus:ring-blue-500
-          ${error ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white hover:border-gray-400'}
+          ${error ? 'border-red-300 bg-red-50' : 'border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg hover:border-gray-400 dark:hover:border-gray-600'}
         `}
       >
-        <Calendar className="w-4 h-4 text-gray-400" />
-        <span className={value ? 'text-gray-900' : 'text-gray-400'}>
+        <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+        <span className={value ? 'text-gray-900 dark:text-dark-text' : 'text-gray-400 dark:text-gray-500'}>
           {value ? formatDateForDisplay(value) : 'Select a date...'}
         </span>
       </button>
@@ -186,32 +186,32 @@ const CalendarPopup: React.FC<{
 
       {/* Calendar popup */}
       {isOpen && (
-        <div className="absolute z-50 mt-2 p-4 bg-white border border-gray-200 rounded-xl shadow-lg w-72">
+        <div className="absolute z-50 mt-2 p-4 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-xl shadow-lg w-72">
           {/* Month navigation */}
           <div className="flex items-center justify-between mb-4">
             <button
               type="button"
               onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-              className="p-1 hover:bg-gray-100 rounded-full"
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
             >
-              <ChevronLeft className="w-5 h-5 text-gray-600" />
+              <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-dark-text-secondary" />
             </button>
-            <span className="text-sm font-semibold text-gray-900">
+            <span className="text-sm font-semibold text-gray-900 dark:text-dark-text">
               {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
             </span>
             <button
               type="button"
               onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-              className="p-1 hover:bg-gray-100 rounded-full"
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
             >
-              <ChevronRight className="w-5 h-5 text-gray-600" />
+              <ChevronRight className="w-5 h-5 text-gray-600 dark:text-dark-text-secondary" />
             </button>
           </div>
 
           {/* Day headers */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
-              <div key={day} className="h-9 flex items-center justify-center text-xs font-medium text-gray-500">
+              <div key={day} className="h-9 flex items-center justify-center text-xs font-medium text-gray-500 dark:text-dark-text-secondary">
                 {day}
               </div>
             ))}
@@ -230,7 +230,7 @@ const CalendarPopup: React.FC<{
                 onChange(null);
                 setIsOpen(false);
               }}
-              className="w-full mt-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors"
+              className="w-full mt-3 py-2 text-sm text-gray-600 dark:text-dark-text-secondary hover:text-gray-800 dark:hover:text-dark-text hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
               Clear date
             </button>
@@ -245,7 +245,7 @@ const CalendarPopup: React.FC<{
         </p>
       )}
       {helpText && !error && (
-        <p className="mt-1 text-xs text-gray-500">{helpText}</p>
+        <p className="mt-1 text-xs text-gray-500 dark:text-dark-text-secondary">{helpText}</p>
       )}
     </div>
   );
@@ -343,10 +343,10 @@ const StepTwo: React.FC<StepTwoProps> = ({
     <div className="space-y-8">
       {/* Smart Defaults Info */}
       {smartDefaults && smartDefaults.confidence > 0 && (
-        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+        <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           <div className="flex items-start gap-2">
-            <Info className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-green-700">
+            <Info className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-green-700 dark:text-green-300">
               <p className="font-medium">Smart defaults applied</p>
               <p className="text-xs mt-0.5">
                 Based on {smartDefaults.source === 'combined'
@@ -367,18 +367,18 @@ const StepTwo: React.FC<StepTwoProps> = ({
       {/* Price & Quantity Section */}
       <section>
         <div className="flex items-center gap-2 mb-4">
-          <DollarSign className="w-5 h-5 text-gray-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Price & Quantity</h3>
+          <DollarSign className="w-5 h-5 text-gray-600 dark:text-dark-text-secondary" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Price & Quantity</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Total Target Price */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-1">
               Total Target Price <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">{currencySymbol}</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-dark-text-secondary">{currencySymbol}</span>
               <input
                 type="number"
                 value={data.priceQuantity.targetUnitPrice ?? ''}
@@ -389,7 +389,8 @@ const StepTwo: React.FC<StepTwoProps> = ({
                 className={`
                   w-full pl-8 pr-4 py-2.5 border rounded-lg
                   focus:outline-none focus:ring-2 focus:ring-blue-500
-                  ${errors.targetUnitPrice ? 'border-red-300 bg-red-50' : 'border-gray-300'}
+                  dark:bg-dark-bg dark:border-dark-border dark:text-dark-text
+                  ${errors.targetUnitPrice ? 'border-red-300 bg-red-50' : 'border-gray-300 dark:border-dark-border'}
                 `}
               />
             </div>
@@ -399,16 +400,16 @@ const StepTwo: React.FC<StepTwoProps> = ({
                 {errors.targetUnitPrice}
               </p>
             )}
-            <p className="mt-1 text-xs text-gray-500">Total ideal price for all items (auto-filled from requisition)</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-dark-text-secondary">Total ideal price for all items (auto-filled from requisition)</p>
           </div>
 
           {/* Total Maximum Price */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-1">
               Total Maximum Price <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">{currencySymbol}</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-dark-text-secondary">{currencySymbol}</span>
               <input
                 type="number"
                 value={data.priceQuantity.maxAcceptablePrice ?? ''}
@@ -419,7 +420,8 @@ const StepTwo: React.FC<StepTwoProps> = ({
                 className={`
                   w-full pl-8 pr-4 py-2.5 border rounded-lg
                   focus:outline-none focus:ring-2 focus:ring-blue-500
-                  ${errors.maxAcceptablePrice ? 'border-red-300 bg-red-50' : 'border-gray-300'}
+                  dark:bg-dark-bg dark:border-dark-border dark:text-dark-text
+                  ${errors.maxAcceptablePrice ? 'border-red-300 bg-red-50' : 'border-gray-300 dark:border-dark-border'}
                 `}
               />
             </div>
@@ -429,12 +431,12 @@ const StepTwo: React.FC<StepTwoProps> = ({
                 {errors.maxAcceptablePrice}
               </p>
             )}
-            <p className="mt-1 text-xs text-gray-500">Walk-away total price ceiling (auto-filled from requisition)</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-dark-text-secondary">Walk-away total price ceiling (auto-filled from requisition)</p>
           </div>
 
           {/* Total Order Quantity */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-1">
               Total Order Quantity <span className="text-red-500">*</span>
             </label>
             <input
@@ -448,7 +450,8 @@ const StepTwo: React.FC<StepTwoProps> = ({
                 w-full px-4 py-2.5 border rounded-lg
                 focus:outline-none focus:ring-2 focus:ring-blue-500
                 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
-                ${errors.minOrderQuantity ? 'border-red-300 bg-red-50' : 'border-gray-300'}
+                dark:bg-dark-bg dark:border-dark-border dark:text-dark-text
+                ${errors.minOrderQuantity ? 'border-red-300 bg-red-50' : 'border-gray-300 dark:border-dark-border'}
               `}
             />
             {errors.minOrderQuantity && (
@@ -457,12 +460,12 @@ const StepTwo: React.FC<StepTwoProps> = ({
                 {errors.minOrderQuantity}
               </p>
             )}
-            <p className="mt-1 text-xs text-gray-500">Total quantity from requisition (auto-filled)</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-dark-text-secondary">Total quantity from requisition (auto-filled)</p>
           </div>
 
           {/* Preferred Quantity */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-1">
               Preferred Quantity
             </label>
             <input
@@ -472,9 +475,9 @@ const StepTwo: React.FC<StepTwoProps> = ({
               placeholder="Optional"
               min="1"
               step="1"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="w-full px-4 py-2.5 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-dark-bg dark:text-dark-text [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
-            <p className="mt-1 text-xs text-gray-500">Ideal order quantity</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-dark-text-secondary">Ideal order quantity</p>
           </div>
 
         </div>
@@ -483,15 +486,15 @@ const StepTwo: React.FC<StepTwoProps> = ({
       {/* Payment Terms Section */}
       <section>
         <div className="flex items-center gap-2 mb-4">
-          <CreditCard className="w-5 h-5 text-gray-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Payment Terms</h3>
+          <CreditCard className="w-5 h-5 text-gray-600 dark:text-dark-text-secondary" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Payment Terms</h3>
         </div>
 
         <div className="space-y-4">
           {/* Payment Days Range - Fixed with 'days' label outside */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-1">
                 Minimum Payment Days <span className="text-red-500">*</span>
               </label>
               <div className="flex items-center gap-2">
@@ -506,10 +509,11 @@ const StepTwo: React.FC<StepTwoProps> = ({
                     flex-1 px-4 py-2.5 border rounded-lg
                     focus:outline-none focus:ring-2 focus:ring-blue-500
                     [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
-                    ${errors.minPaymentDays ? 'border-red-300 bg-red-50' : 'border-gray-300'}
+                    dark:bg-dark-bg dark:border-dark-border dark:text-dark-text
+                    ${errors.minPaymentDays ? 'border-red-300 bg-red-50' : 'border-gray-300 dark:border-dark-border'}
                   `}
                 />
-                <span className="text-sm font-medium text-gray-600 whitespace-nowrap">days</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-dark-text-secondary whitespace-nowrap">days</span>
               </div>
               {errors.minPaymentDays && (
                 <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
@@ -520,7 +524,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-1">
                 Maximum Payment Days <span className="text-red-500">*</span>
               </label>
               <div className="flex items-center gap-2">
@@ -535,10 +539,11 @@ const StepTwo: React.FC<StepTwoProps> = ({
                     flex-1 px-4 py-2.5 border rounded-lg
                     focus:outline-none focus:ring-2 focus:ring-blue-500
                     [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
-                    ${errors.maxPaymentDays ? 'border-red-300 bg-red-50' : 'border-gray-300'}
+                    dark:bg-dark-bg dark:border-dark-border dark:text-dark-text
+                    ${errors.maxPaymentDays ? 'border-red-300 bg-red-50' : 'border-gray-300 dark:border-dark-border'}
                   `}
                 />
-                <span className="text-sm font-medium text-gray-600 whitespace-nowrap">days</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-dark-text-secondary whitespace-nowrap">days</span>
               </div>
               {errors.maxPaymentDays && (
                 <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
@@ -551,7 +556,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
 
           {/* Payment Methods */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2">
               Accepted Payment Methods
             </label>
             <div className="flex flex-wrap gap-2">
@@ -564,7 +569,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
                     px-4 py-2 rounded-lg border-2 transition-all text-sm font-medium
                     ${data.paymentTerms.acceptedMethods.includes(method.value)
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                      : 'border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface text-gray-600 dark:text-dark-text-secondary hover:border-gray-300 dark:hover:border-gray-600'
                     }
                   `}
                 >
@@ -579,8 +584,8 @@ const StepTwo: React.FC<StepTwoProps> = ({
       {/* Delivery Parameters Section */}
       <section>
         <div className="flex items-center gap-2 mb-4">
-          <Truck className="w-5 h-5 text-gray-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Delivery Parameters</h3>
+          <Truck className="w-5 h-5 text-gray-600 dark:text-dark-text-secondary" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Delivery Parameters</h3>
         </div>
 
         <div className="space-y-4">
@@ -609,11 +614,11 @@ const StepTwo: React.FC<StepTwoProps> = ({
 
           {/* Delivery Location */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-1">
               Delivery Location <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none z-10" />
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none z-10" />
               <select
                 value={data.delivery.locationId ?? ''}
                 onChange={(e) => {
@@ -635,7 +640,8 @@ const StepTwo: React.FC<StepTwoProps> = ({
                 className={`
                   w-full pl-10 pr-4 py-2.5 border rounded-lg appearance-none
                   focus:outline-none focus:ring-2 focus:ring-blue-500
-                  ${errors.locationId ? 'border-red-300 bg-red-50' : 'border-gray-300'}
+                  dark:bg-dark-bg dark:border-dark-border dark:text-dark-text
+                  ${errors.locationId ? 'border-red-300 bg-red-50' : 'border-gray-300 dark:border-dark-border'}
                 `}
               >
                 {!vendorId ? (
@@ -659,7 +665,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
                 <option value="new">+ Add New Address</option>
               </select>
               <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -673,9 +679,9 @@ const StepTwo: React.FC<StepTwoProps> = ({
           </div>
 
           {/* Partial Delivery */}
-          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="p-4 bg-gray-50 dark:bg-dark-bg/50 rounded-lg border border-gray-200 dark:border-dark-border">
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary">
                 Allow Partial Delivery
               </label>
               <button
@@ -696,7 +702,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
             </div>
 
             {data.delivery.partialDelivery.allowed && (
-              <div className="space-y-3 pt-3 border-t border-gray-200">
+              <div className="space-y-3 pt-3 border-t border-gray-200 dark:border-dark-border">
                 {/* Partial Delivery Type */}
                 <div className="flex gap-2">
                   <button
@@ -706,7 +712,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
                       flex-1 px-3 py-2 rounded border text-sm font-medium transition-all
                       ${data.delivery.partialDelivery.type === 'QUANTITY'
                         ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                        : 'border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface text-gray-600 dark:text-dark-text-secondary hover:border-gray-300 dark:hover:border-gray-600'
                       }
                     `}
                   >
@@ -719,7 +725,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
                       flex-1 px-3 py-2 rounded border text-sm font-medium transition-all
                       ${data.delivery.partialDelivery.type === 'PERCENTAGE'
                         ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                        : 'border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface text-gray-600 dark:text-dark-text-secondary hover:border-gray-300 dark:hover:border-gray-600'
                       }
                     `}
                   >
@@ -729,7 +735,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
 
                 {/* Partial Delivery Value */}
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">
+                  <label className="block text-sm text-gray-600 dark:text-dark-text-secondary mb-1">
                     {data.delivery.partialDelivery.type === 'PERCENTAGE'
                       ? 'Minimum percentage per shipment'
                       : 'Minimum quantity per shipment'}
@@ -746,11 +752,12 @@ const StepTwo: React.FC<StepTwoProps> = ({
                         w-full px-4 py-2 border rounded-lg
                         focus:outline-none focus:ring-2 focus:ring-blue-500
                         [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
-                        ${errors.partialDeliveryValue ? 'border-red-300 bg-red-50' : 'border-gray-300'}
+                        dark:bg-dark-bg dark:border-dark-border dark:text-dark-text
+                        ${errors.partialDeliveryValue ? 'border-red-300 bg-red-50' : 'border-gray-300 dark:border-dark-border'}
                       `}
                     />
                     {data.delivery.partialDelivery.type === 'PERCENTAGE' && (
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-dark-text-secondary">%</span>
                     )}
                   </div>
                   {errors.partialDeliveryValue && (

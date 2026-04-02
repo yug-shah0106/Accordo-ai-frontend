@@ -41,7 +41,7 @@ const TextareaField = <T extends FieldValues = FieldValues>({
       {label && (
         <label
           htmlFor={name}
-          className={`block text-gray-600 font-medium mb-2 ${labelClassName}`}
+          className={`block text-gray-600 dark:text-dark-text-secondary font-medium mb-2 ${labelClassName}`}
         >
           {label}
         </label>
@@ -54,7 +54,7 @@ const TextareaField = <T extends FieldValues = FieldValues>({
           onChange={handleChange}
           placeholder={placeholder}
           {...(register && register(name))}
-          className={`w-full border border-gray-300 px-4 pt-2 pb-0 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${error ? "border-red-500" : ""} ${className}`}
+          className={`w-full border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg text-gray-900 dark:text-dark-text px-4 pt-2 pb-0 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 ${error ? "border-red-500" : ""} ${className}`}
         />
         {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
       </div>

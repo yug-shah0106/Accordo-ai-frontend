@@ -414,11 +414,11 @@ const RequisitionsManagement = () => {
   }
 
   return (
-    <div className="flex flex-col bg-white rounded-lg min-h-full">
+    <div className="flex flex-col bg-white dark:bg-dark-surface rounded-lg min-h-full">
       {/* Sticky Header Section */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0">
+      <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border pt-6 px-6 pb-4 flex-shrink-0">
         <div className="mb-4">
-          <p className="text-xl font-medium text-gray-800 flex items-center gap-2">
+          <p className="text-xl font-medium text-gray-800 dark:text-dark-text flex items-center gap-2">
             {/* <FaArrowLeft
               onClick={() => {
                 navigate(-1);
@@ -439,18 +439,18 @@ const RequisitionsManagement = () => {
               onChange={(e) => handleSearchChange(e.target.value)}
               type="text"
               placeholder="Search by Project ID, RFQ ID, name, category, vendor..."
-              className="w-full border border-gray-300 rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 px-4"
+              className="w-full border border-gray-300 dark:border-dark-border rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 px-4 dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-gray-500"
             />
             {searchTerm ? (
               <button
                 onClick={clearSearch}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 title="Clear search"
               >
                 <IoCloseCircle className="text-lg" />
               </button>
             ) : (
-              <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+              <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-dark-text-secondary" />
             )}
           </div>
           <div className="flex gap-6">
@@ -463,7 +463,7 @@ const RequisitionsManagement = () => {
 
             <div className="absolute md:right-[15%] mt-10 right-[20%]">
               {isFilterModalOpen && (
-                <div className="overflow-auto h-[60vh] border rounded-md shadow-md">
+                <div className="overflow-auto h-[60vh] border dark:border-dark-border rounded-md shadow-md">
                   <Filter
                     onClose={closeFilterModal}
                     onApply={applyFilters}
@@ -490,13 +490,13 @@ const RequisitionsManagement = () => {
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto px-6 pb-6">
         <div
-          className="border rounded-md overflow-x-scroll hide-scrollbar-y"
+          className="border dark:border-dark-border rounded-md overflow-x-scroll hide-scrollbar-y"
         >
           <Table
             data={requisitions}
             columns={columns}
             actions={actions}
-            style={"bg-gray-100 "}
+            style={"bg-gray-100 dark:bg-dark-bg "}
             onRowClick={handleRowClick}
             loading={loading}
             currentPage={page}
@@ -518,13 +518,13 @@ const RequisitionsManagement = () => {
       {/* Sidebar */}
       <div
         ref={menuRef}
-        className={`fixed top-0 right-0 w-2/6 p-6 bg-white shadow-lg h-full z-10 transition-transform transform ${isSidebarOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 right-0 w-2/6 p-6 bg-white dark:bg-dark-surface shadow-lg h-full z-10 transition-transform transform ${isSidebarOpen ? "translate-x-0" : "translate-x-full"
           }`}
       >
         <div className="">
           {selectedProject && (
             <div className="flex justify-between mb-4 mt-8 items-center">
-              <p className="text-md font-semibold flex items-center gap-2">
+              <p className="text-md font-semibold flex items-center gap-2 dark:text-dark-text">
                 <button onClick={closeSidebar}>
                   <FaArrowLeft />
                 </button>
@@ -541,18 +541,18 @@ const RequisitionsManagement = () => {
           )}
 
           <div
-            className="flex justify-between items-center cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2 py-2"
+            className="flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 rounded px-2 -mx-2 py-2"
             onClick={() => toggleSection('basicInfo')}
           >
-            <h3 className="text-lg font-medium">Basic Information</h3>
+            <h3 className="text-lg font-medium dark:text-dark-text">Basic Information</h3>
             {expandedSections.basicInfo ? (
-              <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+              <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
             ) : (
-              <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+              <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
             )}
           </div>
           {expandedSections.basicInfo && selectedProject && (
-            <div className="grid grid-cols-3 text-sm gap-8 mt-4">
+            <div className="grid grid-cols-3 text-sm gap-8 mt-4 dark:text-dark-text">
               <div className="space-y-2">
                 <p>Subject</p>
                 <p>{selectedProject.subject}</p>
@@ -571,7 +571,7 @@ const RequisitionsManagement = () => {
                       </li>
                     ))
                   ) : (
-                    <li className="text-gray-500">No vendors assigned</li>
+                    <li className="text-gray-500 dark:text-dark-text-secondary">No vendors assigned</li>
                   )}
                 </ul>
               </div>
@@ -595,27 +595,27 @@ const RequisitionsManagement = () => {
           {selectedProject?.RequisitionProduct?.length > 0 && (
             <>
               <div
-                className="flex justify-between items-center cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2 py-2 mt-4"
+                className="flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 rounded px-2 -mx-2 py-2 mt-4"
                 onClick={() => toggleSection('productDetails')}
               >
-                <h3 className="text-lg font-medium">Product Details</h3>
+                <h3 className="text-lg font-medium dark:text-dark-text">Product Details</h3>
                 {expandedSections.productDetails ? (
-                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 ) : (
-                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 )}
               </div>
               {expandedSections.productDetails && (
-              <table className="w-full bg-white mt-4 rounded overflow-hidden">
+              <table className="w-full bg-white dark:bg-dark-surface mt-4 rounded overflow-hidden">
                 <thead>
-                  <tr className="border">
-                    <th className="py-2 px-6 text-left font-semibold">
+                  <tr className="border dark:border-dark-border">
+                    <th className="py-2 px-6 text-left font-semibold dark:text-dark-text">
                       Product Name
                     </th>
-                    <th className="py-2 px-6 text-left font-semibold">
+                    <th className="py-2 px-6 text-left font-semibold dark:text-dark-text">
                       Quantity
                     </th>
-                    <th className="py-2 px-6 text-left font-semibold">
+                    <th className="py-2 px-6 text-left font-semibold dark:text-dark-text">
                       Target Price
                     </th>
                   </tr>
@@ -624,13 +624,13 @@ const RequisitionsManagement = () => {
                   {selectedProject?.RequisitionProduct?.map((product: any, idx: any) => (
                     <tr
                       key={product.id}
-                      className={`border ${idx % 2 && "bg-gray-100"}`}
+                      className={`border dark:border-dark-border ${idx % 2 && "bg-gray-100 dark:bg-dark-bg"}`}
                     >
-                      <td className="py-2 px-6">
+                      <td className="py-2 px-6 dark:text-dark-text">
                         {product?.Product?.productName}
                       </td>
-                      <td className="py-2 px-6">{product?.qty}</td>
-                      <td>{product?.targetPrice}</td>
+                      <td className="py-2 px-6 dark:text-dark-text">{product?.qty}</td>
+                      <td className="dark:text-dark-text">{product?.targetPrice}</td>
                     </tr>
                   )) || <tr>No products found</tr>}
                 </tbody>
@@ -639,22 +639,22 @@ const RequisitionsManagement = () => {
             </>
           )}
 
-          <div className="grid grid-cols-3 mt-4 text-sm gap-8">
+          <div className="grid grid-cols-3 mt-4 text-sm gap-8 dark:text-dark-text">
             <div className="space-y-2">
-              <p className="font-medium text-gray-500">Total Price</p>
+              <p className="font-medium text-gray-500 dark:text-dark-text-secondary">Total Price</p>
               <p>{selectedProject?.totalPrice}</p>
             </div>
           </div>
         </div>
         {selectedProject?.paymentTerms && (
           <div className="mt-2 pt-2 pb-0">
-            <p className="font-medium text-gray-500">Payment Terms</p>
-            <p className="text-xs">{selectedProject?.paymentTerms}</p>
+            <p className="font-medium text-gray-500 dark:text-dark-text-secondary">Payment Terms</p>
+            <p className="text-xs dark:text-dark-text">{selectedProject?.paymentTerms}</p>
           </div>
         )}
         {selectedProject?.RequisitionAttachment?.length > 0 && (
           <div className="mt-2 pt-2 pb-0">
-            <p className="font-medium text-gray-500">Attachments</p>
+            <p className="font-medium text-gray-500 dark:text-dark-text-secondary">Attachments</p>
             <div className="flex gap-4 mt-4">
               {selectedProject?.RequisitionAttachment?.map((attachment: any) => (
                 <img

@@ -79,14 +79,14 @@ const BlueSlider: React.FC<{
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2">
           {label}
         </label>
       )}
       <div className="flex items-center gap-4">
         <div className="flex-1 relative">
           {/* Track background */}
-          <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
             {/* Filled track */}
             <div
               className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-150"
@@ -117,7 +117,7 @@ const BlueSlider: React.FC<{
         </div>
       </div>
       {helpText && (
-        <p className="mt-2 text-xs text-gray-500">{helpText}</p>
+        <p className="mt-2 text-xs text-gray-500 dark:text-dark-text-secondary">{helpText}</p>
       )}
     </div>
   );
@@ -255,12 +255,12 @@ const DateTimePickerPopup: React.FC<{
         className={`
           h-9 w-9 rounded-full text-sm font-medium transition-all
           ${disabled
-            ? 'text-gray-300 cursor-not-allowed'
+            ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
             : selected
               ? 'bg-blue-500 text-white'
               : todayClass
-                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                : 'text-gray-700 hover:bg-gray-100'
+                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50'
+                : 'text-gray-700 dark:text-dark-text-secondary hover:bg-gray-100 dark:hover:bg-gray-700'
           }
         `}
       >
@@ -271,7 +271,7 @@ const DateTimePickerPopup: React.FC<{
 
   return (
     <div ref={containerRef} className="relative">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-1">
         <Clock className="w-4 h-4 inline mr-1" />
         {label} {required && <span className="text-red-500">*</span>}
       </label>
@@ -283,11 +283,11 @@ const DateTimePickerPopup: React.FC<{
         className={`
           w-full flex items-center gap-2 px-4 py-2.5 border rounded-lg text-left
           focus:outline-none focus:ring-2 focus:ring-blue-500
-          ${error ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white hover:border-gray-400'}
+          ${error ? 'border-red-300 bg-red-50' : 'border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg hover:border-gray-400 dark:hover:border-gray-600'}
         `}
       >
-        <Calendar className="w-4 h-4 text-gray-400" />
-        <span className={value ? 'text-gray-900' : 'text-gray-400'}>
+        <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+        <span className={value ? 'text-gray-900 dark:text-dark-text' : 'text-gray-400 dark:text-gray-500'}>
           {value ? formatDateForDisplay(value) : 'Select date and time...'}
         </span>
       </button>
@@ -308,32 +308,32 @@ const DateTimePickerPopup: React.FC<{
 
       {/* Popup */}
       {isOpen && (
-        <div className="absolute z-50 mt-2 p-4 bg-white border border-gray-200 rounded-xl shadow-lg w-80">
+        <div className="absolute z-50 mt-2 p-4 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-xl shadow-lg w-80">
           {/* Month navigation */}
           <div className="flex items-center justify-between mb-4">
             <button
               type="button"
               onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-              className="p-1 hover:bg-gray-100 rounded-full"
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
             >
-              <ChevronLeft className="w-5 h-5 text-gray-600" />
+              <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-dark-text-secondary" />
             </button>
-            <span className="text-sm font-semibold text-gray-900">
+            <span className="text-sm font-semibold text-gray-900 dark:text-dark-text">
               {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
             </span>
             <button
               type="button"
               onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-              className="p-1 hover:bg-gray-100 rounded-full"
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
             >
-              <ChevronRight className="w-5 h-5 text-gray-600" />
+              <ChevronRight className="w-5 h-5 text-gray-600 dark:text-dark-text-secondary" />
             </button>
           </div>
 
           {/* Day headers */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-              <div key={d} className="h-9 flex items-center justify-center text-xs font-medium text-gray-500">
+              <div key={d} className="h-9 flex items-center justify-center text-xs font-medium text-gray-500 dark:text-dark-text-secondary">
                 {d}
               </div>
             ))}
@@ -345,8 +345,8 @@ const DateTimePickerPopup: React.FC<{
           </div>
 
           {/* Time Picker Section */}
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-dark-border">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-3">
               Select Time
             </label>
             <div className="flex items-center gap-2">
@@ -354,18 +354,18 @@ const DateTimePickerPopup: React.FC<{
               <select
                 value={hour}
                 onChange={(e) => handleTimeChange(parseInt(e.target.value), minute, period)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none bg-white"
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none bg-white dark:bg-dark-bg dark:text-dark-text [&>option]:dark:bg-dark-bg"
               >
                 {[12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((h) => (
                   <option key={h} value={h}>{h}</option>
                 ))}
               </select>
-              <span className="text-gray-500 font-medium">:</span>
+              <span className="text-gray-500 dark:text-dark-text-secondary font-medium">:</span>
               {/* Minute */}
               <select
                 value={minute}
                 onChange={(e) => handleTimeChange(hour, parseInt(e.target.value), period)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none bg-white"
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none bg-white dark:bg-dark-bg dark:text-dark-text"
               >
                 {[0, 15, 30, 45].map((m) => (
                   <option key={m} value={m}>{m.toString().padStart(2, '0')}</option>
@@ -380,7 +380,7 @@ const DateTimePickerPopup: React.FC<{
                     px-3 py-2 text-sm font-medium rounded-l-lg border transition-colors
                     ${period === 'AM'
                       ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                      : 'bg-white dark:bg-dark-bg text-gray-600 dark:text-dark-text-secondary border-gray-300 dark:border-dark-border hover:bg-gray-50 dark:hover:bg-gray-700'
                     }
                   `}
                 >
@@ -393,7 +393,7 @@ const DateTimePickerPopup: React.FC<{
                     px-3 py-2 text-sm font-medium rounded-r-lg border-t border-b border-r transition-colors
                     ${period === 'PM'
                       ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                      : 'bg-white dark:bg-dark-bg text-gray-600 dark:text-dark-text-secondary border-gray-300 dark:border-dark-border hover:bg-gray-50 dark:hover:bg-gray-700'
                     }
                   `}
                 >
@@ -411,7 +411,7 @@ const DateTimePickerPopup: React.FC<{
                 onChange(null);
                 setIsOpen(false);
               }}
-              className="w-full mt-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors"
+              className="w-full mt-3 py-2 text-sm text-gray-600 dark:text-dark-text-secondary hover:text-gray-800 dark:hover:text-dark-text hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
               Clear
             </button>
@@ -426,7 +426,7 @@ const DateTimePickerPopup: React.FC<{
         </p>
       )}
       {helpText && !error && (
-        <p className="mt-1 text-xs text-gray-500">{helpText}</p>
+        <p className="mt-1 text-xs text-gray-500 dark:text-dark-text-secondary dark:text-dark-text-secondary">{helpText}</p>
       )}
     </div>
   );
@@ -592,7 +592,7 @@ const StepThree: React.FC<StepThreeProps> = ({
                 flex-1 px-3 py-2 rounded border text-sm font-medium transition-all
                 ${param.targetValue === true
                   ? 'border-green-500 bg-green-50 text-green-700'
-                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                  : 'border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface text-gray-600 dark:text-dark-text-secondary hover:border-gray-300 dark:hover:border-gray-600'
                 }
               `}
             >
@@ -605,7 +605,7 @@ const StepThree: React.FC<StepThreeProps> = ({
                 flex-1 px-3 py-2 rounded border text-sm font-medium transition-all
                 ${param.targetValue === false
                   ? 'border-red-500 bg-red-50 text-red-700'
-                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                  : 'border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface text-gray-600 dark:text-dark-text-secondary hover:border-gray-300 dark:hover:border-gray-600'
                 }
               `}
             >
@@ -620,7 +620,7 @@ const StepThree: React.FC<StepThreeProps> = ({
             value={typeof param.targetValue === 'number' ? param.targetValue : ''}
             onChange={(e) => handleChange(parseNumber(e.target.value) ?? 0)}
             placeholder="Enter number"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-dark-bg dark:text-dark-text"
           />
         );
       case 'TEXT':
@@ -630,7 +630,7 @@ const StepThree: React.FC<StepThreeProps> = ({
             value={typeof param.targetValue === 'string' ? param.targetValue : ''}
             onChange={(e) => handleChange(e.target.value)}
             placeholder="Enter text"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-dark-bg dark:text-dark-text"
           />
         );
       case 'DATE':
@@ -639,7 +639,7 @@ const StepThree: React.FC<StepThreeProps> = ({
             type="date"
             value={typeof param.targetValue === 'string' ? param.targetValue : ''}
             onChange={(e) => handleChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-dark-bg dark:text-dark-text"
           />
         );
       default:
@@ -652,14 +652,14 @@ const StepThree: React.FC<StepThreeProps> = ({
       {/* Contract & SLA Section */}
       <section>
         <div className="flex items-center gap-2 mb-4">
-          <FileText className="w-5 h-5 text-gray-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Contract & SLA</h3>
+          <FileText className="w-5 h-5 text-gray-600 dark:text-dark-text-secondary" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Contract & SLA</h3>
         </div>
 
         <div className="space-y-4">
           {/* Warranty Period */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2">
               Warranty Period <span className="text-red-500">*</span>
             </label>
             <div className="flex gap-2">
@@ -681,7 +681,7 @@ const StepThree: React.FC<StepThreeProps> = ({
                     flex-1 py-2 rounded-lg border-2 transition-all text-sm font-medium whitespace-nowrap text-center
                     ${data.contractSla.warrantyPeriod === option.value
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                      : 'border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface text-gray-600 dark:text-dark-text-secondary hover:border-gray-300 dark:hover:border-gray-600'
                     }
                   `}
                 >
@@ -706,7 +706,7 @@ const StepThree: React.FC<StepThreeProps> = ({
                   flex-1 py-2 rounded-lg border-2 transition-all text-sm font-medium whitespace-nowrap text-center
                   ${data.contractSla.warrantyPeriod === 'CUSTOM'
                     ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                    : 'border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface text-gray-600 dark:text-dark-text-secondary hover:border-gray-300 dark:hover:border-gray-600'
                   }
                 `}
               >
@@ -717,8 +717,8 @@ const StepThree: React.FC<StepThreeProps> = ({
 
             {/* Custom warranty input (shown when "Other" is selected) */}
             {data.contractSla.warrantyPeriod === 'CUSTOM' && (
-              <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <label className="block text-xs font-medium text-gray-600 mb-2">
+              <div className="mt-3 p-3 bg-gray-50 dark:bg-dark-bg/50 rounded-lg border border-gray-200 dark:border-dark-border">
+                <label className="block text-xs font-medium text-gray-600 dark:text-dark-text-secondary mb-2">
                   Enter custom warranty period (max 120 months / 10 years)
                 </label>
                 <div className="flex items-center gap-2">
@@ -755,7 +755,7 @@ const StepThree: React.FC<StepThreeProps> = ({
                     min="0"
                     max={customWarrantyUnit === 'years' ? '10' : '120'}
                     step={customWarrantyUnit === 'years' ? '0.5' : '1'}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-dark-bg dark:text-dark-text text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <select
                     value={customWarrantyUnit}
@@ -787,7 +787,7 @@ const StepThree: React.FC<StepThreeProps> = ({
 
           {/* Defect Liability Period */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-1">
               Defect Liability Period
             </label>
             <div className="flex items-center gap-2">
@@ -798,11 +798,11 @@ const StepThree: React.FC<StepThreeProps> = ({
                 placeholder="e.g., 12"
                 min="1"
                 step="1"
-                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-dark-bg dark:text-dark-text [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
-              <span className="text-sm font-medium text-gray-600 whitespace-nowrap">months</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-dark-text-secondary whitespace-nowrap">months</span>
             </div>
-            <p className="mt-1 text-xs text-gray-500">Period during which vendor is liable for defects</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-dark-text-secondary">Period during which vendor is liable for defects</p>
           </div>
 
           {/* Late Delivery Penalty */}
@@ -826,9 +826,9 @@ const StepThree: React.FC<StepThreeProps> = ({
           </div>
 
           {/* Maximum Penalty Cap */}
-          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="p-4 bg-gray-50 dark:bg-dark-bg/50 rounded-lg border border-gray-200 dark:border-dark-border">
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary">
                 Maximum Penalty Cap
               </label>
               <button
@@ -849,7 +849,7 @@ const StepThree: React.FC<StepThreeProps> = ({
             </div>
 
             {data.contractSla.maxPenaltyCap && (
-              <div className="space-y-3 pt-3 border-t border-gray-200">
+              <div className="space-y-3 pt-3 border-t border-gray-200 dark:border-dark-border">
                 {/* Cap Type Selection */}
                 <div className="flex gap-2">
                   <button
@@ -859,7 +859,7 @@ const StepThree: React.FC<StepThreeProps> = ({
                       flex-1 px-3 py-2 rounded border text-sm font-medium transition-all
                       ${data.contractSla.maxPenaltyCap.type === 'PERCENTAGE'
                         ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                        : 'border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface text-gray-600 dark:text-dark-text-secondary hover:border-gray-300 dark:hover:border-gray-600'
                       }
                     `}
                   >
@@ -872,7 +872,7 @@ const StepThree: React.FC<StepThreeProps> = ({
                       flex-1 px-3 py-2 rounded border text-sm font-medium transition-all
                       ${data.contractSla.maxPenaltyCap.type === 'FIXED'
                         ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                        : 'border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface text-gray-600 dark:text-dark-text-secondary hover:border-gray-300 dark:hover:border-gray-600'
                       }
                     `}
                   >
@@ -883,7 +883,7 @@ const StepThree: React.FC<StepThreeProps> = ({
                 {/* Cap Value Input */}
                 <div className="flex items-center gap-2">
                   {data.contractSla.maxPenaltyCap.type === 'FIXED' && (
-                    <span className="text-sm font-medium text-gray-600">$</span>
+                    <span className="text-sm font-medium text-gray-600 dark:text-dark-text-secondary">$</span>
                   )}
                   <input
                     type="number"
@@ -891,13 +891,13 @@ const StepThree: React.FC<StepThreeProps> = ({
                     onChange={(e) => handlePenaltyCapValueChange(parseNumber(e.target.value))}
                     placeholder={data.contractSla.maxPenaltyCap.type === 'PERCENTAGE' ? '10' : '5000'}
                     min="0"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-dark-bg dark:text-dark-text [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   {data.contractSla.maxPenaltyCap.type === 'PERCENTAGE' && (
-                    <span className="text-sm font-medium text-gray-600">%</span>
+                    <span className="text-sm font-medium text-gray-600 dark:text-dark-text-secondary">%</span>
                   )}
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-dark-text-secondary">
                   {data.contractSla.maxPenaltyCap.type === 'PERCENTAGE'
                     ? 'Maximum penalty as percentage of deal value'
                     : 'Maximum penalty as fixed dollar amount'}
@@ -908,7 +908,7 @@ const StepThree: React.FC<StepThreeProps> = ({
 
           {/* Quality Standards */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2">
               <Award className="w-4 h-4 inline mr-1" />
               Quality Standards & Certifications
             </label>
@@ -945,27 +945,27 @@ const StepThree: React.FC<StepThreeProps> = ({
                 }}
                 onFocus={() => setShowCertDropdown(true)}
                 placeholder="Search certifications (ISO, CE, FDA, etc.)"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-dark-bg dark:text-dark-text"
               />
 
               {/* Dropdown */}
               {showCertDropdown && certSearchTerm && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
                   {filteredCertifications.length > 0 ? (
                     filteredCertifications.map((cert) => (
                       <button
                         key={cert.id}
                         type="button"
                         onClick={() => addCertification(cert.name)}
-                        className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center justify-between"
+                        className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between"
                       >
-                        <span className="text-sm text-gray-900">{cert.name}</span>
-                        <span className="text-xs text-gray-500">{cert.category}</span>
+                        <span className="text-sm text-gray-900 dark:text-dark-text">{cert.name}</span>
+                        <span className="text-xs text-gray-500 dark:text-dark-text-secondary">{cert.category}</span>
                       </button>
                     ))
                   ) : (
                     <div className="p-4 text-center">
-                      <p className="text-sm text-gray-500 mb-2">No matching certifications</p>
+                      <p className="text-sm text-gray-500 dark:text-dark-text-secondary mb-2">No matching certifications</p>
                       <button
                         type="button"
                         onClick={() => {
@@ -980,7 +980,7 @@ const StepThree: React.FC<StepThreeProps> = ({
                 </div>
               )}
             </div>
-            <p className="mt-1 text-xs text-gray-500">Search or type to add custom certifications</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-dark-text-secondary">Search or type to add custom certifications</p>
           </div>
         </div>
       </section>
@@ -988,8 +988,8 @@ const StepThree: React.FC<StepThreeProps> = ({
       {/* Negotiation Control Section */}
       <section>
         <div className="flex items-center gap-2 mb-4">
-          <Settings2 className="w-5 h-5 text-gray-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Negotiation Control</h3>
+          <Settings2 className="w-5 h-5 text-gray-600 dark:text-dark-text-secondary" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Negotiation Control</h3>
         </div>
 
         <div className="space-y-4">
@@ -1007,8 +1007,8 @@ const StepThree: React.FC<StepThreeProps> = ({
       <section>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Plus className="w-5 h-5 text-gray-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Custom Parameters</h3>
+            <Plus className="w-5 h-5 text-gray-600 dark:text-dark-text-secondary" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Custom Parameters</h3>
           </div>
           {!showAddParameter && (
             <button
@@ -1024,9 +1024,9 @@ const StepThree: React.FC<StepThreeProps> = ({
 
         {/* Add New Parameter Form */}
         {showAddParameter && (
-          <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="mb-4 p-4 bg-gray-50 dark:bg-dark-bg/50 rounded-lg border border-gray-200 dark:border-dark-border">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-medium text-gray-700">Add Custom Parameter</h4>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary">Add Custom Parameter</h4>
               <button
                 type="button"
                 onClick={() => {
@@ -1039,16 +1039,16 @@ const StepThree: React.FC<StepThreeProps> = ({
                     includeInNegotiation: true,
                   });
                 }}
-                className="p-1 hover:bg-gray-200 rounded"
+                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
               >
-                <X className="w-4 h-4 text-gray-500" />
+                <X className="w-4 h-4 text-gray-500 dark:text-dark-text-secondary" />
               </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Parameter Name */}
               <div>
-                <label className="block text-xs text-gray-600 mb-1">Parameter Name</label>
+                <label className="block text-xs text-gray-600 dark:text-dark-text-secondary mb-1">Parameter Name</label>
                 <input
                   type="text"
                   value={newParameter.name || ''}
@@ -1060,7 +1060,7 @@ const StepThree: React.FC<StepThreeProps> = ({
 
               {/* Parameter Type */}
               <div>
-                <label className="block text-xs text-gray-600 mb-1">Type</label>
+                <label className="block text-xs text-gray-600 dark:text-dark-text-secondary mb-1">Type</label>
                 <select
                   value={newParameter.type || 'BOOLEAN'}
                   onChange={(e) => {
@@ -1071,7 +1071,7 @@ const StepThree: React.FC<StepThreeProps> = ({
                     if (type === 'DATE') defaultValue = '';
                     setNewParameter({ ...newParameter, type, targetValue: defaultValue });
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none dark:bg-dark-bg dark:text-dark-text"
                 >
                   {PARAMETER_TYPES.map((type) => (
                     <option key={type.value} value={type.value}>
@@ -1083,17 +1083,17 @@ const StepThree: React.FC<StepThreeProps> = ({
 
               {/* Target Value */}
               <div>
-                <label className="block text-xs text-gray-600 mb-1">Target Value</label>
+                <label className="block text-xs text-gray-600 dark:text-dark-text-secondary mb-1">Target Value</label>
                 {renderTargetValueInput(newParameter, true)}
               </div>
 
               {/* Flexibility */}
               <div>
-                <label className="block text-xs text-gray-600 mb-1">Flexibility</label>
+                <label className="block text-xs text-gray-600 dark:text-dark-text-secondary mb-1">Flexibility</label>
                 <select
                   value={newParameter.flexibility || 'FLEXIBLE'}
                   onChange={(e) => setNewParameter({ ...newParameter, flexibility: e.target.value as ParameterFlexibility })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none dark:bg-dark-bg dark:text-dark-text"
                 >
                   {FLEXIBILITY_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -1105,10 +1105,10 @@ const StepThree: React.FC<StepThreeProps> = ({
             </div>
 
             {/* Include in Negotiation Toggle */}
-            <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-200">
+            <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-200 dark:border-dark-border">
               <div>
-                <label className="text-sm font-medium text-gray-700">Include in AI Negotiation</label>
-                <p className="text-xs text-gray-500">AI will actively negotiate this parameter</p>
+                <label className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary">Include in AI Negotiation</label>
+                <p className="text-xs text-gray-500 dark:text-dark-text-secondary">AI will actively negotiate this parameter</p>
               </div>
               <button
                 type="button"
@@ -1147,12 +1147,12 @@ const StepThree: React.FC<StepThreeProps> = ({
             {data.customParameters.map((param) => (
               <div
                 key={param.id}
-                className="p-4 bg-white border border-gray-200 rounded-lg"
+                className="p-4 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-medium text-gray-900">{param.name}</h4>
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-dark-text">{param.name}</h4>
                       <span className={`
                         px-2 py-0.5 rounded text-xs font-medium
                         ${param.flexibility === 'FIXED' ? 'bg-red-100 text-red-700' :
@@ -1167,10 +1167,10 @@ const StepThree: React.FC<StepThreeProps> = ({
                         </span>
                       )}
                     </div>
-                    <div className="mt-2 text-sm text-gray-600">
-                      <span className="text-gray-500">Type:</span> {PARAMETER_TYPES.find(t => t.value === param.type)?.label}
+                    <div className="mt-2 text-sm text-gray-600 dark:text-dark-text-secondary">
+                      <span className="text-gray-500 dark:text-dark-text-secondary">Type:</span> {PARAMETER_TYPES.find(t => t.value === param.type)?.label}
                       <span className="mx-2">|</span>
-                      <span className="text-gray-500">Target:</span>{' '}
+                      <span className="text-gray-500 dark:text-dark-text-secondary">Target:</span>{' '}
                       {param.type === 'BOOLEAN' ? (param.targetValue ? 'Yes' : 'No') : String(param.targetValue)}
                     </div>
                   </div>
@@ -1187,10 +1187,10 @@ const StepThree: React.FC<StepThreeProps> = ({
           </div>
         ) : (
           !showAddParameter && (
-            <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-              <Plus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">No custom parameters added</p>
-              <p className="text-xs text-gray-400 mt-1">
+            <div className="text-center py-8 bg-gray-50 dark:bg-dark-bg/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-dark-border">
+              <Plus className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+              <p className="text-sm text-gray-500 dark:text-dark-text-secondary">No custom parameters added</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                 Add parameters like "Free samples", "Training hours", etc.
               </p>
             </div>

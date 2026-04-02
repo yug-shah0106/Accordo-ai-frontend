@@ -4,6 +4,7 @@
  */
 
 import type { Decision } from '../../../types';
+import { getActionColors } from '../../../constants/colors';
 
 interface DecisionBadgeProps {
   decision: Decision | null;
@@ -61,58 +62,23 @@ const ChartIcon = () => (
 export default function DecisionBadge({ decision }: DecisionBadgeProps) {
   if (!decision || !decision.action) return null;
 
-  const getActionStyles = (action: string): { className: string; icon: React.ReactNode; label: string } => {
-    const normalized = (action || '').toUpperCase();
-    switch (normalized) {
-      case "ACCEPT":
-        return {
-          className: "bg-green-100 text-green-700 border-green-300",
-          icon: <CheckIcon />,
-          label: "Accept"
-        };
-      case "COUNTER":
-        return {
-          className: "bg-blue-100 text-blue-700 border-blue-300",
-          icon: <ArrowsIcon />,
-          label: "Counter"
-        };
-      case "WALK_AWAY":
-        return {
-          className: "bg-red-100 text-red-700 border-red-300",
-          icon: <ExitIcon />,
-          label: "Walk Away"
-        };
-      case "ESCALATE":
-        return {
-          className: "bg-orange-100 text-orange-700 border-orange-300",
-          icon: <AlertIcon />,
-          label: "Escalate"
-        };
-      case "ASK_CLARIFY":
-        return {
-          className: "bg-yellow-100 text-yellow-700 border-yellow-300",
-          icon: <QuestionIcon />,
-          label: "Ask Clarify"
-        };
-      case "REDIRECT":
-        return {
-          className: "bg-purple-100 text-purple-700 border-purple-300",
-          icon: <RedirectIcon />,
-          label: "Redirected"
-        };
-      case "ERROR_RECOVERY":
-        return {
-          className: "bg-amber-100 text-amber-700 border-amber-300",
-          icon: <RecoveryIcon />,
-          label: "Recovery"
-        };
-      default:
-        return {
-          className: "bg-gray-100 text-gray-700 border-gray-300",
-          icon: null,
-          label: action.replace(/_/g, " ")
-        };
-    }
+  const ACTION_ICONS: Record<string, React.ReactNode> = {
+    ACCEPT: <CheckIcon />,
+    COUNTER: <ArrowsIcon />,
+    WALK_AWAY: <ExitIcon />,
+    ESCALATE: <AlertIcon />,
+    ASK_CLARIFY: <QuestionIcon />,
+    REDIRECT: <RedirectIcon />,
+    ERROR_RECOVERY: <RecoveryIcon />,
+  };
+
+  const getActionStyles = (action: string) => {
+    const c = getActionColors(action);
+    return {
+      className: `${c.bg} ${c.text} ${c.border}`,
+      icon: ACTION_ICONS[(action || '').toUpperCase()] || null,
+      label: c.label !== 'Unknown' ? c.label : action.replace(/_/g, ' '),
+    };
   };
 
   const actionStyles = getActionStyles(decision.action);

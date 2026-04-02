@@ -112,9 +112,9 @@ const VendorBankDetails: React.FC<VendorBankDetailsProps> = ({
   }, [company, reset]);
 
   return (
-    <div className="border-2 rounded p-4">
-      <h3 className="text-lg font-semibold">Bank Details </h3>
-      <p className="font-normal text-[#46403E] py-2">
+    <div className="border-2 rounded p-4 dark:border-dark-border dark:bg-dark-surface">
+      <h3 className="text-lg font-semibold dark:text-dark-text">Bank Details </h3>
+      <p className="font-normal text-[#46403E] dark:text-dark-text-secondary py-2">
         Your details will be used for Bank details
       </p>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -186,13 +186,13 @@ const VendorBankDetails: React.FC<VendorBankDetailsProps> = ({
 
           <div className="flex mt-4">
             <div className="">
-              <label className="block text-gray-600 font-medium mb-2"> Upload cancelled cheque</label>
+              <label className="block text-gray-600 dark:text-dark-text-secondary font-medium mb-2"> Upload cancelled cheque</label>
               <input
                   id="file-upload"
                   type="file"
                   {...register("cancelledChequeURL")}
-                  className="block text-sm text-gray-700 border border-gray-300 rounded shadow-sm
-                    file:border-0  file:px-3 file:py-2.5"
+                  className="block text-sm text-gray-700 dark:text-dark-text border border-gray-300 dark:border-dark-border rounded shadow-sm
+                    file:border-0  file:px-3 file:py-2.5 dark:bg-dark-bg"
                 />
             </div>
             <div>

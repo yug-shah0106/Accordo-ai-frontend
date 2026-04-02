@@ -70,7 +70,7 @@ export default function Modal({
       }}
     >
       <div
-        className={`bg-white pt-6 px-6 pb-0 rounded-lg relative ${getModalSize()} ${additionalClasses}`}
+        className={`bg-white dark:bg-dark-surface pt-6 px-6 pb-0 rounded-lg relative ${getModalSize()} ${additionalClasses}`}
         ref={ref}
       >
         {/* Delete Icon (if applicable) */}
@@ -89,10 +89,10 @@ export default function Modal({
           </button>
         } */}
 
-        <h2 className="text-2xl font-semibold mb-4">{heading}</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-dark-text">{heading}</h2>
 
         {typeof body === "string" ? (
-          <p className="text-sm mb-6">{body}</p>
+          <p className="text-sm mb-6 text-gray-700 dark:text-dark-text-secondary">{body}</p>
         ) : (
           <div className="mb-6">{body}</div>
         )}
@@ -102,7 +102,7 @@ export default function Modal({
           {showCancelButton && (
             <button
               onClick={handleClose || onClose}
-              className="px-4 pt-2 pb-0 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-100"
+              className="px-4 pt-2 pb-0 border border-gray-300 dark:border-dark-border rounded-md text-gray-700 dark:text-dark-text bg-white dark:bg-dark-bg hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               {cancelText}
             </button>

@@ -75,9 +75,9 @@ const Table = ({
 
   return (
     <div className="overflow-y-auto max-h-[calc(100vh-300px)]">
-      <table className="w-full bg-white font-normal rounded-lg text-sm">
-        <thead className={`sticky top-0 bg-white z-10 ${style}`}>
-          <tr className="text-gray-400">
+      <table className="w-full bg-white dark:bg-dark-surface font-normal rounded-lg text-sm">
+        <thead className={`sticky top-0 bg-white dark:bg-dark-surface z-10 ${style}`}>
+          <tr className="text-gray-400 dark:text-gray-500">
             <th className="px-4 py-2 text-left font-normal">S.No</th>
             {columns.map((col, index) => (
               <th key={index} className="px-4 py-2 text-center font-normal">
@@ -93,7 +93,7 @@ const Table = ({
               data.map((row, index) => (
                 <tr
                   key={index}
-                  className="text-[#18100E] border-t hover:bg-gray-50 cursor-pointer"
+                  className="text-[#18100E] dark:text-dark-text border-t dark:border-dark-border hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
                   onClick={() => onRowClick?.(row)}
                 >
                   <td className="px-4 py-2 text-justify">
@@ -188,13 +188,13 @@ const Table = ({
                                     + {row[col?.accessor ?? col].length - 1}{" "}
                                     others
                                   </p>
-                                  <div className="absolute left-0 mt-1 w-max max-w-xs z-10 hidden group-hover:block bg-white border border-gray-200 shadow-md rounded-md text-sm pt-2 px-2 pb-0">
+                                  <div className="absolute left-0 mt-1 w-max max-w-xs z-10 hidden group-hover:block bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border shadow-md rounded-md text-sm pt-2 px-2 pb-0">
                                     {(row as any)[col?.accessor ?? col]
                                       .slice(1)
                                       .map((i: Record<string, any>, vendorIndex: number) => (
                                         <p
                                           key={vendorIndex}
-                                          className="text-gray-700 truncate"
+                                          className="text-gray-700 dark:text-dark-text-secondary truncate"
                                         >
                                           {
                                             i?.[
@@ -297,7 +297,7 @@ const Table = ({
               <tr>
                 <td
                   colSpan={columns.length + 2}
-                  className="p-16 text-center text-md"
+                  className="p-16 text-center text-md text-gray-500 dark:text-dark-text-secondary"
                 >
                   No records found
                 </td>

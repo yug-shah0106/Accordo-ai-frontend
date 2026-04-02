@@ -82,8 +82,8 @@ const ChangePassword = ({
     <div className="p-6">
       {/* Section Header */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Change Password</h3>
-        <p className="text-sm text-gray-600 mt-1">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Change Password</h3>
+        <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1">
           Update your password to keep your account secure
         </p>
       </div>
@@ -124,33 +124,33 @@ const ChangePassword = ({
         </div>
 
         {/* Password Requirements */}
-        <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm font-medium text-gray-700 mb-2">Password Requirements:</p>
-          <ul className="text-sm text-gray-600 space-y-1">
+        <div className="mt-4 p-4 bg-gray-50 dark:bg-dark-bg/50 rounded-lg">
+          <p className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2">Password Requirements:</p>
+          <ul className="text-sm text-gray-600 dark:text-dark-text-secondary space-y-1">
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+              <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full"></span>
               At least 8 characters
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+              <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full"></span>
               One uppercase letter
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+              <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full"></span>
               One number
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+              <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full"></span>
               One special character (@$!%*?&#)
             </li>
           </ul>
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+        <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-dark-border">
           <Button
             type="button"
-            className="!w-auto px-6 py-3 !bg-white border-2 border-gray-300 !text-gray-700 hover:!bg-gray-50 hover:border-gray-400 rounded-lg font-medium transition-all duration-200 min-w-[100px]"
+            className="!w-auto px-6 py-3 !bg-white dark:!bg-dark-bg border-2 border-gray-300 dark:border-dark-border !text-gray-700 dark:!text-dark-text-secondary hover:!bg-gray-50 dark:hover:!bg-gray-700 hover:border-gray-400 rounded-lg font-medium transition-all duration-200 min-w-[100px]"
             onClick={() => prevStep()}
             disabled={isSubmitting}
           >

@@ -319,11 +319,11 @@ const VendorManagement = () => {
   }, []);
 
   return (
-    <div className="flex flex-col bg-white rounded-lg min-h-full">
+    <div className="flex flex-col bg-white dark:bg-dark-surface rounded-lg min-h-full">
       {/* Sticky Header Section */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0">
+      <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border pt-6 px-6 pb-4 flex-shrink-0">
         <div className="mb-4">
-          <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+          <h1 className="text-xl font-semibold text-gray-800 dark:text-dark-text flex items-center gap-2">
             <FiGitBranch className="text-xl" />
             Vendor Management
           </h1>
@@ -352,18 +352,18 @@ const VendorManagement = () => {
               onChange={(e) => handleSearchChange(e.target.value)}
               type="text"
               placeholder="Search by ID, name, email..."
-              className="w-full border border-gray-300 rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 px-4"
+              className="w-full border border-gray-300 dark:border-dark-border rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 px-4 dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-gray-500"
             />
             {searchTerm ? (
               <button
                 onClick={clearSearch}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 title="Clear search"
               >
                 <IoCloseCircle className="text-lg" />
               </button>
             ) : (
-              <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+              <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-dark-text-secondary" />
             )}
           </div>
           <div className="flex gap-3">
@@ -388,9 +388,9 @@ const VendorManagement = () => {
       {/* Content Area */}
       <div className="flex-1 px-6 pb-6">
 
-      <div  className="absolute h-[50%] border-b-2 overflow-auto -mt-3   md:right-[35%] right-[20%] top-50">
+      <div  className="absolute h-[50%] border-b-2 dark:border-dark-border overflow-auto -mt-3   md:right-[35%] right-[20%] top-50">
         {isFilterModalOpen && (
-          <div className="overflow-auto border rounded-md shadow-md">
+          <div className="overflow-auto border dark:border-dark-border rounded-md shadow-md">
             <Filter
               onClose={closeFilterModal}
               onApply={applyFilters}
@@ -404,7 +404,7 @@ const VendorManagement = () => {
       </div>
 
       <div className="">
-        <div className="border rounded-md overflow-auto hide-scrollbar">
+        <div className="border dark:border-dark-border rounded-md overflow-auto hide-scrollbar">
           <Table
             // data={vendors}
             data={vendors}
@@ -431,21 +431,21 @@ const VendorManagement = () => {
 
       <div
         ref={menuRef}
-        className={`fixed top-0 right-0 w-[33%] bg-white shadow-lg h-full z-10 transition-transform transform overflow-y-auto ${
+        className={`fixed top-0 right-0 w-[33%] bg-white dark:bg-dark-surface shadow-lg h-full z-10 transition-transform transform overflow-y-auto ${
           isSidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="p-6">
           {/* Header */}
-          <div className="flex justify-between items-center border-b pb-4 mb-4">
-            <p className="text-lg font-semibold flex items-center gap-3">
-              <button onClick={closeSidebar} className="hover:bg-gray-100 p-1 rounded">
+          <div className="flex justify-between items-center border-b dark:border-dark-border pb-4 mb-4">
+            <p className="text-lg font-semibold dark:text-dark-text flex items-center gap-3">
+              <button onClick={closeSidebar} className="hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded">
                 <FaArrowLeft />
               </button>
               <span>
                 {companyData?.Vendor?.[0]?.name || selectedProject?.Vendor?.name || "Vendor Details"}
                 {(companyData?.Vendor?.[0]?.id || selectedProject?.Vendor?.id) && (
-                  <span className="text-gray-500 text-sm ml-2">
+                  <span className="text-gray-500 dark:text-dark-text-secondary text-sm ml-2">
                     #{companyData?.Vendor?.[0]?.id || selectedProject?.Vendor?.id}
                   </span>
                 )}
@@ -457,13 +457,13 @@ const VendorManagement = () => {
           {isLoadingDetails && (
             <div className="flex items-center justify-center py-12">
               <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              <span className="ml-3 text-gray-600">Loading vendor details...</span>
+              <span className="ml-3 text-gray-600 dark:text-dark-text-secondary">Loading vendor details...</span>
             </div>
           )}
 
           {/* No Data State */}
           {!isLoadingDetails && !companyData && (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-gray-500 dark:text-dark-text-secondary">
               <p>No vendor details available</p>
             </div>
           )}
@@ -473,47 +473,47 @@ const VendorManagement = () => {
             <>
               {/* Step 1: Basic & Company Info */}
               <div
-                className="flex justify-between items-center pt-2 pb-2 cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2"
+                className="flex justify-between items-center pt-2 pb-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 rounded px-2 -mx-2"
                 onClick={() => toggleSection('basicInfo')}
               >
-                <h3 className="text-md font-semibold text-gray-900">Basic & Company Info</h3>
+                <h3 className="text-md font-semibold text-gray-900 dark:text-dark-text">Basic & Company Info</h3>
                 {expandedSections.basicInfo ? (
-                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 ) : (
-                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 )}
               </div>
               {expandedSections.basicInfo && (
-                <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                  <p className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide">Contact Details</p>
+                <div className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg p-4 mb-4">
+                  <p className="text-xs font-medium text-gray-500 dark:text-dark-text-secondary mb-3 uppercase tracking-wide">Contact Details</p>
                   <div className="grid grid-cols-3 text-sm gap-4 mb-4">
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Name</p>
-                      <p className="text-gray-900 font-medium">{companyData?.Vendor?.[0]?.name || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Name</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.Vendor?.[0]?.name || "-"}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Phone</p>
-                      <p className="text-gray-900 font-medium">{companyData?.Vendor?.[0]?.phone || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Phone</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.Vendor?.[0]?.phone || "-"}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Email</p>
-                      <p className="text-gray-900 font-medium break-all">{companyData?.Vendor?.[0]?.email || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Email</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium break-all">{companyData?.Vendor?.[0]?.email || "-"}</p>
                     </div>
                   </div>
-                  <div className="border-t pt-3">
-                    <p className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide">Company Details</p>
+                  <div className="border-t dark:border-dark-border pt-3">
+                    <p className="text-xs font-medium text-gray-500 dark:text-dark-text-secondary mb-3 uppercase tracking-wide">Company Details</p>
                     <div className="grid grid-cols-3 text-sm gap-4">
                       <div className="space-y-1">
-                        <p className="text-xs text-gray-500">Company Name</p>
-                        <p className="text-gray-900 font-medium">{companyData?.companyName || "-"}</p>
+                        <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Company Name</p>
+                        <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.companyName || "-"}</p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-xs text-gray-500">Establishment Date</p>
-                        <p className="text-gray-900 font-medium">{companyData?.establishmentDate?.split("T")[0] || "-"}</p>
+                        <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Establishment Date</p>
+                        <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.establishmentDate?.split("T")[0] || "-"}</p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-xs text-gray-500">Type/Nature</p>
-                        <p className="text-gray-900 font-medium">{companyData?.nature || "-"}</p>
+                        <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Type/Nature</p>
+                        <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.nature || "-"}</p>
                       </div>
                     </div>
                   </div>
@@ -522,38 +522,38 @@ const VendorManagement = () => {
 
               {/* Step 2: Location Details */}
               <div
-                className="flex justify-between items-center pt-2 pb-2 cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2"
+                className="flex justify-between items-center pt-2 pb-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 rounded px-2 -mx-2"
                 onClick={() => toggleSection('locationDetails')}
               >
-                <h3 className="text-md font-semibold text-gray-900">Location Details</h3>
+                <h3 className="text-md font-semibold text-gray-900 dark:text-dark-text">Location Details</h3>
                 {expandedSections.locationDetails ? (
-                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 ) : (
-                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 )}
               </div>
               {expandedSections.locationDetails && (
-                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <div className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg p-4 mb-4">
                   <div className="grid grid-cols-3 text-sm gap-4">
                     <div className="space-y-1 col-span-3">
-                      <p className="text-xs text-gray-500">Address</p>
-                      <p className="text-gray-900 font-medium">{companyData?.Addresses?.[0]?.address || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Address</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.Addresses?.[0]?.address || "-"}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">City</p>
-                      <p className="text-gray-900 font-medium">{companyData?.Addresses?.[0]?.city || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">City</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.Addresses?.[0]?.city || "-"}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">State</p>
-                      <p className="text-gray-900 font-medium">{companyData?.Addresses?.[0]?.state || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">State</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.Addresses?.[0]?.state || "-"}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Zip Code</p>
-                      <p className="text-gray-900 font-medium">{companyData?.Addresses?.[0]?.postalCode || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Zip Code</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.Addresses?.[0]?.postalCode || "-"}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Country</p>
-                      <p className="text-gray-900 font-medium">{companyData?.Addresses?.[0]?.country || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Country</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.Addresses?.[0]?.country || "-"}</p>
                     </div>
                   </div>
                 </div>
@@ -561,61 +561,61 @@ const VendorManagement = () => {
 
               {/* Step 3: Financial & Banking */}
               <div
-                className="flex justify-between items-center pt-2 pb-2 cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2"
+                className="flex justify-between items-center pt-2 pb-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 rounded px-2 -mx-2"
                 onClick={() => toggleSection('financialBanking')}
               >
-                <h3 className="text-md font-semibold text-gray-900">Financial & Banking</h3>
+                <h3 className="text-md font-semibold text-gray-900 dark:text-dark-text">Financial & Banking</h3>
                 {expandedSections.financialBanking ? (
-                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 ) : (
-                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 )}
               </div>
               {expandedSections.financialBanking && (
-                <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                  <p className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide">Currency & Banking</p>
+                <div className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg p-4 mb-4">
+                  <p className="text-xs font-medium text-gray-500 dark:text-dark-text-secondary mb-3 uppercase tracking-wide">Currency & Banking</p>
                   <div className="grid grid-cols-3 text-sm gap-4 mb-4">
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Currency</p>
-                      <p className="text-gray-900 font-medium">{companyData?.typeOfCurrency || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Currency</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.typeOfCurrency || "-"}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Bank Name</p>
-                      <p className="text-gray-900 font-medium">{companyData?.bankName || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Bank Name</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.bankName || "-"}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Beneficiary Name</p>
-                      <p className="text-gray-900 font-medium">{companyData?.beneficiaryName || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Beneficiary Name</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.beneficiaryName || "-"}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Account No</p>
-                      <p className="text-gray-900 font-medium">{companyData?.accountNumber || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Account No</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.accountNumber || "-"}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">IFSC Code</p>
-                      <p className="text-gray-900 font-medium">{companyData?.ifscCode || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">IFSC Code</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.ifscCode || "-"}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Swift Code</p>
-                      <p className="text-gray-900 font-medium">{companyData?.swiftCode || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Swift Code</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.swiftCode || "-"}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">IBAN</p>
-                      <p className="text-gray-900 font-medium">{companyData?.iBanNumber || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">IBAN</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.iBanNumber || "-"}</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 text-sm gap-4 mt-4">
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Bank Address</p>
-                      <p className="text-gray-900 font-medium">{companyData?.fullAddress || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Bank Address</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.fullAddress || "-"}</p>
                     </div>
                   </div>
-                  <div className="border-t pt-3">
-                    <p className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide">Compliance Documents</p>
+                  <div className="border-t dark:border-dark-border pt-3">
+                    <p className="text-xs font-medium text-gray-500 dark:text-dark-text-secondary mb-3 uppercase tracking-wide">Compliance Documents</p>
                     <div className="grid grid-cols-2 text-sm gap-4">
                       <div className="space-y-1">
-                        <p className="text-xs text-gray-500">GST Number</p>
-                        <p className="text-gray-900 font-medium">
+                        <p className="text-xs text-gray-500 dark:text-dark-text-secondary">GST Number</p>
+                        <p className="text-gray-900 dark:text-dark-text font-medium">
                           {companyData?.gstNumber || "-"}
                           {companyData?.gstFileUrl && (
                             <a
@@ -630,8 +630,8 @@ const VendorManagement = () => {
                         </p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-xs text-gray-500">PAN Number</p>
-                        <p className="text-gray-900 font-medium">
+                        <p className="text-xs text-gray-500 dark:text-dark-text-secondary">PAN Number</p>
+                        <p className="text-gray-900 dark:text-dark-text font-medium">
                           {companyData?.panNumber || "-"}
                           {companyData?.panFileUrl && (
                             <a
@@ -646,8 +646,8 @@ const VendorManagement = () => {
                         </p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-xs text-gray-500">MSME Number</p>
-                        <p className="text-gray-900 font-medium">
+                        <p className="text-xs text-gray-500 dark:text-dark-text-secondary">MSME Number</p>
+                        <p className="text-gray-900 dark:text-dark-text font-medium">
                           {companyData?.msmeNumber || "-"}
                           {companyData?.msmeFileUrl && (
                             <a
@@ -662,8 +662,8 @@ const VendorManagement = () => {
                         </p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-xs text-gray-500">CI Number</p>
-                        <p className="text-gray-900 font-medium">
+                        <p className="text-xs text-gray-500 dark:text-dark-text-secondary">CI Number</p>
+                        <p className="text-gray-900 dark:text-dark-text font-medium">
                           {companyData?.ciNumber || "-"}
                           {companyData?.ciFileUrl && (
                             <a
@@ -684,39 +684,39 @@ const VendorManagement = () => {
 
               {/* Step 4: Contact & Documents */}
               <div
-                className="flex justify-between items-center pt-2 pb-2 cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2"
+                className="flex justify-between items-center pt-2 pb-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 rounded px-2 -mx-2"
                 onClick={() => toggleSection('contactDocuments')}
               >
-                <h3 className="text-md font-semibold text-gray-900">Contact & Documents</h3>
+                <h3 className="text-md font-semibold text-gray-900 dark:text-dark-text">Contact & Documents</h3>
                 {expandedSections.contactDocuments ? (
-                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500" />
+                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 ) : (
-                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500" />
+                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 )}
               </div>
               {expandedSections.contactDocuments && (
-                <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                  <p className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide">Point of Contact</p>
+                <div className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg p-4 mb-4">
+                  <p className="text-xs font-medium text-gray-500 dark:text-dark-text-secondary mb-3 uppercase tracking-wide">Point of Contact</p>
                   <div className="grid grid-cols-3 text-sm gap-4">
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Name</p>
-                      <p className="text-gray-900 font-medium">{companyData?.pocName || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Name</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.pocName || "-"}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Designation</p>
-                      <p className="text-gray-900 font-medium">{companyData?.pocDesignation || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Designation</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.pocDesignation || "-"}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Email</p>
-                      <p className="text-gray-900 font-medium break-all">{companyData?.pocEmail || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Email</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium break-all">{companyData?.pocEmail || "-"}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Phone</p>
-                      <p className="text-gray-900 font-medium">{companyData?.pocPhone || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Phone</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.pocPhone || "-"}</p>
                     </div>
                     <div className="space-y-1 col-span-2">
-                      <p className="text-xs text-gray-500">Website</p>
-                      <p className="text-gray-900 font-medium">{companyData?.pocWebsite || "-"}</p>
+                      <p className="text-xs text-gray-500 dark:text-dark-text-secondary">Website</p>
+                      <p className="text-gray-900 dark:text-dark-text font-medium">{companyData?.pocWebsite || "-"}</p>
                     </div>
                   </div>
                 </div>

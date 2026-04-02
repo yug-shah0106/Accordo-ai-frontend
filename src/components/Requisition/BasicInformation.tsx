@@ -362,17 +362,17 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
       {/* Draft Restore Dialog */}
       {showDraftDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <div className="bg-white dark:bg-dark-surface rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text mb-2">
               Restore Draft?
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-dark-text-secondary mb-4">
               You have an unsaved requisition draft from a previous session. Would you like to restore it or start fresh?
             </p>
             <div className="flex justify-end gap-3">
               <Button
                 type="button"
-                className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg font-medium transition-all"
+                className="px-4 py-2 bg-gray-100 dark:bg-dark-bg text-gray-700 dark:text-dark-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg font-medium transition-all"
                 onClick={discardDraft}
               >
                 Start Fresh
@@ -389,11 +389,11 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
         </div>
       )}
 
-      <div className="border-2 rounded p-4 w-full max-w-full overflow-hidden">
+      <div className="border-2 rounded p-4 w-full max-w-full overflow-hidden dark:border-dark-border dark:bg-dark-surface">
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="text-lg font-semibold">Basic Information</h3>
-          <p className="font-normal text-[#46403E] py-2">
+          <h3 className="text-lg font-semibold dark:text-dark-text">Basic Information</h3>
+          <p className="font-normal text-[#46403E] dark:text-dark-text-secondary py-2">
             Your details will be used for Basic information
           </p>
         </div>

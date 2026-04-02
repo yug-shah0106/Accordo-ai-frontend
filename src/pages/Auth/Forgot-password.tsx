@@ -40,7 +40,7 @@ export default function ForgotPassword() {
 
   return (
     <div className="w-full max-w-sm px-6 py-4 mx-auto">
-      <h2 className="text-2xl font-bold text-center text-gray-800">
+      <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-dark-text">
         Forgot Password
       </h2>
 
@@ -59,8 +59,8 @@ export default function ForgotPassword() {
         </Button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-gray-600">
-        <div className="bg-[#D3DBFD33]/[20%] pt-3 pb-0 rounded-md text-[#18100E]">
+      <div className="mt-6 text-center text-sm text-gray-600 dark:text-dark-text-secondary">
+        <div className="bg-[#D3DBFD33]/[20%] pt-3 pb-0 rounded-md text-[#18100E] dark:text-dark-text">
           <p>
             or?{" "}
             <Link to="/sign-in" className="hover:underline font-bold">
