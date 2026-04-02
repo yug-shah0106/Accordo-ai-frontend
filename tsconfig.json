@@ -34,12 +34,11 @@
     "forceConsistentCasingInFileNames": true,
 
     /* Path Mapping */
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["src"],
+  "include": ["./src"],
   "exclude": ["tests", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
   "references": [{ "path": "./tsconfig.node.json" }],
   "ts-node": {

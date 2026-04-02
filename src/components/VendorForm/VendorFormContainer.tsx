@@ -95,11 +95,21 @@ export interface VendorFormData {
   documents?: File[] | null;
 }
 
+/** Shape of data stored in localStorage for vendor draft */
+interface VendorDraftData {
+  currentStep: number;
+  formData: VendorFormData;
+  companyId?: string;
+  vendorId?: string;
+}
+
 interface VendorFormContainerProps {
   companyId?: string;
   projectId?: any;
   company?: any;
 }
+
+const DRAFT_STORAGE_KEY = 'vendor-form-draft';
 
 const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
   companyId: propCompanyId,
@@ -112,14 +122,15 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const [company, setCompany] = useState<any>(propCompany);
 
-  // Get companyId from URL params or props
-  const companyId = id || propCompanyId || '';
-
-  // Determine if we're in create mode based on the URL path
-  // Edit mode: /vendor-management/edit-vendor/:id
-  // Create mode: /vendor-management/add-vendor/:id or /vendor-management/create-vendor/
+  // Determine if we're in edit mode based on the URL path
   const isEditMode = location.pathname.includes('/edit-vendor/');
   const isCreateMode = !isEditMode;
+
+  // In create mode, companyId is managed via state (set after Step 1 API call)
+  // In edit mode, companyId comes from URL params or props
+  const [createdCompanyId, setCreatedCompanyId] = useState<string>('');
+  const [createdVendorId, setCreatedVendorId] = useState<string>('');
+  const companyId = isEditMode ? (id || propCompanyId || '') : createdCompanyId;
 
   // Get initial step from URL or default to 1
   const urlStep = searchParams.get('step');
@@ -132,25 +143,27 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
   const [_errors, _setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [draftLoaded, setDraftLoaded] = useState(false);
-  const [isLoadingCompany, setIsLoadingCompany] = useState(isEditMode && !!companyId);
+  const [isLoadingCompany, setIsLoadingCompany] = useState(isEditMode && !!(id || propCompanyId));
   const [showDraftDialog, setShowDraftDialog] = useState(false);
-  const [pendingDraftData, setPendingDraftData] = useState<{ currentStep: number; formData: VendorFormData } | null>(null);
+  const [pendingDraftData, setPendingDraftData] = useState<VendorDraftData | null>(null);
+  const [isDeletingDraft, setIsDeletingDraft] = useState(false);
 
-  // Auto-save hook - save form data every 30 seconds
-  const autoSaveKey = `vendor-form-draft-${companyId || 'new'}`;
+  // Track whether auto-save should be active (only after draft decision is made)
+  const autoSaveReady = draftLoaded && !showDraftDialog;
+
+  // Auto-save hook — uses a single stable key; stores companyId inside the draft data
+  const autoSaveKey = DRAFT_STORAGE_KEY;
   const { lastSaved, isSaving, clearSaved, loadSaved } = useAutoSave({
     key: autoSaveKey,
-    data: { currentStep, formData },
-    interval: 30000, // 30 seconds
-    enabled: currentStep < 5, // Don't auto-save on review step
+    data: { currentStep, formData, companyId: createdCompanyId, vendorId: createdVendorId } as VendorDraftData,
+    interval: 30000,
+    enabled: isCreateMode && currentStep < 5 && autoSaveReady,
   });
 
   // Fetch company data if editing existing vendor (when we have companyId)
   useEffect(() => {
     const fetchCompanyData = async () => {
-      // Only fetch in edit mode or when we have a companyId from progressive save
       if (companyId && !propCompany) {
-        // In edit mode, show loading state while fetching
         if (isEditMode) {
           setIsLoadingCompany(true);
         }
@@ -179,59 +192,38 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
 
   // Load draft on mount (only in create mode, not edit mode)
   useEffect(() => {
-    // Skip draft loading in edit mode - we load from server instead
     if (isEditMode) {
       setDraftLoaded(true);
       return;
     }
 
-    if (!draftLoaded && !company) {
-      const saved = loadSaved();
-      if (saved && saved.currentStep && saved.formData) {
+    if (!draftLoaded) {
+      const saved = loadSaved() as VendorDraftData | null;
+      if (saved && saved.companyId && saved.currentStep && saved.formData) {
+        // Draft exists with a companyId — the user previously completed Step 1 and quit
         const savedTimestamp = localStorage.getItem(`${autoSaveKey}_timestamp`);
-        const isRecent = !savedTimestamp || (new Date().getTime() - new Date(savedTimestamp).getTime() < 7 * 24 * 60 * 60 * 1000); // 7 days
+        const isRecent = !savedTimestamp || (new Date().getTime() - new Date(savedTimestamp).getTime() < 7 * 24 * 60 * 60 * 1000);
         if (isRecent) {
-          const hasMeaningfulData =
-            saved.currentStep > 1 ||
-            Object.values(saved.formData).some(v => {
-              if (v == null || v === false) return false;
-              if (typeof v === 'string') return v.trim() !== '';
-              if (Array.isArray(v)) return v.length > 0;
-              if (typeof v === 'number') return true;
-              return true;
-            });
-          if (hasMeaningfulData) {
-            setPendingDraftData({ currentStep: saved.currentStep, formData: saved.formData });
-            setShowDraftDialog(true);
-            setDraftLoaded(true);
-            return;
-          }
+          setPendingDraftData(saved);
+          setShowDraftDialog(true);
+          setDraftLoaded(true);
+          return;
         }
       }
-      // No meaningful draft — clear the stale empty draft and proceed
+      // No valid draft — clear any stale data and proceed fresh
       clearSaved();
       setDraftLoaded(true);
     }
-  }, [draftLoaded, company, loadSaved, isEditMode]);
+  }, [draftLoaded, isEditMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Sync currentStep with URL when URL step parameter changes (e.g., after navigation)
+  // Update URL search params when step changes (silent, no navigation)
   useEffect(() => {
     const urlStep = searchParams.get('step');
     const stepFromUrl = urlStep ? parseInt(urlStep, 10) : 1;
-    if (stepFromUrl !== currentStep && stepFromUrl >= 1 && stepFromUrl <= 5) {
-      setCurrentStep(stepFromUrl);
-    }
-  }, [searchParams]); // Only depend on searchParams, not currentStep to avoid loop
-
-  // Update URL when step changes internally (via nextStep/prevStep)
-  useEffect(() => {
-    const urlStep = searchParams.get('step');
-    const stepFromUrl = urlStep ? parseInt(urlStep, 10) : 1;
-    // Only update URL if it doesn't match current step (avoid infinite loop)
     if (stepFromUrl !== currentStep) {
-      setSearchParams({ step: currentStep.toString() });
+      setSearchParams({ step: currentStep.toString() }, { replace: true });
     }
-  }, [currentStep, setSearchParams]);
+  }, [currentStep, setSearchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Callback for step components to update accumulated form data
   const updateFormData = useCallback((stepData: Partial<VendorFormData>) => {
@@ -252,7 +244,6 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
   };
 
   const handleStepClick = (stepId: number) => {
-    // Allow navigation to any step up to current step (or any completed step)
     if (stepId <= currentStep || (companyId && stepId <= 5)) {
       setCurrentStep(stepId);
     }
@@ -261,12 +252,11 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
   /**
    * Handle Step 1 submission - Create vendor + company
    * POST /vendor-management/create-vendor?step=1
+   * No navigation — stays on the same component, advances step via state
    */
   const handleStep1Submit = async (data: VendorFormData): Promise<void> => {
     setIsSubmitting(true);
     try {
-      // Note: companyLogo is excluded from JSON payload - it would need multipart/form-data
-      // For now, we skip file upload in step 1 and can handle it separately
       const payload = {
         name: data.name,
         email: data.email,
@@ -278,18 +268,22 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
         numberOfEmployees: data.numberOfEmployees,
         annualTurnover: data.annualTurnover,
         industryType: data.industryType,
-        // companyLogo excluded - File objects can't be sent as JSON
       };
 
       const response = await authApi.post('/vendor-management/create-vendor?step=1', payload);
-      const { company: newCompany } = response.data.data;
+      const { company: newCompany, vendor: newVendor } = response.data.data;
+
+      // Store the created IDs in state (no navigation)
+      setCreatedCompanyId(newCompany.id.toString());
+      if (newVendor?.id) {
+        setCreatedVendorId(newVendor.id.toString());
+      }
 
       // Update form data
       updateFormData(data);
 
-      // Navigate to the next step with companyId in URL
       toast.success('Vendor and company created (Step 1)');
-      navigate(`/vendor-management/add-vendor/${newCompany.id}?step=2`);
+      nextStep();
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || 'Failed to create vendor';
       toast.error(errorMessage);
@@ -321,7 +315,6 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
 
       await authApi.put(`/vendor-management/create-vendor/${companyId}?step=2`, payload);
 
-      // Update form data
       updateFormData(data);
 
       toast.success('Location details saved (Step 2)');
@@ -365,7 +358,6 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
 
       await authApi.put(`/vendor-management/create-vendor/${companyId}?step=3`, payload);
 
-      // Update form data
       updateFormData(data);
 
       toast.success('Financial info saved (Step 3)');
@@ -405,7 +397,6 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
 
       await authApi.put(`/vendor-management/create-vendor/${companyId}?step=4`, payload);
 
-      // Update form data
       updateFormData(data);
 
       toast.success('Contact info saved (Step 4)');
@@ -419,20 +410,68 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
     }
   };
 
-  const restoreDraft = () => {
+  /**
+   * Restore draft — reload the saved companyId, step, and form data,
+   * then fetch the company from the backend to hydrate the form
+   */
+  const restoreDraft = async () => {
     if (pendingDraftData) {
+      setCreatedCompanyId(pendingDraftData.companyId || '');
+      setCreatedVendorId(pendingDraftData.vendorId || '');
       setCurrentStep(pendingDraftData.currentStep);
       setFormData(pendingDraftData.formData);
+
+      // Fetch company data from backend so step components have full context
+      if (pendingDraftData.companyId) {
+        try {
+          const response = await authApi.get(`/company/get/${pendingDraftData.companyId}`);
+          setCompany(response.data.data);
+        } catch {
+          // Company may have been deleted — proceed with local data only
+        }
+      }
+
       toast.success('Draft restored');
     }
     setShowDraftDialog(false);
     setPendingDraftData(null);
   };
 
-  const discardDraft = () => {
+  /**
+   * Discard draft — clear localStorage AND delete the incomplete vendor/company
+   * from the backend so we don't leave orphaned records
+   */
+  const discardDraft = async () => {
+    const draftCompanyId = pendingDraftData?.companyId;
+    const draftVendorId = pendingDraftData?.vendorId;
+
+    // Clear UI state immediately
     clearSaved();
     setShowDraftDialog(false);
     setPendingDraftData(null);
+
+    // Delete the incomplete records from the backend (best-effort)
+    if (draftCompanyId || draftVendorId) {
+      setIsDeletingDraft(true);
+      try {
+        const deletePromises: Promise<any>[] = [];
+        if (draftVendorId) {
+          deletePromises.push(
+            authApi.delete(`/vendor-management/delete/${draftVendorId}`).catch(() => {})
+          );
+        }
+        if (draftCompanyId) {
+          deletePromises.push(
+            authApi.delete(`/company/delete/${draftCompanyId}`).catch(() => {})
+          );
+        }
+        await Promise.all(deletePromises);
+      } catch {
+        // Silently ignore — orphaned records are not critical
+      } finally {
+        setIsDeletingDraft(false);
+      }
+    }
   };
 
   /**
@@ -448,7 +487,7 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
   const getLastSavedText = () => {
     if (!lastSaved) return '';
     const now = new Date();
-    const diff = Math.floor((now.getTime() - lastSaved.getTime()) / 1000); // seconds
+    const diff = Math.floor((now.getTime() - lastSaved.getTime()) / 1000);
 
     if (diff < 60) return 'Saved just now';
     if (diff < 3600) return `Saved ${Math.floor(diff / 60)} min ago`;
@@ -470,8 +509,6 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
       updateFormData,
     };
 
-    // In edit mode, don't pass onStepSubmit - let components use their own edit mode API calls
-    // In create mode, use the progressive save handlers
     switch (currentStep) {
       case 1:
         return (
@@ -538,13 +575,15 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
                 type="button"
                 className="px-4 py-2 bg-gray-100 dark:bg-dark-bg text-gray-700 dark:text-dark-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg font-medium transition-all"
                 onClick={discardDraft}
+                disabled={isDeletingDraft}
               >
-                Start Fresh
+                {isDeletingDraft ? 'Cleaning up...' : 'Start Fresh'}
               </button>
               <button
                 type="button"
                 className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium transition-all"
                 onClick={restoreDraft}
+                disabled={isDeletingDraft}
               >
                 Restore Draft
               </button>

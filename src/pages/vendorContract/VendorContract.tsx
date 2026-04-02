@@ -10,6 +10,14 @@ import { useEffect, useState } from "react";
 import DateField from "../../components/DateField";
 import SelectField from "../../components/SelectField";
 
+const CURRENCY_SYMBOL_MAP: Record<string, string> = {
+  USD: '$',
+  INR: '₹',
+  EUR: '€',
+  GBP: '£',
+  AUD: 'A$',
+};
+
 const VendorContact = () => {
   const { id } = useParams();
   const [contracts, setContracts] = useState<any>(null);
@@ -259,7 +267,7 @@ const VendorContact = () => {
                     <tr>
                       <th className="border border-gray-300 px-4 pt-2 pb-0">Product Name</th>
                       <th className="border border-gray-300 px-4 pt-2 pb-0">Required Quantity</th>
-                      <th className="border border-gray-300 px-4 pt-2 pb-0">Your Quoted Price</th>
+                      <th className="border border-gray-300 px-4 pt-2 pb-0">Your Quoted Price ({CURRENCY_SYMBOL_MAP[contracts?.Requisition?.typeOfCurrency] || '$'})</th>
                       <th className="border border-gray-300 px-4 pt-2 pb-0">Your Delivery Date</th>
                     </tr>
                   </thead>
@@ -273,16 +281,21 @@ const VendorContact = () => {
                           {product.qty || 0}
                         </td>
                         <td className="border border-gray-300 px-4 pt-2 pb-0">
-                          <InputField
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            name={`quotedPrice_${product.id}`}
-                            placeholder="Enter your price"
-                            register={register}
-                            error={errors[`quotedPrice_${product.id}`] as import("react-hook-form").FieldError | undefined}
-                            wholeInputClassName="w-full"
-                          />
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-600 font-medium text-sm flex-shrink-0">
+                              {CURRENCY_SYMBOL_MAP[contracts?.Requisition?.typeOfCurrency] || '$'}
+                            </span>
+                            <InputField
+                              type="number"
+                              min={0}
+                              step="0.01"
+                              name={`quotedPrice_${product.id}`}
+                              placeholder="Enter your price"
+                              register={register}
+                              error={errors[`quotedPrice_${product.id}`] as import("react-hook-form").FieldError | undefined}
+                              wholeInputClassName="w-full"
+                            />
+                          </div>
                         </td>
                         <td className="border border-gray-300 px-4 pt-2 pb-0">
                           <DateField

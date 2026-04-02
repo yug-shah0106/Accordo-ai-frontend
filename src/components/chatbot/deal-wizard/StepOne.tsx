@@ -385,8 +385,8 @@ const StepOne: React.FC<StepOneProps> = ({
             onChange={handleChange}
             className="w-full px-4 py-2.5 border border-gray-300 dark:border-dark-border rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-dark-bg dark:text-dark-text"
           >
-            <option value="INSIGHTS">INSIGHTS (Automated Negotiation)</option>
             <option value="CONVERSATION">CONVERSATION (AI-Assisted Chat)</option>
+            <option value="INSIGHTS">INSIGHTS (Automated Negotiation)</option>
           </select>
           <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
             <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

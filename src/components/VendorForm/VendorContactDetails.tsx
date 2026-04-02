@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form";
 import InputField from "../InputField";
+import SelectField from "../SelectField";
 import Button from "../Button";
 import { authApi } from "../../api";
 import { useEffect } from "react";
@@ -41,7 +42,7 @@ const VendorContactDetails: React.FC<VendorContactDetailsProps> = ({
     register,
     handleSubmit,
     reset,
-    watch: _watch,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     defaultValues: {
@@ -91,14 +92,22 @@ const VendorContactDetails: React.FC<VendorContactDetailsProps> = ({
             wholeInputClassName={`my-1`}
           />
          
-          <InputField
+          <SelectField
             label="Designation"
             name="pocDesignation"
-            placeholder="Enter Designation"
-            type="text"
+            placeholder="Select designation"
             register={register}
+            value={watch("pocDesignation")}
             error={errors.pocDesignation}
-            wholeInputClassName={`my-1`}
+            options={[
+              { value: "CEO", label: "CEO" },
+              { value: "CFO", label: "CFO" },
+              { value: "HOD", label: "HOD" },
+              { value: "Admin", label: "Admin" },
+              { value: "Procurement Manager", label: "Procurement Manager" },
+              { value: "Procurement Manager Approver", label: "Procurement Manager Approver" },
+            ]}
+            wholeInputClassName="my-1"
           />
 
           <InputField

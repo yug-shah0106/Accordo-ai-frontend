@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { IoSearchOutline } from "react-icons/io5";
 import { VscEdit, VscSettings } from "react-icons/vsc";
 import { PiDotsThreeBold } from "react-icons/pi";
@@ -43,6 +43,14 @@ const UserManagement = () => {
       accessorKey: "name"
     },
     {
+      header: "User Type",
+      accessor: "userType",
+    },
+    {
+      header: "Approval Level",
+      accessor: "approvalLevel",
+    },
+    {
       header: "User Status",
       accessor: "status",
       isBadge: true
@@ -54,8 +62,28 @@ const UserManagement = () => {
     setIsModal(true);
   };
 
+  const formatUserType = (value: string) => {
+    const map: Record<string, string> = {
+      super_admin: 'Super Admin',
+      admin: 'Admin',
+      procurement: 'Procurement',
+      vendor: 'Vendor',
+    };
+    return map[value] || value;
+  };
+
+  const formatApprovalLevel = (value: string) => {
+    const map: Record<string, string> = {
+      NONE: 'None',
+      L1: 'Level 1',
+      L2: 'Level 2',
+      L3: 'Level 3',
+    };
+    return map[value] || value;
+  };
+
   const {
-    data: users,
+    data: allUsers,
     totalCount,
     page,
     setPage,
@@ -65,6 +93,12 @@ const UserManagement = () => {
     refetch,
   } = useFetchData("/user/get-all", 10) as UseFetchDataReturn<User>;
   const debounce = useDebounce(setSearch, 600);
+
+  // Filter out super_admin users (dev team only) from the list
+  const users = useMemo(() => {
+    if (!allUsers) return [];
+    return allUsers.filter((user: any) => user.userType !== 'super_admin');
+  }, [allUsers]);
 
   const handleResetPassword = async (user: User) => {
     try {
@@ -220,6 +254,10 @@ const UserManagement = () => {
                         />
                       ) : column.accessorKey ? (
                         (row as any)[column.accessor]?.[column.accessorKey]
+                      ) : column.accessor === 'userType' ? (
+                        formatUserType((row as any)[column.accessor])
+                      ) : column.accessor === 'approvalLevel' ? (
+                        formatApprovalLevel((row as any)[column.accessor])
                       ) : (
                         (row as any)[column.accessor]
                       )}

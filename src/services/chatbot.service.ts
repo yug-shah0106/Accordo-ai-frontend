@@ -446,7 +446,7 @@ export const chatbotService = {
     ctx: DealContext,
     content: string,
     role: MessageRole = "VENDOR",
-    mode: DealMode = "INSIGHTS"
+    mode: DealMode = "CONVERSATION"
   ): Promise<SendMessageResponse> => {
     const res = await authApi.post<{ message: string; data: SendMessageResponse }>(
       buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'messages'),

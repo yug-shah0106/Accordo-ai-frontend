@@ -115,10 +115,11 @@ const RequisitionsManagement = () => {
     totalDoc,
     refetch,
   } = useFetchData(
-    state
-      ? `/requisition/get-all?projectid=${state.id}`
-      : `/requisition/get-all`,
-    10
+    `/requisition/get-all`,
+    10,
+    0,
+    1,
+    state?.id ? { projectId: state.id } : {}
   );
   const debounce = useDebounce(setSearch, 600);
 

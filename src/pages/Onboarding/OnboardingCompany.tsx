@@ -12,6 +12,7 @@ import Modal from "../../components/Modal";
 import AddressSection from "../../components/settingForm/AddressSection";
 import { AddressData } from "../../types/address";
 import { env } from "@/utils/env";
+import { getTurnoverOptions } from "../../utils/turnover";
 
 interface OnboardingFormData {
   profileData?: any;
@@ -237,7 +238,12 @@ const OnboardingCompany = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const updates: Record<string, string> = { [name]: value };
+    // Reset turnover when currency changes since stored value includes currency
+    if (name === "typeOfCurrency") {
+      updates.annualTurnover = "";
+    }
+    setFormData({ ...formData, ...updates });
     // Clear error when field is edited
     if (errors[name]) {
       setErrors({ ...errors, [name]: "" });
@@ -460,15 +466,14 @@ const OnboardingCompany = ({
               error={errors.numberOfEmployees ? { message: errors.numberOfEmployees, type: 'manual' } : undefined}
             />
 
-            <InputField
-              label="Annual Turnover"
+            <SelectField
+              label={`Annual Turnover${formData.typeOfCurrency ? ` (in ${formData.typeOfCurrency === 'INR' ? 'Crores' : 'Million'})` : ''}`}
               name="annualTurnover"
-              placeholder="Enter Annual Turnover"
-              type="text"
               value={formData.annualTurnover}
               onChange={handleChange}
+              options={getTurnoverOptions(formData.typeOfCurrency)}
+              placeholder="Select turnover range"
               error={errors.annualTurnover ? { message: errors.annualTurnover, type: 'manual' } : undefined}
-              className="text-sm text-gray-900"
             />
 
             <SelectField

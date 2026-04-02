@@ -7,8 +7,13 @@ import { RegisterSchema } from "../../schema/auth";
 import toast from "react-hot-toast";
 import api from "../../api";
 import Checkbox from "../../components/CheckBox";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Modal from "../../components/Modal";
+
+interface Role {
+  id: number;
+  name: string;
+}
 
 interface RegisterFormData {
   name: string;
@@ -21,6 +26,23 @@ export default function SignUp() {
   const navigate = useNavigate();
   const [terms, setTerms] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selectedRole, setSelectedRole] = useState<string>("");
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [rolesLoading, setRolesLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const response = await api.get("/auth/roles");
+        setRoles(response.data.data || []);
+      } catch (error) {
+        console.error("Failed to fetch roles:", error);
+      } finally {
+        setRolesLoading(false);
+      }
+    };
+    fetchRoles();
+  }, []);
   const {
     register,
     handleSubmit,
@@ -53,7 +75,10 @@ export default function SignUp() {
         return;
       }
       const { confirmPassword, ...registerData } = data;
-      const response = await api.post("/auth/register", registerData);
+      const response = await api.post("/auth/register", {
+        ...registerData,
+        ...(selectedRole ? { roleId: Number(selectedRole) } : {}),
+      });
       console.log({ response });
       navigate("/sign-in");
     } catch (error: any) {
@@ -98,6 +123,36 @@ export default function SignUp() {
           error={errors.confirmPassword}
           placeholder="Enter password"
         />
+
+        {/* User Role Selection */}
+        <div className="my-4">
+          <label className="block text-sm text-gray-600 font-medium mb-2">
+            User Role
+          </label>
+          <div className="relative">
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              disabled={rolesLoading}
+              className="w-full border border-gray-300 px-4 py-3 text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              <option value="">
+                {rolesLoading ? "Loading roles..." : "Select a role"}
+              </option>
+              {roles.map((role) => (
+                <option key={role.id} value={role.id}>
+                  {role.name}
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
         <div className="flex items-center gap-4 my-2 w-full mt-2">
           <Checkbox
             name="terms"

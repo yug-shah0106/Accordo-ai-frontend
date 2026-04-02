@@ -23,6 +23,8 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
   const navigate = useNavigate();
   const [_preview, setPreview] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState("");
+  const [selectedUserType, setSelectedUserType] = useState("admin");
+  const [selectedApprovalLevel, setSelectedApprovalLevel] = useState("NONE");
   const [userRoles, setUserRoles] = useState<Role[]>([]);
   const [rolesLoading, setRolesLoading] = useState(true);
 
@@ -55,9 +57,15 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
         password: data.UserPassword,
         profilePic: data.profilePic,
       });
-      // Set the user's current role
+      // Set the user's current role, userType, and approvalLevel
       if (data.roleId) {
         setSelectedRole(String(data.roleId));
+      }
+      if (data.userType) {
+        setSelectedUserType(data.userType);
+      }
+      if (data.approvalLevel) {
+        setSelectedApprovalLevel(data.approvalLevel);
       }
       if (data.profilePic) {
         const url = `${env("VITE_ASSEST_URL")}/uploads/${data.profilePic}`;
@@ -74,7 +82,11 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
     try {
       const response = await authApi.get(`/role/get-all`);
       const roles = response.data.data || [];
-      setUserRoles(roles);
+      const filtered = roles.filter((role: Role) => {
+        const name = (role.name || '').toLowerCase().trim();
+        return name !== 'super admin';
+      });
+      setUserRoles(filtered);
     } catch (error: any) {
       console.error("Error fetching roles:", error);
       toast.error("Failed to load roles");
@@ -118,6 +130,8 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
         }
       }
       data.append("roleId", selectedRole);
+      data.append("userType", selectedUserType);
+      data.append("approvalLevel", selectedApprovalLevel);
 
       if (!id) {
         await authApi.post("/user/create", data);
@@ -165,6 +179,7 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
             <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
               <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Row 1: Full Name + Email */}
                   <InputField
                     label="Full Name"
                     name="name"
@@ -183,6 +198,8 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
                     error={errors.email}
                     className="text-sm text-gray-900"
                   />
+
+                  {/* Row 2: Phone Number + User Role */}
                   <InputField
                     label="Phone Number"
                     name="phone"
@@ -192,6 +209,88 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
                     error={errors.phone}
                     className="text-sm text-gray-900"
                   />
+                  <div className="my-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      User Role <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={selectedRole}
+                        onChange={(e) => setSelectedRole(e.target.value)}
+                        disabled={rolesLoading}
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      >
+                        <option value="">
+                          {rolesLoading ? "Loading roles..." : "Select a role"}
+                        </option>
+                        {userRoles.map((role) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                        {rolesLoading ? (
+                          <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        )}
+                      </div>
+                    </div>
+                    {userRoles.length === 0 && !rolesLoading && (
+                      <p className="mt-1 text-sm text-red-500">
+                        No roles available. Please contact administrator.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Row 3: User Type + Approval Level */}
+                  <div className="my-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      User Type <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={selectedUserType}
+                        onChange={(e) => setSelectedUserType(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                      >
+                        <option value="admin">Admin</option>
+                        <option value="procurement">Procurement</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="my-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Approval Level
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={selectedApprovalLevel}
+                        onChange={(e) => setSelectedApprovalLevel(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                      >
+                        <option value="NONE">None</option>
+                        <option value="L1">Level 1</option>
+                        <option value="L2">Level 2</option>
+                        <option value="L3">Level 3</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Password field (only for create mode) */}
                   {!id && (
                     <InputField
                       label="Password"

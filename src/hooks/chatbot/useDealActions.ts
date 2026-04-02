@@ -106,7 +106,7 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
   const canSend = canNegotiate && !sending;
   const canReset = deal !== null && !resetLoading;
   const maxRounds = config?.max_rounds ?? 10;
-  const mode: DealMode = (deal?.mode as DealMode) ?? 'INSIGHTS';
+  const mode: DealMode = (deal?.mode as DealMode) ?? 'CONVERSATION';
 
   // Vendor mode is enabled when deal has vendorMode flag set
   // In vendor mode, AI-PM simulates the buyer
