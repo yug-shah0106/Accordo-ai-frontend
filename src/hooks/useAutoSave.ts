@@ -34,6 +34,7 @@ export const useAutoSave = ({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const previousDataRef = useRef<string>('');
   const isInitialMount = useRef(true);
+  const clearedRef = useRef(false);
 
   // Check for existing draft on mount
   useEffect(() => {
@@ -98,6 +99,7 @@ export const useAutoSave = ({
       setLastSaved(null);
       setHasDraft(false);
       previousDataRef.current = '';
+      clearedRef.current = true;
     } catch (error) {
       console.error('Error clearing localStorage:', error);
     }
@@ -132,12 +134,12 @@ export const useAutoSave = ({
     };
   }, [data, enabled, interval, saveToLocalStorage]);
 
-  // Save on unmount if there are changes
+  // Save on unmount if there are changes (skip if draft was intentionally cleared)
   useEffect(() => {
     return () => {
+      if (clearedRef.current) return;
       if (enabled && timeoutRef.current) {
         clearTimeout(timeoutRef.current);
-        // Only save if data has changed from previous
         const currentDataString = JSON.stringify(data);
         if (currentDataString !== previousDataRef.current) {
           try {

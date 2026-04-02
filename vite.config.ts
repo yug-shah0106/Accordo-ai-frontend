@@ -28,6 +28,16 @@ export default defineConfig(({ mode }) => {
       host: env.VITE_DEV_HOST || "0.0.0.0",
       port: env.VITE_DEV_PORT ? Number(env.VITE_DEV_PORT) : 5001,
       proxy: {
+        "/api/auth": {
+          target: env.AUTH_PROXY_TARGET || "http://localhost:5100",
+          changeOrigin: true,
+          secure: false,
+        },
+        "/api/role": {
+          target: env.AUTH_PROXY_TARGET || "http://localhost:5100",
+          changeOrigin: true,
+          secure: false,
+        },
         "/api": {
           target: proxyTarget,
           changeOrigin: true,
