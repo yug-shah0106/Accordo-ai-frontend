@@ -13,6 +13,7 @@ import ComplianceDocumentField from "../ComplianceDocumentField";
 import AddressSection from "./AddressSection";
 import { AddressData } from "../../types/address";
 import { FieldError } from "react-hook-form";
+import { getTurnoverOptions } from "../../utils/turnover";
 import { env } from "@/utils/env";
 
 // Helper to convert string error to FieldError format
@@ -265,7 +266,12 @@ const CompanyProfile = ({
         [name]: previewURL,
       }));
     } else {
-      setFormData({ ...formData, [name]: value });
+      const updates: Record<string, string> = { [name]: value };
+      // Reset turnover when currency changes since stored value includes currency
+      if (name === "typeOfCurrency") {
+        updates.annualTurnover = "";
+      }
+      setFormData({ ...formData, ...updates });
     }
   };
 
@@ -478,15 +484,14 @@ const CompanyProfile = ({
               error={toFieldError(errors.numberOfEmployees)}
             />
 
-            <InputField
-              label="Annual Turnover"
+            <SelectField
+              label={`Annual Turnover${formData.typeOfCurrency ? ` (in ${formData.typeOfCurrency === 'INR' ? 'Crores' : 'Million'})` : ''}`}
               name="annualTurnover"
-              placeholder="Enter Annual Turnover"
-              type="text"
               value={formData.annualTurnover}
               onChange={handleChange}
+              options={getTurnoverOptions(formData.typeOfCurrency)}
+              placeholder="Select turnover range"
               error={toFieldError(errors.annualTurnover)}
-              className="text-sm text-gray-900"
             />
 
             <SelectField

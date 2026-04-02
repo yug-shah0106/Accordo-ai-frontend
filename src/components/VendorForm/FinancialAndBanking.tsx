@@ -306,13 +306,17 @@ const FinancialAndBanking: React.FC<FinancialAndBankingProps> = ({
               wholeInputClassName="my-1"
             />
 
-            <InputField
+            <SelectField
               label="Bank Account Type"
               name="bankAccountType"
-              placeholder="Enter Account Type"
-              type="text"
+              placeholder="Select account type"
               register={register}
+              value={watch("bankAccountType")}
               error={errors.bankAccountType}
+              options={[
+                { value: "Current", label: "Current" },
+                { value: "Savings", label: "Savings" },
+              ]}
               wholeInputClassName="my-1"
             />
 
