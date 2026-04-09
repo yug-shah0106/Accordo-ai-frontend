@@ -694,10 +694,10 @@ JSON.parse(row.contractDetails);
                                 Quantity
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Quoted Price
+                                Quoted Price Per Unit
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Total Value
+                                Line Total
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Delivery Date

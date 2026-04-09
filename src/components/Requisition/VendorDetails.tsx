@@ -158,8 +158,10 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     try {
       const response = await chatbotService.getRequisitionDeals(parseInt(requisitionId));
       setDeals(response.data?.deals || []);
-    } catch (error) {
-      console.warn('Failed to load deals:', error);
+    } catch (error: any) {
+      console.error('Failed to load deals:', error);
+      const msg = error?.response?.data?.message || error?.message || 'Failed to load vendor deals';
+      toast.error(msg);
       setDeals([]);
     } finally {
       setLoadingDeals(false);

@@ -249,6 +249,35 @@ const VendorContact = () => {
     );
   }
 
+  // Compute live totals for the quotation table footer.
+  // Footer is only shown once the vendor has typed at least one price
+  // (hasAnyPrice). Total quantity sums required qty across all products;
+  // total price sums (quotedPricePerUnit × requiredQty) per product.
+  const watchedFields = watch();
+  const requisitionProducts = contracts?.Requisition?.RequisitionProduct || [];
+  const currencySymbol = CURRENCY_SYMBOL_MAP[contracts?.Requisition?.typeOfCurrency] || '$';
+
+  let totalQuantity = 0;
+  let totalPrice = 0;
+  let hasAnyPrice = false;
+  for (const product of requisitionProducts) {
+    const qty = Number(product?.qty) || 0;
+    const rawPrice = watchedFields[`quotedPrice_${product.id}`];
+    const unitPrice = rawPrice === '' || rawPrice === undefined || rawPrice === null
+      ? NaN
+      : Number(rawPrice);
+    totalQuantity += qty;
+    if (Number.isFinite(unitPrice) && unitPrice >= 0) {
+      hasAnyPrice = true;
+      totalPrice += unitPrice * qty;
+    }
+  }
+
+  const formattedTotalPrice = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(totalPrice);
+
   return (
     <div className="w-max mt-8">
       {contracts?.Requisition?.status === "Draft" || contracts?.status === "Created" || !hasSubmittedQuote ? (
@@ -267,7 +296,7 @@ const VendorContact = () => {
                     <tr>
                       <th className="border border-gray-300 px-4 pt-2 pb-0">Product Name</th>
                       <th className="border border-gray-300 px-4 pt-2 pb-0">Required Quantity</th>
-                      <th className="border border-gray-300 px-4 pt-2 pb-0">Your Quoted Price ({CURRENCY_SYMBOL_MAP[contracts?.Requisition?.typeOfCurrency] || '$'})</th>
+                      <th className="border border-gray-300 px-4 pt-2 pb-0">Your Quoted Price Per Unit ({CURRENCY_SYMBOL_MAP[contracts?.Requisition?.typeOfCurrency] || '$'})</th>
                       <th className="border border-gray-300 px-4 pt-2 pb-0">Your Delivery Date</th>
                     </tr>
                   </thead>
@@ -309,6 +338,24 @@ const VendorContact = () => {
                       </tr>
                     ))}
                   </tbody>
+                  {hasAnyPrice && (
+                    <tfoot>
+                      <tr className="bg-gray-100 font-semibold border-t-2 border-gray-400">
+                        <td className="border border-gray-300 px-4 py-2 text-gray-800">
+                          Total
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2 text-gray-800">
+                          {totalQuantity}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2 text-gray-800">
+                          {currencySymbol}{formattedTotalPrice}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2 text-gray-400">
+                          —
+                        </td>
+                      </tr>
+                    </tfoot>
+                  )}
                 </table>
               </div>
             )}

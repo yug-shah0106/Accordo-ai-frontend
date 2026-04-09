@@ -21,9 +21,11 @@ interface MessageBubbleProps {
   isGrouped?: boolean;
   vendorMode?: boolean;  // When true, shows vendor-perspective labels
   pmMode?: boolean;      // When true, flips layout for PM perspective (Accordo left, Vendor right)
+  /** Deal currency code (e.g. "INR"); forwarded to the embedded OfferCard. */
+  currency?: string;
 }
 
-export default function MessageBubble({ message, isGrouped = false, vendorMode = false, pmMode = false }: MessageBubbleProps) {
+export default function MessageBubble({ message, isGrouped = false, vendorMode = false, pmMode = false, currency }: MessageBubbleProps) {
   const [showFull, setShowFull] = useState(false);
 
   // Guard against undefined/null message
@@ -117,7 +119,7 @@ export default function MessageBubble({ message, isGrouped = false, vendorMode =
             {shouldShowContent && <div className="h-px bg-gray-200 my-1" />}
             <DecisionBadge decision={decision} />
             {decision.action === "COUNTER" && decision.counterOffer && (
-              <OfferCard offer={decision.counterOffer} />
+              <OfferCard offer={decision.counterOffer} currency={currency} />
             )}
           </div>
         )}

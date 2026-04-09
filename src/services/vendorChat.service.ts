@@ -30,6 +30,23 @@ export interface ContractDetails {
 }
 
 /**
+ * Pending structured prompt shape (April 2026).
+ * Attached to ACCORDO messages that asked a structured question. The vendor
+ * composer uses this to render the matching input mode (numeric percent,
+ * payment terms dropdown). When the vendor answers via the dedicated
+ * endpoint the prompt is considered resolved.
+ */
+export type PendingPrompt =
+  | {
+      type: "discount_percent";
+      discount: { originalTotal: number; currency: string };
+    }
+  | {
+      type: "payment_terms";
+      paymentTerms: { presets: number[] };
+    };
+
+/**
  * Message structure
  */
 export interface VendorChatMessage {
@@ -39,11 +56,19 @@ export interface VendorChatMessage {
   content: string;
   extractedOffer?: {
     unit_price?: number | null;
+    total_price?: number | null;
     payment_terms?: string | null;
+    payment_terms_days?: number | null;
   } | null;
   counterOffer?: {
     unit_price?: number | null;
     payment_terms?: string | null;
+  } | null;
+  engineDecision?: {
+    action?: string;
+    pendingPrompt?: PendingPrompt;
+    discountApplied?: { percent: number; discountAppliedTo: number };
+    [key: string]: unknown;
   } | null;
   decision?: string | null;
   createdAt: string;
@@ -397,6 +422,75 @@ export const vendorChatService = {
     return { data: res.data.data };
   },
 
+  // ============================================================================
+  // Structured Prompt Endpoints (April 2026)
+  // Feature 1: initial discount ask; Feature 2: payment terms dropdown
+  // ============================================================================
+
+  /**
+   * Submit initial discount percentage.
+   * POST /api/vendor-chat/discount
+   * @param percent integer 0..100
+   */
+  submitDiscount: async (
+    uniqueToken: string,
+    percent: number
+  ): Promise<{
+    data: {
+      vendorMessage: VendorChatMessage;
+      pmMessage: VendorChatMessage;
+      decision: PMDecision;
+      deal: VendorDeal;
+      meso?: MesoResult;
+    };
+  }> => {
+    const res = await api.post<{
+      message: string;
+      data: {
+        vendorMessage: VendorChatMessage;
+        pmMessage: VendorChatMessage;
+        decision: PMDecision;
+        deal: VendorDeal;
+        meso?: MesoResult;
+      };
+    }>(`${VENDOR_CHAT_BASE}/discount`, {
+      uniqueToken,
+      percent,
+    });
+    return { data: res.data.data };
+  },
+
+  /**
+   * Submit payment terms (integer days; 0 = immediate, 1..365 otherwise).
+   * POST /api/vendor-chat/payment-terms
+   */
+  submitPaymentTerms: async (
+    uniqueToken: string,
+    days: number
+  ): Promise<{
+    data: {
+      vendorMessage: VendorChatMessage;
+      pmMessage: VendorChatMessage;
+      decision: PMDecision;
+      deal: VendorDeal;
+      meso?: MesoResult;
+    };
+  }> => {
+    const res = await api.post<{
+      message: string;
+      data: {
+        vendorMessage: VendorChatMessage;
+        pmMessage: VendorChatMessage;
+        decision: PMDecision;
+        deal: VendorDeal;
+        meso?: MesoResult;
+      };
+    }>(`${VENDOR_CHAT_BASE}/payment-terms`, {
+      uniqueToken,
+      days,
+    });
+    return { data: res.data.data };
+  },
 };
 
 export default vendorChatService;

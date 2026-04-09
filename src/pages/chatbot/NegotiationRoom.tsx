@@ -872,7 +872,7 @@ export default function NegotiationRoom() {
               </div>
             </div>
 
-            <ChatTranscript messages={messages} isProcessing={false} pmMode={true} roundStrategyInfo={roundStrategyInfo} />
+            <ChatTranscript messages={messages} isProcessing={false} pmMode={true} roundStrategyInfo={roundStrategyInfo} currency={dealCurrencyCode} />
           </div>
         </div>
       </div>
@@ -1054,6 +1054,7 @@ export default function NegotiationRoom() {
                   processingType={pmTyping ? "analyzing" : "vendor-typing"}
                   pmMode={true}
                   roundStrategyInfo={roundStrategyInfo}
+                  currency={dealCurrencyCode}
                 />
               </div>
 

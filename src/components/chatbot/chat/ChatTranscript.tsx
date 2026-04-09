@@ -46,6 +46,8 @@ interface ChatTranscriptProps {
   vendorMode?: boolean;  // When true, shows vendor-perspective labels
   pmMode?: boolean;      // When true, flips layout for PM perspective
   roundStrategyInfo?: Record<number, RoundStrategyInfo>;  // Per-round strategy info from behavioral analysis
+  /** Deal currency code (e.g. "INR"); forwarded to each message bubble's OfferCard. */
+  currency?: string;
 }
 
 export default function ChatTranscript({
@@ -55,6 +57,7 @@ export default function ChatTranscript({
   vendorMode = false,
   pmMode = false,
   roundStrategyInfo,
+  currency,
 }: ChatTranscriptProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -202,6 +205,7 @@ export default function ChatTranscript({
                 isGrouped={item.isGrouped}
                 vendorMode={vendorMode}
                 pmMode={pmMode}
+                currency={currency}
               />
             );
           })}

@@ -24,8 +24,30 @@ import { DEAL_STATUS_COLORS } from "../../constants/colors";
  * - 'text': Normal text input (Composer)
  * - 'disabled': Input disabled (MESO shown, waiting for selection)
  * - 'others_form': Others form shown (price + terms inputs)
+ * - 'discount_input': Numeric % input (Feature 1 — initial discount ask)
+ * - 'payment_terms_dropdown': Payment terms dropdown + Others input
+ *   (Feature 2 — price-only vendor message)
  */
-type InputMode = 'text' | 'disabled' | 'others_form';
+type InputMode =
+  | 'text'
+  | 'disabled'
+  | 'others_form'
+  | 'discount_input'
+  | 'payment_terms_dropdown';
+
+/**
+ * Derive composer mode from the latest ACCORDO message's pendingPrompt
+ * (survives page reloads — same mechanism MESO uses to re-derive on mount).
+ */
+function deriveInputModeFromMessages(
+  messages: VendorChatMessage[]
+): InputMode | null {
+  const latestAccordo = [...messages].reverse().find((m) => m.role === 'ACCORDO');
+  const prompt = latestAccordo?.engineDecision?.pendingPrompt;
+  if (prompt?.type === 'discount_percent') return 'discount_input';
+  if (prompt?.type === 'payment_terms') return 'payment_terms_dropdown';
+  return null;
+}
 
 const VENDOR_STATUS_LABELS: Record<string, string> = {
   NEGOTIATING: 'In Progress',
@@ -386,6 +408,263 @@ const DisabledInputMessage = ({ message }: { message?: string }) => (
 );
 
 /**
+ * Discount Input Composer (Feature 1 — initial discount ask)
+ * Numeric percent input; accepts 0..100 integers.
+ */
+const DiscountInputComposer = ({
+  onSubmit,
+  disabled,
+  submitting,
+}: {
+  onSubmit: (percent: number) => void;
+  disabled: boolean;
+  submitting: boolean;
+}) => {
+  const [value, setValue] = useState<string>('');
+  const [errorText, setErrorText] = useState<string>('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (disabled || submitting) return;
+
+    const trimmed = value.trim();
+    if (trimmed === '') {
+      setErrorText('Please enter a discount percentage.');
+      return;
+    }
+    const num = Number(trimmed);
+    if (!Number.isFinite(num) || !Number.isInteger(num)) {
+      setErrorText('Please enter a whole number.');
+      return;
+    }
+    if (num < 0 || num > 100) {
+      setErrorText('Please enter a value between 0 and 100.');
+      return;
+    }
+    setErrorText('');
+    onSubmit(num);
+  };
+
+  return (
+    <div className="border-t border-gray-200 p-4 bg-white">
+      <form onSubmit={handleSubmit}>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Enter initial discount (%)
+        </label>
+        <div className="flex items-end space-x-3">
+          <div className="flex-1">
+            <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step={1}
+                value={value}
+                onChange={(e) => {
+                  setValue(e.target.value);
+                  if (errorText) setErrorText('');
+                }}
+                disabled={disabled || submitting}
+                placeholder="0"
+                className="flex-1 px-4 py-3 rounded-l-lg focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+              />
+              <span className="px-4 py-3 text-gray-500 font-medium border-l border-gray-300 bg-gray-50 rounded-r-lg">
+                %
+              </span>
+            </div>
+            {errorText ? (
+              <p className="text-xs text-red-600 mt-1">{errorText}</p>
+            ) : (
+              <p className="text-xs text-gray-500 mt-1">
+                Enter 0 if you cannot offer a discount.
+              </p>
+            )}
+          </div>
+          <button
+            type="submit"
+            disabled={disabled || submitting}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center"
+          >
+            {submitting ? (
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+            ) : (
+              'Send'
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+/**
+ * Payment Terms Dropdown Composer (Feature 2)
+ * Presets: Immediately / Net 30 / Net 60 / Net 90 / Others.
+ * "Others" reveals a numeric input (integer 1..365).
+ */
+const PaymentTermsDropdownComposer = ({
+  onSubmit,
+  disabled,
+  submitting,
+}: {
+  onSubmit: (days: number) => void;
+  disabled: boolean;
+  submitting: boolean;
+}) => {
+  const [selection, setSelection] = useState<string>('');
+  const [othersValue, setOthersValue] = useState<string>('');
+  const [errorText, setErrorText] = useState<string>('');
+
+  const handleSelectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelection(e.target.value);
+    setErrorText('');
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (disabled || submitting) return;
+
+    if (!selection) {
+      setErrorText('Please select your payment terms.');
+      return;
+    }
+
+    if (selection === 'others') {
+      const trimmed = othersValue.trim();
+      if (trimmed === '') {
+        setErrorText('Please enter the number of days.');
+        return;
+      }
+      const num = Number(trimmed);
+      if (!Number.isFinite(num) || !Number.isInteger(num)) {
+        setErrorText('Please enter a whole number.');
+        return;
+      }
+      if (num < 1) {
+        setErrorText("Please enter at least 1 day, or select 'Immediately' above.");
+        return;
+      }
+      if (num > 365) {
+        setErrorText('Please enter a value between 1 and 365 days.');
+        return;
+      }
+      setErrorText('');
+      onSubmit(num);
+      return;
+    }
+
+    // Preset selections
+    const presetMap: Record<string, number> = {
+      immediately: 0,
+      net30: 30,
+      net60: 60,
+      net90: 90,
+    };
+    const days = presetMap[selection];
+    if (days === undefined) {
+      setErrorText('Invalid selection.');
+      return;
+    }
+    setErrorText('');
+    onSubmit(days);
+  };
+
+  return (
+    <div className="border-t border-gray-200 p-4 bg-white">
+      <form onSubmit={handleSubmit}>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Select your payment terms
+        </label>
+        <div className="flex items-end space-x-3">
+          <div className="flex-1">
+            <select
+              value={selection}
+              onChange={handleSelectionChange}
+              disabled={disabled || submitting}
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              <option value="">— Select —</option>
+              <option value="immediately">Immediately</option>
+              <option value="net30">Net 30</option>
+              <option value="net60">Net 60</option>
+              <option value="net90">Net 90</option>
+              <option value="others">Others</option>
+            </select>
+
+            {selection === 'others' && (
+              <div className="mt-2 flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
+                <span className="px-4 py-3 text-gray-500 font-medium border-r border-gray-300 bg-gray-50 rounded-l-lg whitespace-nowrap">
+                  Net
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  max={365}
+                  step={1}
+                  value={othersValue}
+                  onChange={(e) => {
+                    setOthersValue(e.target.value);
+                    if (errorText) setErrorText('');
+                  }}
+                  disabled={disabled || submitting}
+                  placeholder="Enter number of days"
+                  className="flex-1 px-4 py-3 rounded-r-lg focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
+              </div>
+            )}
+
+            {errorText && (
+              <p className="text-xs text-red-600 mt-1">{errorText}</p>
+            )}
+          </div>
+          <button
+            type="submit"
+            disabled={disabled || submitting}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center"
+          >
+            {submitting ? (
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+            ) : (
+              'Send'
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+/**
  * Deal Outcome Component (shown when negotiation ends)
  */
 const DealOutcome = ({ status }: { status: string }) => {
@@ -496,61 +775,18 @@ export default function VendorChat() {
       setMessages(currentMessages);
       setDeal(response.data.deal);
 
-      // Check if we need to auto-generate PM response
-      // Condition: There's a vendor message but no PM (ACCORDO) response yet
-      const hasVendorMessage = currentMessages.some((m: VendorChatMessage) => m.role === "VENDOR");
-      const hasPMMessage = currentMessages.some((m: VendorChatMessage) => m.role === "ACCORDO");
-      const openingVendorMessage = currentMessages.find((m: VendorChatMessage) => m.role === "VENDOR");
-
-      if (hasVendorMessage && !hasPMMessage && openingVendorMessage && response.data.deal.status === "NEGOTIATING") {
-        // Auto-trigger PM response for the opening message
-        try {
-          setPmTyping(true);
-          const pmResponse = await vendorChatService.getPMResponse(
-            uniqueToken,
-            openingVendorMessage.id
-          );
-
-          // Add PM message to messages
-          setMessages((prev) => [...prev, pmResponse.data.pmMessage]);
-          setDeal(pmResponse.data.deal);
-
-          // Store MESO options if available and manage input mode
-          if (pmResponse.data.meso && pmResponse.data.meso.success) {
-            setMesoResult(pmResponse.data.meso);
-
-            // Update input mode based on MESO flags
-            if (pmResponse.data.meso.inputDisabled) {
-              setInputMode('disabled');
-            }
-
-            // Update negotiation phase from MESO response
-            if (pmResponse.data.meso.phase) {
-              setNegotiationPhase(pmResponse.data.meso.phase);
-            } else {
-              setNegotiationPhase('MESO_PRESENTATION');
-            }
-
-            console.log("[VendorChat] MESO options received:", pmResponse.data.meso.options.length);
-          }
-
-          // Show notification based on decision
-          if (pmResponse.data.decision?.action === "ACCEPT") {
-            toast.success("Your offer has been accepted!");
-          } else if (pmResponse.data.decision?.action === "WALK_AWAY") {
-            toast.error("The procurement manager has walked away from this negotiation.");
-          } else if (pmResponse.data.decision?.action === "ESCALATE") {
-            toast("This negotiation has been escalated for review.", { icon: "⚠️" });
-          } else if (pmResponse.data.decision?.action === "REDIRECT") {
-            toast("Your message was redirected back to the negotiation topic.", { icon: "↩️" });
-          } else if (pmResponse.data.decision?.action === "ERROR_RECOVERY") {
-            toast("Something went wrong, but the system recovered. Please continue.", { icon: "🛡️" });
-          }
-        } catch (pmError) {
-          console.error("Failed to get PM response:", pmError);
-          // Don't fail the whole page - vendor can still see their message
-        } finally {
-          setPmTyping(false);
+      // Re-derive composer mode from the latest ACCORDO message's pendingPrompt.
+      // This handles both the Round-1 discount prompt (created by
+      // vendorEnterChat) and any in-progress payment-terms prompt (created
+      // mid-conversation by generatePMResponseAsyncService). Survives page
+      // reload the same way the MESO mode does.
+      const derived = deriveInputModeFromMessages(currentMessages);
+      if (derived) {
+        setInputMode(derived);
+        if (derived === 'discount_input') {
+          setNegotiationPhase('DISCOUNT_PROMPT');
+        } else if (derived === 'payment_terms_dropdown') {
+          setNegotiationPhase('PAYMENT_TERMS_PROMPT');
         }
       }
     } catch (err: any) {
@@ -681,6 +917,125 @@ export default function VendorChat() {
     fetchDeal();
   };
 
+  // Handle initial discount submission (Feature 1)
+  const handleDiscountSubmit = async (percent: number) => {
+    if (!uniqueToken || sending) return;
+
+    setSending(true);
+    setPmTyping(true);
+
+    try {
+      console.log('[VendorChat] Submitting discount:', percent);
+      const response = await vendorChatService.submitDiscount(uniqueToken, percent);
+      console.log('[VendorChat] Discount submission response:', response);
+
+      if (response.data.vendorMessage) {
+        setMessages((prev) => [...prev, response.data.vendorMessage]);
+      }
+      if (response.data.pmMessage) {
+        setMessages((prev) => [...prev, response.data.pmMessage]);
+      }
+      if (response.data.deal) {
+        setDeal(response.data.deal);
+      }
+
+      // After discount is submitted, the PM's next message runs the real
+      // engine. If it attaches a MESO (unlikely this early, but possible),
+      // handle it; otherwise fall back to normal text mode.
+      if (response.data.meso && response.data.meso.success) {
+        setMesoResult(response.data.meso);
+        setSelectedMesoId(null);
+        setInputMode('disabled');
+        setNegotiationPhase(response.data.meso.phase || 'MESO_PRESENTATION');
+      } else {
+        setMesoResult(null);
+        const pendingPrompt = response.data.pmMessage?.engineDecision?.pendingPrompt;
+        if (pendingPrompt?.type === 'payment_terms') {
+          setInputMode('payment_terms_dropdown');
+          setNegotiationPhase('PAYMENT_TERMS_PROMPT');
+        } else if (pendingPrompt?.type === 'discount_percent') {
+          setInputMode('discount_input');
+          setNegotiationPhase('DISCOUNT_PROMPT');
+        } else {
+          setInputMode('text');
+          setNegotiationPhase('NORMAL_NEGOTIATION');
+        }
+      }
+
+      if (response.data.decision?.action === 'ACCEPT') {
+        toast.success('Your offer has been accepted!');
+      } else if (response.data.decision?.action === 'WALK_AWAY') {
+        toast.error('The procurement manager has walked away from this negotiation.');
+      } else if (response.data.decision?.action === 'ESCALATE') {
+        toast('This negotiation has been escalated for review.', { icon: '⚠️' });
+      }
+    } catch (err: any) {
+      console.error('[VendorChat] Discount submission error:', err);
+      toast.error(err.response?.data?.message || 'Failed to submit discount');
+    } finally {
+      setSending(false);
+      setPmTyping(false);
+    }
+  };
+
+  // Handle payment terms submission (Feature 2)
+  const handlePaymentTermsSubmit = async (days: number) => {
+    if (!uniqueToken || sending) return;
+
+    setSending(true);
+    setPmTyping(true);
+
+    try {
+      console.log('[VendorChat] Submitting payment terms:', days);
+      const response = await vendorChatService.submitPaymentTerms(uniqueToken, days);
+      console.log('[VendorChat] Payment terms submission response:', response);
+
+      if (response.data.vendorMessage) {
+        setMessages((prev) => [...prev, response.data.vendorMessage]);
+      }
+      if (response.data.pmMessage) {
+        setMessages((prev) => [...prev, response.data.pmMessage]);
+      }
+      if (response.data.deal) {
+        setDeal(response.data.deal);
+      }
+
+      if (response.data.meso && response.data.meso.success) {
+        setMesoResult(response.data.meso);
+        setSelectedMesoId(null);
+        setInputMode('disabled');
+        setNegotiationPhase(response.data.meso.phase || 'MESO_PRESENTATION');
+      } else {
+        setMesoResult(null);
+        const pendingPrompt = response.data.pmMessage?.engineDecision?.pendingPrompt;
+        if (pendingPrompt?.type === 'payment_terms') {
+          setInputMode('payment_terms_dropdown');
+          setNegotiationPhase('PAYMENT_TERMS_PROMPT');
+        } else if (pendingPrompt?.type === 'discount_percent') {
+          setInputMode('discount_input');
+          setNegotiationPhase('DISCOUNT_PROMPT');
+        } else {
+          setInputMode('text');
+          setNegotiationPhase('NORMAL_NEGOTIATION');
+        }
+      }
+
+      if (response.data.decision?.action === 'ACCEPT') {
+        toast.success('Your offer has been accepted!');
+      } else if (response.data.decision?.action === 'WALK_AWAY') {
+        toast.error('The procurement manager has walked away from this negotiation.');
+      } else if (response.data.decision?.action === 'ESCALATE') {
+        toast('This negotiation has been escalated for review.', { icon: '⚠️' });
+      }
+    } catch (err: any) {
+      console.error('[VendorChat] Payment terms submission error:', err);
+      toast.error(err.response?.data?.message || 'Failed to submit payment terms');
+    } finally {
+      setSending(false);
+      setPmTyping(false);
+    }
+  };
+
   // Send message handler
   const handleSend = async (content: string) => {
     console.log('[VendorChat] handleSend called with content:', content?.substring(0, 50));
@@ -749,10 +1104,21 @@ export default function VendorChat() {
 
         console.log("[VendorChat] MESO options received:", pmResponse.data.meso.options.length);
       } else {
-        // Clear MESO if no new options (e.g., final round or ACCEPT/WALK_AWAY)
+        // No MESO on this response. Check if the PM attached a structured
+        // prompt (payment_terms / discount_percent) — if so, switch the
+        // composer into the matching mode. Otherwise fall back to free-text.
         setMesoResult(null);
-        setInputMode('text');
-        setNegotiationPhase('NORMAL_NEGOTIATION');
+        const pendingPrompt = pmResponse.data.pmMessage?.engineDecision?.pendingPrompt;
+        if (pendingPrompt?.type === 'payment_terms') {
+          setInputMode('payment_terms_dropdown');
+          setNegotiationPhase('PAYMENT_TERMS_PROMPT');
+        } else if (pendingPrompt?.type === 'discount_percent') {
+          setInputMode('discount_input');
+          setNegotiationPhase('DISCOUNT_PROMPT');
+        } else {
+          setInputMode('text');
+          setNegotiationPhase('NORMAL_NEGOTIATION');
+        }
       }
 
       // Show notification if deal status changed
@@ -879,6 +1245,20 @@ export default function VendorChat() {
               <OthersForm
                 onSubmit={handleOthersSubmit}
                 onCancel={handleOthersCancel}
+                disabled={!canNegotiate}
+                submitting={sending}
+              />
+            )}
+            {inputMode === 'discount_input' && (
+              <DiscountInputComposer
+                onSubmit={handleDiscountSubmit}
+                disabled={!canNegotiate}
+                submitting={sending}
+              />
+            )}
+            {inputMode === 'payment_terms_dropdown' && (
+              <PaymentTermsDropdownComposer
+                onSubmit={handlePaymentTermsSubmit}
                 disabled={!canNegotiate}
                 submitting={sending}
               />

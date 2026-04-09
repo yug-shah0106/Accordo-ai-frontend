@@ -1056,7 +1056,9 @@ export type NegotiationPhase =
   | 'FINAL_MESO'            // Final MESO, no Others option
   | 'STALL_QUESTION'        // "Is this your final offer?" shown
   | 'DEAL_ACCEPTED'         // Vendor selected MESO, deal closed
-  | 'ESCALATED';            // Human PM takeover
+  | 'ESCALATED'             // Human PM takeover
+  | 'DISCOUNT_PROMPT'       // Round-1 discount ask (April 2026)
+  | 'PAYMENT_TERMS_PROMPT'; // Price without terms; dropdown ask (April 2026)
 
 /**
  * Result from MESO generation
@@ -1072,6 +1074,12 @@ export interface MesoResult {
   success: boolean;
   /** Reason if not successful */
   reason?: string;
+  /**
+   * Currency for all options, from the deal's NegotiationConfig
+   * (USD | INR | EUR | GBP | AUD). Used by the MesoOptions component
+   * to format the Price field on every card with the right symbol.
+   */
+  currency?: 'USD' | 'INR' | 'EUR' | 'GBP' | 'AUD';
   // Flow control flags (February 2026 - MESO + Others flow)
   /** Whether to show "Others" button (false for final MESO) */
   showOthers?: boolean;

@@ -57,11 +57,18 @@ const offerColors: Record<string, { bg: string; border: string; text: string }> 
 };
 
 
-const formatPrice = (price: number | null | undefined): string => {
+type MesoCurrency = NonNullable<MesoResult['currency']>;
+
+const DEFAULT_MESO_CURRENCY: MesoCurrency = 'USD';
+
+const formatPrice = (
+  price: number | null | undefined,
+  currency: MesoCurrency = DEFAULT_MESO_CURRENCY
+): string => {
   if (price == null) return 'N/A';
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(price);
@@ -78,7 +85,8 @@ const MesoOptionCard: React.FC<{
   disabled?: boolean;
   isSelected?: boolean;
   isFinal?: boolean;
-}> = ({ option, onSelect, disabled, isSelected, isFinal }) => {
+  currency: MesoCurrency;
+}> = ({ option, onSelect, disabled, isSelected, isFinal, currency }) => {
   // Use offer label for colors (Offer 1, Offer 2, Offer 3)
   const colors = offerColors[option.label] || offerColors['Offer 1'];
   const icon = offerIcons[option.label] || '📋';
@@ -123,7 +131,7 @@ const MesoOptionCard: React.FC<{
       <div className="grid grid-cols-2 gap-2 text-sm mb-3">
         <div className="flex justify-between">
           <span className="text-gray-500">Price:</span>
-          <span className="font-medium">{formatPrice(option.offer.total_price)}</span>
+          <span className="font-medium">{formatPrice(option.offer.total_price, currency)}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-gray-500">Payment:</span>
@@ -219,6 +227,7 @@ export const MesoOptions: React.FC<MesoOptionsProps> = ({
             disabled={disabled}
             isSelected={selectedId === option.id}
             isFinal={showAsFinal}
+            currency={mesoResult.currency ?? DEFAULT_MESO_CURRENCY}
           />
         ))}
       </div>

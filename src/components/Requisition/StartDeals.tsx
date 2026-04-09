@@ -90,7 +90,10 @@ const StartDeals: React.FC<StartDealsProps> = ({
     try {
       const response = await chatbotService.getRequisitionDeals(parseInt(requisitionId));
       setDeals(response.data?.deals || []);
-    } catch {
+    } catch (error: any) {
+      console.error('Failed to load deals:', error);
+      const msg = error?.response?.data?.message || error?.message || 'Failed to load vendor deals';
+      toast.error(msg);
       setDeals([]);
     } finally {
       setLoadingDeals(false);
