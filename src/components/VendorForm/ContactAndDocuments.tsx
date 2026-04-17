@@ -125,7 +125,7 @@ const ContactAndDocuments: React.FC<ContactAndDocumentsProps> = ({
       }
 
       // EDIT MODE: Save data immediately via API
-      await authApi.put(`/company/update/${companyId}`, data);
+      await authApi.put(`/company/${companyId}`, data);
 
       // TODO: Handle document upload in Task 6
       // For now, just proceed to next step

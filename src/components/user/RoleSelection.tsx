@@ -93,7 +93,7 @@ const RoleSelectionModal = ({ onClose, edit_role, onSuccess }: RoleSelectionModa
 
     setIsSubmitting(true);
     try {
-      const response = await authApi.post("/role/create", {
+      const response = await authApi.post("/role/", {
         name: roleName.trim(),
         permissions: given_permissions,
       });
@@ -127,7 +127,7 @@ const RoleSelectionModal = ({ onClose, edit_role, onSuccess }: RoleSelectionModa
 
     setIsSubmitting(true);
     try {
-      const response = await authApi.put(`/role/update/${edit_role.id}`, {
+      const response = await authApi.put(`/role/${edit_role.id}`, {
         name: roleName.trim(),
         permissions: given_permissions,
       });

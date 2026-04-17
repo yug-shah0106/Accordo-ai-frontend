@@ -148,7 +148,7 @@ const LocationDetails: React.FC<LocationDetailsProps> = ({
         return;
       }
 
-      await authApi.put(`/company/update/${companyId}`, data);
+      await authApi.put(`/company/${companyId}`, data);
       nextStep();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Something went wrong";

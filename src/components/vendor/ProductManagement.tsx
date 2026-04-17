@@ -51,7 +51,7 @@ const ProductManagement = () => {
     totalDoc,
     setTotalDoc: _setTotalDoc,
     refetch,
-  } = useFetchData("/product/get-all", 10);
+  } = useFetchData("/product/", 10);
   console.log({totalCount});
   console.log({page});
   console.log({totalDoc});
@@ -117,7 +117,7 @@ const ProductManagement = () => {
 
   const handleDeleteModalConfirm = async (id: any) => {
     try {
-      await authApi.delete(`/product/delete/${id}`);
+      await authApi.delete(`/product/${id}`);
       await refetch();
       toast.success("Deleted confirmation");
     } catch (error: any) {

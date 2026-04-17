@@ -156,7 +156,7 @@ const FinancialAndBanking: React.FC<FinancialAndBankingProps> = ({
         formDataObj.append("cancelledChequeURL", data.cancelledChequeURL[0]);
       }
 
-      await authApi.put(`/company/update/${companyId}`, formDataObj, {
+      await authApi.put(`/company/${companyId}`, formDataObj, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

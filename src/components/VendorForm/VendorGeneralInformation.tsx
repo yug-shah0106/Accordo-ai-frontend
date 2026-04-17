@@ -73,14 +73,14 @@ const VendorGeneralInformation: React.FC<VendorGeneralInformationProps> = ({
 
       if (company?.id) {
         await authApi.put(
-          `/company/update/${company.id}`,
+          `/company/${company.id}`,
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
         nextStep();
       } else {
         const response = await authApi.post<{ data: { id: string } }>(
-          "/company/create",
+          "/company/",
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );

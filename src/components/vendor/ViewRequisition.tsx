@@ -98,7 +98,7 @@ const ViewRequisition = () => {
     setFilters,
     totalDoc,
     refetch,
-  } = useFetchData(`/requisition/get-all`, 10, undefined, undefined, {
+  } = useFetchData(`/requisition/`, 10, undefined, undefined, {
     projectid: state,
   });
   const debounce = useDebounce(setSearch, 600);
@@ -107,7 +107,7 @@ const ViewRequisition = () => {
 
   const handleDeleteModalConfirm = async (id: any) => {
     try {
-      await authApi.delete(`/requisition/delete/${id}`);
+      await authApi.delete(`/requisition/${id}`);
       await refetch();
       toast.success("Deleted confirmation");
     } catch (error: any) {

@@ -110,9 +110,9 @@ const Test = () => {
     setFilters: _setFilters,
     totalDoc: _totalDoc,
     refetch: _refetch,
-  } = useFetchData(`/requisition/get-all?companyid=${companyId}`, 10);
+  } = useFetchData(`/requisition/?companyid=${companyId}`, 10);
 
-  const { data: projects, loading, page, setPage, limit, totalCount } = useFetchData("/project/get-all", 10);
+  const { data: projects, loading, page, setPage, limit, totalCount } = useFetchData("/project/", 10);
 
   const toggleAccordion = (id: number) => {
     setExpandedRow(expandedRow === id ? null : id);

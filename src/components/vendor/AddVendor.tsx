@@ -4,13 +4,13 @@ import { IoIosCheckmarkCircle } from "react-icons/io";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { authApi } from "../../api";
-import VendorBasicInformation from "../VendorForm/VendorBasicInformation";
-import VendorGeneralInformation from "../VendorForm/VendorGeneralInformation";
-import VendorDetail from "../VendorForm/VendorDetail";
-import VendorContactDetails from "../VendorForm/VendorContactDetails";
-import VendorBankDetails from "../VendorForm/VendorBankDetails";
-import VendorCurrencyDetails from "../VendorForm/VendorCurrencyDetails";
-import VendorReview from "../VendorForm/VendorReview";
+import VendorBasicInformation from "../vendorForm/VendorBasicInformation";
+import VendorGeneralInformation from "../vendorForm/VendorGeneralInformation";
+import VendorDetail from "../vendorForm/VendorDetail";
+import VendorContactDetails from "../vendorForm/VendorContactDetails";
+import VendorBankDetails from "../vendorForm/VendorBankDetails";
+import VendorCurrencyDetails from "../vendorForm/VendorCurrencyDetails";
+import VendorReview from "../vendorForm/VendorReview";
 import toast from "react-hot-toast";
 
 interface Company {
@@ -84,7 +84,7 @@ const AddVendor: React.FC = () => {
     try {
       const {
         data: { data },
-      } = await authApi.get<{ data: Company }>(`/company/get/${companyId}`);
+      } = await authApi.get<{ data: Company }>(`/company/${companyId}`);
 
       console.log('=== FETCHED COMPANY DATA ===');
       console.log('Company Name:', data.companyName);

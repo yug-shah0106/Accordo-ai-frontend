@@ -181,7 +181,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
         typeOfCurrency: data.typeOfCurrency,
       };
 
-      await authMultiFormApi.put(`/requisition/update/${requisitionId}`, cleanData);
+      await authMultiFormApi.put(`/requisition/${requisitionId}`, cleanData);
     } catch (error) {
       // Silent fail for autosave - don't interrupt user
       console.error("Backend autosave failed:", error);
@@ -273,7 +273,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
         console.log("Creating requisition with payload:", payload);
 
         const response = await authMultiFormApi.post<{ data: { id: string } }>(
-          "/requisition/create",
+          "/requisition/",
           payload
         );
         navigate(
@@ -294,7 +294,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
         };
 
         await authMultiFormApi.put(
-          `/requisition/update/${requisitionId}`,
+          `/requisition/${requisitionId}`,
           payload
         );
         toast.success("Edited Successfully");
@@ -310,7 +310,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
 
   const getProjectId = async (): Promise<void> => {
     try {
-      const { data } = await authApi.get<{ data: Project[] }>(`/project/get-all`);
+      const { data } = await authApi.get<{ data: Project[] }>(`/project/`);
       const formattedOptions = data.data?.map((project) => ({
         ...project,
         label: project.projectName,

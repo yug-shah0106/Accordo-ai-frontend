@@ -111,7 +111,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       paymentTerms: "",
     },
   });
-  const { data, loading: _loading, error: _error } = useFetchData<Product>("/product/getall");
+  const { data, loading: _loading, error: _error } = useFetchData<Product>("/product/all");
 
   // Watch all form values for autosave
   const formValues = watch();
@@ -161,7 +161,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         post_payment_percentage: data.postPaymentPercentage || "",
       };
 
-      await authMultiFormApi.put(`/requisition/update/${requisitionId}`, cleanData);
+      await authMultiFormApi.put(`/requisition/${requisitionId}`, cleanData);
     } catch (error) {
       // Silent fail for autosave - don't interrupt user
       console.error("Backend autosave failed:", error);
@@ -336,7 +336,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         };
 
         const response = await authMultiFormApi.post<{ data: Requisition }>(
-          "/requisition/create",
+          "/requisition/",
           apiData
         );
         setRequisition(response.data.data);
@@ -361,7 +361,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         console.log('Sending update request with data:', apiData);
 
         await authMultiFormApi.put(
-          `/requisition/update/${requisitionId}`,
+          `/requisition/${requisitionId}`,
           apiData
         );
         toast.success("Edited Successfully");

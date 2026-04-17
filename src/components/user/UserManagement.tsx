@@ -10,7 +10,7 @@ import useFetchData from "../../hooks/useFetchData";
 import useDebounce from "../../hooks/useDebounce";
 import { authApi } from "../../api";
 import Modal from "../Modal";
-import Badge from "../badge";
+import Badge from "../Badge";
 import { BiUserCheck } from "react-icons/bi";
 import { Menu, MenuItem } from "@mui/material";
 import type {
@@ -91,7 +91,7 @@ const UserManagement = () => {
     setSearch,
     totalDoc,
     refetch,
-  } = useFetchData("/user/get-all", 10) as UseFetchDataReturn<User>;
+  } = useFetchData("/user/", 10) as UseFetchDataReturn<User>;
   const debounce = useDebounce(setSearch, 600);
 
   // Filter out super_admin users (dev team only) from the list

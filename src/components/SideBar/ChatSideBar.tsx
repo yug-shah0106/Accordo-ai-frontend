@@ -64,7 +64,7 @@ export default function ChatSidebar({ logo: _logo }: ChatSidebarProps) {
     const fetchRequisitionData = async () => {
         try {
             setLoading(true);
-            const res = await authApi.get(`/requisition/get/${requisitionId}`);
+            const res = await authApi.get(`/requisition/${requisitionId}`);
             const requisition = res.data.data;
             setRequisitionData(requisition);
             
@@ -84,7 +84,7 @@ export default function ChatSidebar({ logo: _logo }: ChatSidebarProps) {
             return;
         }
         try {
-            const res = await authApi.get(`/project/get/${projectId}`);
+            const res = await authApi.get(`/project/${projectId}`);
             setProjectDataa(res.data.data);
         } catch (error) {
             console.error("Error fetching project:", error);

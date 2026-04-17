@@ -14,8 +14,8 @@ import {
 } from 'react-icons/md';
 import toast from 'react-hot-toast';
 import { useBidAnalysisDetail, useBidActions } from '../../hooks/bidAnalysis';
-import { TopBidCard, AllocationTable, ApprovalsSidebar, SuccessModal } from '../../components/BidAnalysis';
-import type { SuccessActionType } from '../../components/BidAnalysis';
+import { TopBidCard, AllocationTable, ApprovalsSidebar, SuccessModal } from '../../components/bidAnalysis';
+import type { SuccessActionType } from '../../components/bidAnalysis';
 
 export const BidAnalysisDetailPage: React.FC = () => {
   const { requisitionId } = useParams<{ requisitionId: string }>();

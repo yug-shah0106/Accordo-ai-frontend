@@ -58,7 +58,7 @@ const PoManagement = () => {
     setFilters,
     totalDoc,
     refetch,
-  } = useFetchData("/po/get-all", 10) as UseFetchDataReturn<PurchaseOrder>;
+  } = useFetchData("/po/", 10) as UseFetchDataReturn<PurchaseOrder>;
   const debounceSearch = useDebounce(setSearch, 600);
 
   const columns: TableColumn[] = [

@@ -82,12 +82,12 @@ const VendorBasicInformation: React.FC<VendorBasicInformationProps> = ({
         // Try to get vendor ID from either direct Vendor association or VendorCompanies
         const vendorId = (company as any)?.Vendor?.[0]?.id || (company as any)?.VendorCompanies?.[0]?.Vendor?.id;
         if (vendorId) {
-          await authApi.put(`/vendor/update/${vendorId}`, data);
+          await authApi.put(`/vendor/${vendorId}`, data);
         } else {
           throw new Error("Vendor ID not found");
         }
       } else {
-        await authApi.post("/vendor/create", {
+        await authApi.post("/vendor/", {
           ...data,
           companyId: companyId,
           userType: "vendor",

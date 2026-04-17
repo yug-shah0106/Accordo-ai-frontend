@@ -57,7 +57,7 @@ type FilterType = 'D' | 'M' | 'Y';
 //   // Fetch and prepare the data
 //   const getDashBoardData = async () => {
 //     try {
-//       const response = await authApi.get(`/requisition/get-all`, {
+//       const response = await authApi.get(`/requisition/`, {
 //         params: {
 //           page: 1,
 //           limit: 10,
@@ -201,7 +201,7 @@ const LineGraphSaving = () => {
   const getDashBoardData = async () => {
     try {
       // Commented out API call for testing
-      // const response = await authApi.get(`/requisition/get-all`, {
+      // const response = await authApi.get(`/requisition/`, {
       //   params: {
       //     page: 1,
       //     limit: 10,

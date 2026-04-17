@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { MdVerified, MdSearch, MdFilterList, MdRefresh } from 'react-icons/md';
 import toast from 'react-hot-toast';
 import { useBidAnalysisRequisitions } from '../../hooks/bidAnalysis';
-import { RequisitionCard } from '../../components/BidAnalysis';
+import { RequisitionCard } from '../../components/bidAnalysis';
 import type { BidAnalysisStatus } from '../../types/bidAnalysis';
 
 const STATUS_OPTIONS: { value: BidAnalysisStatus; label: string }[] = [

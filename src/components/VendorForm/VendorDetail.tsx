@@ -91,7 +91,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
       }
 
       await authMultiFormApi.put(
-        `/company/update/${companyId}`,
+        `/company/${companyId}`,
         formData
       );
 

@@ -49,7 +49,7 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
     try {
       const {
         data: { data },
-      } = await authApi.get(`/user/get/${userId}`);
+      } = await authApi.get(`/user/${userId}`);
       reset({
         name: data.name,
         email: data.email,
@@ -80,7 +80,7 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
   const fetchRoles = async () => {
     setRolesLoading(true);
     try {
-      const response = await authApi.get(`/role/get-all`);
+      const response = await authApi.get(`/role/`);
       const roles = response.data.data || [];
       const filtered = roles.filter((role: Role) => {
         const name = (role.name || '').toLowerCase().trim();
@@ -134,7 +134,7 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
       data.append("approvalLevel", selectedApprovalLevel);
 
       if (!id) {
-        await authApi.post("/user/create", data);
+        await authApi.post("/user/", data);
         toast.success("User created successfully");
       } else {
         data.delete("id");

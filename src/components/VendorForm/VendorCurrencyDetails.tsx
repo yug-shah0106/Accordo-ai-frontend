@@ -43,7 +43,7 @@ const VendorCurrencyDetails: React.FC<VendorCurrencyDetailsProps> = ({
 
   const onSubmit = async (data: FormData): Promise<void> => {
     try {
-      await authApi.put(`/company/update/${companyId}`, data);
+      await authApi.put(`/company/${companyId}`, data);
       nextStep();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Something went wrong";

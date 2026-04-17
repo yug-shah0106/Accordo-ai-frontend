@@ -1,58 +1,49 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
-import SuccessMessage from "./components/vendor/SuccessMessage";
 import VerifyOtp from "./components/vendor/VerifyOtp";
-import SignUp from "./pages/Auth/SignUp";
-import AuthPage from "./pages/Auth/AuthPage";
-import { OnboardingPage } from "./pages/Onboarding";
+import SignUp from "./pages/auth/SignUp";
+import AuthPage from "./pages/auth/AuthPage";
+import { OnboardingPage } from "./pages/onboarding";
 import VendorChat from "./pages/vendorChat/VendorChat";
-import Layout from "./Layout/Auth";
-import DashBoardLayout from "./Layout/DashBoardLayout";
+import Layout from "./layout/Auth";
+import DashBoardLayout from "./layout/DashboardLayout";
 import logo from "./assets/logo.png";
 import sideBarLogo from "./assets/sideBarLogo.png";
 import { Toaster } from "react-hot-toast";
-import SignIn from "./pages/Auth/SignIn";
-import ForgotPassword from "./pages/Auth/Forgot-password";
-import ResetPassword from "./pages/Auth/ResetPassword";
+import SignIn from "./pages/auth/SignIn";
+import ForgotPassword from "./pages/auth/Forgot-password";
+import ResetPassword from "./pages/auth/ResetPassword";
 import ProjectManagement from "./components/vendor/ProjectManagement";
 import CreateProjectForm from "./components/vendor/CreateProjectForm";
 import ViewRequisition from "./components/vendor/ViewRequisition";
 import Contracts from "./components/vendor/Contracts";
 import ProductManagement from "./components/vendor/ProductManagement";
 import CreateProductForm from "./components/vendor/CreateProductForm";
-import AddRequisition from "./components/Requisition/AddRequisition";
+import AddRequisition from "./components/requisition/AddRequisition";
 import Dashboard from "./components/Dashboard";
 import VendorContact from "./pages/vendorContract/VendorContract";
-import HomePage from "./components/LandingPages/HomePage";
+import HomePage from "./components/landingPages/HomePage";
 import RequisitionsManagement from "./components/vendor/RequisitionsManagement";
 import VendorManagement from "./components/vendor/VendorManagement";
-import VendorFormContainer from "./components/VendorForm/VendorFormContainer";
-import PoManagement from "./components/po/PoManagement";
+import VendorFormContainer from "./components/vendorForm/VendorFormContainer";
 import UserInfo from "./components/settings/UserInfo";
 import CreateUserForm from "./components/user/AddUser";
 import UserManagement from "./components/user/UserManagement";
-import Test from "./components/vendor/ProjectManagementTest";
-import ChatLayout from "./Layout/ChatLayout";
-import Chat from "./components/chat/Chat";
-import PoSummary from "./components/po/PoSummary";
 import Roles from "./components/roles/Roles";
 import GroupSummary from "./pages/GroupSummary";
-import NegotiationChat from "./components/NegotiationChat";
-import DealsPage from "./pages/chatbot/DealsPage";
 import NegotiationRoom from "./pages/chatbot/NegotiationRoom";
 import NewDealPageWrapper from "./pages/chatbot/NewDealPageWrapper";
 import ConversationRoom from "./pages/chatbot/ConversationRoom";
 import SummaryPage from "./pages/chatbot/SummaryPage";
-import NegotiationSummary from "./pages/chatbot/NegotiationSummary";
-import DemoScenarios from "./pages/chatbot/DemoScenarios";
-import AboutPage from "./pages/chatbot/AboutPage";
-// ConversationDealPage import removed - old route deprecated
 import RequisitionListPage from "./pages/chatbot/RequisitionListPage";
 import RequisitionDealsPage from "./pages/chatbot/RequisitionDealsPage";
 import ArchivedRequisitionsPage from "./pages/chatbot/ArchivedRequisitionsPage";
 import ArchivedDealsForRequisitionPage from "./pages/chatbot/ArchivedDealsForRequisitionPage";
 import Feedback from "./pages/Feedback";
-import { BidAnalysisListPage, BidAnalysisDetailPage } from "./pages/BidAnalysis";
+import {
+  BidAnalysisListPage,
+  BidAnalysisDetailPage,
+} from "./pages/bidAnalysis";
 
 function App() {
   return (
@@ -141,34 +132,14 @@ function App() {
           >
             <Route index element={<Dashboard />} />
           </Route>
-          <Route path="test" element={<DashBoardLayout logo={sideBarLogo} />}>
-            <Route index element={<Test />} />
-          </Route>
-          <Route path="test-negotiation" element={<DashBoardLayout logo={sideBarLogo} />}>
-            <Route index element={<NegotiationChat />} />
-          </Route>
-
-          <Route path="/successmessage" element={<SuccessMessage />} />
 
           <Route
             path="/project-management"
             element={<DashBoardLayout logo={sideBarLogo} />}
           >
-
-
-            {/* <Route
-            path="/project-management"
-            element={
-              <ProtectedRoute
-                element={<DashBoardLayout logo={sideBarLogo} />}
-                permission="project:R"
-              />
-            }
-          > */}
             <Route index element={<ProjectManagement />} />
             <Route path="create-project" element={<CreateProjectForm />} />
             <Route path="editprojectform/:id" element={<CreateProjectForm />} />
-            {/* <Route path="requisition/contract" element={<Contracts />} /> */}
           </Route>
           <Route
             path="/requisition-management"
@@ -191,44 +162,19 @@ function App() {
             element={<DashBoardLayout logo={sideBarLogo} />}
           >
             <Route index element={<VendorManagement />} />
-            {/* <Route path="create-project" element={<CreateProjectForm />} /> */}
-            {/* <Route path="editproductform/:id" element={<CreateProjectForm />} /> */}
-            {/* <Route path="requisition" element={<ViewRequisition />} /> */}
             <Route path="create-vendor/" element={<VendorFormContainer />} />
             <Route path="edit-vendor/:id" element={<VendorFormContainer />} />
             <Route path="add-vendor/:id" element={<VendorFormContainer />} />
-            {/* <Route path="edit-requisition/:id" element={<AddRequisition />} /> */}
-            {/* <Route path="requisition/contract" element={<Contracts />} /> */}
           </Route>
 
-          <Route
-            path="/po-management"
-            element={<DashBoardLayout logo={sideBarLogo} />}
-          >
-            <Route index element={<PoManagement />} />
-            <Route path="summary" element={<PoSummary />} />
-            {/* <Route path="create-vendor/" element={<AddVendor />} />
-            <Route path="edit-vendor/:id" element={<AddVendor />} />
-            <Route path="add-vendor/:id" element={<AddVendor />} /> */}
-          </Route>
           <Route
             path="/user-management"
             element={<DashBoardLayout logo={sideBarLogo} />}
           >
             <Route index element={<UserManagement />} />
-            {/* <Route path="create-project" element={<CreateProjectForm />} /> */}
-            {/* <Route path="editproductform/:id" element={<CreateProjectForm />} /> */}
-            {/* <Route path="requisition" element={<ViewRequisition />} /> */}
             <Route path="create-user/" element={<CreateUserForm />} />
             <Route path="edit-user/:id" element={<CreateUserForm />} />
             <Route path="edit-roles/" element={<Roles />} />
-            {/* <Route path="edit-requisition/:id" element={<AddRequisition />} /> */}
-            {/* <Route path="requisition/contract" element={<Contracts />} /> */}
-          </Route>
-          <Route path="/chat" element={<ChatLayout logo={sideBarLogo} />}>
-            <Route index element={<Chat />} />
-            <Route path="create-user/" element={<CreateUserForm />} />
-            <Route path="edit-user/:id" element={<CreateUserForm />} />
           </Route>
           <Route
             path="/group-summary"
@@ -241,18 +187,7 @@ function App() {
             element={<DashBoardLayout logo={sideBarLogo} />}
           >
             <Route index element={<UserInfo />} />
-            {/* <Route path="create-project" element={<CreateProjectForm />} /> */}
-            {/* <Route path="editproductform/:id" element={<CreateProjectForm />} /> */}
-            {/* <Route path="requisition" element={<ViewRequisition />} /> */}
-            <Route path="create-user/" element={<CreateUserForm />} />
-            <Route path="edit-user/:id" element={<CreateUserForm />} />
-            {/* <Route path="edit-requisition/:id" element={<AddRequisition />} /> */}
-            {/* <Route path="requisition/contract" element={<Contracts />} /> */}
           </Route>
-          <Route
-            path="/group-summary"
-            element={<DashBoardLayout logo={sideBarLogo} />}
-          ></Route>
 
           {/* Feedback Route */}
           <Route
@@ -268,7 +203,10 @@ function App() {
             element={<DashBoardLayout logo={sideBarLogo} />}
           >
             <Route index element={<BidAnalysisListPage />} />
-            <Route path="requisitions/:requisitionId" element={<BidAnalysisDetailPage />} />
+            <Route
+              path="requisitions/:requisitionId"
+              element={<BidAnalysisDetailPage />}
+            />
           </Route>
 
           {/* Chatbot Routes */}
@@ -279,21 +217,37 @@ function App() {
             {/* Main page: Requisition list at /chatbot/requisitions */}
             <Route path="requisitions" element={<RequisitionListPage />} />
             {/* Requisition deals page (Level 2) */}
-            <Route path="requisitions/:requisitionId" element={<RequisitionDealsPage />} />
+            <Route
+              path="requisitions/:requisitionId"
+              element={<RequisitionDealsPage />}
+            />
             {/* Archived requisitions and deals */}
-            <Route path="requisitions/archived" element={<ArchivedRequisitionsPage />} />
-            <Route path="requisitions/:requisitionId/archived" element={<ArchivedDealsForRequisitionPage />} />
-            {/* Legacy flat deals list (accessible via /chatbot/all-deals) */}
-            <Route path="all-deals" element={<DealsPage />} />
+            <Route
+              path="requisitions/archived"
+              element={<ArchivedRequisitionsPage />}
+            />
+            <Route
+              path="requisitions/:requisitionId/archived"
+              element={<ArchivedDealsForRequisitionPage />}
+            />
             {/* Deal management - create new deal (with optional requisitionId query param) */}
-            <Route path="requisitions/deals/new" element={<NewDealPageWrapper />} />
+            <Route
+              path="requisitions/deals/new"
+              element={<NewDealPageWrapper />}
+            />
             {/* Nested URL structure for deals (hierarchical pattern) */}
-            <Route path="requisitions/:rfqId/vendors/:vendorId/deals/:dealId" element={<NegotiationRoom />} />
-            <Route path="requisitions/:rfqId/vendors/:vendorId/deals/:dealId/conversation" element={<ConversationRoom />} />
-            <Route path="requisitions/:rfqId/vendors/:vendorId/deals/:dealId/summary" element={<SummaryPage />} />
-            <Route path="summary" element={<NegotiationSummary />} />
-            <Route path="demo" element={<DemoScenarios />} />
-            <Route path="about" element={<AboutPage />} />
+            <Route
+              path="requisitions/:rfqId/vendors/:vendorId/deals/:dealId"
+              element={<NegotiationRoom />}
+            />
+            <Route
+              path="requisitions/:rfqId/vendors/:vendorId/deals/:dealId/conversation"
+              element={<ConversationRoom />}
+            />
+            <Route
+              path="requisitions/:rfqId/vendors/:vendorId/deals/:dealId/summary"
+              element={<SummaryPage />}
+            />
           </Route>
         </Routes>
       </BrowserRouter>
