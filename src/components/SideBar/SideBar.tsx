@@ -1,14 +1,4 @@
-
-
-
-
 // Old  side bar without navigation poopup
-
-
-
-
-
-
 
 // import { useEffect, useState } from "react";
 // import { FiBarChart2, FiGitBranch, FiMessageSquare } from "react-icons/fi";
@@ -195,7 +185,6 @@
 
 // export default Sidebar;
 
-
 import { useEffect, useState, useRef } from "react";
 import { FiBarChart2, FiMessageSquare, FiSun, FiMoon } from "react-icons/fi";
 import { VscFeedback } from "react-icons/vsc";
@@ -366,12 +355,12 @@ const Sidebar = ({ logo }: SidebarProps) => {
     if (path === "logout") {
       try {
         // Call logout endpoint to invalidate refresh tokens on server
-        await authApi.post("/auth/logout");
-      } catch (error: unknown) {
-        console.error("Logout error:", error);
-        // Continue with local cleanup even if API call fails
-        const axiosError = error as { response?: { data?: { message?: string } } };
-        toast.error(axiosError.response?.data?.message || "Logout failed");
+        // Only attempt if we still have a valid refresh token
+        if (tokenStorage.getRefreshToken()) {
+          await authApi.post("/auth/logout");
+        }
+      } catch {
+        // Silently continue — local cleanup will handle logout regardless
       } finally {
         // Always clear local tokens and user data
         tokenStorage.clearTokens();
@@ -424,7 +413,6 @@ const Sidebar = ({ logo }: SidebarProps) => {
   //   return hasPermission(item.permissionKey);
   // });
 
-
   return (
     <div className="relative">
       <div
@@ -436,7 +424,11 @@ const Sidebar = ({ logo }: SidebarProps) => {
         {/* Logo Section with Toggle and Theme Buttons */}
         <div className="relative flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-200 dark:border-dark-border overflow-visible">
           <div className="flex items-center">
-            <img src={logo} alt="Logo" className={`${sidebarOpen ? 'h-8' : 'h-6'} w-auto transition-all duration-300`} />
+            <img
+              src={logo}
+              alt="Logo"
+              className={`${sidebarOpen ? "h-8" : "h-6"} w-auto transition-all duration-300`}
+            />
           </div>
 
           {/* Theme Toggle Button (visible when expanded) */}
@@ -460,31 +452,37 @@ const Sidebar = ({ logo }: SidebarProps) => {
             className="absolute -right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 z-20"
           >
             <svg
-              className={`w-3 h-3 transition-transform duration-300 ${sidebarOpen ? 'rotate-180' : ''}`}
+              className={`w-3 h-3 transition-transform duration-300 ${sidebarOpen ? "rotate-180" : ""}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={3}
+                d="M9 5l7 7-7 7"
+              />
             </svg>
           </button>
         </div>
 
         {/* Menu Items */}
-        <ul    className="mt-4 overflow-auto h-full hide-scrollbar">
+        <ul className="mt-4 overflow-auto h-full hide-scrollbar">
           {menuItems.map((item, index) => {
             return (
               <li
                 key={index}
                 className="flex items-center px-3 py-2 cursor-pointer"
                 onClick={() => handleNavigation(item.link)}
-                style={{cursor:'pointer'}}
+                style={{ cursor: "pointer" }}
               >
                 <div
-                  className={`flex items-center w-full px-4 py-2.5 rounded-md ${activeItem?.includes(item.link) || activeItem === item.link
-                    ? "bg-[#234BF3] text-white"
-                    : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                    }`}
+                  className={`flex items-center w-full px-4 py-2.5 rounded-md ${
+                    activeItem?.includes(item.link) || activeItem === item.link
+                      ? "bg-[#234BF3] text-white"
+                      : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                  }`}
                 >
                   <span className="mr-2 relative">
                     {item.icon}
@@ -498,7 +496,9 @@ const Sidebar = ({ logo }: SidebarProps) => {
                       {item.name}
                       {/* Onboarding badge text when sidebar is open */}
                       {item.link === "setting" && showOnboardingBadge && (
-                        <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-full">!</span>
+                        <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-full">
+                          !
+                        </span>
                       )}
                     </span>
                   )}
@@ -525,5 +525,3 @@ const Sidebar = ({ logo }: SidebarProps) => {
 };
 
 export default Sidebar;
-
-

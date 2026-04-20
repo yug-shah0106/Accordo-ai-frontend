@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
 import VerifyOtp from "./components/vendor/VerifyOtp";
-import SignUp from "./pages/auth/SignUp";
 import AuthPage from "./pages/auth/AuthPage";
 import { OnboardingPage } from "./pages/onboarding";
 import VendorChat from "./pages/vendorChat/VendorChat";
@@ -10,8 +9,7 @@ import DashBoardLayout from "./layout/DashboardLayout";
 import logo from "./assets/logo.png";
 import sideBarLogo from "./assets/sideBarLogo.png";
 import { Toaster } from "react-hot-toast";
-import SignIn from "./pages/auth/SignIn";
-import ForgotPassword from "./pages/auth/Forgot-password";
+import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
 import ProjectManagement from "./components/vendor/ProjectManagement";
 import CreateProjectForm from "./components/vendor/CreateProjectForm";
@@ -72,24 +70,6 @@ function App() {
             }
           />
           <Route path="/onboarding" element={<OnboardingPage />} />
-          {/* Legacy routes - redirect to /auth */}
-          <Route
-            path="/sign-in"
-            element={
-              <Layout logo={logo}>
-                <SignIn />
-              </Layout>
-            }
-          />
-          <Route
-            path="/sign-up"
-            element={
-              <Layout logo={logo}>
-                <SignUp />
-              </Layout>
-            }
-          />
-
           <Route
             path="/forgot-password"
             element={
