@@ -49,7 +49,7 @@ const RequisitionDoughnutChart = () => {
   const fetchRequisitionData = async () => {
     try {
       // Commented out API call
-      // const response = await authApi.get(`/requisition/get-all`, {
+      // const response = await authApi.get(`/requisition/`, {
       //   params: {
       //     page: 1,
       //     limit: 10,

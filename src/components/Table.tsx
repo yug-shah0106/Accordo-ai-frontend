@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { Link } from "react-router-dom";
-import TableShimmer from "./shimmerTable/tableShimmer";
-import Badge from "./badge";
+import TableShimmer from "./shimmerTable/TableShimmer";
+import Badge from "./Badge";
 import { FiExternalLink } from "react-icons/fi";
 import { formatDate } from "../utils/utils";
 import { Menu, MenuItem, IconButton } from "@mui/material";

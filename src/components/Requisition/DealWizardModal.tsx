@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Loader2 } from 'lucide-react';
-import toast from 'react-hot-toast';
-import chatbotService from '../../services/chatbot.service';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { X, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
+import chatbotService from "../../services/chatbot.service";
 import {
   StepProgress,
   StepOne,
@@ -9,7 +9,7 @@ import {
   StepThree,
   StepFour,
   ReviewStep,
-} from '../chatbot/deal-wizard';
+} from "../chatbot/deal-wizard";
 import type {
   DealWizardFormData,
   DealWizardStepOne,
@@ -21,8 +21,8 @@ import type {
   DeliveryAddress,
   QualityCertification,
   SmartDefaults,
-} from '../../types';
-import { DEFAULT_WIZARD_FORM_DATA } from '../../types';
+} from "../../types";
+import { DEFAULT_WIZARD_FORM_DATA } from "../../types";
 
 interface Requisition {
   id: string;
@@ -58,11 +58,11 @@ interface DealWizardModalProps {
 }
 
 const WIZARD_STEPS = [
-  { id: 1, title: 'Basic Info', description: 'RFQ & Vendor' },
-  { id: 2, title: 'Commercial', description: 'Price & Terms' },
-  { id: 3, title: 'Contract', description: 'SLA & Control' },
-  { id: 4, title: 'Weights', description: 'Priorities' },
-  { id: 5, title: 'Review', description: 'Confirm' },
+  { id: 1, title: "Basic Info", description: "RFQ & Vendor" },
+  { id: 2, title: "Commercial", description: "Price & Terms" },
+  { id: 3, title: "Contract", description: "SLA & Control" },
+  { id: 4, title: "Weights", description: "Priorities" },
+  { id: 5, title: "Review", description: "Confirm" },
 ];
 
 const DealWizardModal: React.FC<DealWizardModalProps> = ({
@@ -74,14 +74,20 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
   selectedVendorIds,
 }) => {
   const [wizardStep, setWizardStep] = useState(1);
-  const [formData, setFormData] = useState<DealWizardFormData>(DEFAULT_WIZARD_FORM_DATA);
+  const [formData, setFormData] = useState<DealWizardFormData>(
+    DEFAULT_WIZARD_FORM_DATA,
+  );
 
   // Data sources
   const [requisitions, setRequisitions] = useState<RequisitionSummary[]>([]);
   const [vendors, setVendors] = useState<VendorSummary[]>([]);
   const [addresses, setAddresses] = useState<DeliveryAddress[]>([]);
-  const [certifications, setCertifications] = useState<QualityCertification[]>([]);
-  const [smartDefaults, setSmartDefaults] = useState<SmartDefaults | null>(null);
+  const [certifications, setCertifications] = useState<QualityCertification[]>(
+    [],
+  );
+  const [smartDefaults, setSmartDefaults] = useState<SmartDefaults | null>(
+    null,
+  );
   const [selectedVendorNames, setSelectedVendorNames] = useState<string[]>([]);
 
   // Loading states
@@ -92,7 +98,9 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
 
   // Validation
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string[]>
+  >({});
 
   // Track whether the modal was already open on the previous render so we only
   // reset + reload data when the modal transitions from closed → open.
@@ -139,7 +147,8 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
       // Load vendors for this requisition
       let loadedVendors: VendorSummary[] = [];
       try {
-        const vendorRes = await chatbotService.getRequisitionVendors(requisitionId);
+        const vendorRes =
+          await chatbotService.getRequisitionVendors(requisitionId);
         loadedVendors = vendorRes.data || [];
       } catch {
         // ignore
@@ -173,13 +182,13 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
         for (const selectedId of selectedVendorIds) {
           const sid = String(selectedId);
           const matched = loadedVendors.find(
-            v => String(v.id) === sid || String(v.vendorId) === sid
+            (v) => String(v.id) === sid || String(v.vendorId) === sid,
           );
           if (matched) {
             resolvedNames.push(
               matched.companyName
                 ? `${matched.name} (${matched.companyName})`
-                : matched.name
+                : matched.name,
             );
             if (firstMatchedVendorId === null) {
               firstMatchedVendorId = matched.id;
@@ -195,15 +204,15 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
       setCertifications(loadedCertifications);
       setSelectedVendorNames(resolvedNames);
 
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         stepOne: {
           ...prev.stepOne,
           requisitionId,
           vendorId: firstMatchedVendorId,
           title: requisition?.subject || prev.stepOne.title,
-          mode: 'INSIGHTS',
-          priority: 'MEDIUM',
+          mode: "CONVERSATION",
+          priority: "MEDIUM",
           vendorLocked: true,
         },
       }));
@@ -219,7 +228,12 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
 
   // Load smart defaults when vendor is set
   useEffect(() => {
-    if (!isOpen || !formData.stepOne.requisitionId || !formData.stepOne.vendorId) return;
+    if (
+      !isOpen ||
+      !formData.stepOne.requisitionId ||
+      !formData.stepOne.vendorId
+    )
+      return;
 
     const loadSmartDefaults = async () => {
       try {
@@ -230,8 +244,9 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
         setSmartDefaults(res.data);
 
         if (res.data) {
-          setFormData(prev => {
-            const isEmpty = (val: unknown): boolean => val === null || val === undefined || val === 0 || val === '';
+          setFormData((prev) => {
+            const isEmpty = (val: unknown): boolean =>
+              val === null || val === undefined || val === 0 || val === "";
 
             return {
               ...prev,
@@ -239,28 +254,40 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
                 ...prev.stepTwo,
                 priceQuantity: {
                   ...prev.stepTwo.priceQuantity,
-                  targetUnitPrice: isEmpty(prev.stepTwo.priceQuantity.targetUnitPrice)
-                    ? (res.data!.priceQuantity.totalTargetPrice ?? res.data!.priceQuantity.targetUnitPrice)
+                  targetUnitPrice: isEmpty(
+                    prev.stepTwo.priceQuantity.targetUnitPrice,
+                  )
+                    ? (res.data!.priceQuantity.totalTargetPrice ??
+                      res.data!.priceQuantity.targetUnitPrice)
                     : prev.stepTwo.priceQuantity.targetUnitPrice,
-                  maxAcceptablePrice: isEmpty(prev.stepTwo.priceQuantity.maxAcceptablePrice)
-                    ? (res.data!.priceQuantity.totalMaxPrice ?? res.data!.priceQuantity.maxAcceptablePrice)
+                  maxAcceptablePrice: isEmpty(
+                    prev.stepTwo.priceQuantity.maxAcceptablePrice,
+                  )
+                    ? (res.data!.priceQuantity.totalMaxPrice ??
+                      res.data!.priceQuantity.maxAcceptablePrice)
                     : prev.stepTwo.priceQuantity.maxAcceptablePrice,
-                  minOrderQuantity: isEmpty(prev.stepTwo.priceQuantity.minOrderQuantity)
+                  minOrderQuantity: isEmpty(
+                    prev.stepTwo.priceQuantity.minOrderQuantity,
+                  )
                     ? res.data!.priceQuantity.totalQuantity
                     : prev.stepTwo.priceQuantity.minOrderQuantity,
                 },
                 paymentTerms: {
                   ...prev.stepTwo.paymentTerms,
-                  minDays: prev.stepTwo.paymentTerms.minDays ?? res.data!.paymentTerms.minDays,
-                  maxDays: prev.stepTwo.paymentTerms.maxDays ?? res.data!.paymentTerms.maxDays,
+                  minDays:
+                    prev.stepTwo.paymentTerms.minDays ??
+                    res.data!.paymentTerms.minDays,
+                  maxDays:
+                    prev.stepTwo.paymentTerms.maxDays ??
+                    res.data!.paymentTerms.maxDays,
                 },
                 delivery: {
                   ...prev.stepTwo.delivery,
                   preferredDate: isEmpty(prev.stepTwo.delivery.preferredDate)
-                    ? (res.data!.delivery.deliveryDate || null)
+                    ? res.data!.delivery.deliveryDate || null
                     : prev.stepTwo.delivery.preferredDate,
                   requiredDate: isEmpty(prev.stepTwo.delivery.requiredDate)
-                    ? (res.data!.delivery.maxDeliveryDate || null)
+                    ? res.data!.delivery.maxDeliveryDate || null
                     : prev.stepTwo.delivery.requiredDate,
                 },
               },
@@ -288,9 +315,9 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
   // Auto-populate delivery address
   useEffect(() => {
     if (addresses.length > 0 && !formData.stepTwo.delivery.locationId) {
-      const defaultAddr = addresses.find(a => a.isDefault) || addresses[0];
+      const defaultAddr = addresses.find((a) => a.isDefault) || addresses[0];
       if (defaultAddr) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           stepTwo: {
             ...prev.stepTwo,
@@ -307,34 +334,36 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
 
   // Step change handlers
   const handleStepOneChange = (data: DealWizardStepOne) => {
-    setFormData(prev => ({ ...prev, stepOne: data }));
+    setFormData((prev) => ({ ...prev, stepOne: data }));
     setErrors({});
   };
 
   const handleStepTwoChange = (data: DealWizardStepTwo) => {
-    setFormData(prev => ({ ...prev, stepTwo: data }));
+    setFormData((prev) => ({ ...prev, stepTwo: data }));
     setErrors({});
   };
 
   const handleStepThreeChange = (data: DealWizardStepThree) => {
-    setFormData(prev => ({ ...prev, stepThree: data }));
+    setFormData((prev) => ({ ...prev, stepThree: data }));
     setErrors({});
   };
 
   const handleStepFourChange = (data: DealWizardStepFour) => {
-    setFormData(prev => ({ ...prev, stepFour: data }));
+    setFormData((prev) => ({ ...prev, stepFour: data }));
     setErrors({});
   };
 
   // Validation (same as NewDealPage)
   const validateStepOne = (): boolean => {
     const newErrors: Record<string, string> = {};
-    if (!formData.stepOne.requisitionId) newErrors.requisitionId = 'Please select an RFQ';
+    if (!formData.stepOne.requisitionId)
+      newErrors.requisitionId = "Please select an RFQ";
     // Skip vendorId validation when multiple vendors are selected (batch mode)
     if (!formData.stepOne.vendorId && selectedVendorNames.length === 0) {
-      newErrors.vendorId = 'Please select a vendor';
+      newErrors.vendorId = "Please select a vendor";
     }
-    if (!formData.stepOne.title.trim()) newErrors.title = 'Deal title is required';
+    if (!formData.stepOne.title.trim())
+      newErrors.title = "Deal title is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -344,34 +373,54 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
     const { priceQuantity, paymentTerms, delivery } = formData.stepTwo;
 
     if (!priceQuantity.targetUnitPrice || priceQuantity.targetUnitPrice <= 0) {
-      newErrors.targetUnitPrice = 'Target unit price is required';
+      newErrors.targetUnitPrice = "Target unit price is required";
     }
-    if (!priceQuantity.maxAcceptablePrice || priceQuantity.maxAcceptablePrice <= 0) {
-      newErrors.maxAcceptablePrice = 'Maximum acceptable price is required';
+    if (
+      !priceQuantity.maxAcceptablePrice ||
+      priceQuantity.maxAcceptablePrice <= 0
+    ) {
+      newErrors.maxAcceptablePrice = "Maximum acceptable price is required";
     }
-    if (priceQuantity.targetUnitPrice && priceQuantity.maxAcceptablePrice && priceQuantity.maxAcceptablePrice < priceQuantity.targetUnitPrice) {
-      newErrors.maxAcceptablePrice = 'Maximum price must be greater than or equal to target price';
+    if (
+      priceQuantity.targetUnitPrice &&
+      priceQuantity.maxAcceptablePrice &&
+      priceQuantity.maxAcceptablePrice < priceQuantity.targetUnitPrice
+    ) {
+      newErrors.maxAcceptablePrice =
+        "Maximum price must be greater than or equal to target price";
     }
-    if (!priceQuantity.minOrderQuantity || priceQuantity.minOrderQuantity <= 0) {
-      newErrors.minOrderQuantity = 'Minimum order quantity is required';
+    if (
+      !priceQuantity.minOrderQuantity ||
+      priceQuantity.minOrderQuantity <= 0
+    ) {
+      newErrors.minOrderQuantity = "Minimum order quantity is required";
     }
     if (!paymentTerms.minDays || paymentTerms.minDays <= 0) {
-      newErrors.minPaymentDays = 'Minimum payment days is required';
+      newErrors.minPaymentDays = "Minimum payment days is required";
     }
     if (!paymentTerms.maxDays || paymentTerms.maxDays <= 0) {
-      newErrors.maxPaymentDays = 'Maximum payment days is required';
+      newErrors.maxPaymentDays = "Maximum payment days is required";
     }
-    if (paymentTerms.minDays && paymentTerms.maxDays && paymentTerms.maxDays < paymentTerms.minDays) {
-      newErrors.maxPaymentDays = 'Maximum days must be greater than minimum days';
+    if (
+      paymentTerms.minDays &&
+      paymentTerms.maxDays &&
+      paymentTerms.maxDays < paymentTerms.minDays
+    ) {
+      newErrors.maxPaymentDays =
+        "Maximum days must be greater than minimum days";
     }
     if (!delivery.requiredDate) {
-      newErrors.requiredDate = 'Required delivery date is required';
+      newErrors.requiredDate = "Required delivery date is required";
     }
     if (!delivery.locationId && !delivery.locationAddress) {
-      newErrors.locationId = 'Delivery location is required';
+      newErrors.locationId = "Delivery location is required";
     }
-    if (delivery.partialDelivery.allowed && !delivery.partialDelivery.minValue) {
-      newErrors.partialDeliveryValue = 'Partial delivery minimum value is required';
+    if (
+      delivery.partialDelivery.allowed &&
+      !delivery.partialDelivery.minValue
+    ) {
+      newErrors.partialDeliveryValue =
+        "Partial delivery minimum value is required";
     }
 
     setErrors(newErrors);
@@ -383,12 +432,19 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
     const { contractSla } = formData.stepThree;
 
     if (!contractSla.warrantyPeriod) {
-      newErrors.warrantyPeriod = 'Warranty period is required';
-    } else if (contractSla.warrantyPeriod === 'CUSTOM' && (contractSla.customWarrantyMonths === null || contractSla.customWarrantyMonths === undefined)) {
-      newErrors.warrantyPeriod = 'Please enter a custom warranty period';
+      newErrors.warrantyPeriod = "Warranty period is required";
+    } else if (
+      contractSla.warrantyPeriod === "CUSTOM" &&
+      (contractSla.customWarrantyMonths === null ||
+        contractSla.customWarrantyMonths === undefined)
+    ) {
+      newErrors.warrantyPeriod = "Please enter a custom warranty period";
     }
-    if (contractSla.lateDeliveryPenaltyPerDay === null || contractSla.lateDeliveryPenaltyPerDay === undefined) {
-      newErrors.lateDeliveryPenaltyPerDay = 'Late delivery penalty is required';
+    if (
+      contractSla.lateDeliveryPenaltyPerDay === null ||
+      contractSla.lateDeliveryPenaltyPerDay === undefined
+    ) {
+      newErrors.lateDeliveryPenaltyPerDay = "Late delivery penalty is required";
     }
 
     setErrors(newErrors);
@@ -406,13 +462,20 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
 
   const validateAll = (): boolean => {
     const allErrors: Record<string, string[]> = {};
-    if (!formData.stepOne.requisitionId) allErrors.step1_requisitionId = ['Please select an RFQ'];
-    if (!formData.stepOne.vendorId && selectedVendorNames.length === 0) allErrors.step1_vendorId = ['Please select a vendor'];
-    if (!formData.stepOne.title.trim()) allErrors.step1_title = ['Deal title is required'];
-    if (!formData.stepTwo.priceQuantity.targetUnitPrice) allErrors.step2_targetPrice = ['Target unit price is required'];
-    if (!formData.stepTwo.priceQuantity.maxAcceptablePrice) allErrors.step2_maxPrice = ['Maximum acceptable price is required'];
-    if (!formData.stepTwo.delivery.requiredDate) allErrors.step2_deliveryDate = ['Required delivery date is required'];
-    if (!formData.stepThree.contractSla.warrantyPeriod) allErrors.step3_warranty = ['Warranty period is required'];
+    if (!formData.stepOne.requisitionId)
+      allErrors.step1_requisitionId = ["Please select an RFQ"];
+    if (!formData.stepOne.vendorId && selectedVendorNames.length === 0)
+      allErrors.step1_vendorId = ["Please select a vendor"];
+    if (!formData.stepOne.title.trim())
+      allErrors.step1_title = ["Deal title is required"];
+    if (!formData.stepTwo.priceQuantity.targetUnitPrice)
+      allErrors.step2_targetPrice = ["Target unit price is required"];
+    if (!formData.stepTwo.priceQuantity.maxAcceptablePrice)
+      allErrors.step2_maxPrice = ["Maximum acceptable price is required"];
+    if (!formData.stepTwo.delivery.requiredDate)
+      allErrors.step2_deliveryDate = ["Required delivery date is required"];
+    if (!formData.stepThree.contractSla.warrantyPeriod)
+      allErrors.step3_warranty = ["Warranty period is required"];
     setValidationErrors(allErrors);
     return Object.keys(allErrors).length === 0;
   };
@@ -421,19 +484,27 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
   const handleNext = () => {
     let isValid = true;
     switch (wizardStep) {
-      case 1: isValid = validateStepOne(); break;
-      case 2: isValid = validateStepTwo(); break;
-      case 3: isValid = validateStepThree(); break;
-      case 4: isValid = validateStepFour(); break;
+      case 1:
+        isValid = validateStepOne();
+        break;
+      case 2:
+        isValid = validateStepTwo();
+        break;
+      case 3:
+        isValid = validateStepThree();
+        break;
+      case 4:
+        isValid = validateStepFour();
+        break;
     }
     if (isValid) {
-      setWizardStep(prev => Math.min(prev + 1, 5));
+      setWizardStep((prev) => Math.min(prev + 1, 5));
     }
   };
 
   const handleBack = () => {
     setErrors({});
-    setWizardStep(prev => Math.max(prev - 1, 1));
+    setWizardStep((prev) => Math.max(prev - 1, 1));
   };
 
   const handleStepClick = (stepId: number) => {
@@ -458,12 +529,12 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
   }, []);
 
   const handleAddNewAddress = () => {
-    toast('Address management coming soon', { icon: 'ℹ️' });
+    toast("Address management coming soon", { icon: "ℹ️" });
   };
 
   const handleCreateDeals = () => {
     if (!validateAll()) {
-      toast.error('Please fix validation errors before creating deals');
+      toast.error("Please fix validation errors before creating deals");
       return;
     }
     onSubmit(formData);
@@ -544,9 +615,12 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Configure Deal Parameters</h2>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Configure Deal Parameters
+            </h2>
             <p className="text-sm text-gray-500 mt-0.5">
-              {selectedVendorIds.length} vendor{selectedVendorIds.length !== 1 ? 's' : ''} selected
+              {selectedVendorIds.length} vendor
+              {selectedVendorIds.length !== 1 ? "s" : ""} selected
             </p>
           </div>
           <button
@@ -569,7 +643,7 @@ const DealWizardModal: React.FC<DealWizardModalProps> = ({
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          {(loadingRequisitions || loadingVendors) ? (
+          {loadingRequisitions || loadingVendors ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-6 h-6 animate-spin text-blue-600 mr-2" />
               <span className="text-gray-500">Loading data...</span>

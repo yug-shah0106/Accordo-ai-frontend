@@ -30,21 +30,39 @@
  * ```
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { chatbotService } from '../../services/chatbot.service';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { chatbotService } from "../../services/chatbot.service";
 import type {
   Deal,
   Message,
   ConversationState,
   ConversationPhase,
   DealContext,
-} from '../../types/chatbot';
+} from "../../types/chatbot";
 
 // ============================================================================
 // Types
 // ============================================================================
 
-export type WarningLevel = 'none' | 'low' | 'medium' | 'high';
+export type WarningLevel = "none" | "low" | "medium" | "high";
+
+export interface MesoData {
+  options: Array<{
+    id: string;
+    offer: Record<string, unknown>;
+    utility: number;
+    label: string;
+    description: string;
+    emphasis: string[];
+    tradeoffs: string[];
+  }>;
+  showOthers: boolean;
+  isFinal: boolean;
+  phase: string;
+  currency: string;
+  inputDisabled: boolean;
+  disabledMessage?: string;
+}
 
 export interface UseConversationReturn {
   // Data
@@ -52,6 +70,7 @@ export interface UseConversationReturn {
   messages: Message[];
   convoState: ConversationState | null;
   context: DealContext | null;
+  mesoData: MesoData | null;
 
   // Loading states
   loading: boolean;
@@ -62,6 +81,8 @@ export interface UseConversationReturn {
   sendMessage: (content: string) => Promise<void>;
   startConversation: () => Promise<void>;
   reload: () => Promise<void>;
+  selectMesoOption: (optionId: string) => Promise<void>;
+  submitOthers: (totalPrice: number, paymentTermsDays: number) => Promise<void>;
 
   // Computed
   currentPhase: ConversationPhase;
@@ -76,9 +97,9 @@ export interface UseConversationReturn {
 // ============================================================================
 
 const REFUSAL_THRESHOLDS = {
-  LOW: 1,      // 1 refusal: yellow warning
-  MEDIUM: 2,   // 2 refusals: orange warning
-  HIGH: 3,     // 3+ refusals: red warning (escalation imminent)
+  LOW: 1, // 1 refusal: yellow warning
+  MEDIUM: 2, // 2 refusals: orange warning
+  HIGH: 3, // 3+ refusals: red warning (escalation imminent)
 } as const;
 
 // ============================================================================
@@ -104,10 +125,10 @@ function parseConvoState(deal: Deal | null): ConversationState | null {
  * Determine warning level based on refusal count
  */
 function getWarningLevel(refusalCount: number): WarningLevel {
-  if (refusalCount === 0) return 'none';
-  if (refusalCount === REFUSAL_THRESHOLDS.LOW) return 'low';
-  if (refusalCount === REFUSAL_THRESHOLDS.MEDIUM) return 'medium';
-  return 'high'; // 3 or more refusals
+  if (refusalCount === 0) return "none";
+  if (refusalCount === REFUSAL_THRESHOLDS.LOW) return "low";
+  if (refusalCount === REFUSAL_THRESHOLDS.MEDIUM) return "medium";
+  return "high"; // 3 or more refusals
 }
 
 /**
@@ -115,19 +136,19 @@ function getWarningLevel(refusalCount: number): WarningLevel {
  * Backend uses different phase names than frontend
  */
 function mapPhase(phase: string | undefined): ConversationPhase {
-  if (!phase) return 'WAITING_FOR_OFFER';
+  if (!phase) return "WAITING_FOR_OFFER";
 
   switch (phase) {
-    case 'GREET':
-    case 'ASK_OFFER':
-      return 'WAITING_FOR_OFFER';
-    case 'NEGOTIATING':
-      return 'NEGOTIATING';
-    case 'CLOSED':
-    case 'ESCALATED':
-      return 'TERMINAL';
+    case "GREET":
+    case "ASK_OFFER":
+      return "WAITING_FOR_OFFER";
+    case "NEGOTIATING":
+      return "NEGOTIATING";
+    case "CLOSED":
+    case "ESCALATED":
+      return "TERMINAL";
     default:
-      return 'WAITING_FOR_OFFER';
+      return "WAITING_FOR_OFFER";
   }
 }
 
@@ -147,7 +168,7 @@ export function useConversation(
   options: {
     autoLoad?: boolean;
     autoScroll?: boolean;
-  } = {}
+  } = {},
 ): UseConversationReturn {
   const { autoLoad = true, autoScroll = true } = options;
 
@@ -161,6 +182,7 @@ export function useConversation(
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mesoData, setMesoData] = useState<MesoData | null>(null);
 
   // Refs for scroll management
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -172,9 +194,7 @@ export function useConversation(
 
   const convoState = parseConvoState(deal);
 
-  const currentPhase = mapPhase(
-    convoState?.phase || deal?.status
-  );
+  const currentPhase = mapPhase(convoState?.phase || deal?.status);
 
   const refusalCount = convoState?.refusalCount || 0;
   const turnCount = convoState?.turnCount || 0;
@@ -184,9 +204,9 @@ export function useConversation(
   const canSend =
     deal !== null &&
     context !== null &&
-    deal.status === 'NEGOTIATING' &&
+    deal.status === "NEGOTIATING" &&
     !sending &&
-    currentPhase !== 'TERMINAL';
+    currentPhase !== "TERMINAL";
 
   // ============================================================================
   // Actions
@@ -204,7 +224,11 @@ export function useConversation(
     try {
       // Use lookupDeal to get deal + context in one call
       const response = await chatbotService.lookupDeal(dealId);
-      const { deal: fetchedDeal, messages: fetchedMessages, context: fetchedContext } = response.data;
+      const {
+        deal: fetchedDeal,
+        messages: fetchedMessages,
+        context: fetchedContext,
+      } = response.data;
 
       setDeal(fetchedDeal);
       setMessages(fetchedMessages || []);
@@ -213,14 +237,14 @@ export function useConversation(
       // Auto-scroll to bottom on reload
       if (shouldScrollRef.current) {
         setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
         }, 100);
       }
     } catch (err: any) {
       const errorMessage =
         err?.response?.data?.message ||
         err?.message ||
-        'Failed to load conversation';
+        "Failed to load conversation";
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -238,10 +262,7 @@ export function useConversation(
 
     try {
       const response = await chatbotService.startConversation(context);
-      const {
-        vendorMessage,
-        accordoMessage,
-      } = response.data;
+      const { vendorMessage, accordoMessage } = response.data;
 
       // Update local state
       if (vendorMessage && accordoMessage) {
@@ -254,14 +275,14 @@ export function useConversation(
       // Auto-scroll to bottom
       if (shouldScrollRef.current) {
         setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
         }, 100);
       }
     } catch (err: any) {
       const errorMessage =
         err?.response?.data?.message ||
         err?.message ||
-        'Failed to start conversation';
+        "Failed to start conversation";
       setError(errorMessage);
     } finally {
       setSending(false);
@@ -283,14 +304,15 @@ export function useConversation(
         const response = await chatbotService.sendMessage(
           context,
           content.trim(),
-          'VENDOR',
-          'CONVERSATION'
+          "VENDOR",
+          "CONVERSATION",
         );
 
         const {
           deal: updatedDeal,
           messages: updatedMessages,
-        } = response;
+          meso,
+        } = response as any;
 
         // Update state from response
         if (updatedDeal) {
@@ -300,10 +322,13 @@ export function useConversation(
           setMessages(updatedMessages);
         }
 
+        // Update MESO data if present
+        setMesoData(meso ?? null);
+
         // Auto-scroll to bottom
         if (shouldScrollRef.current) {
           setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
           }, 100);
         }
 
@@ -313,7 +338,7 @@ export function useConversation(
         const errorMessage =
           err?.response?.data?.message ||
           err?.message ||
-          'Failed to send message';
+          "Failed to send message";
         setError(errorMessage);
 
         // Reload on error to sync state
@@ -322,7 +347,7 @@ export function useConversation(
         setSending(false);
       }
     },
-    [context, canSend, reload]
+    [context, canSend, reload],
   );
 
   // ============================================================================
@@ -343,9 +368,67 @@ export function useConversation(
    */
   useEffect(() => {
     if (autoScroll && messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [autoScroll, messages]);
+
+  // ============================================================================
+  // MESO Actions
+  // ============================================================================
+
+  const selectMesoOption = useCallback(
+    async (optionId: string) => {
+      if (!context) return;
+
+      setSending(true);
+      setError(null);
+
+      try {
+        await chatbotService.selectMesoOption(context, optionId);
+        setMesoData(null);
+        await reload();
+      } catch (err: any) {
+        const errorMessage =
+          err?.response?.data?.message ||
+          err?.message ||
+          "Failed to select MESO option";
+        setError(errorMessage);
+        await reload();
+      } finally {
+        setSending(false);
+      }
+    },
+    [context, reload],
+  );
+
+  const submitOthers = useCallback(
+    async (totalPrice: number, paymentTermsDays: number) => {
+      if (!context) return;
+
+      setSending(true);
+      setError(null);
+
+      try {
+        await chatbotService.submitOthers(
+          context,
+          totalPrice,
+          paymentTermsDays,
+        );
+        setMesoData(null);
+        await reload();
+      } catch (err: any) {
+        const errorMessage =
+          err?.response?.data?.message ||
+          err?.message ||
+          "Failed to submit counter-offer";
+        setError(errorMessage);
+        await reload();
+      } finally {
+        setSending(false);
+      }
+    },
+    [context, reload],
+  );
 
   // ============================================================================
   // Return
@@ -357,6 +440,7 @@ export function useConversation(
     messages,
     convoState,
     context,
+    mesoData,
 
     // Loading states
     loading,
@@ -367,6 +451,8 @@ export function useConversation(
     sendMessage,
     startConversation,
     reload,
+    selectMesoOption,
+    submitOthers,
 
     // Computed
     currentPhase,

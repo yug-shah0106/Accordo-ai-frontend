@@ -224,7 +224,7 @@ export default function AiReasoningModal({
                       <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 uppercase">Delivery</span>
                     </div>
                     <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                      {item.counterOffer!.delivery_days} days
+                      {item.counterOffer!.delivery_days} {item.counterOffer!.delivery_days === 1 ? "day" : "days"}
                     </span>
                   </div>
                 )}

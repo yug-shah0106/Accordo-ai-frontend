@@ -220,7 +220,7 @@ const OnboardingCompany = ({
         dataToSend.append("addresses", JSON.stringify(addressesToSend));
       }
 
-      await authApi.put(`/company/update/${id}`, dataToSend, {
+      await authApi.put(`/company/${id}`, dataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -273,7 +273,7 @@ const OnboardingCompany = ({
       const dataToSend = new FormData();
       dataToSend.append("removeCompanyLogo", "true");
 
-      await authApi.put(`/company/update/${id}`, dataToSend, {
+      await authApi.put(`/company/${id}`, dataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

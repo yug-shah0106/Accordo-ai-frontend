@@ -60,7 +60,7 @@ const GroupSummary = () => {
         return;
       }
 
-      const response = await authApi.get(`/requisition/get/${requisitionId}`);
+      const response = await authApi.get(`/requisition/${requisitionId}`);
       const requisition = response.data.data;
 
       // Get contracts that have finalContractDetails object values and status is Accepted or Rejected

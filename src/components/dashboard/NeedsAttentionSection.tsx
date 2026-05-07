@@ -1,12 +1,18 @@
-import { AlertTriangle, Clock, AlertOctagon, UserX, ExternalLink } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import {
+  AlertTriangle,
+  Clock,
+  AlertOctagon,
+  UserX,
+  ExternalLink,
+} from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import type {
   NeedsAttention,
   StalledNegotiation,
   ApproachingDeadline,
   EscalatedDeal,
   UnresponsiveVendor,
-} from '../../types/dashboard';
+} from "../../types/dashboard";
 
 interface NeedsAttentionSectionProps {
   attention: NeedsAttention | undefined;
@@ -17,11 +23,18 @@ interface NeedsAttentionSectionProps {
  * If dealId + vendorId are present, go to the specific deal negotiation room.
  * Otherwise fall back to the requisition deals page.
  */
-const openItem = (rfqId: number | undefined, vendorId: number | undefined, dealId: string | undefined) => {
+const openItem = (
+  rfqId: number | undefined,
+  vendorId: number | undefined,
+  dealId: string | undefined,
+) => {
   if (rfqId && vendorId && dealId) {
-    window.open(`/chatbot/requisitions/${rfqId}/vendors/${vendorId}/deals/${dealId}`, '_blank');
+    window.open(
+      `/chatbot/requisitions/${rfqId}/vendors/${vendorId}/deals/${dealId}`,
+      "_blank",
+    );
   } else if (rfqId) {
-    window.open(`/chatbot/requisitions/${rfqId}`, '_blank');
+    window.open(`/chatbot/requisitions/${rfqId}`, "_blank");
   }
 };
 
@@ -37,13 +50,20 @@ const StalledCard = ({ items }: { items: StalledNegotiation[] }) => (
       </span>
     </div>
     {items.length === 0 ? (
-      <p className="text-xs text-gray-400 dark:text-dark-text-secondary">Nothing here</p>
+      <p className="text-xs text-gray-400 dark:text-dark-text-secondary">
+        Nothing here
+      </p>
     ) : (
       <ul className="space-y-2">
         {items.map((item) => (
-          <li key={item.dealId} className="flex items-center justify-between group">
+          <li
+            key={item.dealId}
+            className="flex items-center justify-between group"
+          >
             <div className="min-w-0">
-              <p className="text-sm text-gray-800 dark:text-dark-text truncate">{item.title}</p>
+              <p className="text-sm text-gray-800 dark:text-dark-text truncate">
+                {item.title}
+              </p>
               <p className="text-xs text-gray-500 dark:text-dark-text-secondary">
                 {item.vendorName} &middot; {item.daysSinceActivity}d inactive
               </p>
@@ -73,13 +93,20 @@ const DeadlineCard = ({ items }: { items: ApproachingDeadline[] }) => (
       </span>
     </div>
     {items.length === 0 ? (
-      <p className="text-xs text-gray-400 dark:text-dark-text-secondary">Nothing here</p>
+      <p className="text-xs text-gray-400 dark:text-dark-text-secondary">
+        Nothing here
+      </p>
     ) : (
       <ul className="space-y-2">
         {items.map((item) => (
-          <li key={item.dealId} className="flex items-center justify-between group">
+          <li
+            key={item.dealId}
+            className="flex items-center justify-between group"
+          >
             <div className="min-w-0">
-              <p className="text-sm text-gray-800 dark:text-dark-text truncate">{item.title}</p>
+              <p className="text-sm text-gray-800 dark:text-dark-text truncate">
+                {item.title}
+              </p>
               <p className="text-xs text-gray-500 dark:text-dark-text-secondary">
                 {item.daysRemaining}d remaining
               </p>
@@ -109,13 +136,20 @@ const EscalatedCard = ({ items }: { items: EscalatedDeal[] }) => (
       </span>
     </div>
     {items.length === 0 ? (
-      <p className="text-xs text-gray-400 dark:text-dark-text-secondary">Nothing here</p>
+      <p className="text-xs text-gray-400 dark:text-dark-text-secondary">
+        Nothing here
+      </p>
     ) : (
       <ul className="space-y-2">
         {items.map((item) => (
-          <li key={item.dealId} className="flex items-center justify-between group">
+          <li
+            key={item.dealId}
+            className="flex items-center justify-between group"
+          >
             <div className="min-w-0">
-              <p className="text-sm text-gray-800 dark:text-dark-text truncate">{item.title}</p>
+              <p className="text-sm text-gray-800 dark:text-dark-text truncate">
+                {item.title}
+              </p>
               <p className="text-xs text-gray-500 dark:text-dark-text-secondary">
                 {item.vendorName} &middot; {item.reason}
               </p>
@@ -145,17 +179,30 @@ const UnresponsiveCard = ({ items }: { items: UnresponsiveVendor[] }) => (
       </span>
     </div>
     {items.length === 0 ? (
-      <p className="text-xs text-gray-400 dark:text-dark-text-secondary">Nothing here</p>
+      <p className="text-xs text-gray-400 dark:text-dark-text-secondary">
+        Nothing here
+      </p>
     ) : (
       <ul className="space-y-2">
         {items.map((item) => (
-          <li key={`${item.vendorId}-${item.dealId}`} className="flex items-center justify-between group">
+          <li
+            key={`${item.vendorId}-${item.dealId || item.rfqId}-${item.lastNotifiedAt}`}
+            className="flex items-center justify-between group"
+          >
             <div className="min-w-0">
-              <p className="text-sm text-gray-800 dark:text-dark-text truncate">{item.vendorName}</p>
+              <p className="text-sm text-gray-800 dark:text-dark-text truncate">
+                {item.vendorName}
+              </p>
               <p className="text-xs text-gray-500 dark:text-dark-text-secondary">
                 {item.daysSinceNotification}d since notification
                 {item.lastNotifiedAt && (
-                  <> &middot; notified {formatDistanceToNow(new Date(item.lastNotifiedAt), { addSuffix: true })}</>
+                  <>
+                    {" "}
+                    &middot; notified{" "}
+                    {formatDistanceToNow(new Date(item.lastNotifiedAt), {
+                      addSuffix: true,
+                    })}
+                  </>
                 )}
               </p>
             </div>

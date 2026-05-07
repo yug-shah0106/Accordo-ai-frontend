@@ -14,8 +14,8 @@ import { authApi } from "../../api";
 import toast from "react-hot-toast";
 import Modal from "../Modal";
 import Filter from "../Filter";
-import Badge from "../badge";
-import Breadcrumb from "../BreadeCrum";
+import Badge from "../Badge";
+import Breadcrumb from "../Breadcrumbs";
 import { LuGitPullRequest } from "react-icons/lu";
 import { env } from "@/utils/env";
 
@@ -115,7 +115,7 @@ const RequisitionsManagement = () => {
     totalDoc,
     refetch,
   } = useFetchData(
-    `/requisition/get-all`,
+    `/requisition/`,
     10,
     0,
     1,
@@ -137,7 +137,7 @@ const RequisitionsManagement = () => {
 
   const handleDeleteModalConfirm = async (id: any) => {
     try {
-      await authApi.delete(`/requisition/delete/${id}`);
+      await authApi.delete(`/requisition/${id}`);
       await refetch();
       toast.success("Cancel confirmation");
     } catch (error: any) {

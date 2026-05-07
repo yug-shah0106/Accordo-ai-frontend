@@ -2,6 +2,7 @@
 
 const HeroSection = () => {
   const scrollToSection = (href: string) => {
+    if (!href.startsWith("#") || href.length <= 1) return;
     const element = document.querySelector(href);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
@@ -42,7 +43,8 @@ const HeroSection = () => {
               AI-Powered Procurement{" "}
               <span
                 style={{
-                  backgroundImage: "linear-gradient(to right, #5A78FA, #93C5FD)",
+                  backgroundImage:
+                    "linear-gradient(to right, #5A78FA, #93C5FD)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
@@ -54,9 +56,9 @@ const HeroSection = () => {
             </h1>
 
             <p className="text-lg md:text-xl text-white/60 leading-relaxed mb-10 max-w-lg font-Inter">
-              Automate thousands of vendor negotiations simultaneously. 
-              Reduce procurement costs, accelerate deal cycles, and let AI 
-              find better outcomes for both sides.
+              Automate thousands of vendor negotiations simultaneously. Reduce
+              procurement costs, accelerate deal cycles, and let AI find better
+              outcomes for both sides.
             </p>
 
             {/* CTAs */}
@@ -82,21 +84,33 @@ const HeroSection = () => {
             <div className="flex gap-8 mt-12 pt-8 border-t border-white/10">
               <div>
                 <p className="text-2xl md:text-3xl font-bold text-white">50%</p>
-                <p className="text-sm text-white/50 mt-1 font-Inter">Cost Savings</p>
+                <p className="text-sm text-white/50 mt-1 font-Inter">
+                  Cost Savings
+                </p>
               </div>
               <div>
-                <p className="text-2xl md:text-3xl font-bold text-white">24/7</p>
-                <p className="text-sm text-white/50 mt-1 font-Inter">Availability</p>
+                <p className="text-2xl md:text-3xl font-bold text-white">
+                  24/7
+                </p>
+                <p className="text-sm text-white/50 mt-1 font-Inter">
+                  Availability
+                </p>
               </div>
               <div>
                 <p className="text-2xl md:text-3xl font-bold text-white">90%</p>
-                <p className="text-sm text-white/50 mt-1 font-Inter">Supplier Satisfaction</p>
+                <p className="text-sm text-white/50 mt-1 font-Inter">
+                  Supplier Satisfaction
+                </p>
               </div>
             </div>
           </div>
 
           {/* Right Visual */}
-          <div className="relative scroll-reveal" data-reveal="fade-left" data-reveal-delay="200">
+          <div
+            className="relative scroll-reveal"
+            data-reveal="fade-left"
+            data-reveal-delay="200"
+          >
             <div className="relative">
               {/* Dashboard mockup */}
               <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl border border-white/10 p-4 shadow-2xl">
@@ -130,15 +144,29 @@ const HeroSection = () => {
                     {/* Stats row */}
                     <div className="grid grid-cols-3 gap-3">
                       {[
-                        { label: "Active Deals", value: "247", color: "bg-primary-500/20" },
-                        { label: "Cost Saved", value: "$2.4M", color: "bg-green-500/20" },
-                        { label: "Completion", value: "94%", color: "bg-blue-400/20" },
+                        {
+                          label: "Active Deals",
+                          value: "247",
+                          color: "bg-primary-500/20",
+                        },
+                        {
+                          label: "Cost Saved",
+                          value: "$2.4M",
+                          color: "bg-green-500/20",
+                        },
+                        {
+                          label: "Completion",
+                          value: "94%",
+                          color: "bg-blue-400/20",
+                        },
                       ].map((stat) => (
                         <div
                           key={stat.label}
                           className={`${stat.color} rounded-lg p-3`}
                         >
-                          <p className="text-white/50 text-[10px]">{stat.label}</p>
+                          <p className="text-white/50 text-[10px]">
+                            {stat.label}
+                          </p>
                           <p className="text-white font-semibold text-sm mt-0.5">
                             {stat.value}
                           </p>
@@ -178,7 +206,11 @@ const HeroSection = () => {
               </div>
 
               {/* Floating notification card */}
-              <div className="absolute -bottom-4 -left-4 bg-white rounded-xl shadow-xl p-4 border border-landing-border scroll-reveal" data-reveal="fade-up" data-reveal-delay="600">
+              <div
+                className="absolute -bottom-4 -left-4 bg-white rounded-xl shadow-xl p-4 border border-landing-border scroll-reveal"
+                data-reveal="fade-up"
+                data-reveal-delay="600"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                     <svg

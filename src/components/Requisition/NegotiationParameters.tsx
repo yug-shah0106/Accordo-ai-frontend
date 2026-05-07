@@ -35,7 +35,7 @@ const NegotiationParameters = ({ requisitionId, onUpdate }: NegotiationParameter
     const fetchRequisitionData = async () => {
         try {
             setLoading(true);
-            const response = await authApi.get(`/requisition/get/${requisitionId}`);
+            const response = await authApi.get(`/requisition/${requisitionId}`);
             const requisition = response.data.data;
             
             setFormData({
@@ -87,7 +87,7 @@ const NegotiationParameters = ({ requisitionId, onUpdate }: NegotiationParameter
 
         try {
             setLoading(true);
-            await authApi.put(`/requisition/update/${requisitionId}`, {
+            await authApi.put(`/requisition/${requisitionId}`, {
                 batna: formData.batna || null,
                 maxDiscount: formData.maxDiscount || null,
                 discountedValue: formData.discountedValue || null,

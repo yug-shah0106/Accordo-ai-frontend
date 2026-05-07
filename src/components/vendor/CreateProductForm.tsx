@@ -92,7 +92,7 @@ const CreateProductForm = () => {
     try {
       const {
         data: { data },
-      } = await authApi.get(`/product/get/${productId}`);
+      } = await authApi.get(`/product/${productId}`);
       reset({ ...data });
     } catch (error: any) {
       console.error(error.message || "Something went wrong");
@@ -133,13 +133,13 @@ const CreateProductForm = () => {
   const onSubmit = async (data: any) => {
     try {
       if (!id) {
-        await authApi.post("/product/create", data);
+        await authApi.post("/product/", data);
         clearSaved();
         toast.success("Created Successfully");
         navigate("/product-management");
       } else {
         delete data.id;
-        await authApi.put(`/product/update/${id}`, data);
+        await authApi.put(`/product/${id}`, data);
         clearSaved();
         toast.success("Edited Successfully");
         navigate("/product-management");

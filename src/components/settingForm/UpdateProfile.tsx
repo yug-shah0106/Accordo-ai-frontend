@@ -99,7 +99,7 @@ const UpdateProfile = ({
             setUserRoleName(userData.Role.name);
           } else if (userData.roleId) {
             try {
-              const roleRes = await authApi.get(`/role/get/${userData.roleId}`);
+              const roleRes = await authApi.get(`/role/${userData.roleId}`);
               setUserRoleName(roleRes.data?.data?.name || "");
             } catch { /* ignore */ }
           }

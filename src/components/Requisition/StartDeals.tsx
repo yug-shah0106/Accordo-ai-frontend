@@ -105,7 +105,7 @@ const StartDeals: React.FC<StartDealsProps> = ({
   }, [fetchDeals]);
 
   // Fetch vendor list
-  const { data: vendorList } = useFetchData<Vendor>('/vendor/get-all');
+  const { data: vendorList } = useFetchData<Vendor>('/vendor/');
   const contractData = requisition?.Contract || [];
 
   // Compute pending contracts (no deal linked)

@@ -124,7 +124,7 @@ describe('BasicInformation', () => {
       await renderComponent();
 
       await waitFor(() => {
-        expect(authApi.get).toHaveBeenCalledWith('/project/get-all');
+        expect(authApi.get).toHaveBeenCalledWith('/project/');
       });
     });
 
@@ -293,7 +293,7 @@ describe('BasicInformation', () => {
 
       await waitFor(() => {
         expect(authMultiFormApi.post).toHaveBeenCalledWith(
-          '/requisition/create',
+          '/requisition/',
           expect.objectContaining({
             subject: 'New Requisition',
             category: 'IT Equipment',
@@ -326,7 +326,7 @@ describe('BasicInformation', () => {
 
       await waitFor(() => {
         expect(authMultiFormApi.put).toHaveBeenCalledWith(
-          '/requisition/update/req-123',
+          '/requisition/req-123',
           expect.objectContaining({
             subject: 'Updated Name',
           })

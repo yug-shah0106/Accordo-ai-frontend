@@ -39,7 +39,7 @@ const Navbar = () => {
   ];
 
   const scrollToSection = (href: string) => {
-    if (href.startsWith("#")) {
+    if (href.startsWith("#") && href.length > 1) {
       const element = document.querySelector(href);
       if (element) {
         element.scrollIntoView({ behavior: "smooth" });
@@ -52,14 +52,14 @@ const Navbar = () => {
   // Inline styles only for nav container background/shadow/border
   const navContainerStyle: React.CSSProperties = scrolled
     ? {
-        background: '#FFFFFF',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        borderBottom: '1px solid #E2E8F0',
+        background: "#FFFFFF",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+        borderBottom: "1px solid #E2E8F0",
       }
     : {
-        background: 'rgba(11, 15, 23, 0.35)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
+        background: "rgba(11, 15, 23, 0.35)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
       };
 
   return (
@@ -106,7 +106,10 @@ const Navbar = () => {
                   <div className="absolute top-full left-0 pt-2 w-48">
                     <div
                       className="rounded-xl shadow-lg overflow-hidden py-1"
-                      style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}
+                      style={{
+                        backgroundColor: "#FFFFFF",
+                        border: "1px solid #E2E8F0",
+                      }}
                     >
                       {link.dropdown.map((item) => (
                         <button
@@ -163,7 +166,7 @@ const Navbar = () => {
       >
         <div
           className="shadow-lg"
-          style={{ backgroundColor: '#FFFFFF', borderTop: '1px solid #E2E8F0' }}
+          style={{ backgroundColor: "#FFFFFF", borderTop: "1px solid #E2E8F0" }}
         >
           <div className="landing-container py-4 space-y-1">
             {navLinks.map((link) => (
@@ -172,7 +175,7 @@ const Navbar = () => {
                   onClick={() => {
                     if (link.dropdown) {
                       setActiveDropdown(
-                        activeDropdown === link.label ? null : link.label
+                        activeDropdown === link.label ? null : link.label,
                       );
                     } else {
                       scrollToSection(link.href);
@@ -204,7 +207,10 @@ const Navbar = () => {
                 )}
               </div>
             ))}
-            <div className="pt-4 space-y-2 px-4" style={{ borderTop: '1px solid #E2E8F0' }}>
+            <div
+              className="pt-4 space-y-2 px-4"
+              style={{ borderTop: "1px solid #E2E8F0" }}
+            >
               <Link
                 to="/auth"
                 className="nav-mobile-link block text-center py-2.5 text-sm font-medium"

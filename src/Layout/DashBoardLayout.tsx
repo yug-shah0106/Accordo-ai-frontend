@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import Sidebar from "../components/SideBar/SideBar";
+import Sidebar from "../components/sideBar/SideBar";
 import { Outlet, useLocation } from "react-router-dom";
 
 interface DashBoardLayoutProps {

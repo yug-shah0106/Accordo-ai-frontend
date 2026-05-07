@@ -147,7 +147,7 @@ const BasicAndCompanyInfo: React.FC<BasicAndCompanyInfoProps> = ({
         // Update vendor info
         const vendorId = (company as any)?.Vendor?.[0]?.id || (company as any)?.VendorCompanies?.[0]?.Vendor?.id;
         if (vendorId) {
-          await authApi.put(`/vendor-management/update/${vendorId}`, {
+          await authApi.put(`/vendor-management/${vendorId}`, {
             name: data.name,
             phone: data.phone,
             email: data.email,
@@ -161,7 +161,7 @@ const BasicAndCompanyInfo: React.FC<BasicAndCompanyInfoProps> = ({
         formDataObj.append("nature", data.nature);
 
         await authApi.put(
-          `/company/update/${company.id}`,
+          `/company/${company.id}`,
           formDataObj,
           { headers: { "Content-Type": "multipart/form-data" } }
         );

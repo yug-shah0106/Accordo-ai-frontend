@@ -64,7 +64,7 @@ function Roles() {
 
   const getAllRoles = async () => {
     try {
-      const response = await authApi.get(`/role/get-all`);
+      const response = await authApi.get(`/role/`);
       if (response.status === 201) {
         setRoles((response.data.data || []).filter((role: Role) => role.name !== 'Super Admin'));
       }
@@ -79,7 +79,7 @@ function Roles() {
 
   const handleDelete = async (deleteId: number) => {
     try {
-      const result = await authApi.delete(`/role/delete/${deleteId}`);
+      const result = await authApi.delete(`/role/${deleteId}`);
       if (result.status === 201) {
         getAllRoles();
       }

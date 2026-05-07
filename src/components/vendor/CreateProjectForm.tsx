@@ -84,7 +84,7 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
     enabled: isDataLoaded, // Only enable after initial data is loaded
   });
 
-  const { data, loading: _loading, error: _dataError } = useFetchData("/customer/get-all");
+  const { data, loading: _loading, error: _dataError } = useFetchData("/customer/");
 
   const hasMeaningfulDraft = (savedDraft: string | null): boolean => {
     if (!savedDraft) return false;
@@ -141,7 +141,7 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
     try {
       const {
         data: { data: projectData },
-      } = await authApi.get(`/project/get/${productId}`);
+      } = await authApi.get(`/project/${productId}`);
       reset({
         ...projectData,
         selectedPoc: "",
@@ -178,13 +178,13 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
 
       delete formSubmitData.selectedPoc;
       if (!id) {
-        await authApi.post("/project/create", formSubmitData);
+        await authApi.post("/project/", formSubmitData);
         clearSaved(); // Clear draft on successful creation
         toast.success("Project created successfully");
         navigate("/project-management");
       } else {
         delete formSubmitData.id;
-        await authApi.put(`/project/update/${id}`, formSubmitData);
+        await authApi.put(`/project/${id}`, formSubmitData);
         clearSaved(); // Clear draft on successful update
         toast.success("Project updated successfully");
         navigate("/project-management");

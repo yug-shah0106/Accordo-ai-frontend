@@ -168,7 +168,7 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
           setIsLoadingCompany(true);
         }
         try {
-          const response = await authApi.get(`/company/get/${companyId}`);
+          const response = await authApi.get(`/company/${companyId}`);
           setCompany(response.data.data);
         } catch (error) {
           console.error('Error fetching company data:', error);
@@ -424,7 +424,7 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
       // Fetch company data from backend so step components have full context
       if (pendingDraftData.companyId) {
         try {
-          const response = await authApi.get(`/company/get/${pendingDraftData.companyId}`);
+          const response = await authApi.get(`/company/${pendingDraftData.companyId}`);
           setCompany(response.data.data);
         } catch {
           // Company may have been deleted — proceed with local data only
@@ -457,12 +457,12 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
         const deletePromises: Promise<any>[] = [];
         if (draftVendorId) {
           deletePromises.push(
-            authApi.delete(`/vendor-management/delete/${draftVendorId}`).catch(() => {})
+            authApi.delete(`/vendor-management/${draftVendorId}`).catch(() => {})
           );
         }
         if (draftCompanyId) {
           deletePromises.push(
-            authApi.delete(`/company/delete/${draftCompanyId}`).catch(() => {})
+            authApi.delete(`/company/${draftCompanyId}`).catch(() => {})
           );
         }
         await Promise.all(deletePromises);

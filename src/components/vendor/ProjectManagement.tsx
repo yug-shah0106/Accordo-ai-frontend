@@ -92,7 +92,7 @@ const ProjectManagement = () => {
     setSearch,
     totalDoc,
     refetch,
-  } = useFetchData("/project/get-all", 10);
+  } = useFetchData("/project/", 10);
 
   const debounceSearch = useDebounce(setSearch, 600);
 
@@ -182,7 +182,7 @@ const ProjectManagement = () => {
 
   const confirmDelete = async (id: any) => {
     try {
-      await authApi.delete(`/project/delete/${id}`);
+      await authApi.delete(`/project/${id}`);
       await refetch();
       toast.success("Project deleted successfully.");
     } catch (error: any) {

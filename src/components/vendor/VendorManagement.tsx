@@ -117,7 +117,7 @@ const VendorManagement = () => {
     setFilters,
     refetch,
     additionalData: _additionalData,
-  } = useFetchData("/vendor/get-all", 10) as UseFetchDataReturn<VendorRow>;
+  } = useFetchData("/vendor/", 10) as UseFetchDataReturn<VendorRow>;
   const debounce = useDebounce(setSearch, 600);
 
   const handleSearchChange = (value: string) => {
@@ -168,7 +168,7 @@ const VendorManagement = () => {
     console.log({ row });
 
     try {
-      const response = await authApi.put(`/vendor/update/${row.vendorId}`, {
+      const response = await authApi.put(`/vendor/${row.vendorId}`, {
         status: row.Vendor.status === "active" ? "inactive" : "active",
       });
       console.log({ response });
@@ -219,7 +219,7 @@ const VendorManagement = () => {
 
     setIsLoadingDetails(true);
     try {
-      const response = await authApi.get(`/company/get/${companyId}`);
+      const response = await authApi.get(`/company/${companyId}`);
       setCompanyData(response.data.data);
       console.log("Company data loaded:", response.data.data);
     } catch (error) {

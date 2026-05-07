@@ -184,7 +184,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [fetchDeals]);
 
-  const { data, loading: _loading } = useFetchData<Vendor>("/vendor/get-all");
+  const { data, loading: _loading } = useFetchData<Vendor>("/vendor/");
   const contractData = watch("contractData") || [];
 
   // Build vendor groups with timeline items
@@ -288,7 +288,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
       }
       const {
         data: { data: contractResponse },
-      } = await authApi.post<{ data: Contract }>("/contract/create", {
+      } = await authApi.post<{ data: Contract }>("/contract/", {
         requisitionId: parseInt(requisitionId, 10),
         vendorId: parseInt(watch("selectedVendor"), 10),
         skipEmail: true,      // Don't send email - just adding vendor
@@ -306,7 +306,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
 
   const handleDeleteContract = async (id: string): Promise<void> => {
     try {
-      await authApi.delete(`/contract/delete/${id}`);
+      await authApi.delete(`/contract/${id}`);
 
       setValue(
         "contractData",

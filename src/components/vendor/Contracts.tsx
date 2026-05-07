@@ -15,7 +15,7 @@ import useDebounce from "../../hooks/useDebounce";
 import { authApi } from "../../api";
 import Filter from "../Filter";
 import Modal from "../Modal";
-import Breadcrumb from "../BreadeCrum";
+import Breadcrumb from "../Breadcrumbs";
 import toast from "react-hot-toast";
 import { env } from "@/utils/env";
 
@@ -67,7 +67,7 @@ const Contracts = () => {
     totalDoc,
     setTotalDoc: _setTotalDoc,
     refetch,
-  } = useFetchData("/contract/get-all", 10, undefined, undefined, {
+  } = useFetchData("/contract/", 10, undefined, undefined, {
     requisitionid: state.id,
   });
   console.log({ contract });
@@ -113,7 +113,7 @@ const Contracts = () => {
       console.log("Approved Data:", data);
 
       const response = await authApi.get(
-        `/requisition/get/${row.requisitionId}`
+        `/requisition/${row.requisitionId}`
       );
       const requisitionData = response.data.data;
 
@@ -136,7 +136,7 @@ JSON.parse(row.contractDetails);
 
       console.log("Payload for PO:", payload);
 
-      const po = await authApi.post(`/po/create`, payload);
+      const po = await authApi.post(`/po/`, payload);
       console.log("PO Created:", po.data);
 
       refetch();
@@ -149,7 +149,7 @@ JSON.parse(row.contractDetails);
 
   const handleDeleteContract = async (id: number) => {
     try {
-      await authApi.delete(`/contract/delete/${id}`);
+      await authApi.delete(`/contract/${id}`);
       toast.success("Contract deleted successfully");
       refetch();
     } catch (error: any) {

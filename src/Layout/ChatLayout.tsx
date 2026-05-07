@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import ChatSidebar from "../components/SideBar/ChatSideBar";
+import ChatSidebar from "../components/sideBar/ChatSideBar";
 
 interface ChatLayoutProps {
     logo: string;

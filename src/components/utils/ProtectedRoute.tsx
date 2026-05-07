@@ -6,25 +6,27 @@ interface ProtectedRouteProps {
   permission?: string;
 }
 
-const ProtectedRoute = ({ element, permission: _permission }: ProtectedRouteProps) => {
-    // Check if user has tokens (is authenticated)
-    if (!tokenStorage.hasTokens()) {
-        return <Navigate to="/sign-in" replace />;
-    }
+const ProtectedRoute = ({
+  element,
+  permission: _permission,
+}: ProtectedRouteProps) => {
+  // Check if user has tokens (is authenticated)
+  if (!tokenStorage.hasTokens()) {
+    return <Navigate to="/auth" replace />;
+  }
 
-    // const hasPermission = (perm) => {
-    //     const userPermissions =
-    //         JSON.parse(localStorage.getItem("projectPermission")) || [];
-    //     console.log("User Permissions:", userPermissions);
+  // const hasPermission = (perm) => {
+  //     const userPermissions =
+  //         JSON.parse(localStorage.getItem("projectPermission")) || [];
+  //     console.log("User Permissions:", userPermissions);
 
-    //     const [module, permissionType] = perm.split(":");
+  //     const [module, permissionType] = perm.split(":");
 
-    //     return userPermissions.includes(permissionType);
-    // };
+  //     return userPermissions.includes(permissionType);
+  // };
 
-    // return hasPermission(permission) ? element : "  ";
-    return element
+  // return hasPermission(permission) ? element : "  ";
+  return element;
 };
 
 export default ProtectedRoute;
-

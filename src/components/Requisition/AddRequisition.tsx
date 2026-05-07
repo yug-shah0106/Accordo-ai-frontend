@@ -86,7 +86,7 @@ const AddRequisition: React.FC = () => {
     try {
       const {
         data: { data },
-      } = await authApi.get<{ data: Requisition }>(`/requisition/get/${requisitionId}`);
+      } = await authApi.get<{ data: Requisition }>(`/requisition/${requisitionId}`);
       setRequisition(data);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Something went wrong";

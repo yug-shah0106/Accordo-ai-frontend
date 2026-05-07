@@ -126,7 +126,7 @@ const UserInfo = () => {
     try {
       const {
         data: { data },
-      } = await authApi.get(`/company/get/${companyId}`);
+      } = await authApi.get(`/company/${companyId}`);
       setCompany(data);
     } catch (error: any) {
       console.error(error.message || "Something went wrong");

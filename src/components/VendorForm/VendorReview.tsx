@@ -136,7 +136,7 @@ const VendorReview: React.FC<VendorReviewProps> = ({
         // For edit mode, use the company get endpoint
         const endpoint = isCreateMode && companyId
           ? `/vendor-management/create-vendor/${companyId}?step=5`
-          : `/company/get/${companyId}`;
+          : `/company/${companyId}`;
 
         const response = await authApi.get<{ data: CompanyData }>(endpoint);
         setCompanyData(response.data.data);

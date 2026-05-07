@@ -43,7 +43,5 @@ coverage
 .cache
 .eslintcache
 
-CLAUDE.md
-.claude/
 openmemory.md
 .cursor/rules/openmemory.mdc

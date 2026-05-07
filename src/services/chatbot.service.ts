@@ -47,7 +47,12 @@ const CHATBOT_BASE = "/chatbot";
 /**
  * Helper to build nested deal URL
  */
-const buildDealUrl = (rfqId: number, vendorId: number, dealId?: string, suffix?: string): string => {
+const buildDealUrl = (
+  rfqId: number,
+  vendorId: number,
+  dealId?: string,
+  suffix?: string,
+): string => {
   const base = `${CHATBOT_BASE}/requisitions/${rfqId}/vendors/${vendorId}/deals`;
   if (dealId) {
     return suffix ? `${base}/${dealId}/${suffix}` : `${base}/${dealId}`;
@@ -58,7 +63,11 @@ const buildDealUrl = (rfqId: number, vendorId: number, dealId?: string, suffix?:
 /**
  * Helper to build nested draft URL
  */
-const buildDraftUrl = (rfqId: number, vendorId: number, draftId?: string): string => {
+const buildDraftUrl = (
+  rfqId: number,
+  vendorId: number,
+  draftId?: string,
+): string => {
   const base = `${CHATBOT_BASE}/requisitions/${rfqId}/vendors/${vendorId}/drafts`;
   return draftId ? `${base}/${draftId}` : base;
 };
@@ -76,11 +85,11 @@ export const chatbotService = {
    * Params: projectId, status, archived, dateFrom, dateTo, sortBy, sortOrder, page, limit
    */
   getRequisitionsWithDeals: async (
-    params: RequisitionsQueryParams = {}
+    params: RequisitionsQueryParams = {},
   ): Promise<{ data: RequisitionsListResponse }> => {
     const res = await authApi.get<{ data: RequisitionsListResponse }>(
       `${CHATBOT_BASE}/requisitions`,
-      { params }
+      { params },
     );
     return res.data;
   },
@@ -92,12 +101,12 @@ export const chatbotService = {
    * Backend returns: { message: string, data: { requisitions: [...], total: number } }
    * We extract just the requisitions array for simpler frontend usage
    */
-  getRequisitionsForNegotiation: async (): Promise<{ data: RequisitionSummary[] }> => {
+  getRequisitionsForNegotiation: async (): Promise<{
+    data: RequisitionSummary[];
+  }> => {
     const res = await authApi.get<{
-      data: { requisitions: RequisitionSummary[]; total: number }
-    }>(
-      `${CHATBOT_BASE}/requisitions/for-negotiation`
-    );
+      data: { requisitions: RequisitionSummary[]; total: number };
+    }>(`${CHATBOT_BASE}/requisitions/for-negotiation`);
     // Extract the requisitions array from the nested response
     return { data: res.data.data?.requisitions || [] };
   },
@@ -109,11 +118,11 @@ export const chatbotService = {
    */
   getRequisitionDeals: async (
     rfqId: number,
-    params: RequisitionDealsQueryParams = {}
+    params: RequisitionDealsQueryParams = {},
   ): Promise<{ data: RequisitionDealsResponse }> => {
     const res = await authApi.get<{ data: RequisitionDealsResponse }>(
       `${CHATBOT_BASE}/requisitions/${rfqId}/deals`,
-      { params }
+      { params },
     );
     return res.data;
   },
@@ -126,10 +135,10 @@ export const chatbotService = {
    * We extract just the vendors array for simpler frontend usage
    */
   getRequisitionVendors: async (
-    rfqId: number
+    rfqId: number,
   ): Promise<{ data: VendorSummary[] }> => {
     const res = await authApi.get<{ message: string; data: VendorSummary[] }>(
-      `${CHATBOT_BASE}/requisitions/${rfqId}/vendors`
+      `${CHATBOT_BASE}/requisitions/${rfqId}/vendors`,
     );
     // Extract the vendors array from the response
     return { data: res.data.data || [] };
@@ -140,11 +149,11 @@ export const chatbotService = {
    * POST /api/chatbot/requisitions/:rfqId/archive
    */
   archiveRequisition: async (
-    rfqId: number
+    rfqId: number,
   ): Promise<{ data: { requisition: any; archivedDealsCount: number } }> => {
-    const res = await authApi.post<{ data: { requisition: any; archivedDealsCount: number } }>(
-      `${CHATBOT_BASE}/requisitions/${rfqId}/archive`
-    );
+    const res = await authApi.post<{
+      data: { requisition: any; archivedDealsCount: number };
+    }>(`${CHATBOT_BASE}/requisitions/${rfqId}/archive`);
     return res.data;
   },
 
@@ -154,12 +163,11 @@ export const chatbotService = {
    */
   unarchiveRequisition: async (
     rfqId: number,
-    unarchiveDeals: boolean = true
+    unarchiveDeals: boolean = true,
   ): Promise<{ data: { requisition: any; unarchivedDealsCount: number } }> => {
-    const res = await authApi.post<{ data: { requisition: any; unarchivedDealsCount: number } }>(
-      `${CHATBOT_BASE}/requisitions/${rfqId}/unarchive`,
-      { unarchiveDeals }
-    );
+    const res = await authApi.post<{
+      data: { requisition: any; unarchivedDealsCount: number };
+    }>(`${CHATBOT_BASE}/requisitions/${rfqId}/unarchive`, { unarchiveDeals });
     return res.data;
   },
 
@@ -171,10 +179,10 @@ export const chatbotService = {
    */
   getSmartDefaults: async (
     rfqId: number,
-    vendorId: number
+    vendorId: number,
   ): Promise<{ data: SmartDefaults }> => {
     const res = await authApi.get<{ data: SmartDefaults }>(
-      `${CHATBOT_BASE}/requisitions/${rfqId}/vendors/${vendorId}/smart-defaults`
+      `${CHATBOT_BASE}/requisitions/${rfqId}/vendors/${vendorId}/smart-defaults`,
     );
     return res.data;
   },
@@ -187,11 +195,11 @@ export const chatbotService = {
     rfqId: number,
     vendorId: number,
     draftData: Partial<DealWizardFormData>,
-    title?: string
+    title?: string,
   ): Promise<{ data: DealDraft }> => {
     const res = await authApi.post<{ data: DealDraft }>(
       buildDraftUrl(rfqId, vendorId),
-      { draftData, title }
+      { draftData, title },
     );
     return res.data;
   },
@@ -202,10 +210,10 @@ export const chatbotService = {
    */
   getDrafts: async (
     rfqId: number,
-    vendorId: number
+    vendorId: number,
   ): Promise<{ data: DealDraft[] }> => {
     const res = await authApi.get<{ data: DealDraft[] }>(
-      buildDraftUrl(rfqId, vendorId)
+      buildDraftUrl(rfqId, vendorId),
     );
     return res.data;
   },
@@ -217,10 +225,10 @@ export const chatbotService = {
   getDraft: async (
     rfqId: number,
     vendorId: number,
-    draftId: string
+    draftId: string,
   ): Promise<{ data: DealDraft }> => {
     const res = await authApi.get<{ data: DealDraft }>(
-      buildDraftUrl(rfqId, vendorId, draftId)
+      buildDraftUrl(rfqId, vendorId, draftId),
     );
     return res.data;
   },
@@ -232,10 +240,10 @@ export const chatbotService = {
   deleteDraft: async (
     rfqId: number,
     vendorId: number,
-    draftId: string
+    draftId: string,
   ): Promise<{ data: { success: boolean } }> => {
     const res = await authApi.delete<{ data: { success: boolean } }>(
-      buildDraftUrl(rfqId, vendorId, draftId)
+      buildDraftUrl(rfqId, vendorId, draftId),
     );
     return res.data;
   },
@@ -249,8 +257,10 @@ export const chatbotService = {
   listDeals: async (
     rfqId: number,
     vendorId: number,
-    params: ListDealsParams = {}
-  ): Promise<{ data: { deals: Deal[]; total: number; page: number; limit: number } }> => {
+    params: ListDealsParams = {},
+  ): Promise<{
+    data: { deals: Deal[]; total: number; page: number; limit: number };
+  }> => {
     const res = await authApi.get<{
       data: { deals: Deal[]; total: number; page: number; limit: number };
     }>(buildDealUrl(rfqId, vendorId), { params });
@@ -264,11 +274,11 @@ export const chatbotService = {
   createDealWithConfig: async (
     rfqId: number,
     vendorId: number,
-    data: Omit<CreateDealWithConfigInput, 'requisitionId' | 'vendorId'>
+    data: Omit<CreateDealWithConfigInput, "requisitionId" | "vendorId">,
   ): Promise<{ data: Deal }> => {
     const res = await authApi.post<{ data: Deal }>(
       buildDealUrl(rfqId, vendorId),
-      { ...data, requisitionId: rfqId, vendorId }
+      { ...data, requisitionId: rfqId, vendorId },
     );
     return res.data;
   },
@@ -279,7 +289,7 @@ export const chatbotService = {
    */
   getDeal: async (ctx: DealContext): Promise<{ data: GetDealResponse }> => {
     const res = await authApi.get<{ data: GetDealResponse }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId)
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId),
     );
     return res.data;
   },
@@ -288,10 +298,13 @@ export const chatbotService = {
    * Get negotiation config for a deal
    * GET /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/config
    */
-  getDealConfig: async (ctx: DealContext): Promise<{ data: { config: ExtendedNegotiationConfig } }> => {
-    const res = await authApi.get<{ message: string; data: { config: ExtendedNegotiationConfig } }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'config')
-    );
+  getDealConfig: async (
+    ctx: DealContext,
+  ): Promise<{ data: { config: ExtendedNegotiationConfig } }> => {
+    const res = await authApi.get<{
+      message: string;
+      data: { config: ExtendedNegotiationConfig };
+    }>(buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "config"));
     return { data: res.data.data };
   },
 
@@ -300,7 +313,7 @@ export const chatbotService = {
    * GET /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/utility
    */
   getDealUtility: async (
-    ctx: DealContext
+    ctx: DealContext,
   ): Promise<{
     data: {
       totalUtility: number;
@@ -329,7 +342,9 @@ export const chatbotService = {
       recommendationReason: string;
     };
   }> => {
-    const res = await authApi.get<{ message: string; data: any }>(buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'utility'));
+    const res = await authApi.get<{ message: string; data: any }>(
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "utility"),
+    );
     return { data: res.data.data };
   },
 
@@ -338,7 +353,7 @@ export const chatbotService = {
    * GET /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/behavioral
    */
   getBehavioralData: async (
-    ctx: DealContext
+    ctx: DealContext,
   ): Promise<{
     data: {
       momentum: number;
@@ -365,7 +380,9 @@ export const chatbotService = {
       } | null;
     };
   }> => {
-    const res = await authApi.get<{ message: string; data: any }>(buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'behavioral'));
+    const res = await authApi.get<{ message: string; data: any }>(
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "behavioral"),
+    );
     return { data: res.data.data };
   },
 
@@ -373,10 +390,13 @@ export const chatbotService = {
    * Get deal summary for modal display
    * GET /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/summary
    */
-  getDealSummary: async (ctx: DealContext): Promise<{ data: DealSummaryResponse }> => {
-    const res = await authApi.get<{ message: string; data: DealSummaryResponse }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'summary')
-    );
+  getDealSummary: async (
+    ctx: DealContext,
+  ): Promise<{ data: DealSummaryResponse }> => {
+    const res = await authApi.get<{
+      message: string;
+      data: DealSummaryResponse;
+    }>(buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "summary"));
     return { data: res.data.data };
   },
 
@@ -387,14 +407,14 @@ export const chatbotService = {
    * Returns the PDF as a binary blob for client-side download
    */
   exportDealPDF: async (
-    ctx: DealContext
+    ctx: DealContext,
   ): Promise<{ data: Blob; headers: Record<string, string> }> => {
     const res = await authApi.post(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'export-pdf'),
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "export-pdf"),
       {},
       {
-        responseType: 'blob',
-      }
+        responseType: "blob",
+      },
     );
     return {
       data: res.data,
@@ -410,12 +430,13 @@ export const chatbotService = {
    */
   emailDealPDF: async (
     ctx: DealContext,
-    email: string
+    email: string,
   ): Promise<{ data: { message: string; email: string; sentAt: string } }> => {
-    const res = await authApi.post<{ data: { message: string; email: string; sentAt: string } }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'email-pdf'),
-      { email }
-    );
+    const res = await authApi.post<{
+      data: { message: string; email: string; sentAt: string };
+    }>(buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "email-pdf"), {
+      email,
+    });
     return res.data;
   },
 
@@ -424,10 +445,10 @@ export const chatbotService = {
    * GET /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/explainability
    */
   getExplainability: async (
-    ctx: DealContext
+    ctx: DealContext,
   ): Promise<{ data: { explainability: Explainability } }> => {
     const res = await authApi.get<{ data: { explainability: Explainability } }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'explainability')
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "explainability"),
     );
     return res.data;
   },
@@ -446,12 +467,15 @@ export const chatbotService = {
     ctx: DealContext,
     content: string,
     role: MessageRole = "VENDOR",
-    mode: DealMode = "CONVERSATION"
+    mode: DealMode = "CONVERSATION",
   ): Promise<SendMessageResponse> => {
-    const res = await authApi.post<{ message: string; data: SendMessageResponse }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'messages'),
+    const res = await authApi.post<{
+      message: string;
+      data: SendMessageResponse;
+    }>(
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "messages"),
       { content, role },
-      { params: { mode } }
+      { params: { mode } },
     );
     // Extract inner data to return clean SendMessageResponse
     // Backend wraps response in { message: string, data: SendMessageResponse }
@@ -463,10 +487,10 @@ export const chatbotService = {
    * POST /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/start
    */
   startConversation: async (
-    ctx: DealContext
+    ctx: DealContext,
   ): Promise<{ data: ConversationMessageResponse }> => {
     const res = await authApi.post<{ data: ConversationMessageResponse }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'start')
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "start"),
     );
     return res.data;
   },
@@ -479,7 +503,7 @@ export const chatbotService = {
    */
   resetDeal: async (ctx: DealContext): Promise<{ data: GetDealResponse }> => {
     const res = await authApi.post<{ data: GetDealResponse }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'reset')
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "reset"),
     );
     return res.data;
   },
@@ -490,7 +514,7 @@ export const chatbotService = {
    */
   archiveDeal: async (ctx: DealContext): Promise<{ data: { deal: Deal } }> => {
     const res = await authApi.post<{ data: { deal: Deal } }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'archive')
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "archive"),
     );
     return res.data;
   },
@@ -499,9 +523,11 @@ export const chatbotService = {
    * Unarchive a deal
    * POST /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/unarchive
    */
-  unarchiveDeal: async (ctx: DealContext): Promise<{ data: { deal: Deal } }> => {
+  unarchiveDeal: async (
+    ctx: DealContext,
+  ): Promise<{ data: { deal: Deal } }> => {
     const res = await authApi.post<{ data: { deal: Deal } }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'unarchive')
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "unarchive"),
     );
     return res.data;
   },
@@ -511,11 +537,13 @@ export const chatbotService = {
    * POST /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/retry-email
    */
   retryDealEmail: async (
-    ctx: DealContext
-  ): Promise<{ data: { success: boolean; messageId?: string; error?: string } }> => {
-    const res = await authApi.post<{ data: { success: boolean; messageId?: string; error?: string } }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'retry-email')
-    );
+    ctx: DealContext,
+  ): Promise<{
+    data: { success: boolean; messageId?: string; error?: string };
+  }> => {
+    const res = await authApi.post<{
+      data: { success: boolean; messageId?: string; error?: string };
+    }>(buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "retry-email"));
     return res.data;
   },
 
@@ -527,7 +555,7 @@ export const chatbotService = {
    */
   generateVendorMessage: async (
     ctx: DealContext,
-    scenario: "HARD" | "SOFT" | "WALK_AWAY"
+    scenario: "HARD" | "SOFT" | "WALK_AWAY",
   ): Promise<{
     data: {
       vendorMessage: Message;
@@ -543,7 +571,7 @@ export const chatbotService = {
         deal: Deal;
         completed: boolean;
       };
-    }>(buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'simulate'), {
+    }>(buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "simulate"), {
       scenario,
     });
     return res.data;
@@ -556,7 +584,7 @@ export const chatbotService = {
   runDemo: async (
     ctx: DealContext,
     scenario: "HARD" | "SOFT" | "WALK_AWAY",
-    maxRounds = 10
+    maxRounds = 10,
   ): Promise<{
     data: {
       deal: Deal;
@@ -572,8 +600,8 @@ export const chatbotService = {
     };
   }> => {
     const res = await authApi.post(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'demo'),
-      { scenario, maxRounds }
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "demo"),
+      { scenario, maxRounds },
     );
     return res.data;
   },
@@ -584,7 +612,7 @@ export const chatbotService = {
    */
   resumeDeal: async (ctx: DealContext): Promise<{ data: Deal }> => {
     const res = await authApi.post<{ data: Deal }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'resume')
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "resume"),
     );
     return res.data;
   },
@@ -604,7 +632,7 @@ export const chatbotService = {
    */
   saveVendorMessageInstant: async (
     ctx: DealContext,
-    content: string
+    content: string,
   ): Promise<{
     data: {
       vendorMessage: Message;
@@ -618,8 +646,13 @@ export const chatbotService = {
         deal: Deal;
       };
     }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'vendor-message-instant'),
-      { content }
+      buildDealUrl(
+        ctx.rfqId,
+        ctx.vendorId,
+        ctx.dealId,
+        "vendor-message-instant",
+      ),
+      { content },
     );
     return { data: res.data.data };
   },
@@ -637,7 +670,7 @@ export const chatbotService = {
    */
   generatePMResponseAsync: async (
     ctx: DealContext,
-    vendorMessageId: string
+    vendorMessageId: string,
   ): Promise<{
     data: {
       pmMessage: Message;
@@ -688,10 +721,9 @@ export const chatbotService = {
         };
         deal: Deal;
       };
-    }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'pm-response-async'),
-      { vendorMessageId }
-    );
+    }>(buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "pm-response-async"), {
+      vendorMessageId,
+    });
     return { data: res.data.data };
   },
 
@@ -708,7 +740,7 @@ export const chatbotService = {
    */
   generatePMResponseFallback: async (
     ctx: DealContext,
-    vendorMessageId: string
+    vendorMessageId: string,
   ): Promise<{
     data: {
       pmMessage: Message;
@@ -744,8 +776,8 @@ export const chatbotService = {
         deal: Deal;
       };
     }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'pm-response-fallback'),
-      { vendorMessageId }
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "pm-response-fallback"),
+      { vendorMessageId },
     );
     return { data: res.data.data };
   },
@@ -764,7 +796,7 @@ export const chatbotService = {
    * AI-PM generates opening offer based on wizard config values.
    */
   startNegotiation: async (
-    ctx: DealContext
+    ctx: DealContext,
   ): Promise<{
     data: {
       deal: Deal;
@@ -773,7 +805,7 @@ export const chatbotService = {
     };
   }> => {
     const res = await authApi.post(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'start-negotiation')
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "start-negotiation"),
     );
     return res.data;
   },
@@ -788,11 +820,11 @@ export const chatbotService = {
    * - Vendor's profit goals
    */
   getVendorScenarios: async (
-    ctx: DealContext
+    ctx: DealContext,
   ): Promise<{
     data: {
       scenarios: Array<{
-        type: 'HARD' | 'MEDIUM' | 'SOFT';
+        type: "HARD" | "MEDIUM" | "SOFT";
         label: string;
         message: string;
         offer: {
@@ -811,7 +843,7 @@ export const chatbotService = {
     };
   }> => {
     const res = await authApi.get(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'vendor-scenarios')
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "vendor-scenarios"),
     );
     return res.data;
   },
@@ -829,7 +861,7 @@ export const chatbotService = {
    */
   sendVendorMessage: async (
     ctx: DealContext,
-    content: string
+    content: string,
   ): Promise<{
     data: {
       deal: Deal;
@@ -849,8 +881,8 @@ export const chatbotService = {
     };
   }> => {
     const res = await authApi.post(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'vendor-message'),
-      { content }
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "vendor-message"),
+      { content },
     );
     return res.data;
   },
@@ -862,10 +894,10 @@ export const chatbotService = {
    * GET /api/chatbot/vendors/:vendorId/addresses
    */
   getVendorAddresses: async (
-    vendorId: number
+    vendorId: number,
   ): Promise<{ data: DeliveryAddress[] }> => {
     const res = await authApi.get<{ data: DeliveryAddress[] }>(
-      `${CHATBOT_BASE}/vendors/${vendorId}/addresses`
+      `${CHATBOT_BASE}/vendors/${vendorId}/addresses`,
     );
     return res.data;
   },
@@ -876,7 +908,7 @@ export const chatbotService = {
    */
   getDeliveryAddresses: async (): Promise<{ data: DeliveryAddress[] }> => {
     const res = await authApi.get<{ data: DeliveryAddress[] }>(
-      `/company/addresses`
+      `/company/addresses`,
     );
     return res.data;
   },
@@ -885,10 +917,12 @@ export const chatbotService = {
    * Create a new delivery address
    * POST /company/addresses
    */
-  createDeliveryAddress: async (data: Omit<DeliveryAddress, 'id'>): Promise<{ data: DeliveryAddress }> => {
+  createDeliveryAddress: async (
+    data: Omit<DeliveryAddress, "id">,
+  ): Promise<{ data: DeliveryAddress }> => {
     const res = await authApi.post<{ data: DeliveryAddress }>(
       `/company/addresses`,
-      data
+      data,
     );
     return res.data;
   },
@@ -902,9 +936,9 @@ export const chatbotService = {
   getDefaultTemplate: async (): Promise<{
     data: { template: NegotiationConfig | null };
   }> => {
-    const res = await authApi.get<{ data: { template: NegotiationConfig | null } }>(
-      `${CHATBOT_BASE}/templates/default`
-    );
+    const res = await authApi.get<{
+      data: { template: NegotiationConfig | null };
+    }>(`${CHATBOT_BASE}/templates/default`);
     return res.data;
   },
 
@@ -920,7 +954,7 @@ export const chatbotService = {
   }): Promise<{ data: { template: NegotiationConfig } }> => {
     const res = await authApi.post<{ data: { template: NegotiationConfig } }>(
       `${CHATBOT_BASE}/templates`,
-      data
+      data,
     );
     return res.data;
   },
@@ -960,11 +994,11 @@ export const chatbotService = {
    */
   getTemplate: async (
     id: string,
-    includeParameters = false
+    includeParameters = false,
   ): Promise<{ data: { template: NegotiationConfig } }> => {
     const res = await authApi.get<{ data: { template: NegotiationConfig } }>(
       `${CHATBOT_BASE}/templates/${id}`,
-      { params: { includeParameters } }
+      { params: { includeParameters } },
     );
     return res.data;
   },
@@ -980,11 +1014,11 @@ export const chatbotService = {
       description?: string;
       configJson?: object;
       isActive?: boolean;
-    }
+    },
   ): Promise<{ data: { template: NegotiationConfig } }> => {
     const res = await authApi.put<{ data: { template: NegotiationConfig } }>(
       `${CHATBOT_BASE}/templates/${id}`,
-      data
+      data,
     );
     return res.data;
   },
@@ -995,11 +1029,11 @@ export const chatbotService = {
    */
   setDefaultTemplate: async (
     id: string,
-    deactivateOthers = false
+    deactivateOthers = false,
   ): Promise<{ data: { template: NegotiationConfig } }> => {
     const res = await authApi.post<{ data: { template: NegotiationConfig } }>(
       `${CHATBOT_BASE}/templates/${id}/set-default`,
-      { deactivateOthers }
+      { deactivateOthers },
     );
     return res.data;
   },
@@ -1009,11 +1043,11 @@ export const chatbotService = {
    * DELETE /api/chatbot/templates/:id
    */
   deleteTemplate: async (
-    id: string
+    id: string,
   ): Promise<{ data: { success: boolean; message: string } }> => {
-    const res = await authApi.delete<{ data: { success: boolean; message: string } }>(
-      `${CHATBOT_BASE}/templates/${id}`
-    );
+    const res = await authApi.delete<{
+      data: { success: boolean; message: string };
+    }>(`${CHATBOT_BASE}/templates/${id}`);
     return res.data;
   },
 
@@ -1022,11 +1056,11 @@ export const chatbotService = {
    * DELETE /api/chatbot/templates/:id/permanent
    */
   permanentlyDeleteTemplate: async (
-    id: string
+    id: string,
   ): Promise<{ data: { success: boolean; message: string } }> => {
-    const res = await authApi.delete<{ data: { success: boolean; message: string } }>(
-      `${CHATBOT_BASE}/templates/${id}/permanent`
-    );
+    const res = await authApi.delete<{
+      data: { success: boolean; message: string };
+    }>(`${CHATBOT_BASE}/templates/${id}/permanent`);
     return res.data;
   },
 
@@ -1040,7 +1074,7 @@ export const chatbotService = {
    * (e.g., from URL params). Returns deal with context for subsequent nested calls.
    */
   lookupDeal: async (
-    dealId: string
+    dealId: string,
   ): Promise<{
     data: {
       deal: Deal;
@@ -1048,7 +1082,7 @@ export const chatbotService = {
       context: DealContext;
     };
   }> => {
-    console.log('[chatbotService.lookupDeal] Calling API for dealId:', dealId);
+    console.log("[chatbotService.lookupDeal] Calling API for dealId:", dealId);
     const res = await authApi.get<{
       message: string;
       data: {
@@ -1057,7 +1091,11 @@ export const chatbotService = {
         context: DealContext;
       };
     }>(`${CHATBOT_BASE}/deals/${dealId}/lookup`);
-    console.log('[chatbotService.lookupDeal] API response:', res.status, res.data?.message);
+    console.log(
+      "[chatbotService.lookupDeal] API response:",
+      res.status,
+      res.data?.message,
+    );
     // Backend returns { message, data: {...} }, we return just the structure the hook expects
     return { data: res.data.data };
   },
@@ -1086,10 +1124,10 @@ export const chatbotService = {
    * GET /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/meso
    */
   getMesoOptions: async (
-    ctx: DealContext
-  ): Promise<{ data: import('../types').MesoResult }> => {
-    const res = await authApi.get<{ data: import('../types').MesoResult }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'meso')
+    ctx: DealContext,
+  ): Promise<{ data: import("../types").MesoResult }> => {
+    const res = await authApi.get<{ data: import("../types").MesoResult }>(
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "meso"),
     );
     return res.data;
   },
@@ -1100,11 +1138,27 @@ export const chatbotService = {
    */
   selectMesoOption: async (
     ctx: DealContext,
-    optionId: string
-  ): Promise<{ data: import('../types').MesoSelection }> => {
-    const res = await authApi.post<{ data: import('../types').MesoSelection }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'meso/select'),
-      { optionId }
+    optionId: string,
+  ): Promise<{ data: import("../types").MesoSelection }> => {
+    const res = await authApi.post<{ data: import("../types").MesoSelection }>(
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "meso/select"),
+      { optionId },
+    );
+    return res.data;
+  },
+
+  /**
+   * Submit "Others" custom counter-offer
+   * POST /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/meso/others
+   */
+  submitOthers: async (
+    ctx: DealContext,
+    totalPrice: number,
+    paymentTermsDays: number,
+  ): Promise<{ data: any }> => {
+    const res = await authApi.post(
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "meso/others"),
+      { totalPrice, paymentTermsDays },
     );
     return res.data;
   },
@@ -1114,10 +1168,10 @@ export const chatbotService = {
    * GET /api/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/meso/history
    */
   getMesoHistory: async (
-    ctx: DealContext
-  ): Promise<{ data: import('../types').MesoRound[] }> => {
-    const res = await authApi.get<{ data: import('../types').MesoRound[] }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'meso/history')
+    ctx: DealContext,
+  ): Promise<{ data: import("../types").MesoRound[] }> => {
+    const res = await authApi.get<{ data: import("../types").MesoRound[] }>(
+      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "meso/history"),
     );
     return res.data;
   },
@@ -1130,13 +1184,15 @@ export const chatbotService = {
    */
   getValueBreakdown: async (
     ctx: DealContext,
-    currentOffer: import('../types').Offer,
-    proposedOffer: import('../types').Offer
-  ): Promise<{ data: import('../types').OfferValueBreakdown }> => {
-    const res = await authApi.post<{ data: import('../types').OfferValueBreakdown }>(
-      buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, 'value-breakdown'),
-      { currentOffer, proposedOffer }
-    );
+    currentOffer: import("../types").Offer,
+    proposedOffer: import("../types").Offer,
+  ): Promise<{ data: import("../types").OfferValueBreakdown }> => {
+    const res = await authApi.post<{
+      data: import("../types").OfferValueBreakdown;
+    }>(buildDealUrl(ctx.rfqId, ctx.vendorId, ctx.dealId, "value-breakdown"), {
+      currentOffer,
+      proposedOffer,
+    });
     return res.data;
   },
 
@@ -1147,11 +1203,11 @@ export const chatbotService = {
    * GET /api/chatbot/vendors/:vendorId/profile
    */
   getVendorProfile: async (
-    vendorId: number
-  ): Promise<{ data: import('../types').VendorProfileSummary | null }> => {
-    const res = await authApi.get<{ data: import('../types').VendorProfileSummary | null }>(
-      `${CHATBOT_BASE}/vendors/${vendorId}/profile`
-    );
+    vendorId: number,
+  ): Promise<{ data: import("../types").VendorProfileSummary | null }> => {
+    const res = await authApi.get<{
+      data: import("../types").VendorProfileSummary | null;
+    }>(`${CHATBOT_BASE}/vendors/${vendorId}/profile`);
     return res.data;
   },
 
@@ -1161,18 +1217,32 @@ export const chatbotService = {
    * Get all quality certifications
    * Returns hardcoded list of common certifications (no backend endpoint needed)
    */
-  getQualityCertifications: async (): Promise<{ data: QualityCertification[] }> => {
+  getQualityCertifications: async (): Promise<{
+    data: QualityCertification[];
+  }> => {
     // Return hardcoded list of common certifications
     // This can be converted to an API call if certifications need to be dynamic
     return {
       data: [
-        { id: 'ISO_9001', name: 'ISO 9001:2015', category: 'Quality Management' },
-        { id: 'ISO_14001', name: 'ISO 14001:2015', category: 'Environmental' },
-        { id: 'ISO_27001', name: 'ISO 27001:2022', category: 'Information Security' },
-        { id: 'CE', name: 'CE Marking', category: 'European Conformity' },
-        { id: 'FDA', name: 'FDA Registered', category: 'Food & Drug' },
-        { id: 'UL', name: 'UL Listed', category: 'Safety' },
-        { id: 'RoHS', name: 'RoHS Compliant', category: 'Hazardous Substances' },
+        {
+          id: "ISO_9001",
+          name: "ISO 9001:2015",
+          category: "Quality Management",
+        },
+        { id: "ISO_14001", name: "ISO 14001:2015", category: "Environmental" },
+        {
+          id: "ISO_27001",
+          name: "ISO 27001:2022",
+          category: "Information Security",
+        },
+        { id: "CE", name: "CE Marking", category: "European Conformity" },
+        { id: "FDA", name: "FDA Registered", category: "Food & Drug" },
+        { id: "UL", name: "UL Listed", category: "Safety" },
+        {
+          id: "RoHS",
+          name: "RoHS Compliant",
+          category: "Hazardous Substances",
+        },
       ],
     };
   },
@@ -1184,7 +1254,9 @@ export const chatbotService = {
    * @deprecated Use getRequisitionsForNegotiation() instead
    */
   getRequisitions: async (): Promise<{ data: RequisitionSummary[] }> => {
-    console.warn('chatbotService.getRequisitions() is deprecated. Use getRequisitionsForNegotiation() instead.');
+    console.warn(
+      "chatbotService.getRequisitions() is deprecated. Use getRequisitionsForNegotiation() instead.",
+    );
     return chatbotService.getRequisitionsForNegotiation();
   },
 };
