@@ -1045,6 +1045,12 @@ export interface MesoOption {
   emphasis: ('price' | 'payment' | 'payment_terms' | 'delivery' | 'warranty' | 'balanced')[] | 'price' | 'payment' | 'payment_terms' | 'delivery' | 'warranty' | 'balanced';
   /** Trade-off descriptions */
   tradeoffs: string[];
+  /** Pre-formatted labels from backend for display (May 2026) */
+  formattedLabels?: {
+    deliveryLabel: string;
+    warrantyLabel: string;
+    paymentLabel: string;
+  };
 }
 
 /** Negotiation phase for frontend state management (February 2026) */

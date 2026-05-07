@@ -16,12 +16,15 @@ interface OfferCardProps {
 }
 
 function formatOfferPrice(amount: number, currency: OfferCurrency): string {
+  // Use Indian locale for INR (X,XX,XXX grouping), Western for others
+  const locale = currency === 'INR' ? 'en-IN' : 'en-US';
+  const isWholeNumber = amount === Math.floor(amount);
   try {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
+      minimumFractionDigits: isWholeNumber ? 0 : 2,
+      maximumFractionDigits: isWholeNumber ? 0 : 2,
     }).format(amount);
   } catch {
     // Unknown currency code — fall back to a plain symbol map.
@@ -33,7 +36,7 @@ function formatOfferPrice(amount: number, currency: OfferCurrency): string {
       AUD: 'A$',
     };
     const symbol = symbols[currency] || '';
-    return `${symbol}${amount.toLocaleString('en-US')}`;
+    return `${symbol}${amount.toLocaleString(locale)}`;
   }
 }
 

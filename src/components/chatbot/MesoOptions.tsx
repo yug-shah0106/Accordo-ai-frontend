@@ -92,7 +92,9 @@ const formatPrice = (
   currency: MesoCurrency = DEFAULT_MESO_CURRENCY,
 ): string => {
   if (price == null) return "N/A";
-  return new Intl.NumberFormat("en-US", {
+  // Use Indian locale for INR (X,XX,XXX grouping), Western for others
+  const locale = currency === "INR" ? "en-IN" : "en-US";
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
     minimumFractionDigits: 0,
@@ -174,7 +176,8 @@ const MesoOptionCard: React.FC<{
           <div className="flex justify-between">
             <span className="text-gray-500">Delivery:</span>
             <span className="font-medium">
-              {option.offer.delivery_days} days
+              {option.formattedLabels?.deliveryLabel ??
+                `${option.offer.delivery_days} ${option.offer.delivery_days === 1 ? "day" : "days"}`}
             </span>
           </div>
         )}

@@ -62,7 +62,9 @@ export function formatCurrency(
   value: number,
   options: FormatOptions = {}
 ): string {
-  const { locale = "en-US", currency = "USD", decimals = 2, compact = false } = options;
+  const { currency = "USD", decimals = 2, compact = false } = options;
+  // Default locale based on currency: Indian grouping for INR
+  const locale = options.locale ?? (currency === "INR" ? "en-IN" : "en-US");
 
   if (compact && value >= 1000) {
     const formatter = new Intl.NumberFormat(locale, {
