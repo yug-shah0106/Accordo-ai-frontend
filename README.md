@@ -160,31 +160,62 @@ The `Dockerfile` uses multi-stage builds with two targets:
 src/
 ├── api/                 # Axios instances with auth interceptors
 ├── services/            # API service modules
-│   ├── chatbot.service.ts    # Negotiation chatbot API client (50+ methods)
-│   ├── bidAnalysis.service.ts # Bid comparison API client
-│   ├── vendorChat.service.ts  # Vendor portal API client (MESO flow)
-│   └── export.service.ts     # PDF/CSV export utilities
-├── hooks/               # Custom React hooks
-│   └── chatbot/         # Deal actions, conversation, history tracking
-├── types/               # TypeScript type definitions
-│   └── chatbot.ts       # Comprehensive chatbot types (NegotiationPhase, MesoResult, etc.)
-├── utils/               # Token storage, permissions, utilities
+│   ├── chatbot.service.ts        # Negotiation chatbot API client
+│   ├── bidAnalysis.service.ts    # Bid comparison
+│   ├── vendorChat.service.ts     # Public vendor portal (MESO flow)
+│   ├── dashboard.service.ts
+│   ├── chat.service.ts           # Legacy chat
+│   └── export.service.ts         # PDF / CSV export
+├── hooks/
+│   ├── chatbot/         # useDealActions, useConversation, useHistoryTracking
+│   ├── bidAnalysis/     # useBidActions, useBidAnalysisDetail, useBidAnalysisRequisitions
+│   ├── dashboard/
+│   ├── useAutoSave.ts
+│   ├── useDebounce.tsx
+│   └── useFetchData.tsx
+├── types/
+│   ├── chatbot.ts                # Deal, Message, Offer, NegotiationConfig,
+│   │                             # MesoOption (incl. formattedLabels payload)
+│   ├── bidAnalysis.ts
+│   ├── dashboard.ts
+│   ├── management.types.ts
+│   └── index.ts
+├── schema/              # auth.ts, user.ts, company.ts, product.ts, project.ts,
+│                        # requisition.ts, vendorContract.ts (Yup/Zod)
+├── utils/               # tokenStorage, permissions, scenarioGenerator, env
 ├── components/
 │   ├── chatbot/
-│   │   ├── chat/        # MessageBubble, ChatTranscript, Composer, DecisionBadge
-│   │   ├── sidebar/     # Utility bars, convergence chart, AI reasoning modal
-│   │   ├── deal-wizard/ # 4-step deal creation wizard
-│   │   ├── MesoOptions.tsx  # MESO offer cards with "Others" button
-│   │   └── common/      # ConfirmDialog, shared components
-│   ├── BidAnalysis/     # Bid comparison table, vendor cards, winner selection
-│   ├── Requisition/     # Multi-step requisition form
+│   │   ├── chat/        # MessageBubble, ChatTranscript, Composer, OfferCard, DecisionBadge
+│   │   ├── sidebar/     # UnifiedUtilityBar, ConvergenceChart, AiReasoningModal,
+│   │   │                # parameterFormatter (locale-aware INR formatting)
+│   │   ├── deal-wizard/ # 4-step wizard
+│   │   ├── requisition-view/
+│   │   ├── common/      # ConfirmDialog, ArchiveFilterDropdown
+│   │   └── MesoOptions.tsx       # MESO offer cards (consumes formattedLabels from backend)
+│   ├── BidAnalysis/     # BidComparisonTable, VendorBidCard, WinnerSelectionModal
+│   ├── dashboard/       # KpiCards, PipelineChart, SavingsChart, ActivityFeed
+│   ├── Requisition/     # Multi-step requisition form, DealWizardModal
 │   ├── VendorForm/      # Multi-step vendor onboarding
-│   └── ...              # SideBar, Graphs, settings, user management
+│   ├── LandingPages/
+│   ├── SideBar/
+│   ├── Graphs/
+│   └── ...              # po, user, settings, vendor, roles
 ├── pages/
-│   ├── chatbot/         # NegotiationRoom, NewDealPage, RequisitionListPage, etc.
-│   ├── BidAnalysis/     # Bid comparison pages
-│   └── vendorChat/      # Vendor-facing negotiation portal with MESO flow
-└── Layout/              # Auth, DashBoard, Chat layouts
+│   ├── chatbot/         # RequisitionListPage, RequisitionDealsPage, NewDealPage,
+│   │                    # NewDealPageWrapper, NegotiationRoom (INSIGHTS),
+│   │                    # ConversationRoom (CONVERSATION), SummaryPage,
+│   │                    # NegotiationSummary, ArchivedRequisitionsPage,
+│   │                    # ArchivedDealsForRequisitionPage, DemoScenarios
+│   ├── BidAnalysis/     # BidAnalysisListPage, BidAnalysisDetailPage
+│   ├── Auth/            # AuthPage (consolidated SignIn/SignUp), ForgotPassword, ResetPassword
+│   ├── Onboarding/
+│   ├── vendorChat/      # Public vendor-facing negotiation portal
+│   ├── vendorContract/  # Public contract acceptance
+│   └── ...              # Dashboard, Project / Requisition / Vendor / PO / User management
+├── Layout/              # Auth.tsx, DashBoardLayout.tsx, ChatLayout.tsx
+├── App.tsx              # Route definitions
+├── main.tsx             # Entry point
+└── index.css            # Tailwind directives + global styles
 ```
 
 ## Key Features

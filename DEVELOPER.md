@@ -2,17 +2,17 @@
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | React 19 + TypeScript 5.9 |
-| Build | Vite 5.4 |
-| Routing | React Router v7 |
-| Styling | Tailwind CSS 3.4 + MUI 6.4 |
-| HTTP | Axios (3 instances: public, auth, multipart) |
-| Forms | react-hook-form + yup / zod |
-| Charts | Chart.js + react-chartjs-2 |
-| Testing | Vitest + Testing Library |
-| Icons | Lucide React + React Icons |
+| Layer     | Technology                                   |
+| --------- | -------------------------------------------- |
+| Framework | React 19 + TypeScript 5.9                    |
+| Build     | Vite 5.4                                     |
+| Routing   | React Router v7                              |
+| Styling   | Tailwind CSS 3.4 + MUI 6.4                   |
+| HTTP      | Axios (3 instances: public, auth, multipart) |
+| Forms     | react-hook-form + yup / zod                  |
+| Charts    | Chart.js + react-chartjs-2                   |
+| Testing   | Vitest + Testing Library                     |
+| Icons     | Lucide React + React Icons                   |
 
 ---
 
@@ -26,16 +26,16 @@ npm run dev                    # http://localhost:5001
 
 ### Available Scripts
 
-| Script | Description |
-|---|---|
-| `npm run dev` | Vite dev server with HMR (port 5001) |
-| `npm run build` | Production build → `dist/` |
-| `npm run preview` | Serve production build locally |
-| `npm run type-check` | TypeScript compiler check (no emit) |
-| `npm run lint` | ESLint |
-| `npm run test` | Run Vitest |
-| `npm run test:ui` | Vitest browser UI |
-| `npm run test:coverage` | Coverage report (80% threshold) |
+| Script                  | Description                          |
+| ----------------------- | ------------------------------------ |
+| `npm run dev`           | Vite dev server with HMR (port 5001) |
+| `npm run build`         | Production build → `dist/`           |
+| `npm run preview`       | Serve production build locally       |
+| `npm run type-check`    | TypeScript compiler check (no emit)  |
+| `npm run lint`          | ESLint                               |
+| `npm run test`          | Run Vitest                           |
+| `npm run test:ui`       | Vitest browser UI                    |
+| `npm run test:coverage` | Coverage report (80% threshold)      |
 
 ---
 
@@ -83,38 +83,51 @@ src/
 │   ├── chatbot/            # Negotiation pages
 │   │   ├── RequisitionListPage.tsx
 │   │   ├── RequisitionDealsPage.tsx
-│   │   ├── NegotiationRoom.tsx     # INSIGHTS mode
-│   │   ├── ConversationRoom.tsx    # CONVERSATION mode
-│   │   ├── NewDealPageWrapper.tsx  # Deal creation
-│   │   └── SummaryPage.tsx
-│   ├── bidAnalysis/
-│   ├── auth/               # SignIn, SignUp, ForgotPassword, ResetPassword
-│   ├── onboarding/
-│   ├── vendor/              # VendorChat (public), VendorContract
-│   └── management/          # Dashboard, Projects, Requisitions, POs, Users
+│   │   ├── NewDealPage.tsx
+│   │   ├── NewDealPageWrapper.tsx
+│   │   ├── NegotiationRoom.tsx              # INSIGHTS mode
+│   │   ├── ConversationRoom.tsx             # CONVERSATION mode
+│   │   ├── SummaryPage.tsx
+│   │   ├── NegotiationSummary.tsx
+│   │   ├── ArchivedRequisitionsPage.tsx
+│   │   ├── ArchivedDealsForRequisitionPage.tsx
+│   │   └── DemoScenarios.tsx
+│   ├── BidAnalysis/        # BidAnalysisListPage, BidAnalysisDetailPage
+│   ├── Auth/               # AuthPage (consolidated SignIn/SignUp), ForgotPassword, ResetPassword
+│   ├── Onboarding/
+│   ├── vendorChat/         # Public vendor-facing portal (MESO flow)
+│   ├── vendorContract/     # Public contract acceptance
+│   └── …                   # Dashboard, ProjectManagement, RequisitionsManagement, etc.
 │
 ├── services/               # API service functions
-│   ├── chatbot.service.ts         # 1,191 lines — deals, messages, config
+│   ├── chatbot.service.ts         # Deals, messages, config, smart defaults
 │   ├── vendorChat.service.ts      # Public vendor endpoints
 │   ├── bidAnalysis.service.ts     # Bid comparison APIs
-│   ├── export.service.ts          # PDF & CSV export
+│   ├── dashboard.service.ts
 │   ├── chat.service.ts            # Legacy chat
-│   └── dashboard.service.ts
+│   └── export.service.ts          # PDF & CSV export
 │
 ├── types/                  # TypeScript type definitions
-│   ├── chatbot.ts          # Deal, Message, Offer, NegotiationConfig, Decision
-│   ├── bidAnalysis.ts      # BidStatus, ApprovalFlow
-│   ├── api.ts              # Response wrappers
-│   ├── components.ts       # Component prop types
-│   ├── hooks.ts            # Hook return types
+│   ├── chatbot.ts          # Deal, Message, Offer, NegotiationConfig, Decision,
+│   │                       # MesoOption (formattedLabels — May 2026)
+│   ├── bidAnalysis.ts
+│   ├── dashboard.ts
 │   ├── management.types.ts
 │   └── index.ts            # Barrel exports
 │
-├── utils/                  # Utility functions
-│   ├── env.ts              # Runtime env resolution (window.__ENV__ || import.meta.env)
-│   └── ...
+├── schema/                 # Form validation schemas
+│   ├── auth.ts
+│   ├── user.ts
+│   ├── company.ts
+│   ├── product.ts
+│   ├── project.ts
+│   ├── requisition.ts
+│   └── vendorContract.ts
 │
-├── layouts/                # Layout wrappers
+├── utils/                  # tokenStorage, permissions, scenarioGenerator,
+│                           # env (runtime env resolution)
+│
+├── Layout/                 # Layout wrappers
 │   ├── DashBoardLayout.tsx # Sidebar + Outlet (protected)
 │   ├── ChatLayout.tsx      # Legacy chat layout
 │   └── Auth.tsx            # Auth pages layout
@@ -129,38 +142,47 @@ src/
 ## Routing Overview
 
 ### Public Routes
-| Path | Page | Notes |
-|---|---|---|
-| `/` | HomePage | Landing page |
-| `/vendor-chat/:uniqueToken` | VendorChat | Vendor negotiation portal (no auth) |
-| `/vendor-contract/:id` | VendorContract | Contract acceptance (no auth) |
+
+| Path                        | Page           | Notes                               |
+| --------------------------- | -------------- | ----------------------------------- |
+| `/`                         | HomePage       | Landing page                        |
+| `/vendor-chat/:uniqueToken` | VendorChat     | Vendor negotiation portal (no auth) |
+| `/vendor-contract/:id`      | VendorContract | Contract acceptance (no auth)       |
 
 ### Auth Routes
-| Path | Page |
-|---|---|
-| `/sign-in` | SignIn |
-| `/sign-up` | SignUp |
-| `/forgot-password` | ForgotPassword |
-| `/reset-password/:id` | ResetPassword |
-| `/onboarding` | OnboardingPage |
+
+| Path                  | Page                                                                               |
+| --------------------- | ---------------------------------------------------------------------------------- |
+| `/auth`               | AuthPage (consolidated SignIn / SignUp; `/sign-in` and `/sign-up` no longer exist) |
+| `/verifyOtp`          | OTP verification step                                                              |
+| `/forgot-password`    | ForgotPassword                                                                     |
+| `/reset-password/:id` | ResetPassword                                                                      |
+| `/onboarding`         | OnboardingPage                                                                     |
 
 ### Protected Routes (require auth)
-| Path | Page |
-|---|---|
-| `/dashboard` | Dashboard |
-| `/chatbot/requisitions` | RequisitionListPage |
-| `/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId` | NegotiationRoom (INSIGHTS) |
-| `/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/conversation` | ConversationRoom |
-| `/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/summary` | SummaryPage |
-| `/chatbot/requisitions/deals/new` | NewDealPageWrapper |
-| `/bid-analysis` | BidAnalysisListPage |
-| `/bid-analysis/requisitions/:requisitionId` | BidAnalysisDetailPage |
-| `/project-management` | ProjectManagement |
-| `/requisition-management` | RequisitionsManagement |
-| `/vendor-management` | VendorManagement |
-| `/po-management` | PoManagement |
-| `/user-management` | UserManagement |
-| `/setting` | UserInfo |
+
+| Path                                                                        | Page                                                            |
+| --------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `/dashboard`                                                                | Dashboard                                                       |
+| `/chatbot/requisitions`                                                     | RequisitionListPage                                             |
+| `/chatbot/requisitions/:requisitionId`                                      | RequisitionDealsPage                                            |
+| `/chatbot/requisitions/archived`                                            | ArchivedRequisitionsPage                                        |
+| `/chatbot/requisitions/:requisitionId/archived`                             | ArchivedDealsForRequisitionPage                                 |
+| `/chatbot/requisitions/deals/new`                                           | NewDealPageWrapper                                              |
+| `/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId`              | NegotiationRoom (INSIGHTS)                                      |
+| `/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/conversation` | ConversationRoom (CONVERSATION)                                 |
+| `/chatbot/requisitions/:rfqId/vendors/:vendorId/deals/:dealId/summary`      | SummaryPage                                                     |
+| `/bid-analysis`                                                             | BidAnalysisListPage                                             |
+| `/bid-analysis/requisitions/:requisitionId`                                 | BidAnalysisDetailPage                                           |
+| `/product-management`                                                       | ProductManagement (+ create / edit subroutes)                   |
+| `/project-management`                                                       | ProjectManagement (+ `create-project`, `editprojectform/:id`)   |
+| `/requisition-management`                                                   | RequisitionsManagement (+ contract / create / edit subroutes)   |
+| `/vendor-management`                                                        | VendorManagement (+ `create-vendor`, `edit-vendor/:id`)         |
+| `/user-management`                                                          | UserManagement (+ `create-user`, `edit-user/:id`, `edit-roles`) |
+| `/po-management`                                                            | PoManagement                                                    |
+| `/group-summary`                                                            | GroupSummary                                                    |
+| `/setting`                                                                  | UserInfo                                                        |
+| `/feedback`                                                                 | Feedback                                                        |
 
 ---
 
@@ -168,11 +190,11 @@ src/
 
 ### Three Axios Instances (`src/api/index.ts`)
 
-| Instance | Auth | Content-Type | Use Case |
-|---|---|---|---|
-| `api` | None | JSON | Public endpoints (vendor chat, landing) |
-| `authApi` | Bearer token | JSON | All protected endpoints |
-| `authMultiFormApi` | Bearer token | multipart/form-data | File uploads |
+| Instance           | Auth         | Content-Type        | Use Case                                |
+| ------------------ | ------------ | ------------------- | --------------------------------------- |
+| `api`              | None         | JSON                | Public endpoints (vendor chat, landing) |
+| `authApi`          | Bearer token | JSON                | All protected endpoints                 |
+| `authMultiFormApi` | Bearer token | multipart/form-data | File uploads                            |
 
 ### Token Management
 
@@ -191,7 +213,7 @@ Services are plain functions that call the axios instances and return typed data
 export const getDeal = async (context: DealContext): Promise<Deal> => {
   const { rfqId, vendorId, dealId } = context;
   const res = await authApi.get(
-    `/chatbot/requisitions/${rfqId}/vendors/${vendorId}/deals/${dealId}`
+    `/chatbot/requisitions/${rfqId}/vendors/${vendorId}/deals/${dealId}`,
   );
   return res.data.data;
 };
@@ -211,6 +233,7 @@ There is **no global store** (no Redux/Zustand). State is managed via:
 ### Key Hooks
 
 **`useDealActions`** — the core hook for negotiation pages:
+
 - Loads deal, messages, config, utility scores
 - Handles two-phase messaging (instant vendor message + async PM response)
 - Manages permissions, loading states, PM typing indicator
@@ -254,16 +277,16 @@ There is **no global store** (no Redux/Zustand). State is managed via:
 All imports use `@/` which maps to `src/`:
 
 ```typescript
-import { getDeal } from '@/services/chatbot.service';
-import type { Deal } from '@/types';
+import { getDeal } from "@/services/chatbot.service";
+import type { Deal } from "@/types";
 ```
 
 ### Two Negotiation Modes
 
-| Mode | Route | Hook | Backend Flow |
-|---|---|---|---|
-| INSIGHTS | `NegotiationRoom` | `useDealActions` | `chatbot.service` → `decide.ts` → `responseGenerator.ts` |
-| CONVERSATION | `ConversationRoom` | `useConversation` | `conversationService` → deterministic intent pipeline |
+| Mode         | Route              | Hook              | Backend Flow                                             |
+| ------------ | ------------------ | ----------------- | -------------------------------------------------------- |
+| INSIGHTS     | `NegotiationRoom`  | `useDealActions`  | `chatbot.service` → `decide.ts` → `responseGenerator.ts` |
+| CONVERSATION | `ConversationRoom` | `useConversation` | `conversationService` → deterministic intent pipeline    |
 
 ### Deal Context
 
@@ -282,6 +305,7 @@ Extracted from URL params: `/chatbot/requisitions/:rfqId/vendors/:vendorId/deals
 ### Deal Creation Wizard
 
 4-step flow in `NewDealPageWrapper`:
+
 1. Select requisition & vendor
 2. Configure negotiation parameters (prices, quantities)
 3. Set weights & preferences
