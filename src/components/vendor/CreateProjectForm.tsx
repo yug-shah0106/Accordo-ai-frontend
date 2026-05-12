@@ -1,5 +1,6 @@
+import { ArrowLeft, SquarePlus, X } from 'lucide-react';
 import { useState, useEffect, useMemo } from "react";
-import { IoArrowBackOutline } from "react-icons/io5";
+
 import { useParams, useNavigate } from "react-router-dom";
 import InputField from "../InputField";
 import SelectField from "../SelectField";
@@ -9,10 +10,10 @@ import Button from "../Button";
 import { authApi } from "../../api";
 import useFetchData from "../../hooks/useFetchData";
 import projectSchema from "../../schema/project";
-import { FaSquarePlus } from "react-icons/fa6";
+
 import toast from "react-hot-toast";
 import img from "../../assets/defaultImage.png";
-import { FiX } from "react-icons/fi";
+
 import { useAutoSave } from "../../hooks/useAutoSave";
 import AutosaveIndicator from "../AutosaveIndicator";
 import { env } from "@/utils/env";
@@ -239,7 +240,7 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-16 pb-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-xl font-medium">
-            <IoArrowBackOutline
+            <ArrowLeft
               onClick={() => { clearSaved(); navigate(-1); }}
               className="cursor-pointer"
             />
@@ -340,7 +341,7 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
                   await trigger("pointOfContact");
                 }}
               >
-                <FaSquarePlus className="w-4 h-4" />
+                <SquarePlus className="w-4 h-4" />
                 Add POC
               </Button>
             </div>
@@ -383,7 +384,7 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
                           await trigger("pointOfContact");
                         }}
                       >
-                        <FiX className="w-4 h-4 text-red-500" />
+                        <X className="w-4 h-4 text-red-500" />
                       </button>
                     </div>
                   );

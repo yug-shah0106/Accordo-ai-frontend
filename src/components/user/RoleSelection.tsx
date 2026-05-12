@@ -1,5 +1,6 @@
+import { X } from 'lucide-react';
 import { useEffect, useState } from "react";
-import { IoClose } from "react-icons/io5";
+
 import Button from "../Button";
 import { authApi } from "../../api";
 import toast from "react-hot-toast";
@@ -155,7 +156,7 @@ const RoleSelectionModal = ({ onClose, edit_role, onSuccess }: RoleSelectionModa
           <h2 className="text-xl font-bold dark:text-dark-text">
             {edit_role ? "Edit Role" : "Create New Role"}
           </h2>
-          <IoClose
+          <X
             className="text-2xl cursor-pointer hover:text-gray-600 dark:text-dark-text-secondary dark:hover:text-dark-text transition-colors"
             onClick={onClose}
           />

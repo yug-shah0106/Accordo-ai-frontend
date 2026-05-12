@@ -1,3 +1,4 @@
+import { Activity, TrendingDown, TrendingUp, Zap } from 'lucide-react';
 /**
  * WeightedUtilityBar Component
  *
@@ -8,7 +9,6 @@
  * - Color-coded based on utility score zones
  */
 
-import { FiActivity, FiTrendingUp, FiTrendingDown, FiZap } from "react-icons/fi";
 
 export type RecommendationAction =
   | "ACCEPT"
@@ -208,13 +208,13 @@ export default function WeightedUtilityBar({
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <FiActivity className={`w-4 h-4 ${colors.text}`} />
+          <Activity className={`w-4 h-4 ${colors.text}`} />
           <span className="text-sm font-semibold text-gray-800 dark:text-dark-text">
             Weighted Utility
           </span>
           {isLive && (
             <span className="flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400">
-              <FiZap className="w-3 h-3 animate-pulse" />
+              <Zap className="w-3 h-3 animate-pulse" />
               Live
             </span>
           )}
@@ -232,9 +232,9 @@ export default function WeightedUtilityBar({
               }`}
             >
               {trendUp ? (
-                <FiTrendingUp className="w-3 h-3" />
+                <TrendingUp className="w-3 h-3" />
               ) : (
-                <FiTrendingDown className="w-3 h-3" />
+                <TrendingDown className="w-3 h-3" />
               )}
               <span>
                 {trendUp ? "+" : "-"}

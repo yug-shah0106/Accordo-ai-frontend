@@ -1,7 +1,6 @@
+import { ArrowLeft, CheckCircle, Circle } from 'lucide-react';
 import { useEffect, useState } from "react";
-import { GoCircle } from "react-icons/go";
-import { IoIosCheckmarkCircle } from "react-icons/io";
-import { IoArrowBackOutline } from "react-icons/io5";
+
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { authApi } from "../../api";
 import VendorBasicInformation from "../vendorForm/VendorBasicInformation";
@@ -111,7 +110,7 @@ const AddVendor: React.FC = () => {
       {/* Sticky Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-8 xl:px-16 pb-4 flex-shrink-0">
         <p className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-          <IoArrowBackOutline
+          <ArrowLeft
             onClick={() => {
               navigate(-1);
             }}
@@ -135,9 +134,9 @@ const AddVendor: React.FC = () => {
               }`}
             >
               {currentStep > 1 ? (
-                <IoIosCheckmarkCircle className="text-[#009A4F] w-6 h-6 flex-shrink-0" />
+                <CheckCircle className="text-[#009A4F] w-6 h-6 flex-shrink-0" />
               ) : (
-                <GoCircle className="w-6 h-6 flex-shrink-0" />
+                <Circle className="w-6 h-6 flex-shrink-0" />
               )}
               <p className="xl:truncate">General Information</p>
             </li>
@@ -149,9 +148,9 @@ const AddVendor: React.FC = () => {
               }`}
             >
               {currentStep > 2 ? (
-                <IoIosCheckmarkCircle className="text-[#009A4F] font-normal w-6 h-6 flex-shrink-0" />
+                <CheckCircle className="text-[#009A4F] font-normal w-6 h-6 flex-shrink-0" />
               ) : (
-                <GoCircle className="w-6 h-6 flex-shrink-0" />
+                <Circle className="w-6 h-6 flex-shrink-0" />
               )}
               <p> Basic Information</p>
             </li>
@@ -163,9 +162,9 @@ const AddVendor: React.FC = () => {
               }`}
             >
               {currentStep > 3 ? (
-                <IoIosCheckmarkCircle className="text-[#009A4F] w-6 h-6 flex-shrink-0" />
+                <CheckCircle className="text-[#009A4F] w-6 h-6 flex-shrink-0" />
               ) : (
-                <GoCircle className="w-6 h-6 flex-shrink-0" />
+                <Circle className="w-6 h-6 flex-shrink-0" />
               )}
               <p>Vendor Details</p>
             </li>
@@ -177,9 +176,9 @@ const AddVendor: React.FC = () => {
               }`}
             >
               {currentStep > 4 ? (
-                <IoIosCheckmarkCircle className="text-[#009A4F] w-6 h-6 flex-shrink-0" />
+                <CheckCircle className="text-[#009A4F] w-6 h-6 flex-shrink-0" />
               ) : (
-                <GoCircle className="w-6 h-6 flex-shrink-0" />
+                <Circle className="w-6 h-6 flex-shrink-0" />
               )}
               <p>Point of Contact Details</p>
             </li>
@@ -191,9 +190,9 @@ const AddVendor: React.FC = () => {
               }`}
             >
               {currentStep > 5 ? (
-                <IoIosCheckmarkCircle className="text-[#009A4F] w-6 h-6 flex-shrink-0" />
+                <CheckCircle className="text-[#009A4F] w-6 h-6 flex-shrink-0" />
               ) : (
-                <GoCircle className="w-6 h-6 flex-shrink-0" />
+                <Circle className="w-6 h-6 flex-shrink-0" />
               )}
               <p>Bank Details</p>
             </li>
@@ -205,9 +204,9 @@ const AddVendor: React.FC = () => {
               }`}
             >
               {currentStep > 6 ? (
-                <IoIosCheckmarkCircle className="text-[#009A4F] w-6 h-6 flex-shrink-0" />
+                <CheckCircle className="text-[#009A4F] w-6 h-6 flex-shrink-0" />
               ) : (
-                <GoCircle className="w-6 h-6 flex-shrink-0" />
+                <Circle className="w-6 h-6 flex-shrink-0" />
               )}
               <p>Currency Details</p>
             </li>
@@ -219,9 +218,9 @@ const AddVendor: React.FC = () => {
               }`}
             >
               {currentStep > 7 ? (
-                <IoIosCheckmarkCircle className="text-[#009A4F] w-6 h-6 flex-shrink-0" />
+                <CheckCircle className="text-[#009A4F] w-6 h-6 flex-shrink-0" />
               ) : (
-                <GoCircle className="w-6 h-6 flex-shrink-0" />
+                <Circle className="w-6 h-6 flex-shrink-0" />
               )}
               <p>Review</p>
             </li>

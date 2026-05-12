@@ -13,6 +13,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
 
     /* Strict Type Checking */
     "strict": true,
@@ -39,7 +41,13 @@
     }
   },
   "include": ["./src"],
-  "exclude": ["tests", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
+  "exclude": [
+    "tests",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }],
   "ts-node": {
     "compilerOptions": {

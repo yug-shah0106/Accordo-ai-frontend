@@ -2,8 +2,9 @@
  * AllocationTable - Full bids table with all metrics
  */
 
+import { CheckCircle, MessageCircle, XCircle } from 'lucide-react';
 import React from 'react';
-import { MdChat, MdCheckCircle, MdCancel } from 'react-icons/md';
+
 import type { BidWithDetails } from '../../types/bidAnalysis';
 import { RANK_LABELS, BID_STATUS_COLORS } from '../../types/bidAnalysis';
 
@@ -106,8 +107,8 @@ export const AllocationTable: React.FC<AllocationTableProps> = ({
                     `}>
                       {rankLabel}
                     </span>
-                    {isSelected && <MdCheckCircle className="text-blue-500" size={16} />}
-                    {bid.isRejected && <MdCancel className="text-red-400" size={16} />}
+                    {isSelected && <CheckCircle className="text-blue-500" size={16} />}
+                    {bid.isRejected && <XCircle className="text-red-400" size={16} />}
                   </div>
                 </td>
 
@@ -153,7 +154,7 @@ export const AllocationTable: React.FC<AllocationTableProps> = ({
                     className="p-2 text-gray-400 dark:text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors"
                     title="View chat"
                   >
-                    <MdChat size={18} />
+                    <MessageCircle size={18} />
                   </button>
                 </td>
               </tr>

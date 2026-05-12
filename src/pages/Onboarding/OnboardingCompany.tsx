@@ -1,3 +1,4 @@
+import { Building2, Pencil, Trash2 } from 'lucide-react';
 import InputField from "../../components/InputField";
 import Button from "../../components/Button";
 import { authApi } from "../../api";
@@ -5,9 +6,7 @@ import { useEffect, useState, useRef } from "react";
 import SelectField from "../../components/SelectField";
 import DateField from "../../components/DateField";
 import toast from "react-hot-toast";
-import { CiEdit } from "react-icons/ci";
-import { RiDeleteBin6Line } from "react-icons/ri";
-import { BsBuilding } from "react-icons/bs";
+
 import Modal from "../../components/Modal";
 import AddressSection from "../../components/settingForm/AddressSection";
 import { AddressData } from "../../types/address";
@@ -355,7 +354,7 @@ const OnboardingCompany = ({
             </div>
           ) : (
             <div className="w-24 h-24 rounded-lg bg-gray-100 border-2 border-gray-200 flex items-center justify-center shadow-sm">
-              <BsBuilding className="w-10 h-10 text-gray-400" />
+              <Building2 className="w-10 h-10 text-gray-400" />
             </div>
           )}
         </div>
@@ -366,7 +365,7 @@ const OnboardingCompany = ({
             onClick={handleLogoChangeClick}
             className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
           >
-            <CiEdit className="w-4 h-4" />
+            <Pencil className="w-4 h-4" />
             {imagePreviews.companyLogo ? "Change" : "Add Logo"}
           </button>
           {imagePreviews.companyLogo && (
@@ -375,7 +374,7 @@ const OnboardingCompany = ({
               onClick={() => setShowDeleteLogoModal(true)}
               className="inline-flex items-center gap-1.5 text-sm text-red-600 hover:text-red-700 font-medium transition-colors"
             >
-              <RiDeleteBin6Line className="w-4 h-4" />
+              <Trash2 className="w-4 h-4" />
               Delete
             </button>
           )}

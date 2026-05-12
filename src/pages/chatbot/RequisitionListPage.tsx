@@ -1,9 +1,10 @@
+import { Archive, Filter, Plus, RefreshCw, RotateCcw } from 'lucide-react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import chatbotService from "../../services/chatbot.service";
 import type { RequisitionWithDeals, RequisitionsQueryParams, ArchiveFilter } from "../../types/chatbot";
 import { RequisitionCard } from "../../components/chatbot/requisition-view";
-import { FiPlus, FiFilter, FiRefreshCw, FiArchive, FiRotateCcw } from "react-icons/fi";
+
 import { ConfirmDialog, ArchiveFilterDropdown } from "../../components/chatbot/common";
 import toast from "react-hot-toast";
 
@@ -161,7 +162,7 @@ export default function RequisitionListPage() {
                 onClick={() => navigate('/chatbot/requisitions/archived')}
                 className="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-400 hover:border-orange-200 dark:hover:border-orange-800 transition-colors flex items-center gap-2"
               >
-                <FiArchive className="w-4 h-4" />
+                <Archive className="w-4 h-4" />
                 View Archived
               </button>
             )}
@@ -171,7 +172,7 @@ export default function RequisitionListPage() {
               className="p-2 text-gray-600 dark:text-dark-text bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
               title="Refresh"
             >
-              <FiRefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
             </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -182,13 +183,13 @@ export default function RequisitionListPage() {
               }`}
               title="Toggle Filters"
             >
-              <FiFilter className="w-5 h-5" />
+              <Filter className="w-5 h-5" />
             </button>
             <button
               onClick={handleCreateDeal}
               className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
             >
-              <FiPlus className="w-5 h-5" />
+              <Plus className="w-5 h-5" />
               New Deal
             </button>
           </div>
@@ -377,7 +378,7 @@ export default function RequisitionListPage() {
                       onClick={(e) => handleArchiveClick(e, requisition)}
                       className="absolute bottom-4 right-4 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-400 hover:border-orange-200 dark:hover:border-orange-800 flex items-center gap-1.5"
                     >
-                      <FiArchive className="w-3.5 h-3.5" />
+                      <Archive className="w-3.5 h-3.5" />
                       Archive
                     </button>
                   )}
@@ -388,7 +389,7 @@ export default function RequisitionListPage() {
                       disabled={unarchiving}
                       className="absolute bottom-4 right-4 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 hover:border-green-200 dark:hover:border-green-800 flex items-center gap-1.5 disabled:opacity-50"
                     >
-                      <FiRotateCcw className="w-3.5 h-3.5" />
+                      <RotateCcw className="w-3.5 h-3.5" />
                       Unarchive
                     </button>
                   )}

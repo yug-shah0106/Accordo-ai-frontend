@@ -2,8 +2,9 @@
  * TopBidCard - Card component for displaying L1/L2/L3 bids with selection
  */
 
+import { CheckCircle, MessageCircle, XCircle } from 'lucide-react';
 import React from 'react';
-import { MdChat, MdCheckCircle, MdCancel } from 'react-icons/md';
+
 import type { TopBidInfo } from '../../types/bidAnalysis';
 import { RANK_LABELS, RANK_COLORS } from '../../types/bidAnalysis';
 
@@ -75,7 +76,7 @@ export const TopBidCard: React.FC<TopBidCardProps> = ({
       {bid.isRejected && (
         <div className="absolute top-2 right-2">
           <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full flex items-center gap-1">
-            <MdCancel size={12} />
+            <XCircle size={12} />
             Rejected
           </span>
         </div>
@@ -123,7 +124,7 @@ export const TopBidCard: React.FC<TopBidCardProps> = ({
               onClick={handleChatClick}
               className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 dark:bg-dark-bg text-gray-700 dark:text-dark-text-secondary rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
             >
-              <MdChat size={16} />
+              <MessageCircle size={16} />
               <span>Chat</span>
             </button>
           </div>
@@ -133,7 +134,7 @@ export const TopBidCard: React.FC<TopBidCardProps> = ({
       {/* Selected Indicator */}
       {isSelected && !bid.isRejected && (
         <div className="absolute -top-3 right-4 z-10 bg-white dark:bg-dark-surface rounded-full">
-          <MdCheckCircle className="text-blue-500" size={24} />
+          <CheckCircle className="text-blue-500" size={24} />
         </div>
       )}
     </div>

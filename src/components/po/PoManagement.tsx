@@ -1,16 +1,15 @@
+import { ArrowLeft, ChevronDown, Download, Eye, Hexagon, Search, Settings, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from "react";
-import { IoSearchOutline } from "react-icons/io5";
+
 import Table from "../Table";
 import Pagination from "../Pagination";
-import { RiDeleteBin5Line } from "react-icons/ri";
+
 import useFetchData from "../../hooks/useFetchData";
 import useDebounce from "../../hooks/useDebounce";
 import Modal from "../Modal";
-import { BsDownload } from "react-icons/bs";
-import { FaArrowLeft, FaCaretDown, FaRegEye } from "react-icons/fa";
+
 import { authApi } from "../../api";
-import { VscSettings } from "react-icons/vsc";
-import { PiFramerLogo } from "react-icons/pi";
+
 import Filter from "../Filter";
 import type {
   PurchaseOrder,
@@ -106,7 +105,7 @@ const PoManagement = () => {
     {
       type: "button",
       label: "View Details",
-      icon: <FaRegEye />,
+      icon: <Eye />,
       onClick: (row: PurchaseOrder) => {
         handleRowClick(row);
       },
@@ -114,14 +113,14 @@ const PoManagement = () => {
     {
       type: "link",
       label: "Download PO",
-      icon: <BsDownload />,
+      icon: <Download />,
       link: (row: PurchaseOrder) =>
         `${env("VITE_BACKEND_URL")}/po/download/${row.id}`,
     },
     {
       type: "button",
       label: "Cancel PO",
-      icon: <RiDeleteBin5Line />,
+      icon: <Trash2 />,
       onClick: (row: PurchaseOrder) => {
         setCancelPoId(row.id);
         setIsModal(true);
@@ -235,7 +234,7 @@ const PoManagement = () => {
         <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-6 pb-4 flex-shrink-0">
           <div className="mb-4">
             <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              <PiFramerLogo className="text-xl" />
+              <Hexagon className="text-xl" />
               PO Management
             </h1>
           </div>
@@ -248,7 +247,7 @@ const PoManagement = () => {
                 placeholder="Search by Seller"
                 className="border border-gray-300 rounded-md pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full px-4"
               />
-              <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
             </div>
 
             <div className="flex gap-6">
@@ -257,7 +256,7 @@ const PoManagement = () => {
                 onClick={() => setIsFilterModalOpen((prev) => !prev)}
                 className="rounded-md px-4 py-2 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1"
               >
-                <VscSettings /> Filter <FaCaretDown />
+                <Settings /> Filter <ChevronDown />
               </button>
               <div className="absolute z-30 md:right-[8%] mt-10 right-[20%]">
                 {isFilterModalOpen && (
@@ -318,7 +317,7 @@ const PoManagement = () => {
             <div className="flex justify-between mb-4 mt-8 items-center">
               <p className="text-md font-semibold flex items-center gap-2">
                 <button onClick={closeSidebar}>
-                  <FaArrowLeft />
+                  <ArrowLeft />
                 </button>
                 <h3 className="text-lg font-medium ">Basic Information</h3>
                 {selectedProject.id}

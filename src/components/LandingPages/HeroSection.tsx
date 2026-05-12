@@ -1,5 +1,3 @@
-// import { Play } from "lucide-react"; // TODO: Re-enable when product demo video is ready
-
 const HeroSection = () => {
   const scrollToSection = (href: string) => {
     if (!href.startsWith("#") || href.length <= 1) return;
@@ -69,15 +67,6 @@ const HeroSection = () => {
               >
                 Request a Demo
               </button>
-              {/* TODO: Re-enable when product demo video is ready
-              <button
-                onClick={() => scrollToSection("#demo")}
-                className="flex items-center justify-center gap-2 bg-white/10 text-white font-semibold py-3.5 px-8 rounded-lg border border-white/10 hover:bg-white/15 hover:border-white/20 transition-all duration-300"
-              >
-                <Play className="w-4 h-4" />
-                Watch Video
-              </button>
-              */}
             </div>
 
             {/* Quick stats */}

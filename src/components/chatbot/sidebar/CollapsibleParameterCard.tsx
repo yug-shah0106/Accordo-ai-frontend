@@ -6,8 +6,8 @@
  * and current value summary when collapsed.
  */
 
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useState, type ReactNode } from "react";
-import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 
 export interface ParameterCardConfig {
   id: string;
@@ -121,9 +121,9 @@ export default function CollapsibleParameterCard({
 
           {/* Expand/Collapse Icon */}
           {isExpanded ? (
-            <FiChevronUp className="w-5 h-5 text-gray-500" />
+            <ChevronUp className="w-5 h-5 text-gray-500" />
           ) : (
-            <FiChevronDown className="w-5 h-5 text-gray-500" />
+            <ChevronDown className="w-5 h-5 text-gray-500" />
           )}
         </div>
       </button>

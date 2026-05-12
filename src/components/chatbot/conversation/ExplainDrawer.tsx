@@ -5,8 +5,9 @@
  * Displays vendor offer, utility scores, decision reasoning, and counter-offer.
  */
 
+import { CheckCircle, DollarSign, TrendingUp, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { FiX, FiDollarSign, FiTrendingUp, FiCheckCircle } from 'react-icons/fi';
+
 import chatbotService from '../../../services/chatbot.service';
 import type { Explainability } from '../../../types';
 
@@ -65,7 +66,7 @@ export default function ExplainDrawer({ rfqId, vendorId, dealId, isOpen, onClose
             onClick={onClose}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
           >
-            <FiX className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </button>
         </div>
 
@@ -81,7 +82,7 @@ export default function ExplainDrawer({ rfqId, vendorId, dealId, isOpen, onClose
               {explainability.vendorOffer && (
                 <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg pt-4 px-4 pb-0">
                   <div className="flex items-center gap-2 mb-3">
-                    <FiDollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     <h3 className="font-semibold text-gray-900 dark:text-dark-text">
                       Vendor Offer
                     </h3>
@@ -107,7 +108,7 @@ export default function ExplainDrawer({ rfqId, vendorId, dealId, isOpen, onClose
               {explainability.utilities && (
                 <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg pt-4 px-4 pb-0">
                   <div className="flex items-center gap-2 mb-3">
-                    <FiTrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
                     <h3 className="font-semibold text-gray-900 dark:text-dark-text">
                       Utility Score Analysis
                     </h3>
@@ -179,7 +180,7 @@ export default function ExplainDrawer({ rfqId, vendorId, dealId, isOpen, onClose
               {explainability.decision && (
                 <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg pt-4 px-4 pb-0">
                   <div className="flex items-center gap-2 mb-3">
-                    <FiCheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <CheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     <h3 className="font-semibold text-gray-900 dark:text-dark-text">Decision</h3>
                   </div>
 

@@ -1,5 +1,6 @@
+import { ArrowUpRight } from 'lucide-react';
 import { Avatar } from "@mui/material";
-import { MdOutlineArrowOutward } from "react-icons/md";
+
 import { blue, green, red } from "@mui/material/colors";
 
 interface BudgetItem {
@@ -57,7 +58,7 @@ const BudgetCards = ({ budgetData, rfqItems }: BudgetCardsProps) => {
             {rfqItems.map((rfq: RfqItem, i: number) => (
               <div key={i} className="flex justify-between lg:px-2">
                 <p style={{fontSize:14}} className="flex items-center gap-2 lg:text-base md:text-sm">
-                  <MdOutlineArrowOutward className="text-green-600" />
+                  <ArrowUpRight className="text-green-600" />
                   {rfq.id}
                 </p>
                 <p style={{fontSize:14}} className="lg:text-base md:text-sm font-semibold">

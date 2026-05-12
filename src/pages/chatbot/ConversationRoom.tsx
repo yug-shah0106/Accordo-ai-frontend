@@ -5,9 +5,10 @@
  * Supports MESO offer cards for multi-option negotiation.
  */
 
+import { ArrowLeft, Info, RefreshCw } from 'lucide-react';
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FiRefreshCw, FiInfo, FiArrowLeft } from "react-icons/fi";
+
 // @ts-ignore - hooks are JS files without type definitions
 import { useConversation } from "../../hooks/chatbot/useConversation";
 // @ts-ignore - components are JS files without type definitions
@@ -126,7 +127,7 @@ export default function ConversationRoom() {
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
               title="Back to deals"
             >
-              <FiArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             </button>
 
             <div>
@@ -163,7 +164,7 @@ export default function ConversationRoom() {
                 onClick={() => setShowExplainability(true)}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
               >
-                <FiInfo className="w-4 h-4" />
+                <Info className="w-4 h-4" />
                 Show Decision
               </button>
             )}
@@ -173,7 +174,7 @@ export default function ConversationRoom() {
               disabled={loading}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
             >
-              <FiRefreshCw
+              <RefreshCw
                 className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
               />
               Refresh

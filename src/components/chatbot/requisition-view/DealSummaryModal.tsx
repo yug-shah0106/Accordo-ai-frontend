@@ -1,5 +1,6 @@
+import { CheckCircle, Clock, Download, MessageSquare, ShoppingCart, TrendingUp, X, XCircle } from 'lucide-react';
 import { useState, useEffect } from "react";
-import { FiX, FiMessageSquare, FiDownload, FiShoppingCart, FiCheckCircle, FiXCircle, FiClock, FiTrendingUp } from "react-icons/fi";
+
 import chatbotService from "../../../services/chatbot.service";
 import type { DealSummaryResponse } from "../../../types/chatbot";
 import type { DealContext } from "../../../types/chatbot";
@@ -115,7 +116,7 @@ export default function DealSummaryModal({ dealId, rfqId, vendorId, isOpen, onCl
               onClick={onClose}
               className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
-              <FiX className="w-5 h-5" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
@@ -128,7 +129,7 @@ export default function DealSummaryModal({ dealId, rfqId, vendorId, isOpen, onCl
             ) : error ? (
               <div className="text-center py-12">
                 <div className="text-red-600 mb-2">
-                  <FiXCircle className="w-12 h-12 mx-auto" />
+                  <XCircle className="w-12 h-12 mx-auto" />
                 </div>
                 <p className="text-gray-600 dark:text-dark-text-secondary">{error}</p>
                 <button
@@ -151,8 +152,8 @@ export default function DealSummaryModal({ dealId, rfqId, vendorId, isOpen, onCl
                           ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
                           : "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
                       }`}>
-                        {summary.deal.status === "ACCEPTED" && <FiCheckCircle className="w-4 h-4" />}
-                        {summary.deal.status === "WALKED_AWAY" && <FiXCircle className="w-4 h-4" />}
+                        {summary.deal.status === "ACCEPTED" && <CheckCircle className="w-4 h-4" />}
+                        {summary.deal.status === "WALKED_AWAY" && <XCircle className="w-4 h-4" />}
                         {summary.deal.status.replace("_", " ")}
                       </span>
                       <span className="text-xs text-gray-500 uppercase">{summary.deal.mode}</span>
@@ -205,7 +206,7 @@ export default function DealSummaryModal({ dealId, rfqId, vendorId, isOpen, onCl
                 {/* Metrics */}
                 <div className="grid grid-cols-3 gap-4">
                   <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
-                    <FiTrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
+                    <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                       {summary.metrics.utilityScore !== null
                         ? `${Math.round(summary.metrics.utilityScore * 100)}%`
@@ -215,14 +216,14 @@ export default function DealSummaryModal({ dealId, rfqId, vendorId, isOpen, onCl
                     <p className="text-xs text-blue-600/70 dark:text-blue-400/70">Utility Score</p>
                   </div>
                   <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 text-center">
-                    <FiMessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
+                    <MessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                       {summary.metrics.totalRounds}/{summary.metrics.maxRounds}
                     </p>
                     <p className="text-xs text-purple-600/70 dark:text-purple-400/70">Rounds Used</p>
                   </div>
                   <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 text-center">
-                    <FiClock className="w-6 h-6 text-gray-600 dark:text-gray-400 mx-auto mb-2" />
+                    <Clock className="w-6 h-6 text-gray-600 dark:text-gray-400 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-gray-600 dark:text-gray-400">
                       {summary.metrics.durationDays !== null
                         ? `${summary.metrics.durationDays}d`
@@ -312,7 +313,7 @@ export default function DealSummaryModal({ dealId, rfqId, vendorId, isOpen, onCl
                 onClick={() => onViewChat(dealId)}
                 className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-dark-text bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
-                <FiMessageSquare className="w-4 h-4" />
+                <MessageSquare className="w-4 h-4" />
                 View Full Chat
               </button>
               <div className="flex items-center gap-3">
@@ -320,7 +321,7 @@ export default function DealSummaryModal({ dealId, rfqId, vendorId, isOpen, onCl
                   onClick={handleExportPDF}
                   className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-dark-text bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                 >
-                  <FiDownload className="w-4 h-4" />
+                  <Download className="w-4 h-4" />
                   Export PDF
                 </button>
                 {summary.deal.status === "ACCEPTED" && (
@@ -328,7 +329,7 @@ export default function DealSummaryModal({ dealId, rfqId, vendorId, isOpen, onCl
                     onClick={handleCreatePO}
                     className="flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
                   >
-                    <FiShoppingCart className="w-4 h-4" />
+                    <ShoppingCart className="w-4 h-4" />
                     Create PO
                   </button>
                 )}

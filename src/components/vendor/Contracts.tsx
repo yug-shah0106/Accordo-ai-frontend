@@ -1,14 +1,12 @@
+import { ArrowLeft, CheckCircle, ChevronDown, Eye, Search, Settings, SquarePlus, Trash2 } from 'lucide-react';
 import { useState } from "react";
-import { IoCheckmarkCircleOutline, IoSearchOutline } from "react-icons/io5";
-import { VscSettings } from "react-icons/vsc";
-import { PiPlusSquareBold } from "react-icons/pi";
+
 // import { PiDownloadSimpleBold } from "react-icons/pi"; // Unused
 import { useLocation, useNavigate } from "react-router-dom";
 // import { Link } from "react-router-dom"; // Unused
 import Table from "../Table";
 import Pagination from "../Pagination";
-import { RiDeleteBin5Line } from "react-icons/ri";
-import { FaArrowLeft, FaCaretDown, FaRegEye } from "react-icons/fa";
+
 // import { FaPlus } from "react-icons/fa"; // Unused
 import useFetchData from "../../hooks/useFetchData";
 import useDebounce from "../../hooks/useDebounce";
@@ -49,7 +47,6 @@ const Contracts = () => {
       options: ["Created", "Opened", "Completed", "Verified", "InitialQuotation", "Expired", "Accepted"],
     },
   ])
-
 
   const {
     data: contract,
@@ -163,7 +160,7 @@ JSON.parse(row.contractDetails);
     {
       type: "button",
       label: "Approve Contract",
-      icon: <IoCheckmarkCircleOutline />,
+      icon: <CheckCircle />,
       condition: (row: any) => {
         if (row.status === "Accepted" || row.status === "Rejected" || row.status === "Created" || row.status === "InitialQuotation") {
           return false;
@@ -183,7 +180,7 @@ JSON.parse(row.contractDetails);
     {
       type: "button",
       label: "View Contracts",
-      icon: <FaRegEye />,
+      icon: <Eye />,
       onClick: (row: any) => {
         console.log({ row: JSON.parse(row.contractDetails) });
         setContractModal(row);
@@ -192,7 +189,7 @@ JSON.parse(row.contractDetails);
     {
       type: "button",
       label: "Delete Contract",
-      icon: <RiDeleteBin5Line />,
+      icon: <Trash2 />,
       condition: () => {
         const userData = JSON.parse(localStorage.getItem("userData") || "{}");
         return userData?.userType === "admin";
@@ -301,14 +298,13 @@ JSON.parse(row.contractDetails);
     }
   };
 
-
   return (
     <div className="w-full h-full">
       <div className="bg-white rounded-lg shadow-md pt-6 px-6 pb-0 h-full">
         <div className=" justify-between gap-2 mb-4">
           <div className="mb-4">
             <p className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              <FaArrowLeft
+              <ArrowLeft
                 onClick={() => navigate(-1)}
                 className="cursor-pointer"
               />
@@ -339,7 +335,6 @@ JSON.parse(row.contractDetails);
           </div>
           {(() => { console.log({ state }); return null; })()}
 
-
           <div className="flex justify-between gap-2 mb-4">
             <div className="relative col-span-1">
               <input
@@ -348,21 +343,21 @@ JSON.parse(row.contractDetails);
                 placeholder="Search by Contract ID or Vendor Name"
                 className="border pt-2 px-2 pb-0 border-gray-300 rounded-md pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full"
               />
-              <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
             </div>
             <div className="flex gap-6">
               <button
                 onClick={() => setIsFilterModalOpen((prev) => !prev)}
                 className="rounded-md px-4 pt-2 pb-0 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1"
               >
-                <VscSettings /> Filter <FaCaretDown />
+                <Settings /> Filter <ChevronDown />
               </button>
               <button
                 // to={`/requisition-management/edit-requisition/${state.id}?redirect=3`}
                 className="bg-[#234BF3] text-white font-medium rounded-md px-4 pt-2 pb-0 text-sm flex items-center gap-2"
                 onClick={handleNavigation}
               >
-                <PiPlusSquareBold className="font-bold text-xl rounded-3xl" />{" "}
+                <SquarePlus className="font-bold text-xl rounded-3xl" />{" "}
                 Create
               </button>
               <div className="absolute md:right-[35%] right-[20%]">

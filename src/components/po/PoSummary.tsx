@@ -1,7 +1,6 @@
-import { FaCaretDown } from "react-icons/fa";
-import { IoSearchOutline } from "react-icons/io5";
-import { PiFramerLogo } from "react-icons/pi";
-import { VscSettings } from "react-icons/vsc";
+
+
+import { ChevronDown, Hexagon, Search, Settings } from 'lucide-react';
 import price from "../../assets/price.svg";
 import price1 from "../../assets/price1.svg";
 
@@ -20,7 +19,7 @@ const PoSummary = () => {
       <div className="bg-white rounded-lg h-full pt-6 px-6 pb-0">
         <div className="mb-4">
           <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-            <PiFramerLogo className="text-xl" />
+            <Hexagon className="text-xl" />
             Summary
           </h1>
         </div>
@@ -33,7 +32,7 @@ const PoSummary = () => {
               placeholder="Search Summary"
               className="border border-gray-300 rounded-md pr-10 pt-2 pb-0 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full px-4"
             />
-            <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
           </div>
 
           <div className="flex gap-3">
@@ -41,7 +40,7 @@ const PoSummary = () => {
               onClick={() => setIsFilterModalOpen((prev) => !prev)}
               className="rounded-md px-4 pt-2 pb-0 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1"
             >
-              <VscSettings /> Filter <FaCaretDown />
+              <Settings /> Filter <ChevronDown />
             </button>
             {/* <div className="absolute z-30 md:right-[8%] mt-10 right-[20%]">
               {isFilterModalOpen && (
@@ -58,13 +57,13 @@ const PoSummary = () => {
               onClick={() => setIsFilterModalOpen((prev) => !prev)}
               className="rounded-md px-4 pt-2 pb-0 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1"
             >
-              Action <FaCaretDown />
+              Action <ChevronDown />
             </button>
             <button
               onClick={() => setIsFilterModalOpen((prev) => !prev)}
               className="rounded-md px-4 pt-2 pb-0 text-sm font-medium text-white bg-[#234BF3] flex items-center gap-1"
             >
-              Comparison <FaCaretDown />
+              Comparison <ChevronDown />
             </button>
           </div>
         </div>

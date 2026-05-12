@@ -1,21 +1,15 @@
+import { ArrowLeft, ChevronDown, ChevronUp, Eye, GitBranch, Pencil, Search, SquarePlus, Trash2, XCircle } from 'lucide-react';
 import { useEffect, useRef, useState } from "react";
-import { IoSearchOutline, IoCloseCircle } from "react-icons/io5";
-import { VscEdit } from "react-icons/vsc";
-import { PiPlusSquareBold } from "react-icons/pi";
+
 import { Link } from "react-router-dom";
 import Table from "../Table";
 import Pagination from "../Pagination";
-import { RiDeleteBin5Line } from "react-icons/ri";
-import { FaArrowLeft, FaRegEye } from "react-icons/fa";
-import {
-  MdOutlineKeyboardArrowDown,
-  MdOutlineKeyboardArrowUp,
-} from "react-icons/md";
+
 import useFetchData from "../../hooks/useFetchData";
 import useDebounce from "../../hooks/useDebounce";
 import { authApi } from "../../api";
 import Modal from "../Modal";
-import { FiGitBranch } from "react-icons/fi";
+
 import Filter from "../Filter";
 import type {
   VendorRow,
@@ -144,13 +138,13 @@ const VendorManagement = () => {
     {
       type: "link",
       label: "Edit Details",
-      icon: <VscEdit />,
+      icon: <Pencil />,
       link: (row: VendorRow) => `/vendor-management/edit-vendor/${row.Vendor?.Company?.id || row.Vendor?.companyId || row.companyId}`,
     },
     {
       type: "button",
       label: "View Details",
-      icon: <FaRegEye />,
+      icon: <Eye />,
       onClick: (row: VendorRow) => {
         handleRowClick(row);
       },
@@ -158,7 +152,7 @@ const VendorManagement = () => {
     {
       type: "button",
       label: "Change Status",
-      icon: <RiDeleteBin5Line />,
+      icon: <Trash2 />,
       onClick: (row: VendorRow) => {
         handleStatusChange(row);
       },
@@ -324,7 +318,7 @@ const VendorManagement = () => {
       <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border pt-6 px-6 pb-4 flex-shrink-0">
         <div className="mb-4">
           <h1 className="text-xl font-semibold text-gray-800 dark:text-dark-text flex items-center gap-2">
-            <FiGitBranch className="text-xl" />
+            <GitBranch className="text-xl" />
             Vendor Management
           </h1>
         </div>
@@ -360,10 +354,10 @@ const VendorManagement = () => {
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 title="Clear search"
               >
-                <IoCloseCircle className="text-lg" />
+                <XCircle className="text-lg" />
               </button>
             ) : (
-              <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-dark-text-secondary" />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-dark-text-secondary" />
             )}
           </div>
           <div className="flex gap-3">
@@ -378,7 +372,7 @@ const VendorManagement = () => {
               className="bg-[#234BF3] text-white font-medium rounded-md px-4 py-2 text-sm flex items-center gap-2"
             >
 
-              <PiPlusSquareBold className="font-extrabold text-xl rounded-3xl" />{" "}
+              <SquarePlus className="font-extrabold text-xl rounded-3xl" />{" "}
               Create
             </Link>
           </div>
@@ -440,7 +434,7 @@ const VendorManagement = () => {
           <div className="flex justify-between items-center border-b dark:border-dark-border pb-4 mb-4">
             <p className="text-lg font-semibold dark:text-dark-text flex items-center gap-3">
               <button onClick={closeSidebar} className="hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded">
-                <FaArrowLeft />
+                <ArrowLeft />
               </button>
               <span>
                 {companyData?.Vendor?.[0]?.name || selectedProject?.Vendor?.name || "Vendor Details"}
@@ -478,9 +472,9 @@ const VendorManagement = () => {
               >
                 <h3 className="text-md font-semibold text-gray-900 dark:text-dark-text">Basic & Company Info</h3>
                 {expandedSections.basicInfo ? (
-                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                  <ChevronUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 ) : (
-                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                  <ChevronDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 )}
               </div>
               {expandedSections.basicInfo && (
@@ -527,9 +521,9 @@ const VendorManagement = () => {
               >
                 <h3 className="text-md font-semibold text-gray-900 dark:text-dark-text">Location Details</h3>
                 {expandedSections.locationDetails ? (
-                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                  <ChevronUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 ) : (
-                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                  <ChevronDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 )}
               </div>
               {expandedSections.locationDetails && (
@@ -566,9 +560,9 @@ const VendorManagement = () => {
               >
                 <h3 className="text-md font-semibold text-gray-900 dark:text-dark-text">Financial & Banking</h3>
                 {expandedSections.financialBanking ? (
-                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                  <ChevronUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 ) : (
-                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                  <ChevronDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 )}
               </div>
               {expandedSections.financialBanking && (
@@ -689,9 +683,9 @@ const VendorManagement = () => {
               >
                 <h3 className="text-md font-semibold text-gray-900 dark:text-dark-text">Contact & Documents</h3>
                 {expandedSections.contactDocuments ? (
-                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                  <ChevronUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 ) : (
-                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                  <ChevronDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 )}
               </div>
               {expandedSections.contactDocuments && (

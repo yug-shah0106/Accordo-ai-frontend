@@ -17,8 +17,9 @@
  * Created: January 2026
  */
 
+import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { useState, useMemo } from "react";
-import { FiCheckCircle, FiXCircle, FiAlertTriangle } from "react-icons/fi";
+
 import { getUtilityBarColor, getDealStatusColors } from "../../../constants/colors";
 
 /** Recommendation action types */
@@ -75,9 +76,9 @@ const getRecommendationConfig = (recommendation: RecommendationAction) => RECOMM
  * Outcome Badge Component for terminal states
  */
 const OUTCOME_CONFIG: Record<string, { icon: React.ComponentType<{ className?: string }>; text: string } | null> = {
-  ACCEPTED:    { icon: FiCheckCircle,   text: "Deal Accepted" },
-  WALKED_AWAY: { icon: FiXCircle,       text: "Walked Away" },
-  ESCALATED:   { icon: FiAlertTriangle, text: "Escalated" },
+  ACCEPTED:    { icon: CheckCircle,   text: "Deal Accepted" },
+  WALKED_AWAY: { icon: XCircle,       text: "Walked Away" },
+  ESCALATED:   { icon: AlertTriangle, text: "Escalated" },
   NEGOTIATING: null,
 };
 

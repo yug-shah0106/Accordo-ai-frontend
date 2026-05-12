@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+# Pre-commit: catch type errors before they land on a branch.
+npm run type-check

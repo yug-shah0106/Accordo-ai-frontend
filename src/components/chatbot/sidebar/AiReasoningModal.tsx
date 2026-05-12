@@ -1,5 +1,6 @@
+import { ChevronLeft, ChevronRight, Clock, DollarSign, X } from 'lucide-react';
 import { useEffect, useRef, useCallback } from "react";
-import { FiX, FiChevronLeft, FiChevronRight, FiDollarSign, FiClock } from "react-icons/fi";
+
 import { getActionColors, getUtilityBarColor } from "../../../constants/colors";
 
 export interface ReasoningTimelineItem {
@@ -119,7 +120,7 @@ export default function AiReasoningModal({
               className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               aria-label="Previous round"
             >
-              <FiChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </button>
             <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
               Round {item.round} <span className="font-normal text-gray-500 dark:text-gray-400">of {timeline.length}</span>
@@ -130,7 +131,7 @@ export default function AiReasoningModal({
               className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               aria-label="Next round"
             >
-              <FiChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </button>
           </div>
 
@@ -140,7 +141,7 @@ export default function AiReasoningModal({
             className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             aria-label="Close"
           >
-            <FiX className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+            <X className="w-4 h-4 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
 
@@ -187,7 +188,7 @@ export default function AiReasoningModal({
                 {item.counterOffer!.total_price != null && (
                   <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <FiDollarSign className="w-3.5 h-3.5 text-blue-500" />
+                      <DollarSign className="w-3.5 h-3.5 text-blue-500" />
                       <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400 uppercase">Price</span>
                     </div>
                     <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -198,7 +199,7 @@ export default function AiReasoningModal({
                 {item.counterOffer!.payment_terms && (
                   <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <FiClock className="w-3.5 h-3.5 text-purple-500" />
+                      <Clock className="w-3.5 h-3.5 text-purple-500" />
                       <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400 uppercase">Payment Terms</span>
                     </div>
                     <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -209,7 +210,7 @@ export default function AiReasoningModal({
                 {item.counterOffer!.delivery_date && (
                   <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <FiClock className="w-3.5 h-3.5 text-amber-500" />
+                      <Clock className="w-3.5 h-3.5 text-amber-500" />
                       <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 uppercase">Delivery</span>
                     </div>
                     <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -220,7 +221,7 @@ export default function AiReasoningModal({
                 {item.counterOffer!.delivery_days != null && !item.counterOffer!.delivery_date && (
                   <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <FiClock className="w-3.5 h-3.5 text-amber-500" />
+                      <Clock className="w-3.5 h-3.5 text-amber-500" />
                       <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 uppercase">Delivery</span>
                     </div>
                     <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">

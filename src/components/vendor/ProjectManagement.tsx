@@ -1,20 +1,17 @@
+import { ArrowLeft, ChevronDown, ChevronUp, Eye, Pencil, Plus, Search, SquarePlus, Trash2, Twitch, XCircle } from 'lucide-react';
 import React, { useEffect, useState } from "react";
-import { IoSearchOutline, IoCloseCircle } from "react-icons/io5";
-import { VscEdit } from "react-icons/vsc";
-import { PiPlusSquareBold } from "react-icons/pi";
+
 import { Link, useNavigate } from "react-router-dom";
 import Table from "../Table";
 import Pagination from "../Pagination";
-import { RiDeleteBin5Line } from "react-icons/ri";
-import { FaArrowLeft, FaPlus, FaRegEye } from "react-icons/fa";
-import { MdOutlineKeyboardArrowDown, MdOutlineKeyboardArrowUp } from "react-icons/md";
+
 import useFetchData from "../../hooks/useFetchData";
 import useDebounce from "../../hooks/useDebounce";
 import { authApi } from "../../api";
 import toast from "react-hot-toast";
 import Modal from "../Modal";
 import { useRef } from "react";
-import { LuTwitch } from "react-icons/lu";
+
 import { hasPermission } from "../../utils/permissions";
 
 // Error boundary component - defined outside to prevent re-creation on each render
@@ -110,7 +107,7 @@ const ProjectManagement = () => {
     {
       type: "button" as const,
       label: "View Requisition",
-      icon: <FaRegEye />,
+      icon: <Eye />,
       // link: (row) => ({
       //   pathname: `/requisition-management`,
       //   state: row,
@@ -121,27 +118,27 @@ const ProjectManagement = () => {
     {
       type: "button" as const,
       label: "View Details",
-      icon: <FaRegEye />,
+      icon: <Eye />,
       onClick: (row: any) => handleViewDetails(row),
     },
     {
       type: "button" as const,
       label: "Add Requisition",
-      icon: <FaPlus />,
+      icon: <Plus />,
       // link: () => `/project-management/create-requisition`,
       onClick: (row: any) => addRequisition(row),
     },
     {
       type: "button" as const,
       label: "Edit Details",
-      icon: <VscEdit />,
+      icon: <Pencil />,
       // link: (row) => `/project-management/editprojectform/${row.id}`,
       onClick: (row: any) => editProject(row),
     },
     {
       type: "button" as const,
       label: "Delete",
-      icon: <RiDeleteBin5Line />,
+      icon: <Trash2 />,
       onClick: (row: any) => setIsDeleteModalOpen(row.id),
     },
   ];
@@ -219,14 +216,14 @@ const ProjectManagement = () => {
           <div className="mb-4">
             <div className="flex justify-between items-center">
               <h1 className="text-xl font-semibold text-gray-800 dark:text-dark-text flex items-center gap-2">
-                <LuTwitch className="text-xl" /> Project Management
+                <Twitch className="text-xl" /> Project Management
               </h1>
               {hasPermission("project", "C") && (
                 <Link
                   to="/project-management/create-project"
                   className="bg-[#234BF3] text-white font-medium rounded-lg px-4 py-2 text-sm flex items-center gap-2 hover:bg-[#1d3fd8] transition-colors duration-200 shadow-sm"
                 >
-                  <PiPlusSquareBold className="font-extrabold text-xl" /> Create Project
+                  <SquarePlus className="font-extrabold text-xl" /> Create Project
                 </Link>
               )}
             </div>
@@ -249,10 +246,10 @@ const ProjectManagement = () => {
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
                     title="Clear search"
                   >
-                    <IoCloseCircle className="text-lg" />
+                    <XCircle className="text-lg" />
                   </button>
                 ) : (
-                  <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                  <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                 )}
               </div>
               <div className="flex items-center gap-3">
@@ -318,7 +315,7 @@ const ProjectManagement = () => {
                     onClick={closeSidebar}
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors duration-200"
                   >
-                    <FaArrowLeft className="text-gray-600 dark:text-dark-text-secondary" />
+                    <ArrowLeft className="text-gray-600 dark:text-dark-text-secondary" />
                   </button>
                   <h2 className="text-xl font-semibold text-gray-800 dark:text-dark-text">Project Details</h2>
                 </div>
@@ -334,9 +331,9 @@ const ProjectManagement = () => {
                   >
                     <h3 className="text-lg font-medium text-gray-800 dark:text-dark-text">Basic Information</h3>
                     {expandedSections.basicInfo ? (
-                      <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                      <ChevronUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                     ) : (
-                      <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                      <ChevronDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                     )}
                   </div>
                   {expandedSections.basicInfo && (
@@ -371,9 +368,9 @@ const ProjectManagement = () => {
                   >
                     <h3 className="text-lg font-medium text-gray-800 dark:text-dark-text">Point of Contact</h3>
                     {expandedSections.pocInfo ? (
-                      <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                      <ChevronUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                     ) : (
-                      <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                      <ChevronDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                     )}
                   </div>
                   {expandedSections.pocInfo && (

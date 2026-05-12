@@ -2,8 +2,8 @@
  * SuccessModal - Modal displayed after successful bid actions (accept/reject)
  */
 
+import { Check, RefreshCw, X } from 'lucide-react';
 import React, { useEffect, useRef } from 'react';
-import { MdCheck, MdClose, MdRefresh } from 'react-icons/md';
 
 export type SuccessActionType = 'accept' | 'reject' | 'restore';
 
@@ -78,7 +78,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
     switch (actionType) {
       case 'accept':
         return {
-          icon: <MdCheck className="text-white" size={32} />,
+          icon: <Check className="text-white" size={32} />,
           iconBg: 'bg-green-500',
           title: 'Vendor Selected Successfully!',
           description: `${vendorName} has been selected as the winning vendor.`,
@@ -90,7 +90,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
         };
       case 'reject':
         return {
-          icon: <MdClose className="text-white" size={32} />,
+          icon: <X className="text-white" size={32} />,
           iconBg: 'bg-red-500',
           title: 'Bid Rejected',
           description: `The bid from ${vendorName} has been rejected.`,
@@ -101,7 +101,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
         };
       case 'restore':
         return {
-          icon: <MdRefresh className="text-white" size={32} />,
+          icon: <RefreshCw className="text-white" size={32} />,
           iconBg: 'bg-blue-500',
           title: 'Bid Restored',
           description: `The bid from ${vendorName} has been restored.`,
@@ -112,7 +112,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
         };
       default:
         return {
-          icon: <MdCheck className="text-white" size={32} />,
+          icon: <Check className="text-white" size={32} />,
           iconBg: 'bg-gray-500',
           title: 'Action Completed',
           description: 'The action has been completed successfully.',

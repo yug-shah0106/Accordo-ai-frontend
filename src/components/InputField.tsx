@@ -1,5 +1,6 @@
+import { Eye, EyeOff } from 'lucide-react';
 import { useState, ReactNode, InputHTMLAttributes } from "react";
-import { GoEye, GoEyeClosed } from "react-icons/go";
+
 import { FieldError, UseFormRegister } from "react-hook-form";
 
 interface InputFieldProps {
@@ -51,7 +52,6 @@ export default function InputField({
     setIsPasswordVisible((prev) => !prev);
   };
 
-
   return (
     <div className={`my-4 ${wholeInputClassName || ""}`}>
       {label && (
@@ -98,7 +98,7 @@ export default function InputField({
             onClick={togglePasswordVisibility}
             className="absolute inset-y-0 right-0 pr-3 flex items-center"
           >
-            {isPasswordVisible ? <GoEye /> : <GoEyeClosed />}
+            {isPasswordVisible ? <Eye /> : <EyeOff />}
           </button>
         )}
       </div>

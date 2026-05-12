@@ -1,5 +1,6 @@
+import { ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from "react";
-import { IoArrowBackOutline } from "react-icons/io5";
+
 import { VerticalStepProgress, Step } from "../shared";
 import BasicInformation from "./BasicInformation";
 import ProductDetails from "./ProductDetails";
@@ -149,7 +150,7 @@ const AddRequisition: React.FC = () => {
       {/* Sticky Header */}
       <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border pt-6 px-6 pb-4 flex-shrink-0">
         <p className="text-xl font-semibold text-gray-800 dark:text-dark-text flex items-center gap-2">
-          <IoArrowBackOutline
+          <ArrowLeft
             onClick={() => { clearRequisitionDrafts(); navigate(-1); }}
             className="cursor-pointer"
           />

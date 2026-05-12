@@ -1,3 +1,4 @@
+import { Activity, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Clipboard, Clock, CreditCard, DollarSign, FileText, MessageSquare, RefreshCw, Settings, TrendingUp, Truck, XCircle, Zap } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -8,7 +9,7 @@ import { ChatTranscript } from "../../components/chatbot/chat";
 import { exportDealAsPDF, exportDealAsCSV } from "../../utils/exportDeal";
 import chatbotService from "../../services/chatbot.service";
 import type { DealSummaryResponse, ExtendedNegotiationConfig, BehavioralData } from "../../types/chatbot";
-import { FiMessageSquare, FiFileText, FiTrendingUp, FiClock, FiCheckCircle, FiXCircle, FiDollarSign, FiCreditCard, FiTruck, FiClipboard, FiSettings, FiActivity, FiRefreshCw, FiAlertCircle, FiZap, FiChevronDown, FiChevronUp } from "react-icons/fi";
+
 import {
   CollapsibleSection,
   ParameterRow,
@@ -955,7 +956,7 @@ export default function NegotiationRoom() {
               disabled={loading}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
             >
-              <FiRefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </button>
             <button
@@ -984,7 +985,7 @@ export default function NegotiationRoom() {
                     : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
                 }`}
               >
-                <FiMessageSquare className="w-4 h-4" />
+                <MessageSquare className="w-4 h-4" />
                 Chat
               </button>
               <button
@@ -995,7 +996,7 @@ export default function NegotiationRoom() {
                     : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
                 }`}
               >
-                <FiFileText className="w-4 h-4" />
+                <FileText className="w-4 h-4" />
                 Summary
               </button>
             </div>
@@ -1019,11 +1020,11 @@ export default function NegotiationRoom() {
                 >
                   <div className="flex items-center gap-2">
                     {statusBanner.status === "ACCEPTED" ? (
-                      <FiCheckCircle className="w-5 h-5 text-green-600" />
+                      <CheckCircle className="w-5 h-5 text-green-600" />
                     ) : statusBanner.status === "WALKED_AWAY" ? (
-                      <FiXCircle className="w-5 h-5 text-red-600" />
+                      <XCircle className="w-5 h-5 text-red-600" />
                     ) : (
-                      <FiAlertCircle className="w-5 h-5 text-orange-600" />
+                      <AlertCircle className="w-5 h-5 text-orange-600" />
                     )}
                     <span
                       className={`text-sm font-medium ${
@@ -1041,7 +1042,7 @@ export default function NegotiationRoom() {
                     onClick={() => setStatusBanner(null)}
                     className="text-gray-500 hover:text-gray-700"
                   >
-                    <FiXCircle className="w-4 h-4" />
+                    <XCircle className="w-4 h-4" />
                   </button>
                 </div>
               )}
@@ -1061,7 +1062,7 @@ export default function NegotiationRoom() {
               {/* Read-Only Notice - Fixed at bottom (replaces Composer) */}
               <div className="flex-shrink-0 bg-gray-50 dark:bg-dark-surface border-t border-gray-200 dark:border-dark-border px-6 py-3">
                 <div className="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-dark-text-secondary">
-                  <FiMessageSquare className="w-4 h-4" />
+                  <MessageSquare className="w-4 h-4" />
                   <span>
                     {deal?.status === "NEGOTIATING"
                       ? "Watching live negotiation. The AI Negotiator is handling this deal on your behalf."
@@ -1089,7 +1090,7 @@ export default function NegotiationRoom() {
               ) : summaryError ? (
                 <div className="text-center py-12">
                   <div className="text-red-600 mb-2">
-                    <FiXCircle className="w-12 h-12 mx-auto" />
+                    <XCircle className="w-12 h-12 mx-auto" />
                   </div>
                   <p className="text-gray-600 dark:text-dark-text-secondary">{summaryError}</p>
                   <button
@@ -1113,11 +1114,11 @@ export default function NegotiationRoom() {
                   }`}>
                     <div className="flex items-center gap-3">
                       {summary.deal.status === "ACCEPTED" ? (
-                        <FiCheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                        <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
                       ) : summary.deal.status === "WALKED_AWAY" ? (
-                        <FiXCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+                        <XCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
                       ) : (
-                        <FiMessageSquare className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                        <MessageSquare className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                       )}
                       <div>
                         <h3 className={`text-lg font-semibold ${
@@ -1182,7 +1183,7 @@ export default function NegotiationRoom() {
                   {/* Metrics Grid */}
                   <div className="grid grid-cols-3 gap-4">
                     <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 text-center">
-                      <FiTrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
+                      <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
                       <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                         {summary.metrics.utilityScore !== null
                           ? `${Math.round(summary.metrics.utilityScore * 100)}%`
@@ -1192,14 +1193,14 @@ export default function NegotiationRoom() {
                       <p className="text-xs text-blue-600/70 dark:text-blue-400/70">Utility Score</p>
                     </div>
                     <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 text-center">
-                      <FiMessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
+                      <MessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
                       <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                         {summary.metrics.totalRounds}/{summary.metrics.maxRounds}
                       </p>
                       <p className="text-xs text-purple-600/70 dark:text-purple-400/70">Rounds Used</p>
                     </div>
                     <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 text-center">
-                      <FiClock className="w-6 h-6 text-gray-600 dark:text-gray-400 mx-auto mb-2" />
+                      <Clock className="w-6 h-6 text-gray-600 dark:text-gray-400 mx-auto mb-2" />
                       <p className="text-2xl font-bold text-gray-600 dark:text-gray-400">
                         {summary.metrics.durationDays !== null
                           ? `${summary.metrics.durationDays}d`
@@ -1266,7 +1267,7 @@ export default function NegotiationRoom() {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <FiFileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600 dark:text-dark-text-secondary">No summary available</p>
                 </div>
               )}
@@ -1279,7 +1280,7 @@ export default function NegotiationRoom() {
           {/* Sidebar Header - Sticky with blue/indigo theme */}
           <div className="flex-shrink-0 px-6 pt-5 pb-3 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 shadow-md">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <FiActivity className="w-5 h-5" />
+              <Activity className="w-5 h-5" />
               Negotiation Dashboard
             </h2>
             <p className="text-xs text-indigo-200 mt-0.5">Real-time utility monitoring</p>
@@ -1311,7 +1312,7 @@ export default function NegotiationRoom() {
                   >
                     <div className="flex items-center gap-2">
                       <div className="p-1.5 bg-emerald-100 dark:bg-emerald-900/40 rounded-md">
-                        <FiZap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <Zap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       </div>
                       <span className="text-sm font-semibold text-emerald-900 dark:text-emerald-200">AI Reasoning</span>
                       <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/40 px-1.5 py-0.5 rounded">
@@ -1319,9 +1320,9 @@ export default function NegotiationRoom() {
                       </span>
                     </div>
                     {showAiReasoning ? (
-                      <FiChevronUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <ChevronUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     ) : (
-                      <FiChevronDown className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <ChevronDown className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     )}
                   </button>
 
@@ -1463,7 +1464,7 @@ export default function NegotiationRoom() {
               {sectionHasContent.price && (
                 <CollapsibleSection
                   title="Price Parameters"
-                  icon={<FiDollarSign className="w-4 h-4" />}
+                  icon={<DollarSign className="w-4 h-4" />}
                   weight={getSectionWeight('price')}
                   isOpen={openSection === 'price'}
                   onToggle={() => setOpenSection(openSection === 'price' ? null : 'price')}
@@ -1527,7 +1528,7 @@ export default function NegotiationRoom() {
               {sectionHasContent.payment && (
                 <CollapsibleSection
                   title="Payment Terms"
-                  icon={<FiCreditCard className="w-4 h-4" />}
+                  icon={<CreditCard className="w-4 h-4" />}
                   weight={getSectionWeight('payment')}
                   isOpen={openSection === 'payment'}
                   onToggle={() => setOpenSection(openSection === 'payment' ? null : 'payment')}
@@ -1595,7 +1596,7 @@ export default function NegotiationRoom() {
               {sectionHasContent.delivery && (
                 <CollapsibleSection
                   title="Delivery Terms"
-                  icon={<FiTruck className="w-4 h-4" />}
+                  icon={<Truck className="w-4 h-4" />}
                   weight={getSectionWeight('delivery')}
                   isOpen={openSection === 'delivery'}
                   onToggle={() => setOpenSection(openSection === 'delivery' ? null : 'delivery')}
@@ -1650,7 +1651,7 @@ export default function NegotiationRoom() {
               {sectionHasContent.contract && (
                 <CollapsibleSection
                   title="Contract & SLA"
-                  icon={<FiClipboard className="w-4 h-4" />}
+                  icon={<Clipboard className="w-4 h-4" />}
                   weight={getSectionWeight('contract')}
                   isOpen={openSection === 'contract'}
                   onToggle={() => setOpenSection(openSection === 'contract' ? null : 'contract')}
@@ -1700,7 +1701,7 @@ export default function NegotiationRoom() {
               {sectionHasContent.custom && (
                 <CollapsibleSection
                   title="Custom Parameters"
-                  icon={<FiSettings className="w-4 h-4" />}
+                  icon={<Settings className="w-4 h-4" />}
                   weight={getSectionWeight('custom')}
                   isOpen={openSection === 'custom'}
                   onToggle={() => setOpenSection(openSection === 'custom' ? null : 'custom')}

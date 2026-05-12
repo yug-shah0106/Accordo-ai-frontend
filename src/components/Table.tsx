@@ -1,9 +1,10 @@
+import { ExternalLink, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
-import { HiDotsHorizontal } from "react-icons/hi";
+
 import { Link } from "react-router-dom";
 import TableShimmer from "./shimmerTable/TableShimmer";
 import Badge from "./Badge";
-import { FiExternalLink } from "react-icons/fi";
+
 import { formatDate } from "../utils/utils";
 import { Menu, MenuItem, IconButton } from "@mui/material";
 import type { TableProps } from "./Table.types";
@@ -34,7 +35,7 @@ const Table = ({
   };
 
   const handleOpenLink = (link: string) => {
-    window.open(link, '_blank', 'noopener,noreferrer');
+    window.open(link, "_blank", "noopener,noreferrer");
   };
 
   // in case of coping is not wroking in https:// use below function
@@ -76,7 +77,9 @@ const Table = ({
   return (
     <div className="overflow-y-auto max-h-[calc(100vh-300px)]">
       <table className="w-full bg-white dark:bg-dark-surface font-normal rounded-lg text-sm">
-        <thead className={`sticky top-0 bg-white dark:bg-dark-surface z-10 ${style}`}>
+        <thead
+          className={`sticky top-0 bg-white dark:bg-dark-surface z-10 ${style}`}
+        >
           <tr className="text-gray-400 dark:text-gray-500">
             <th className="px-4 py-2 text-left font-normal">S.No</th>
             {columns.map((col, index) => (
@@ -100,130 +103,146 @@ const Table = ({
                     {index + 1 + (currentPage - 1) * itemsPerPage}
                   </td>
                   {columns.map((col, colIndex) => {
-                    const accessor = col?.accessor || '';
-                    const accessorKey = col?.accessorKey || '';
+                    const accessor = col?.accessor || "";
+                    const accessorKey = col?.accessorKey || "";
                     return (
-                    <td key={colIndex} className="px-4 py-2">
-                      {col?.header === "Project ID" ||
-                      col?.header === "RFQ ID" ? (
-                        typeof row[accessor] === "string" ? (
-                          row[accessor]?.slice(-12)
+                      <td key={colIndex} className="px-4 py-2">
+                        {col?.header === "Project ID" ||
+                        col?.header === "RFQ ID" ? (
+                          typeof row[accessor] === "string" ? (
+                            row[accessor]?.slice(-12)
+                          ) : typeof row[accessor] === "object" &&
+                            !Array.isArray(row[accessor]) ? (
+                            row?.[accessor]?.[accessorKey]?.slice(-12)
+                          ) : (
+                            "-"
+                          )
+                        ) : col?.header === "GST %" ? (
+                          row.gstType === "GST" ? (
+                            `${row[col?.accessor] || " "} %`
+                          ) : (
+                            "-"
+                          )
+                        ) : col?.header === "Tenure" ? (
+                          `${row[col?.accessor ?? col]} ${
+                            row[col?.accessor ?? col] <= 1 ? "day" : "days"
+                          }`
+                        ) : col?.isRating ? (
+                          `${
+                            col.isRating(index) === undefined
+                              ? "-"
+                              : col.isRating(index)
+                          } / 10`
+                        ) : col?.isLink ? (
+                          <div className="flex gap-x-3 items-center">
+                            <p className="truncate w-[10rem]">
+                              {`${col?.isLink}${row[col?.accessor ?? col]}`}
+                            </p>
+                            <ExternalLink
+                              className="w-4 h-4 cursor-pointer text-blue-600 hover:text-blue-800"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenLink(
+                                  `${col?.isLink}${row[col?.accessor ?? col]}`,
+                                );
+                              }}
+                              aria-label="Open in new tab"
+                            >
+                              <title>Open in new tab</title>
+                            </ExternalLink>
+                          </div>
+                        ) : col.isBadge ? (
+                          <div className="text-center">
+                            <Badge
+                              status={
+                                typeof row[col?.accessor ?? col] === "object"
+                                  ? (row[col?.accessor ?? col]?.status ??
+                                    "default")
+                                  : row[col?.accessor ?? col]
+                              }
+                            />
+                          </div>
+                        ) : (col?.header === "Created At" ||
+                            col?.header === "Created On" ||
+                            col?.header === "PO Generated At") &&
+                          typeof row[col?.accessor ?? col] === "string" &&
+                          !isNaN(Date.parse(row[col?.accessor ?? col])) ? (
+                          formatDate(row[col?.accessor ?? col]?.split("T")?.[0])
+                        ) : typeof row[col?.accessor ?? col] === "string" ||
+                          typeof row[col?.accessor ?? col] === "number" ? (
+                          row[col?.accessor ?? col]
+                        ) : typeof row[col?.accessor ?? col] === "string" &&
+                          !isNaN(Date.parse(row[col?.accessor ?? col])) ? (
+                          formatDate(row[col?.accessor ?? col]?.split("T")?.[0])
                         ) : typeof row[accessor] === "object" &&
                           !Array.isArray(row[accessor]) ? (
-                          row?.[accessor]?.[accessorKey]?.slice(-12)
+                          row?.[accessor]?.[accessorKey]
                         ) : (
-                          "-"
-                        )
-                      ) : col?.header === "GST %" ? (
-                        row.gstType === "GST" ? (
-                          `${row[col?.accessor] || " "} %`
-                        ) : (
-                          "-"
-                        )
-                      ) : col?.header === "Tenure" ? (
-                        `${row[col?.accessor ?? col]} ${
-                          row[col?.accessor ?? col] <= 1 ? "day" : "days"
-                        }`
-                      ) : col?.isRating ? (
-                        `${
-                          col.isRating(index) === undefined
-                            ? "-"
-                            : col.isRating(index)
-                        } / 10`
-                      ) : col?.isLink ? (
-                        <div className="flex gap-x-3 items-center">
-                          <p className="truncate w-[10rem]">
-                            {`${col?.isLink}${row[col?.accessor ?? col]}`}
-                          </p>
-                          <FiExternalLink
-                            className="w-4 h-4 cursor-pointer text-blue-600 hover:text-blue-800"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenLink(`${col?.isLink}${row[col?.accessor ?? col]}`);
-                            }}
-                            title="Open in new tab"
-                          />
-                        </div>
-                      ) : col.isBadge ? (
-                        <div className="text-center">
-                          <Badge
-                            status={
-                              typeof row[col?.accessor ?? col] === "object"
-                                ? row[col?.accessor ?? col]?.status ?? "default"
-                                : row[col?.accessor ?? col]
-                            }
-                          />
-                        </div>
-                      ) : (col?.header === "Created At" ||
-                          col?.header === "Created On" ||
-                          col?.header === "PO Generated At") &&
-                        typeof row[col?.accessor ?? col] === "string" &&
-                        !isNaN(Date.parse(row[col?.accessor ?? col])) ? (
-                        formatDate(row[col?.accessor ?? col]?.split("T")?.[0])
-                      ) : typeof row[col?.accessor ?? col] === "string" ||
-                        typeof row[col?.accessor ?? col] === "number" ? (
-                        row[col?.accessor ?? col]
-                      ) : typeof row[col?.accessor ?? col] === "string" &&
-                        !isNaN(Date.parse(row[col?.accessor ?? col])) ? (
-                        formatDate(row[col?.accessor ?? col]?.split("T")?.[0])
-                      ) : typeof row[accessor] === "object" &&
-                        !Array.isArray(row[accessor]) ? (
-                        row?.[accessor]?.[accessorKey]
-                      ) : (
-                        <ul>
-                          {row[col?.accessor ?? col]?.length > 1 ? (
-                            <li
-                              key={
-                                row[col?.accessor ?? col][0]?.userId || colIndex
-                              }
-                            >
-                              {
-                                row[col?.accessor ?? col][0]?.[
-                                  `${col?.accessorKey}` || "User"
-                                ]?.[`${col?.accessorSubKey}` || "name"]
-                              }{" "}
-                              {row[col?.accessor ?? col]?.length > 1 && (
-                                <div className="relative inline-block group">
-                                  <p className="text-[#234BF3] inline-block cursor-pointer">
-                                    + {row[col?.accessor ?? col].length - 1}{" "}
-                                    others
-                                  </p>
-                                  <div className="absolute left-0 mt-1 w-max max-w-xs z-10 hidden group-hover:block bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border shadow-md rounded-md text-sm pt-2 px-2 pb-0">
-                                    {(row as any)[col?.accessor ?? col]
-                                      .slice(1)
-                                      .map((i: Record<string, any>, vendorIndex: number) => (
-                                        <p
-                                          key={vendorIndex}
-                                          className="text-gray-700 dark:text-dark-text-secondary truncate"
-                                        >
-                                          {
-                                            i?.[
-                                              `${col?.accessorKey}` || "User"
-                                            ]?.[
-                                              `${col?.accessorSubKey}` || "name"
-                                            ]
-                                          }
-                                        </p>
-                                      ))}
-                                  </div>
-                                </div>
-                              )}
-                            </li>
-                          ) : (
-                            (row as any)[col?.accessor ?? col]?.map((i: any) => (
-                              <li className="" key={i?.userId || colIndex}>
-                                {
-                                  i?.[`${col?.accessorKey}` || "User"]?.[
-                                    `${col?.accessorSubKey}` || "name"
-                                  ]
+                          <ul>
+                            {row[col?.accessor ?? col]?.length > 1 ? (
+                              <li
+                                key={
+                                  row[col?.accessor ?? col][0]?.userId ||
+                                  colIndex
                                 }
+                              >
+                                {
+                                  row[col?.accessor ?? col][0]?.[
+                                    `${col?.accessorKey}` || "User"
+                                  ]?.[`${col?.accessorSubKey}` || "name"]
+                                }{" "}
+                                {row[col?.accessor ?? col]?.length > 1 && (
+                                  <div className="relative inline-block group">
+                                    <p className="text-[#234BF3] inline-block cursor-pointer">
+                                      + {row[col?.accessor ?? col].length - 1}{" "}
+                                      others
+                                    </p>
+                                    <div className="absolute left-0 mt-1 w-max max-w-xs z-10 hidden group-hover:block bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border shadow-md rounded-md text-sm pt-2 px-2 pb-0">
+                                      {(row as any)[col?.accessor ?? col]
+                                        .slice(1)
+                                        .map(
+                                          (
+                                            i: Record<string, any>,
+                                            vendorIndex: number,
+                                          ) => (
+                                            <p
+                                              key={vendorIndex}
+                                              className="text-gray-700 dark:text-dark-text-secondary truncate"
+                                            >
+                                              {
+                                                i?.[
+                                                  `${col?.accessorKey}` ||
+                                                    "User"
+                                                ]?.[
+                                                  `${col?.accessorSubKey}` ||
+                                                    "name"
+                                                ]
+                                              }
+                                            </p>
+                                          ),
+                                        )}
+                                    </div>
+                                  </div>
+                                )}
                               </li>
-                            ))
-                          )}
-                        </ul>
-                      )}
-                    </td>
-                  )})}
+                            ) : (
+                              (row as any)[col?.accessor ?? col]?.map(
+                                (i: any) => (
+                                  <li className="" key={i?.userId || colIndex}>
+                                    {
+                                      i?.[`${col?.accessorKey}` || "User"]?.[
+                                        `${col?.accessorSubKey}` || "name"
+                                      ]
+                                    }
+                                  </li>
+                                ),
+                              )
+                            )}
+                          </ul>
+                        )}
+                      </td>
+                    );
+                  })}
                   <td className="px-4 py-2">
                     <div className="relative">
                       <IconButton
@@ -232,7 +251,7 @@ const Table = ({
                           handleMenuOpen(evnt, row);
                         }}
                       >
-                        <HiDotsHorizontal className="text-xl" />
+                        <MoreHorizontal className="text-xl" />
                       </IconButton>
                       {/* MUI Menu for actions */}
                       <Menu

@@ -1,17 +1,15 @@
+import { MoreHorizontal, Pencil, Plus, Search, Settings, Trash2, UserCheck } from 'lucide-react';
 import { useEffect, useState, useMemo } from "react";
-import { IoSearchOutline } from "react-icons/io5";
-import { VscEdit, VscSettings } from "react-icons/vsc";
-import { PiDotsThreeBold } from "react-icons/pi";
+
 import { Link } from "react-router-dom";
 import Pagination from "../Pagination";
-import { RiDeleteBin5Line } from "react-icons/ri";
-import { FaPlus } from "react-icons/fa";
+
 import useFetchData from "../../hooks/useFetchData";
 import useDebounce from "../../hooks/useDebounce";
 import { authApi } from "../../api";
 import Modal from "../Modal";
 import Badge from "../Badge";
-import { BiUserCheck } from "react-icons/bi";
+
 import { Menu, MenuItem } from "@mui/material";
 import type {
   User,
@@ -128,13 +126,13 @@ const UserManagement = () => {
     {
       type: "link",
       label: "Edit Details",
-      icon: <VscEdit />,
+      icon: <Pencil />,
       link: (row: User) => `/user-management/edit-user/${row.id}`,
     },
     {
       type: "button",
       label: "Change Status",
-      icon: <RiDeleteBin5Line />,
+      icon: <Trash2 />,
       onClick: (row: User) => {
         handleStatusChange(row)
       },
@@ -142,7 +140,7 @@ const UserManagement = () => {
     {
       type: "button",
       label: "Reset Password",
-      icon: <VscEdit />,
+      icon: <Pencil />,
       onClick: (row: User) => {
         handleConfirmResetPassword(row);
       },
@@ -172,7 +170,7 @@ const UserManagement = () => {
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-50 rounded-lg">
-                    <BiUserCheck className="text-2xl text-blue-600" />
+                    <UserCheck className="text-2xl text-blue-600" />
                   </div>
                   <h1 className="text-2xl font-semibold text-gray-800 dark:text-dark-text">User Management</h1>
                 </div>
@@ -180,7 +178,7 @@ const UserManagement = () => {
                   to="/user-management/create-user"
                   className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md"
                 >
-                  <FaPlus className="text-sm" /> Add New User
+                  <Plus className="text-sm" /> Add New User
                 </Link>
               </div>
 
@@ -190,7 +188,7 @@ const UserManagement = () => {
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-50 rounded-lg">
-                    <VscSettings className="text-2xl text-blue-600" />
+                    <Settings className="text-2xl text-blue-600" />
                   </div>
                   <h1 className="text-2xl font-semibold text-gray-800 dark:text-dark-text">Roles</h1>
                 </div>
@@ -198,7 +196,7 @@ const UserManagement = () => {
                   to="/user-management/edit-roles"
                   className="inline-flex items-center gap-2 bg-white dark:bg-dark-surface text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition-all duration-200 text-sm font-medium border border-blue-200 dark:border-blue-500 hover:border-blue-300"
                 >
-                  <FaPlus className="text-sm" /> Manage Roles
+                  <Plus className="text-sm" /> Manage Roles
                 </Link>
               </div>
             </div>
@@ -215,7 +213,7 @@ const UserManagement = () => {
                 className="pl-10 pr-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg text-sm text-gray-900 dark:text-dark-text dark:bg-dark-bg dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-80"
                 onChange={(e) => debounce(e.target.value)}
               />
-              <IoSearchOutline className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             </div>
           </div>
         </div>
@@ -265,7 +263,7 @@ const UserManagement = () => {
                   ))}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-dark-text">
                     <div className="relative">
-                      <PiDotsThreeBold
+                      <MoreHorizontal
                         className="text-xl cursor-pointer hover:text-blue-500 transition-colors"
                         onClick={(event) => setSelectedRow({ element: event.currentTarget as unknown as HTMLElement, user: row })}
                       />

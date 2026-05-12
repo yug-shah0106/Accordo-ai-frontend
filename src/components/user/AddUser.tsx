@@ -1,12 +1,13 @@
+import { ArrowLeft, UserCheck } from 'lucide-react';
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { IoArrowBackOutline } from "react-icons/io5";
+
 import { useNavigate, useParams } from "react-router-dom";
 import { authApi } from "../../api";
 import InputField from "../InputField";
 import Button from "../Button";
 import toast from "react-hot-toast";
-import { BiUserCheck } from "react-icons/bi";
+
 import { env } from "@/utils/env";
 
 interface Role {
@@ -160,10 +161,10 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
               onClick={() => navigate(-1)}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
             >
-              <IoArrowBackOutline className="text-2xl text-gray-600 dark:text-dark-text-secondary" />
+              <ArrowLeft className="text-2xl text-gray-600 dark:text-dark-text-secondary" />
             </button>
             <div className="flex items-center gap-2">
-              <BiUserCheck className="text-2xl text-blue-500" />
+              <UserCheck className="text-2xl text-blue-500" />
               <h1 className="text-2xl font-semibold text-gray-800 dark:text-dark-text">
                 {id ? "Edit User" : "Create New User"}
               </h1>
