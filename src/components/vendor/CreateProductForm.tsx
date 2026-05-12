@@ -1,5 +1,6 @@
+import { ArrowLeft } from 'lucide-react';
 import { useState, useEffect, useMemo } from "react";
-import { IoArrowBackOutline } from "react-icons/io5";
+
 import { useParams, useNavigate } from "react-router-dom";
 import InputField from "../InputField";
 import SelectField from "../SelectField";
@@ -185,7 +186,7 @@ const CreateProductForm = () => {
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 pt-6 px-16 pb-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-xl font-medium">
-            <IoArrowBackOutline
+            <ArrowLeft
               onClick={() => { clearSaved(); navigate(-1); }}
               className="cursor-pointer"
             />

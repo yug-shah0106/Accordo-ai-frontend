@@ -10,8 +10,8 @@
  * Shows current utility score position and parameter-level breakdown.
  */
 
+import { Activity, AlertTriangle, CheckCircle, ChevronDown, ChevronUp, HelpCircle, Target, XCircle } from 'lucide-react';
 import { useState } from "react";
-import { FiChevronDown, FiChevronUp, FiActivity, FiTarget, FiAlertTriangle, FiCheckCircle, FiXCircle, FiHelpCircle } from "react-icons/fi";
 
 // Types matching backend WeightedUtilityResult
 interface ParameterUtility {
@@ -70,15 +70,15 @@ function getZone(utility: number, thresholds: ThresholdConfig): keyof typeof ZON
 function RecommendationIcon({ recommendation }: { recommendation: string }) {
   switch (recommendation) {
     case "ACCEPT":
-      return <FiCheckCircle className="w-5 h-5 text-green-600" />;
+      return <CheckCircle className="w-5 h-5 text-green-600" />;
     case "COUNTER":
-      return <FiTarget className="w-5 h-5 text-blue-600" />;
+      return <Target className="w-5 h-5 text-blue-600" />;
     case "ESCALATE":
-      return <FiAlertTriangle className="w-5 h-5 text-orange-600" />;
+      return <AlertTriangle className="w-5 h-5 text-orange-600" />;
     case "WALK_AWAY":
-      return <FiXCircle className="w-5 h-5 text-red-600" />;
+      return <XCircle className="w-5 h-5 text-red-600" />;
     default:
-      return <FiHelpCircle className="w-5 h-5 text-gray-600" />;
+      return <HelpCircle className="w-5 h-5 text-gray-600" />;
   }
 }
 
@@ -126,7 +126,7 @@ export default function WeightedUtilitySidebar({
     return (
       <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-5 shadow-sm">
         <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <FiActivity className="w-5 h-5 text-slate-600" />
+          <Activity className="w-5 h-5 text-slate-600" />
           Weighted Utility
         </h3>
         <div className="text-center text-gray-500 text-sm py-4">
@@ -146,7 +146,7 @@ export default function WeightedUtilitySidebar({
       {/* Main Utility Score Card */}
       <div className={`${zoneColor.bgLight} ${zoneColor.border} border rounded-lg p-5 shadow-sm`}>
         <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <FiActivity className="w-5 h-5 text-slate-600" />
+          <Activity className="w-5 h-5 text-slate-600" />
           Weighted Utility Score
           {isLive && round > 0 && (
             <span className="ml-auto text-xs text-blue-600 animate-pulse">● Live</span>
@@ -258,14 +258,14 @@ export default function WeightedUtilitySidebar({
           className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50"
         >
           <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-            <FiTarget className="w-5 h-5 text-blue-600" />
+            <Target className="w-5 h-5 text-blue-600" />
             Parameter Breakdown
             <span className="text-xs font-normal text-gray-500">({parameters.length} params)</span>
           </h3>
           {showDetails ? (
-            <FiChevronUp className="w-5 h-5 text-gray-500" />
+            <ChevronUp className="w-5 h-5 text-gray-500" />
           ) : (
-            <FiChevronDown className="w-5 h-5 text-gray-500" />
+            <ChevronDown className="w-5 h-5 text-gray-500" />
           )}
         </button>
 

@@ -1,12 +1,13 @@
+import { PlusCircle, Trash2 } from 'lucide-react';
 import { useForm } from "react-hook-form";
 import { FormInput, FormSelect, SelectOption } from "../shared";
 import Button from "../Button";
 import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import useFetchData from "../../hooks/useFetchData";
-import { RiDeleteBinLine } from "react-icons/ri";
+
 import { authMultiFormApi } from "../../api";
 import toast from "react-hot-toast";
-import { BsPlusCircleFill } from "react-icons/bs";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { step2 } from "../../schema/requisition";
 // import { useNavigate } from "react-router-dom"; // Unused - commented out
@@ -574,7 +575,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                       {/* Delete Button */}
                       <div className="flex flex-col items-center justify-center">
                         <span className="text-xs text-gray-600 dark:text-dark-text-secondary mb-1 font-medium">Delete</span>
-                        <RiDeleteBinLine
+                        <Trash2
                           onClick={() => handleDeleteProduct(product?.productId)}
                           className="cursor-pointer text-red-500 hover:text-red-700"
                         />
@@ -757,7 +758,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                       }
                       className="w-12 h-12"
                     />
-                    <BsPlusCircleFill
+                    <PlusCircle
                       className="rotate-45 cursor-pointer ml-2 text-red-500 hover:text-red-700 absolute -right-1 top-0"
                       onClick={() => {
                         const currentFiles = watch("files");

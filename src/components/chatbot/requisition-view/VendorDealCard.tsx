@@ -1,5 +1,6 @@
+import { AlertTriangle, Archive, CheckCircle, FileText, MessageCircle, RotateCcw, TrendingUp, XCircle } from 'lucide-react';
 import type { VendorDealSummary, DealStatus } from "../../../types/chatbot";
-import { FiMessageCircle, FiCheckCircle, FiXCircle, FiAlertTriangle, FiTrendingUp, FiFileText, FiArchive, FiRotateCcw } from "react-icons/fi";
+
 import { getDealStatusColors } from "../../../constants/colors";
 
 interface VendorDealCardProps {
@@ -63,10 +64,10 @@ export default function VendorDealCard({ deal, currency, onClick, onViewSummary,
   };
 
   const STATUS_ICONS: Record<DealStatus, React.ComponentType<{ className?: string }>> = {
-    NEGOTIATING: FiMessageCircle,
-    ACCEPTED: FiCheckCircle,
-    WALKED_AWAY: FiXCircle,
-    ESCALATED: FiAlertTriangle,
+    NEGOTIATING: MessageCircle,
+    ACCEPTED: CheckCircle,
+    WALKED_AWAY: XCircle,
+    ESCALATED: AlertTriangle,
   };
 
   const CARD_LABELS: Record<DealStatus, string> = {
@@ -81,7 +82,7 @@ export default function VendorDealCard({ deal, currency, onClick, onViewSummary,
     bgColor: `${s.bg} ${s.darkBg}`,
     textColor: `${s.text} ${s.darkText}`,
     borderColor: s.borderColor,
-    icon: STATUS_ICONS[status] || FiMessageCircle,
+    icon: STATUS_ICONS[status] || MessageCircle,
     label: CARD_LABELS[status] || status,
   };
   const StatusIcon = statusConfig.icon;
@@ -147,7 +148,7 @@ export default function VendorDealCard({ deal, currency, onClick, onViewSummary,
         <div className="flex items-center justify-between mb-4">
           {/* Utility Score */}
           <div className="flex items-center gap-2">
-            <FiTrendingUp className={`w-4 h-4 ${getUtilityScoreColor(utilityScore)}`} />
+            <TrendingUp className={`w-4 h-4 ${getUtilityScoreColor(utilityScore)}`} />
             <span className={`text-sm font-medium ${getUtilityScoreColor(utilityScore)}`}>
               {utilityScore !== null ? `${Math.round(utilityScore * 100)}%` : "No score"}
             </span>
@@ -174,7 +175,7 @@ export default function VendorDealCard({ deal, currency, onClick, onViewSummary,
                 onClick={(e) => onArchive(e, deal)}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-400 hover:border-orange-200 dark:hover:border-orange-800"
               >
-                <FiArchive className="w-3.5 h-3.5" />
+                <Archive className="w-3.5 h-3.5" />
                 Archive
               </button>
             )}
@@ -185,7 +186,7 @@ export default function VendorDealCard({ deal, currency, onClick, onViewSummary,
                 onClick={(e) => onUnarchive(e, deal)}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 hover:border-green-200 dark:hover:border-green-800"
               >
-                <FiRotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-3.5 h-3.5" />
                 Unarchive
               </button>
             )}
@@ -199,7 +200,7 @@ export default function VendorDealCard({ deal, currency, onClick, onViewSummary,
                 }}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
               >
-                <FiFileText className="w-3.5 h-3.5" />
+                <FileText className="w-3.5 h-3.5" />
                 View Summary
               </button>
             )}

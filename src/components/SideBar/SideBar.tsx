@@ -1,15 +1,15 @@
 // Old  side bar without navigation poopup
 
 // import { useEffect, useState } from "react";
-// import { FiBarChart2, FiGitBranch, FiMessageSquare } from "react-icons/fi";
-// import { BiUserCheck } from "react-icons/bi";
+// import { BarChart2, FiGitBranch, MessageSquare } from "react-icons/fi";
+// import { UserCheck } from "react-icons/bi";
 // import { useLocation, useNavigate } from "react-router-dom";
-// import { RiBox3Line } from "react-icons/ri";
+// import { Package } from "react-icons/ri";
 // import { IoIosGitBranch } from "react-icons/io";
 // import { SlSettings } from "react-icons/sl";
 // import { PiFramerLogo, PiGitBranchLight } from "react-icons/pi";
-// import { LuGitPullRequest, LuTwitch } from "react-icons/lu";
-// import { CiLogout } from "react-icons/ci";
+// import { GitPullRequest, Twitch } from "react-icons/lu";
+// import { LogOut } from "react-icons/ci";
 
 // const Sidebar = ({ logo }) => {
 //   const [activeItem, setActiveItem] = useState("");
@@ -20,21 +20,21 @@
 //   const menuItems = [
 //     {
 //       name: "Dashboard",
-//       icon: <FiBarChart2 className="text-xl" />,
+//       icon: <BarChart2 className="text-xl" />,
 //       link: "dashboard",
 //       isActive: true,
 
 //     },
 //     {
 //       name: "Project Management",
-//       icon: <LuTwitch className="text-xl" />,
+//       icon: <Twitch className="text-xl" />,
 //       link: "project-management",
 //       isActive: true,
 
 //     },
 //     {
 //       name: "Requisition Management",
-//       icon: <LuGitPullRequest className="text-xl" />,
+//       icon: <GitPullRequest className="text-xl" />,
 //       link: "requisition-management",
 //       isActive: true,
 
@@ -47,7 +47,7 @@
 //     },
 //     {
 //       name: "Product Management",
-//       icon: <RiBox3Line className="text-xl" />,
+//       icon: <Package className="text-xl" />,
 //       link: "product-management",
 //       isActive: true,
 
@@ -60,13 +60,13 @@
 //     },
 //     {
 //       name: "User Management",
-//       icon: <BiUserCheck className="text-xl" />,
+//       icon: <UserCheck className="text-xl" />,
 //       link: "user-management",
 //       isActive: true,
 //     },
 //     {
 //       name: "Feedback",
-//       icon: <FiMessageSquare className="text-xl" />,
+//       icon: <MessageSquare className="text-xl" />,
 //       link: "feedback",
 //       isActive: false,
 //     },
@@ -85,7 +85,7 @@
 //     },
 //     {
 //       name: "Logout",
-//       icon: <CiLogout className="text-xl" />,
+//       icon: <LogOut className="text-xl" />,
 //       link: "logout",
 //       isActive: true,
 //     },
@@ -185,22 +185,16 @@
 
 // export default Sidebar;
 
+import { BadgeCheck, BarChart2, GitPullRequest, LogOut, MessageSquare, Moon, Package, Store, Sun, Twitch, User, UserCheck } from 'lucide-react';
 import { useEffect, useState, useRef } from "react";
-import { FiBarChart2, FiMessageSquare, FiSun, FiMoon } from "react-icons/fi";
-import { VscFeedback } from "react-icons/vsc";
-import { BiUserCheck } from "react-icons/bi";
-import { MdVerified } from "react-icons/md";
+
 import { useLocation, useNavigate } from "react-router-dom";
-import { RiBox3Line } from "react-icons/ri";
-import { FiUser } from "react-icons/fi";
-import { HiOutlineBuildingStorefront } from "react-icons/hi2";
+
 // import { PiFramerLogo } from "react-icons/pi"; // Unused
-import { LuGitPullRequest, LuTwitch } from "react-icons/lu";
-import { CiLogout } from "react-icons/ci";
+
 import Modal from "../Modal";
 import { authApi } from "../../api";
 import { tokenStorage } from "../../utils/tokenStorage";
-import toast from "react-hot-toast";
 import { useTheme } from "../../context/ThemeContext";
 import { useOnboardingStatus } from "../OnboardingReminder";
 
@@ -248,77 +242,77 @@ const Sidebar = ({ logo }: SidebarProps) => {
   const menuItems = [
     {
       name: "Dashboard",
-      icon: <FiBarChart2 className="text-xl" />,
+      icon: <BarChart2 className="text-xl" />,
       link: "dashboard",
       permissionKey: "projectPermission",
       isActive: true,
     },
     {
       name: "Project Management",
-      icon: <LuTwitch className="text-xl" />,
+      icon: <Twitch className="text-xl" />,
       link: "project-management",
       permissionKey: "projectPermission",
       isActive: true,
     },
     {
       name: "Product Management",
-      icon: <RiBox3Line className="text-xl" />,
+      icon: <Package className="text-xl" />,
       link: "product-management",
       permissionKey: "productPermission",
       isActive: true,
     },
     {
       name: "Vendor Management",
-      icon: <HiOutlineBuildingStorefront className="text-xl" />,
+      icon: <Store className="text-xl" />,
       link: "vendor-management",
       permissionKey: "vendorPermission",
       isActive: true,
     },
     {
       name: "Requisition Management",
-      icon: <LuGitPullRequest className="text-xl" />,
+      icon: <GitPullRequest className="text-xl" />,
       link: "requisition-management",
       permissionKey: "requisitionPermission",
       isActive: true,
     },
     {
       name: "Negotiations",
-      icon: <FiMessageSquare className="text-xl" />,
+      icon: <MessageSquare className="text-xl" />,
       link: "chatbot/requisitions",
       permissionKey: null,
       isActive: true,
     },
     {
       name: "Bid Analysis",
-      icon: <MdVerified className="text-xl" />,
+      icon: <BadgeCheck className="text-xl" />,
       link: "bid-analysis",
       permissionKey: "requisitionPermission",
       isActive: true,
     },
     {
       name: "Feedback",
-      icon: <VscFeedback className="text-xl" />,
+      icon: <MessageSquare className="text-xl" />,
       link: "feedback",
       permissionKey: null,
       isActive: true,
     },
     {
       name: "User Management",
-      icon: <BiUserCheck className="text-xl" />,
+      icon: <UserCheck className="text-xl" />,
       link: "user-management",
       permissionKey: "userPermission",
       isActive: true,
     },
     {
       name: "User Profile",
-      icon: <FiUser className="text-xl" />,
+      icon: <User className="text-xl" />,
       link: "setting",
       permissionKey: null,
       isActive: true,
     },
     {
       name: "Logout",
-      icon: <CiLogout className="text-xl" />,
+      icon: <LogOut className="text-xl" />,
       link: "logout",
       permissionKey: null,
       isActive: true,
@@ -439,9 +433,9 @@ const Sidebar = ({ logo }: SidebarProps) => {
               title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
               {isDark ? (
-                <FiSun className="w-5 h-5 text-gray-700 dark:text-white" />
+                <Sun className="w-5 h-5 text-gray-700 dark:text-white" />
               ) : (
-                <FiMoon className="w-5 h-5 text-gray-700 dark:text-white" />
+                <Moon className="w-5 h-5 text-gray-700 dark:text-white" />
               )}
             </button>
           )}

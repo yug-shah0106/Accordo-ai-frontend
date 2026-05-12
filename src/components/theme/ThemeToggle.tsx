@@ -5,7 +5,7 @@
  * Can be rendered as icon-only or with menu item styling.
  */
 
-import { FiSun, FiMoon } from 'react-icons/fi';
+import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 interface ThemeToggleProps {
@@ -26,12 +26,12 @@ export default function ThemeToggle({ variant = 'icon', className = '' }: ThemeT
       >
         {isDark ? (
           <>
-            <FiSun className="w-5 h-5 text-yellow-500" />
+            <Sun className="w-5 h-5 text-yellow-500" />
             <span>Light Mode</span>
           </>
         ) : (
           <>
-            <FiMoon className="w-5 h-5 text-blue-600" />
+            <Moon className="w-5 h-5 text-blue-600" />
             <span>Dark Mode</span>
           </>
         )}
@@ -48,9 +48,9 @@ export default function ThemeToggle({ variant = 'icon', className = '' }: ThemeT
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
     >
       {isDark ? (
-        <FiSun className="w-5 h-5 text-yellow-500" />
+        <Sun className="w-5 h-5 text-yellow-500" />
       ) : (
-        <FiMoon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+        <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
       )}
     </button>
   );

@@ -2,20 +2,25 @@
  * BidAnalysisDetailPage - Detailed bid analysis with top bids and approvals sidebar
  */
 
-import { useCallback, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import {
-  MdArrowBack,
-  MdVerified,
-  MdTrendingDown,
-  MdTrendingUp,
-  MdDownload,
-  MdRefresh,
-} from 'react-icons/md';
-import toast from 'react-hot-toast';
-import { useBidAnalysisDetail, useBidActions } from '../../hooks/bidAnalysis';
-import { TopBidCard, AllocationTable, ApprovalsSidebar, SuccessModal } from '../../components/bidAnalysis';
-import type { SuccessActionType } from '../../components/bidAnalysis';
+  ArrowLeft,
+  BadgeCheck,
+  Download,
+  RefreshCw,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
+import { useCallback, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { useBidAnalysisDetail, useBidActions } from "../../hooks/bidAnalysis";
+import {
+  TopBidCard,
+  AllocationTable,
+  ApprovalsSidebar,
+  SuccessModal,
+} from "../../components/bidAnalysis";
+import type { SuccessActionType } from "../../components/bidAnalysis";
 
 export const BidAnalysisDetailPage: React.FC = () => {
   const { requisitionId } = useParams<{ requisitionId: string }>();
@@ -34,7 +39,13 @@ export const BidAnalysisDetailPage: React.FC = () => {
     refreshHistory,
   } = useBidAnalysisDetail(reqId);
 
-  const { loading: actionLoading, selectBid, rejectBid, restoreBid, downloadPdf: _downloadPdf } = useBidActions();
+  const {
+    loading: actionLoading,
+    selectBid,
+    rejectBid,
+    restoreBid,
+    downloadPdf: _downloadPdf,
+  } = useBidActions();
 
   // Success modal state
   const [successModal, setSuccessModal] = useState<{
@@ -45,94 +56,108 @@ export const BidAnalysisDetailPage: React.FC = () => {
     poId?: number | null;
   }>({
     isOpen: false,
-    actionType: 'accept',
-    vendorName: '',
+    actionType: "accept",
+    vendorName: "",
   });
 
   const closeSuccessModal = useCallback(() => {
-    setSuccessModal(prev => ({ ...prev, isOpen: false }));
+    setSuccessModal((prev) => ({ ...prev, isOpen: false }));
   }, []);
 
   const formatCurrency = (value: number | null) => {
-    if (value === null) return 'N/A';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    if (value === null) return "N/A";
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     }).format(value);
   };
 
   const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return 'N/A';
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
+    if (!dateStr) return "N/A";
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
   const handleBack = () => {
-    navigate('/bid-analysis');
+    navigate("/bid-analysis");
   };
 
-  const handleChatClick = useCallback((dealId: string, vendorId: number, rfqId: number) => {
-    navigate(`/chatbot/requisitions/${rfqId}/vendors/${vendorId}/deals/${dealId}`);
-  }, [navigate]);
+  const handleChatClick = useCallback(
+    (dealId: string, vendorId: number, rfqId: number) => {
+      navigate(
+        `/chatbot/requisitions/${rfqId}/vendors/${vendorId}/deals/${dealId}`,
+      );
+    },
+    [navigate],
+  );
 
-  const handleAccept = useCallback(async (remarks?: string) => {
-    if (!reqId || !selectedBid) return;
-    const result = await selectBid(reqId, selectedBid.bidId, remarks);
-    if (result) {
-      // Show success modal
-      setSuccessModal({
-        isOpen: true,
-        actionType: 'accept',
-        vendorName: result.vendorName,
-        bidPrice: (result as any).selectedPrice,
-        poId: result.poId,
-      });
-      // Auto-refresh data
-      refresh();
-      refreshHistory();
-    }
-  }, [reqId, selectedBid, selectBid, refresh, refreshHistory]);
+  const handleAccept = useCallback(
+    async (remarks?: string) => {
+      if (!reqId || !selectedBid) return;
+      const result = await selectBid(reqId, selectedBid.bidId, remarks);
+      if (result) {
+        // Show success modal
+        setSuccessModal({
+          isOpen: true,
+          actionType: "accept",
+          vendorName: result.vendorName,
+          bidPrice: (result as any).selectedPrice,
+          poId: result.poId,
+        });
+        // Auto-refresh data
+        refresh();
+        refreshHistory();
+      }
+    },
+    [reqId, selectedBid, selectBid, refresh, refreshHistory],
+  );
 
-  const handleReject = useCallback(async (remarks?: string) => {
-    if (!reqId || !selectedBid) return;
-    const result = await rejectBid(reqId, selectedBid.bidId, remarks);
-    if (result) {
-      // Show success modal
-      setSuccessModal({
-        isOpen: true,
-        actionType: 'reject',
-        vendorName: selectedBid.vendorName,
-        bidPrice: selectedBid.finalPrice || undefined,
-      });
-      // Auto-refresh data
-      refresh();
-      refreshHistory();
-    }
-  }, [reqId, selectedBid, rejectBid, refresh, refreshHistory]);
+  const handleReject = useCallback(
+    async (remarks?: string) => {
+      if (!reqId || !selectedBid) return;
+      const result = await rejectBid(reqId, selectedBid.bidId, remarks);
+      if (result) {
+        // Show success modal
+        setSuccessModal({
+          isOpen: true,
+          actionType: "reject",
+          vendorName: selectedBid.vendorName,
+          bidPrice: selectedBid.finalPrice || undefined,
+        });
+        // Auto-refresh data
+        refresh();
+        refreshHistory();
+      }
+    },
+    [reqId, selectedBid, rejectBid, refresh, refreshHistory],
+  );
 
-  const handleRestore = useCallback(async (bidId: string) => {
-    if (!reqId) return;
-    // Find the bid being restored for modal info
-    const bidToRestore = detail?.allBids?.find(b => b.bidId === bidId);
-    const result = await restoreBid(reqId, bidId);
-    if (result) {
-      // Show success modal
-      setSuccessModal({
-        isOpen: true,
-        actionType: 'restore',
-        vendorName: bidToRestore?.vendorName || 'Vendor',
-        bidPrice: bidToRestore?.finalPrice || undefined,
-      });
-      // Auto-refresh data
-      refresh();
-      refreshHistory();
-    }
-  }, [reqId, restoreBid, refresh, refreshHistory, detail]);
+  const handleRestore = useCallback(
+    async (bidId: string) => {
+      if (!reqId) return;
+      // Find the bid being restored for modal info
+      const bidToRestore = detail?.allBids?.find((b) => b.bidId === bidId);
+      const result = await restoreBid(reqId, bidId);
+      if (result) {
+        // Show success modal
+        setSuccessModal({
+          isOpen: true,
+          actionType: "restore",
+          vendorName: bidToRestore?.vendorName || "Vendor",
+          bidPrice: bidToRestore?.finalPrice || undefined,
+        });
+        // Auto-refresh data
+        refresh();
+        refreshHistory();
+      }
+    },
+    [reqId, restoreBid, refresh, refreshHistory, detail],
+  );
 
   // Loading State
   if (loading && !detail) {
@@ -174,21 +199,27 @@ export const BidAnalysisDetailPage: React.FC = () => {
               onClick={handleBack}
               className="p-2 text-gray-500 dark:text-dark-text-secondary hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
             >
-              <MdArrowBack size={24} />
+              <ArrowLeft size={24} />
             </button>
             <div>
               <div className="flex items-center gap-2">
-                <MdVerified className="text-blue-500" size={20} />
-                <span className="text-sm font-medium text-blue-600">{requisition.rfqId}</span>
+                <BadgeCheck className="text-blue-500" size={20} />
+                <span className="text-sm font-medium text-blue-600">
+                  {requisition.rfqId}
+                </span>
                 {isAwarded && (
                   <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">
                     Awarded
                   </span>
                 )}
               </div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-dark-text mt-1">{requisition.subject}</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-dark-text mt-1">
+                {requisition.subject}
+              </h1>
               {requisition.projectName && (
-                <p className="text-sm text-gray-500 dark:text-dark-text-secondary">{requisition.projectName}</p>
+                <p className="text-sm text-gray-500 dark:text-dark-text-secondary">
+                  {requisition.projectName}
+                </p>
               )}
             </div>
           </div>
@@ -198,7 +229,7 @@ export const BidAnalysisDetailPage: React.FC = () => {
               onClick={() => reqId && _downloadPdf(reqId)}
               className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-dark-text-secondary bg-gray-100 dark:bg-dark-bg rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
-              <MdDownload size={18} />
+              <Download size={18} />
               Export PDF
             </button>
             <button
@@ -213,7 +244,7 @@ export const BidAnalysisDetailPage: React.FC = () => {
               disabled={loading}
               className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-dark-text-secondary bg-gray-100 dark:bg-dark-bg rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
             >
-              <MdRefresh className={loading ? 'animate-spin' : ''} size={18} />
+              <RefreshCw className={loading ? "animate-spin" : ""} size={18} />
               Refresh
             </button>
           </div>
@@ -222,19 +253,31 @@ export const BidAnalysisDetailPage: React.FC = () => {
         {/* Price Range Bar */}
         <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-100 dark:border-dark-border">
           <div className="flex items-center gap-2">
-            <MdTrendingDown className="text-green-600" size={20} />
-            <span className="text-sm text-gray-500 dark:text-dark-text-secondary">Lowest:</span>
-            <span className="font-semibold text-green-700">{formatCurrency(priceRange.lowest)}</span>
+            <TrendingDown className="text-green-600" size={20} />
+            <span className="text-sm text-gray-500 dark:text-dark-text-secondary">
+              Lowest:
+            </span>
+            <span className="font-semibold text-green-700">
+              {formatCurrency(priceRange.lowest)}
+            </span>
           </div>
           <div className="flex items-center gap-2">
-            <MdTrendingUp className="text-red-500" size={20} />
-            <span className="text-sm text-gray-500 dark:text-dark-text-secondary">Highest:</span>
-            <span className="font-semibold text-red-600">{formatCurrency(priceRange.highest)}</span>
+            <TrendingUp className="text-red-500" size={20} />
+            <span className="text-sm text-gray-500 dark:text-dark-text-secondary">
+              Highest:
+            </span>
+            <span className="font-semibold text-red-600">
+              {formatCurrency(priceRange.highest)}
+            </span>
           </div>
           {priceRange.targetPrice && (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500 dark:text-dark-text-secondary">Target:</span>
-              <span className="font-semibold text-gray-700 dark:text-dark-text-secondary">{formatCurrency(priceRange.targetPrice)}</span>
+              <span className="text-sm text-gray-500 dark:text-dark-text-secondary">
+                Target:
+              </span>
+              <span className="font-semibold text-gray-700 dark:text-dark-text-secondary">
+                {formatCurrency(priceRange.targetPrice)}
+              </span>
             </div>
           )}
           <div className="flex-1" />
@@ -251,27 +294,45 @@ export const BidAnalysisDetailPage: React.FC = () => {
           {/* Overview Section */}
           {(priceRange.targetPrice || priceRange.maxAcceptablePrice) && (
             <div className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-3">Price Comparison</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-3">
+                Price Comparison
+              </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {priceRange.targetPrice && (
                   <div>
-                    <span className="text-sm text-gray-500 dark:text-dark-text-secondary">Target Price</span>
-                    <p className="font-semibold text-gray-900 dark:text-dark-text">{formatCurrency(priceRange.targetPrice)}</p>
+                    <span className="text-sm text-gray-500 dark:text-dark-text-secondary">
+                      Target Price
+                    </span>
+                    <p className="font-semibold text-gray-900 dark:text-dark-text">
+                      {formatCurrency(priceRange.targetPrice)}
+                    </p>
                   </div>
                 )}
                 {priceRange.maxAcceptablePrice && (
                   <div>
-                    <span className="text-sm text-gray-500 dark:text-dark-text-secondary">Max Acceptable</span>
-                    <p className="font-semibold text-gray-900 dark:text-dark-text">{formatCurrency(priceRange.maxAcceptablePrice)}</p>
+                    <span className="text-sm text-gray-500 dark:text-dark-text-secondary">
+                      Max Acceptable
+                    </span>
+                    <p className="font-semibold text-gray-900 dark:text-dark-text">
+                      {formatCurrency(priceRange.maxAcceptablePrice)}
+                    </p>
                   </div>
                 )}
                 <div>
-                  <span className="text-sm text-gray-500 dark:text-dark-text-secondary">Best Offer</span>
-                  <p className="font-semibold text-green-700">{formatCurrency(priceRange.lowest)}</p>
+                  <span className="text-sm text-gray-500 dark:text-dark-text-secondary">
+                    Best Offer
+                  </span>
+                  <p className="font-semibold text-green-700">
+                    {formatCurrency(priceRange.lowest)}
+                  </p>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-500 dark:text-dark-text-secondary">Average Offer</span>
-                  <p className="font-semibold text-gray-700 dark:text-dark-text-secondary">{formatCurrency(priceRange.average)}</p>
+                  <span className="text-sm text-gray-500 dark:text-dark-text-secondary">
+                    Average Offer
+                  </span>
+                  <p className="font-semibold text-gray-700 dark:text-dark-text-secondary">
+                    {formatCurrency(priceRange.average)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -280,7 +341,9 @@ export const BidAnalysisDetailPage: React.FC = () => {
           {/* Top 3 Bids Section */}
           {topBids.length > 0 && (
             <div className="mb-6">
-              <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-4">Top Bids</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-4">
+                Top Bids
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {topBids.map((bid) => (
                   <TopBidCard
@@ -299,7 +362,9 @@ export const BidAnalysisDetailPage: React.FC = () => {
 
           {/* Allocation Summary Table */}
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-4">All Bids</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-dark-text mb-4">
+              All Bids
+            </h3>
             <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg overflow-hidden">
               <AllocationTable
                 bids={allBids}

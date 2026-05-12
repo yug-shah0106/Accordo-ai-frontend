@@ -1,10 +1,10 @@
+import { X } from 'lucide-react';
 import { useState, useEffect, useRef } from "react";
 import Box from "@mui/material/Box";
 import RangeSlider from "./RangeSlider.jsx";
 import CheckboxGroup from "./CheckboxGroup";
 import DateFromTo from "./DateFromTo.jsx";
 import InputText from "./InputText.jsx";
-import { IoMdClose } from "react-icons/io";
 
 interface FilterValue {
   controlType: string;
@@ -117,7 +117,7 @@ const Filter = ({ onApply, onClose, filtersData = {} }: FilterProps) => {
       <div className="flex justify-between">
         <h2 className="font-normal  font-Roboto text-[24px] ">Filter</h2>
         <button onClick={onClose} className="text-black font-medium">
-          <IoMdClose />
+          <X />
         </button>
       </div>
 

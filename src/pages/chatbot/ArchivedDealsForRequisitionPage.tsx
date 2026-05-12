@@ -1,11 +1,11 @@
+import { Archive, ArrowLeft, Clock, DollarSign, Folder, RefreshCw, RotateCcw } from 'lucide-react';
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import chatbotService from "../../services/chatbot.service";
 import type { RequisitionDealsResponse, VendorDealSummary } from "../../types/chatbot";
 import { VendorDealCard } from "../../components/chatbot/requisition-view";
 import { ConfirmDialog } from "../../components/chatbot/common";
-import { FiArrowLeft, FiRefreshCw, FiArchive, FiFolder, FiDollarSign, FiClock } from "react-icons/fi";
-import { MdRestore } from "react-icons/md";
+
 import toast from "react-hot-toast";
 
 export default function ArchivedDealsForRequisitionPage() {
@@ -93,19 +93,19 @@ export default function ArchivedDealsForRequisitionPage() {
               onClick={() => navigate(`/chatbot/requisitions/${requisitionId}`)}
               className="mt-1 p-2 text-gray-600 dark:text-dark-text-secondary hover:text-gray-900 dark:hover:text-dark-text hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
-              <FiArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
               {data?.requisition ? (
                 <>
                   <div className="flex items-center gap-2 mb-1">
-                    <FiArchive className="w-4 h-4 text-orange-500" />
+                    <Archive className="w-4 h-4 text-orange-500" />
                     <span className="text-sm font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
                       {data.requisition.rfqNumber}
                     </span>
                     <span className="text-gray-300 dark:text-gray-600">|</span>
                     <span className="text-sm text-gray-500 dark:text-dark-text-secondary flex items-center gap-1">
-                      <FiFolder className="w-3.5 h-3.5" />
+                      <Folder className="w-3.5 h-3.5" />
                       {data.requisition.projectName}
                     </span>
                   </div>
@@ -114,11 +114,11 @@ export default function ArchivedDealsForRequisitionPage() {
                   </h1>
                   <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-dark-text-secondary">
                     <span className="flex items-center gap-1">
-                      <FiDollarSign className="w-4 h-4" />
+                      <DollarSign className="w-4 h-4" />
                       {formatCurrency(data.requisition.estimatedValue)}
                     </span>
                     <span className="flex items-center gap-1">
-                      <FiClock className="w-4 h-4" />
+                      <Clock className="w-4 h-4" />
                       {formatDate(data.requisition.deadline)}
                     </span>
                   </div>
@@ -136,7 +136,7 @@ export default function ArchivedDealsForRequisitionPage() {
             disabled={loading}
             className="p-2 text-gray-600 dark:text-dark-text bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
-            <FiRefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
         <div className="mt-4">
@@ -155,7 +155,7 @@ export default function ArchivedDealsForRequisitionPage() {
           </div>
         ) : (data?.deals.length || 0) === 0 ? (
           <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm p-12 text-center">
-            <FiArchive className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+            <Archive className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text mb-2">
               No archived deals
             </h3>
@@ -181,7 +181,7 @@ export default function ArchivedDealsForRequisitionPage() {
                   onClick={(e) => handleUnarchiveClick(e, deal)}
                   className="absolute bottom-4 right-4 px-3 py-1.5 text-xs font-medium text-green-600 dark:text-green-400 bg-white dark:bg-dark-surface border border-green-200 dark:border-green-800 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-green-50 dark:hover:bg-green-900/20 flex items-center gap-1.5"
                 >
-                  <MdRestore className="w-4 h-4" />
+                  <RotateCcw className="w-4 h-4" />
                   Restore
                 </button>
               </div>

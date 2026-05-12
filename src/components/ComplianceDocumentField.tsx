@@ -1,6 +1,6 @@
+import { Check, Loader2, Upload, X } from 'lucide-react';
 import React, { useState, useRef } from 'react';
-import { FiUpload, FiX, FiCheck } from 'react-icons/fi';
-import { ImSpinner8 } from 'react-icons/im';
+
 import { authApi } from '../api';
 
 interface ComplianceDocumentFieldProps {
@@ -138,11 +138,11 @@ const ComplianceDocumentField: React.FC<ComplianceDocumentFieldProps> = ({
           title={hasFile ? 'Document uploaded' : 'Upload document'}
         >
           {isExtracting ? (
-            <ImSpinner8 className="w-5 h-5 animate-spin text-blue-600" />
+            <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
           ) : hasFile ? (
-            <FiCheck className="w-5 h-5" />
+            <Check className="w-5 h-5" />
           ) : (
-            <FiUpload className="w-5 h-5" />
+            <Upload className="w-5 h-5" />
           )}
         </button>
 
@@ -160,7 +160,7 @@ const ComplianceDocumentField: React.FC<ComplianceDocumentFieldProps> = ({
       {hasFile && displayFileName && (
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-full border border-green-200">
-            <FiCheck className="w-3 h-3" />
+            <Check className="w-3 h-3" />
             {displayFileName.length > 25
               ? `${displayFileName.substring(0, 25)}...`
               : displayFileName
@@ -171,7 +171,7 @@ const ComplianceDocumentField: React.FC<ComplianceDocumentFieldProps> = ({
               className="ml-1 p-0.5 hover:bg-green-100 rounded-full transition-colors"
               title="Remove file"
             >
-              <FiX className="w-3 h-3" />
+              <X className="w-3 h-3" />
             </button>
           </span>
         </div>

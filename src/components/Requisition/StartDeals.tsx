@@ -1,6 +1,7 @@
+import { Check, Play, RefreshCw, X } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiPlay, FiCheck, FiX, FiRefreshCw } from 'react-icons/fi';
+
 import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Button from '../Button';
@@ -363,7 +364,7 @@ const StartDeals: React.FC<StartDealsProps> = ({
               disabled={selectedVendorIds.length === 0 || creating}
               className="w-full px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <FiPlay className="w-4 h-4" />
+              <Play className="w-4 h-4" />
               Configure & Start Deals ({selectedVendorIds.length})
             </button>
           </div>
@@ -388,13 +389,13 @@ const StartDeals: React.FC<StartDealsProps> = ({
           {/* Summary bar */}
           {succeededCount > 0 && (
             <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center gap-2">
-              <FiCheck className="w-4 h-4 text-green-600" />
+              <Check className="w-4 h-4 text-green-600" />
               <span className="text-sm text-green-700">{succeededCount} deal{succeededCount !== 1 ? 's' : ''} created successfully</span>
             </div>
           )}
           {failedCount > 0 && (
             <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2 flex items-center gap-2">
-              <FiX className="w-4 h-4 text-red-600" />
+              <X className="w-4 h-4 text-red-600" />
               <span className="text-sm text-red-700">{failedCount} deal{failedCount !== 1 ? 's' : ''} failed</span>
             </div>
           )}
@@ -411,9 +412,9 @@ const StartDeals: React.FC<StartDealsProps> = ({
                 }`}
               >
                 {result.status === 'fulfilled' ? (
-                  <FiCheck className="w-4 h-4 text-green-600 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
                 ) : (
-                  <FiX className="w-4 h-4 text-red-600 flex-shrink-0" />
+                  <X className="w-4 h-4 text-red-600 flex-shrink-0" />
                 )}
                 <span className="font-medium">{result.vendorName}</span>
                 {result.error && (
@@ -432,7 +433,7 @@ const StartDeals: React.FC<StartDealsProps> = ({
               onClick={handleRetryFailed}
               className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium mt-2"
             >
-              <FiRefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-4 h-4" />
               Retry {failedCount} failed vendor{failedCount !== 1 ? 's' : ''}
             </button>
           )}

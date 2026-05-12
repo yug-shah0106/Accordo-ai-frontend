@@ -1,13 +1,10 @@
+import { ArrowLeft, ChevronDown, Eye, Pencil, Plus, Search, Settings, SquarePlus, Trash2 } from 'lucide-react';
 import { useState } from "react";
-import { IoSearchOutline } from "react-icons/io5";
-import { VscEdit, VscSettings } from "react-icons/vsc";
-import { PiPlusSquareBold } from "react-icons/pi";
+
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Table from "../Table";
 import Pagination from "../Pagination";
-import { RiDeleteBin5Line } from "react-icons/ri";
-import { FaArrowLeft, FaCaretDown, FaPlus, FaRegEye } from "react-icons/fa";
-import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+
 import useFetchData from "../../hooks/useFetchData";
 import useDebounce from "../../hooks/useDebounce";
 import { authApi } from "../../api";
@@ -84,7 +81,6 @@ const ViewRequisition = () => {
     },
   ])
 
-
   const {
     data: requisitions,
     loading,
@@ -102,8 +98,6 @@ const ViewRequisition = () => {
     projectid: state,
   });
   const debounce = useDebounce(setSearch, 600);
-
-
 
   const handleDeleteModalConfirm = async (id: any) => {
     try {
@@ -159,20 +153,20 @@ const ViewRequisition = () => {
     {
       type: "link" as const,
       label: "View Contracts",
-      icon: <FaRegEye />,
+      icon: <Eye />,
       link: (_row: any) => `/requisition-management/requisition/contract`,
       state: "whole",
     },
     {
       type: "link" as const,
       label: "Add Vendor",
-      icon: <FaPlus />,
+      icon: <Plus />,
       link: (row: any) => `/requisition-management/edit-requisition/${row.id}?redirect=3`,
     },
     {
       type: "button" as const,
       label: "Cancel Requisition",
-      icon: <RiDeleteBin5Line />,
+      icon: <Trash2 />,
       onClick: (row: any) => {
         setIsModal(row.id);
       },
@@ -180,7 +174,7 @@ const ViewRequisition = () => {
     {
       type: "button" as const,
       label: "View Details",
-      icon: <FaRegEye />,
+      icon: <Eye />,
       onClick: (row: any) => {
         setSelectedProject(row);
         setIsSidebarOpen(row);
@@ -189,13 +183,12 @@ const ViewRequisition = () => {
     {
       type: "link" as const,
       label: "Edit Details",
-      icon: <VscEdit />,
+      icon: <Pencil />,
       link: (row: any) => `/requisition-management/edit-requisition/${row.id}`,
     },
   ];
 
   const handleRowClick = (project: any) => {
-
 
     setSelectedProject(project);
     setIsSidebarOpen(true);
@@ -240,8 +233,6 @@ const ViewRequisition = () => {
     setIsFilterModalOpen(false);
   };
 
-
-
   const closeSidebar = () => {
     setIsSidebarOpen(false);
     setSelectedProject(null);
@@ -255,7 +246,7 @@ const ViewRequisition = () => {
     <div className="bg-white rounded-lg shadow-md pt-6 px-6 pb-0 h-full">
       <div className="mb-4">
         <p className="text-xl font-medium text-gray-800 flex items-center gap-2">
-          <FaArrowLeft
+          <ArrowLeft
             onClick={() => {
               navigate(-1);
             }}
@@ -273,13 +264,13 @@ const ViewRequisition = () => {
             placeholder=" Search by name"
             className="border border-gray-300 rounded-md pr-10 pt-2 pb-0 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 w-full px-4"
           />
-          <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
         </div>
         <div className="flex gap-6">
           <button
             onClick={() => setIsFilterModalOpen((prev) => (!prev))}
             className="rounded-md px-4 pt-2 pb-0 text-sm font-medium text-black bg-[#F7F9FB] flex items-center gap-1">
-            <VscSettings /> Filter <FaCaretDown />
+            <Settings /> Filter <ChevronDown />
           </button>
 
           <div className="absolute md:right-[35%] right-[20%]">
@@ -298,7 +289,7 @@ const ViewRequisition = () => {
             state={state}
             className="bg-[#234BF3] text-white font-medium rounded-md px-4 pt-2 pb-0 text-sm flex items-center gap-2"
           >
-            <PiPlusSquareBold className="font-extrabold text-xl rounded-3xl" />{" "}
+            <SquarePlus className="font-extrabold text-xl rounded-3xl" />{" "}
             Add
           </Link>
         </div>
@@ -331,7 +322,7 @@ const ViewRequisition = () => {
             <div className="flex justify-between mb-4 mt-8 items-center">
               <p className="text-md font-semibold flex items-center gap-2">
                 <button onClick={closeSidebar}>
-                  <FaArrowLeft />
+                  <ArrowLeft />
                 </button>
                 {selectedProject.ReqId}
               </p>
@@ -347,7 +338,7 @@ const ViewRequisition = () => {
 
           <div className="flex justify-between">
             <h3 className="text-lg font-medium mb-4">Basic Information</h3>
-            <MdOutlineKeyboardArrowDown />
+            <ChevronDown />
           </div>
           {selectedProject && (
             <div className="grid grid-cols-3 text-sm gap-8">
@@ -389,7 +380,7 @@ const ViewRequisition = () => {
             <>
               <div className="flex justify-between">
                 <h3 className="text-lg font-medium mt-6">Product Details</h3>
-                <MdOutlineKeyboardArrowDown />
+                <ChevronDown />
               </div>
               <table className="w-full bg-white mt-4 rounded overflow-hidden">
                 <thead>

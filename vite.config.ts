@@ -6,7 +6,11 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   // BACKEND_PROXY_TARGET is server-only (not exposed to browser).
   // Falls back to VITE_BACKEND_URL, then localhost:5002.
-  const rawBackend = (env.BACKEND_PROXY_TARGET || env.VITE_BACKEND_URL || "").trim();
+  const rawBackend = (
+    env.BACKEND_PROXY_TARGET ||
+    env.VITE_BACKEND_URL ||
+    ""
+  ).trim();
   const normalizedBackend = rawBackend
     ? rawBackend.replace(/\/+$/, "")
     : "http://localhost:5002";
@@ -21,9 +25,35 @@ export default defineConfig(({ mode }) => {
       },
     },
     optimizeDeps: {
-      include: ["react-router-dom", "@mui/material", "@emotion/react", "@emotion/styled"],
+      include: [
+        "react-router-dom",
+        "@mui/material",
+        "@emotion/react",
+        "@emotion/styled",
+      ],
     },
     plugins: [react()],
+    build: {
+      target: "es2020",
+      sourcemap: false,
+      minify: "esbuild",
+      reportCompressedSize: true,
+      rollupOptions: {
+        output: {
+          // Split heavy vendor libs into long-cached chunks so app code can
+          // change without invalidating the framework / UI / chart bundles.
+          manualChunks: {
+            "vendor-react": ["react", "react-dom", "react-router-dom"],
+            "vendor-mui": [
+              "@mui/material",
+              "@emotion/react",
+              "@emotion/styled",
+            ],
+            "vendor-charts": ["chart.js", "react-chartjs-2"],
+          },
+        },
+      },
+    },
     server: {
       host: env.VITE_DEV_HOST || "0.0.0.0",
       port: env.VITE_DEV_PORT ? Number(env.VITE_DEV_PORT) : 5001,

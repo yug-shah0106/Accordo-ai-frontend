@@ -1,3 +1,4 @@
+import { Building2, Pencil, Trash2 } from 'lucide-react';
 import InputField from "../InputField";
 import Button from "../Button";
 import { authApi } from "../../api";
@@ -5,9 +6,7 @@ import { useEffect, useState, useRef } from "react";
 import SelectField from "../SelectField";
 import DateField from "../DateField";
 import toast from "react-hot-toast";
-import { CiEdit } from "react-icons/ci";
-import { RiDeleteBin6Line } from "react-icons/ri";
-import { BsBuilding } from "react-icons/bs";
+
 import Modal from "../Modal";
 import ComplianceDocumentField from "../ComplianceDocumentField";
 import AddressSection from "./AddressSection";
@@ -373,7 +372,7 @@ const CompanyProfile = ({
             </div>
           ) : (
             <div className="w-24 h-24 rounded-lg bg-gray-100 dark:bg-dark-bg border-2 border-gray-200 dark:border-dark-border flex items-center justify-center shadow-sm">
-              <BsBuilding className="w-10 h-10 text-gray-400 dark:text-gray-500" />
+              <Building2 className="w-10 h-10 text-gray-400 dark:text-gray-500" />
             </div>
           )}
         </div>
@@ -385,7 +384,7 @@ const CompanyProfile = ({
             onClick={handleLogoChangeClick}
             className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
           >
-            <CiEdit className="w-4 h-4" />
+            <Pencil className="w-4 h-4" />
             Change
           </button>
           {imagePreviews.companyLogo && (
@@ -394,7 +393,7 @@ const CompanyProfile = ({
               onClick={() => setShowDeleteLogoModal(true)}
               className="inline-flex items-center gap-1.5 text-sm text-red-600 hover:text-red-700 font-medium transition-colors"
             >
-              <RiDeleteBin6Line className="w-4 h-4" />
+              <Trash2 className="w-4 h-4" />
               Delete
             </button>
           )}

@@ -1,11 +1,12 @@
+import { Copy, ExternalLink, Play, Trash2, User } from 'lucide-react';
 import { useForm } from "react-hook-form";
 import { FormSelect, SelectOption } from "../shared";
 import Button from "../Button";
 import useFetchData from "../../hooks/useFetchData";
-import { RiDeleteBinLine } from "react-icons/ri";
+
 import toast from "react-hot-toast";
 import { authApi } from "../../api";
-import { FiExternalLink, FiPlay, FiUser, FiCopy } from "react-icons/fi";
+
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import Modal from "../Modal";
@@ -469,7 +470,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <FiUser className="w-4 h-4" />
+                        <User className="w-4 h-4" />
                         <span className="max-w-[120px] truncate">{group.vendorName}</span>
                         <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-dark-text-secondary">
                           {group.dealCount}
@@ -503,7 +504,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                           onClick={() => handleStartNegotiation(activeGroup.vendorId, activeGroup.vendorName)}
                           type="button"
                         >
-                          <FiPlay className="w-3 h-3" />
+                          <Play className="w-3 h-3" />
                           New
                         </Button>
                       </div>
@@ -546,7 +547,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                                       onClick={() => handleViewDeal(item.deal!)}
                                       className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors flex-shrink-0"
                                     >
-                                      <FiExternalLink className="w-4 h-4" />
+                                      <ExternalLink className="w-4 h-4" />
                                       View
                                     </button>
                                   </div>
@@ -602,7 +603,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                                         className="p-1.5 rounded border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-surface hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
                                         title="Open link"
                                       >
-                                        <FiExternalLink className="w-4 h-4 text-gray-700 dark:text-dark-text-secondary" />
+                                        <ExternalLink className="w-4 h-4 text-gray-700 dark:text-dark-text-secondary" />
                                       </button>
                                     </div>
                                   </div>
@@ -654,7 +655,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                         className="p-1.5 rounded border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-surface hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         title="Copy link"
                       >
-                        <FiCopy className="w-4 h-4 text-gray-700 dark:text-dark-text-secondary" />
+                        <Copy className="w-4 h-4 text-gray-700 dark:text-dark-text-secondary" />
                       </button>
                       <button
                         type="button"
@@ -662,7 +663,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                         className="p-1.5 rounded border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-surface hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         title="Open link"
                       >
-                        <FiExternalLink className="w-4 h-4 text-gray-700 dark:text-dark-text-secondary" />
+                        <ExternalLink className="w-4 h-4 text-gray-700 dark:text-dark-text-secondary" />
                       </button>
                       <button
                         type="button"
@@ -670,7 +671,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                         className="p-1.5 rounded border border-red-300 bg-white hover:bg-red-50 transition-colors"
                         title="Delete"
                       >
-                        <RiDeleteBinLine className="w-4 h-4 text-red-600" />
+                        <Trash2 className="w-4 h-4 text-red-600" />
                       </button>
                     </div>
                   </li>

@@ -1,7 +1,6 @@
+import { ChevronDown, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { useState } from "react";
-import { MdKeyboardArrowRight, MdOutlineKeyboardArrowDown } from "react-icons/md";
-import { RiDeleteBin6Line } from "react-icons/ri";
-import { HiPlus } from "react-icons/hi";
+
 import InputField from "../InputField";
 import SelectField from "../SelectField";
 import {
@@ -143,7 +142,7 @@ const AddressSection = ({ addresses, onChange, errors }: AddressSectionProps) =>
           onClick={handleAddAddress}
           className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
         >
-          <HiPlus className="w-4 h-4" />
+          <Plus className="w-4 h-4" />
           Add Address
         </button>
       </div>
@@ -212,13 +211,13 @@ const AddressSection = ({ addresses, onChange, errors }: AddressSectionProps) =>
                         className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                         title="Delete address"
                       >
-                        <RiDeleteBin6Line className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     )}
                     {isExpanded ? (
-                      <MdOutlineKeyboardArrowDown className="w-6 h-6 text-gray-400 dark:text-gray-500" />
+                      <ChevronDown className="w-6 h-6 text-gray-400 dark:text-gray-500" />
                     ) : (
-                      <MdKeyboardArrowRight className="w-6 h-6 text-gray-400 dark:text-gray-500" />
+                      <ChevronRight className="w-6 h-6 text-gray-400 dark:text-gray-500" />
                     )}
                   </div>
                 </button>

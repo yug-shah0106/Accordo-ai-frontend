@@ -1,11 +1,10 @@
+import { Pencil, Trash2, User } from 'lucide-react';
 import { useForm } from "react-hook-form";
 import InputField from "../../components/InputField";
 import Button from "../../components/Button";
 import { authApi } from "../../api";
 import { useEffect, useRef, useState } from "react";
-import { CiEdit } from "react-icons/ci";
-import { RiDeleteBin6Line } from "react-icons/ri";
-import { FiUser } from "react-icons/fi";
+
 import toast from "react-hot-toast";
 import Modal from "../../components/Modal";
 import { env } from "@/utils/env";
@@ -239,7 +238,7 @@ const OnboardingProfile = ({
             </div>
           ) : (
             <div className="w-24 h-24 rounded-full bg-gray-100 border-2 border-gray-200 flex items-center justify-center shadow-sm">
-              <FiUser className="w-10 h-10 text-gray-400" />
+              <User className="w-10 h-10 text-gray-400" />
             </div>
           )}
         </div>
@@ -250,7 +249,7 @@ const OnboardingProfile = ({
             onClick={handleChangeClick}
             className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
           >
-            <CiEdit className="w-4 h-4" />
+            <Pencil className="w-4 h-4" />
             {preview ? "Change" : "Add Photo"}
           </button>
           {preview && (
@@ -259,7 +258,7 @@ const OnboardingProfile = ({
               onClick={() => setShowDeleteModal(true)}
               className="inline-flex items-center gap-1.5 text-sm text-red-600 hover:text-red-700 font-medium transition-colors"
             >
-              <RiDeleteBin6Line className="w-4 h-4" />
+              <Trash2 className="w-4 h-4" />
               Delete
             </button>
           )}

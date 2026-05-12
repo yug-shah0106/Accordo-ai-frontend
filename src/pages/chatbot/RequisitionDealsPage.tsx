@@ -1,10 +1,11 @@
+import { Archive, ArrowLeft, Clock, DollarSign, Filter, Folder, Plus, RefreshCw } from 'lucide-react';
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import chatbotService from "../../services/chatbot.service";
 import type { RequisitionDealsResponse, RequisitionDealsQueryParams, DealStatus, ArchiveFilter, VendorDealSummary } from "../../types/chatbot";
 import { VendorDealCard, DealSummaryModal } from "../../components/chatbot/requisition-view";
-import { FiArrowLeft, FiPlus, FiRefreshCw, FiFilter, FiFolder, FiDollarSign, FiClock, FiArchive } from "react-icons/fi";
-// Note: FiArchive is still used for the "View Archived" link in the header
+
+// Note: Archive is still used for the "View Archived" link in the header
 import { ConfirmDialog, ArchiveFilterDropdown } from "../../components/chatbot/common";
 import toast from "react-hot-toast";
 
@@ -196,7 +197,7 @@ export default function RequisitionDealsPage() {
               onClick={handleBack}
               className="mt-1 p-2 text-gray-600 dark:text-dark-text-secondary hover:text-gray-900 dark:hover:text-dark-text hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
-              <FiArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
               {data?.requisition && (
@@ -207,7 +208,7 @@ export default function RequisitionDealsPage() {
                     </span>
                     <span className="text-gray-300 dark:text-gray-600">|</span>
                     <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-dark-text-secondary">
-                      <FiFolder className="w-3.5 h-3.5" />
+                      <Folder className="w-3.5 h-3.5" />
                       {data.requisition.projectName}
                     </div>
                   </div>
@@ -216,11 +217,11 @@ export default function RequisitionDealsPage() {
                   </h1>
                   <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-dark-text-secondary">
                     <div className="flex items-center gap-1">
-                      <FiDollarSign className="w-4 h-4" />
+                      <DollarSign className="w-4 h-4" />
                       {formatCurrency(data.requisition.estimatedValue)}
                     </div>
                     <div className="flex items-center gap-1">
-                      <FiClock className="w-4 h-4" />
+                      <Clock className="w-4 h-4" />
                       {formatDate(data.requisition.deadline)}
                     </div>
                   </div>
@@ -248,7 +249,7 @@ export default function RequisitionDealsPage() {
               className="p-2 text-gray-600 dark:text-dark-text bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
               title="Refresh"
             >
-              <FiRefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
             </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -259,13 +260,13 @@ export default function RequisitionDealsPage() {
               }`}
               title="Toggle Filters"
             >
-              <FiFilter className="w-5 h-5" />
+              <Filter className="w-5 h-5" />
             </button>
             <button
               onClick={handleCreateDeal}
               className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
             >
-              <FiPlus className="w-5 h-5" />
+              <Plus className="w-5 h-5" />
               Add Vendor
             </button>
           </div>
@@ -304,7 +305,7 @@ export default function RequisitionDealsPage() {
                 onClick={() => navigate(`/chatbot/requisitions/${requisitionId}/archived`)}
                 className="text-sm text-gray-600 dark:text-dark-text-secondary hover:text-orange-600 dark:hover:text-orange-400 flex items-center gap-1.5 transition-colors"
               >
-                <FiArchive className="w-4 h-4" />
+                <Archive className="w-4 h-4" />
                 View Archived
               </button>
             )}

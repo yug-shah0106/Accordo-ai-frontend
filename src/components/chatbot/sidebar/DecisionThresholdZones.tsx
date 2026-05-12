@@ -10,7 +10,8 @@
  * Shows current utility position with an animated needle indicator.
  */
 
-import { FiTarget } from "react-icons/fi";
+
+import { Target } from 'lucide-react';
 import { useMemo } from "react";
 import { DECISION_ACTION_COLORS, GAUGE_ZONE_MAP, getActionColors } from "../../../constants/colors";
 
@@ -137,7 +138,7 @@ export default function DecisionThresholdZones({
     <div className="bg-white dark:bg-dark-surface rounded-lg p-3 border border-gray-200 dark:border-dark-border">
       {/* Header */}
       <div className="flex items-center gap-2 mb-1">
-        <FiTarget className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+        <Target className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
         <span className="text-xs font-semibold text-gray-800 dark:text-dark-text">
           Decision Thresholds
         </span>

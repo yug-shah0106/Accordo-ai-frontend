@@ -1,4 +1,5 @@
-import { IoDocumentOutline } from "react-icons/io5";
+
+import { FileText } from 'lucide-react';
 import logo from '../../assets/logo.png';
 
 function Sidebar() {
@@ -9,7 +10,7 @@ function Sidebar() {
       </div>
 
       <div className="flex items-center gap-2 bg-white lg:p-3 rounded-md shadow">
-        <IoDocumentOutline className="text-2xl w-16 text-black" />
+        <FileText className="text-2xl w-16 text-black" />
         <p className="lg:text-lg font-semibold text-gray-800 sm:text-sm">Requisition Details</p>
       </div>
 

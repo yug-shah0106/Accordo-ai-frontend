@@ -1,9 +1,9 @@
+import { MessageSquare } from 'lucide-react';
 /**
  * Feedback Page
  * Placeholder page for the Feedback feature
  */
 
-import { VscFeedback } from "react-icons/vsc";
 
 const Feedback = () => {
   return (
@@ -11,7 +11,7 @@ const Feedback = () => {
       <div className="text-center max-w-md">
         <div className="mb-6 flex justify-center">
           <div className="p-6 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-            <VscFeedback className="text-6xl text-blue-600 dark:text-blue-400" />
+            <MessageSquare className="text-6xl text-blue-600 dark:text-blue-400" />
           </div>
         </div>
         <h1 className="text-3xl font-bold text-gray-800 dark:text-dark-text mb-4">

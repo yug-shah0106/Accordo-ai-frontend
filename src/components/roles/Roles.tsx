@@ -1,15 +1,14 @@
+import { ArrowLeft, MoreHorizontal, Pencil, SquarePlus, Trash2 } from 'lucide-react';
 import React, { useState, useEffect } from "react";
 // Table component available if needed
 // import Table from "../Table";
-import { PiDotsThreeBold, PiPlusSquareBold } from "react-icons/pi";
+
 import { useNavigate } from "react-router-dom";
 import RoleSelectionModal from "../user/RoleSelection";
 import { authApi } from "../../api";
 import { Menu, MenuItem } from "@mui/material";
-import { VscEdit } from "react-icons/vsc";
-import { RiDeleteBin5Line } from "react-icons/ri";
+
 import { format } from "date-fns";
-import { IoArrowBackOutline } from "react-icons/io5";
 
 interface Role {
   id: number;
@@ -98,7 +97,7 @@ function Roles() {
     index: index + 1,
     actions: (
       <div className="relative">
-        <PiDotsThreeBold
+        <MoreHorizontal
           className="text-xl cursor-pointer hover:text-blue-500 transition-colors"
           onClick={(event: React.MouseEvent<SVGElement>) => setSelectedRow({ element: event.currentTarget as unknown as HTMLElement, user: role })}
         />
@@ -129,7 +128,7 @@ function Roles() {
             }}
             className="flex items-center gap-2 text-gray-700 hover:bg-blue-50"
           >
-            <VscEdit className="text-blue-500" /> Edit
+            <Pencil className="text-blue-500" /> Edit
           </MenuItem>
           <MenuItem
             onClick={() => {
@@ -138,7 +137,7 @@ function Roles() {
             }}
             className="flex items-center gap-2 text-gray-700 hover:bg-red-50"
           >
-            <RiDeleteBin5Line className="text-red-500" /> Delete
+            <Trash2 className="text-red-500" /> Delete
           </MenuItem>
         </Menu>
       </div>
@@ -157,7 +156,7 @@ function Roles() {
                   onClick={() => navigate(-1)}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
                 >
-                  <IoArrowBackOutline className="text-2xl text-gray-600 dark:text-dark-text-secondary" />
+                  <ArrowLeft className="text-2xl text-gray-600 dark:text-dark-text-secondary" />
                 </button>
                 <h1 className="text-2xl font-semibold text-gray-800 dark:text-dark-text">Roles</h1>
               </div>
@@ -172,7 +171,7 @@ function Roles() {
               }}
               className="flex items-center gap-2 bg-blue-500 text-white px-4 pt-2 pb-0 rounded-md hover:bg-blue-600 transition-colors"
             >
-              <PiPlusSquareBold className="text-xl" />
+              <SquarePlus className="text-xl" />
               Create New Role
             </button>
           </div>

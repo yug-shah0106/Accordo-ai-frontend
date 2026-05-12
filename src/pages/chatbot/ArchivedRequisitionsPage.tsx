@@ -1,11 +1,11 @@
+import { Archive, ArrowLeft, RefreshCw, RotateCcw } from 'lucide-react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import chatbotService from "../../services/chatbot.service";
 import type { RequisitionWithDeals } from "../../types/chatbot";
 import { RequisitionCard } from "../../components/chatbot/requisition-view";
 import { ConfirmDialog } from "../../components/chatbot/common";
-import { FiArrowLeft, FiRefreshCw, FiArchive } from "react-icons/fi";
-import { MdRestore } from "react-icons/md";
+
 import toast from "react-hot-toast";
 
 export default function ArchivedRequisitionsPage() {
@@ -68,11 +68,11 @@ export default function ArchivedRequisitionsPage() {
               onClick={() => navigate('/chatbot/requisitions')}
               className="p-2 text-gray-600 dark:text-dark-text-secondary hover:text-gray-900 dark:hover:text-dark-text hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
-              <FiArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-dark-text flex items-center gap-2">
-                <FiArchive className="w-6 h-6 text-orange-500" />
+                <Archive className="w-6 h-6 text-orange-500" />
                 Archived Requisitions
               </h1>
               <p className="text-gray-600 dark:text-dark-text-secondary mt-1">
@@ -85,7 +85,7 @@ export default function ArchivedRequisitionsPage() {
             disabled={loading}
             className="p-2 text-gray-600 dark:text-dark-text bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
-            <FiRefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
@@ -99,7 +99,7 @@ export default function ArchivedRequisitionsPage() {
           </div>
         ) : requisitions.length === 0 ? (
           <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm p-12 text-center">
-            <FiArchive className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+            <Archive className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text mb-2">
               No archived requisitions
             </h3>
@@ -125,7 +125,7 @@ export default function ArchivedRequisitionsPage() {
                   onClick={(e) => handleUnarchiveClick(e, requisition)}
                   className="absolute bottom-4 right-4 px-3 py-1.5 text-xs font-medium text-green-600 dark:text-green-400 bg-white dark:bg-dark-surface border border-green-200 dark:border-green-800 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-green-50 dark:hover:bg-green-900/20 flex items-center gap-1.5"
                 >
-                  <MdRestore className="w-4 h-4" />
+                  <RotateCcw className="w-4 h-4" />
                   Restore
                 </button>
               </div>

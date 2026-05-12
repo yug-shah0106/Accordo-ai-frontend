@@ -2,9 +2,10 @@
  * BidAnalysisListPage - Main list page showing requisitions with bid summaries
  */
 
+import { BadgeCheck, Filter, RefreshCw, Search } from 'lucide-react';
 import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MdVerified, MdSearch, MdFilterList, MdRefresh } from 'react-icons/md';
+
 import toast from 'react-hot-toast';
 import { useBidAnalysisRequisitions } from '../../hooks/bidAnalysis';
 import { RequisitionCard } from '../../components/bidAnalysis';
@@ -49,7 +50,7 @@ export const BidAnalysisListPage: React.FC = () => {
       <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-6 pt-6 pb-4 flex-shrink-0">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <MdVerified className="text-blue-500" size={28} />
+            <BadgeCheck className="text-blue-500" size={28} />
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-dark-text">Bid Analysis</h1>
               <p className="text-sm text-gray-500 dark:text-dark-text-secondary">Compare and analyze vendor bids</p>
@@ -67,7 +68,7 @@ export const BidAnalysisListPage: React.FC = () => {
             disabled={loading}
             className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-dark-text-secondary bg-gray-100 dark:bg-dark-bg rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
           >
-            <MdRefresh className={loading ? 'animate-spin' : ''} size={18} />
+            <RefreshCw className={loading ? 'animate-spin' : ''} size={18} />
             Refresh
           </button>
         </div>
@@ -77,7 +78,7 @@ export const BidAnalysisListPage: React.FC = () => {
           {/* Search */}
           <div className="flex-1 min-w-[250px]">
             <div className="relative">
-              <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={20} />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={20} />
               <input
                 type="text"
                 value={filters.search || ''}
@@ -90,7 +91,7 @@ export const BidAnalysisListPage: React.FC = () => {
 
           {/* Status Filter */}
           <div className="flex items-center gap-2">
-            <MdFilterList className="text-gray-400 dark:text-gray-500" size={20} />
+            <Filter className="text-gray-400 dark:text-gray-500" size={20} />
             <select
               value={filters.status}
               onChange={handleStatusChange}
@@ -141,7 +142,7 @@ export const BidAnalysisListPage: React.FC = () => {
         {/* Empty State */}
         {!loading && !error && requisitions.length === 0 && (
           <div className="text-center py-16">
-            <MdVerified className="mx-auto text-gray-300 dark:text-gray-600 mb-4" size={64} />
+            <BadgeCheck className="mx-auto text-gray-300 dark:text-gray-600 mb-4" size={64} />
             <h3 className="text-lg font-medium text-gray-900 dark:text-dark-text mb-2">
               No requisitions found
             </h3>

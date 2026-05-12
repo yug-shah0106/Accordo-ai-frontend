@@ -2,8 +2,9 @@
  * ApprovalsSidebar - Right sidebar with approvals and history tabs
  */
 
+import { Check, Clock, RefreshCw, User, X } from 'lucide-react';
 import React, { useState } from 'react';
-import { MdCheck, MdClose, MdRefresh, MdPerson, MdAccessTime } from 'react-icons/md';
+
 import type { TopBidInfo, BidActionHistoryEntry } from '../../types/bidAnalysis';
 
 interface ApprovalsSidebarProps {
@@ -140,7 +141,7 @@ const ApprovalsTab: React.FC<ApprovalsTabProps> = ({
   if (isAwarded) {
     return (
       <div className="text-center py-8">
-        <MdCheck className="mx-auto text-green-500 mb-2" size={48} />
+        <Check className="mx-auto text-green-500 mb-2" size={48} />
         <p className="text-gray-600 dark:text-dark-text-secondary font-medium">Requisition Awarded</p>
         <p className="text-sm text-gray-500 dark:text-dark-text-secondary mt-1">
           A vendor has been selected for this requisition
@@ -152,7 +153,7 @@ const ApprovalsTab: React.FC<ApprovalsTabProps> = ({
   if (!selectedBid) {
     return (
       <div className="text-center py-8 text-gray-500 dark:text-dark-text-secondary">
-        <MdPerson className="mx-auto mb-2 opacity-50" size={48} />
+        <User className="mx-auto mb-2 opacity-50" size={48} />
         <p>Select a bid to review</p>
       </div>
     );
@@ -199,7 +200,7 @@ const ApprovalsTab: React.FC<ApprovalsTabProps> = ({
               disabled={loading}
               className="mt-2 flex items-center gap-1 text-sm text-red-600 hover:text-red-700"
             >
-              <MdRefresh size={16} />
+              <RefreshCw size={16} />
               Restore Bid
             </button>
           </div>
@@ -237,7 +238,7 @@ const ApprovalsTab: React.FC<ApprovalsTabProps> = ({
               title={remarks.trim() === '' ? 'Please enter remarks first' : 'Accept this bid'}
               className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <MdCheck size={18} />
+              <Check size={18} />
               Accept
             </button>
             <button
@@ -246,7 +247,7 @@ const ApprovalsTab: React.FC<ApprovalsTabProps> = ({
               title={remarks.trim() === '' ? 'Please enter remarks first' : 'Reject this bid'}
               className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <MdClose size={18} />
+              <X size={18} />
               Reject
             </button>
           </div>
@@ -266,20 +267,20 @@ const HistoryTab: React.FC<HistoryTabProps> = ({ history, formatTimeAgo }) => {
   const getActionIcon = (action: string) => {
     switch (action) {
       case 'SELECTED':
-        return <MdCheck className="text-green-500" size={16} />;
+        return <Check className="text-green-500" size={16} />;
       case 'REJECTED':
-        return <MdClose className="text-red-500" size={16} />;
+        return <X className="text-red-500" size={16} />;
       case 'RESTORED':
-        return <MdRefresh className="text-blue-500" size={16} />;
+        return <RefreshCw className="text-blue-500" size={16} />;
       default:
-        return <MdAccessTime className="text-gray-400 dark:text-gray-500" size={16} />;
+        return <Clock className="text-gray-400 dark:text-gray-500" size={16} />;
     }
   };
 
   if (history.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500 dark:text-dark-text-secondary">
-        <MdAccessTime className="mx-auto mb-2 opacity-50" size={48} />
+        <Clock className="mx-auto mb-2 opacity-50" size={48} />
         <p>No history yet</p>
       </div>
     );

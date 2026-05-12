@@ -6,8 +6,8 @@
  * Supports accordion behavior (one section open at a time) via isOpen/onToggle props.
  */
 
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { ReactNode } from "react";
-import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 
 export interface CollapsibleSectionProps {
   title: string;
@@ -117,9 +117,9 @@ export default function CollapsibleSection({
 
           {/* Expand/Collapse Chevron (right side) */}
           {isOpen ? (
-            <FiChevronUp className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+            <ChevronUp className="w-4 h-4 text-gray-500 dark:text-gray-400" />
           ) : (
-            <FiChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+            <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
           )}
         </div>
       </button>

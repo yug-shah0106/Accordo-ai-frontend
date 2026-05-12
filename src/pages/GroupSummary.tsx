@@ -1,7 +1,7 @@
+import { Award, CheckCircle, ChevronDown, ChevronUp, Crown, FileText, Filter, Gem, Medal, RefreshCw, Search, Star } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { FiChevronDown, FiChevronUp, FiFilter, FiSearch, FiFileText, FiRefreshCw } from 'react-icons/fi';
-import { FaMedal, FaCrown, FaGem, FaAward, FaStar, FaCheckCircle } from 'react-icons/fa';
+
 import { authApi } from '../api';
 import toast from 'react-hot-toast';
 
@@ -181,27 +181,27 @@ const GroupSummary = () => {
   const getRankIcon = (rank: number) => {
     // Top 3 ranks get special medals
     if (rank === 1) {
-      return <FaCrown className="text-yellow-500 w-8 h-8 opacity-20" />;
+      return <Crown className="text-yellow-500 w-8 h-8 opacity-20" />;
     }
     if (rank === 2) {
-      return <FaGem className="text-blue-500 w-8 h-8 opacity-20" />;
+      return <Gem className="text-blue-500 w-8 h-8 opacity-20" />;
     }
     if (rank === 3) {
-      return <FaMedal className="text-amber-700 w-8 h-8 opacity-20" />;
+      return <Medal className="text-amber-700 w-8 h-8 opacity-20" />;
     }
     
     // Ranks 4-10 get awards
     if (rank <= 10) {
-      return <FaAward className="text-purple-600 w-8 h-8 opacity-20" />;
+      return <Award className="text-purple-600 w-8 h-8 opacity-20" />;
     }
     
     // Ranks 11-20 get stars
     if (rank <= 20) {
-      return <FaStar className="text-green-500 w-8 h-8 opacity-20" />;
+      return <Star className="text-green-500 w-8 h-8 opacity-20" />;
     }
     
     // All other ranks get check circles
-    return <FaCheckCircle className="text-gray-400 w-8 h-8 opacity-20" />;
+    return <CheckCircle className="text-gray-400 w-8 h-8 opacity-20" />;
   };
 
   const getRankColor = (rank: number) => {
@@ -232,10 +232,10 @@ const GroupSummary = () => {
                 className="pl-10 pr-4 pt-2 pb-0 border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg text-gray-900 dark:text-dark-text rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 disabled={loading}
               />
-              <FiSearch className="absolute left-3 top-3 text-gray-400 dark:text-gray-500" />
+              <Search className="absolute left-3 top-3 text-gray-400 dark:text-gray-500" />
             </div>
             <button className="p-2 text-gray-600 dark:text-dark-text-secondary hover:text-gray-900 dark:hover:text-white" disabled={loading}>
-              <FiFilter className="w-5 h-5" />
+              <Filter className="w-5 h-5" />
             </button>
             <button
               onClick={fetchRequisitionData}
@@ -243,7 +243,7 @@ const GroupSummary = () => {
               className="p-2 text-gray-600 dark:text-dark-text-secondary hover:text-gray-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
               title="Refresh data"
             >
-              <FiRefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
@@ -280,7 +280,7 @@ const GroupSummary = () => {
                 disabled={loading}
                 className="ml-4 flex-shrink-0 bg-red-100 hover:bg-red-200 text-red-800 px-3 pt-2 pb-0 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <FiRefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
                 Retry
               </button>
             </div>
@@ -292,7 +292,7 @@ const GroupSummary = () => {
       {!loading && procurementData.companies.length === 0 && (
         <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm pt-12 px-12 pb-0">
           <div className="text-center">
-            <FiFileText className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+            <FileText className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-dark-text">No requisition found</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-dark-text-secondary">
               The requested requisition could not be found or may not exist.
@@ -320,7 +320,7 @@ const GroupSummary = () => {
                   <div className="flex items-center space-x-1">
                     <span>Total Amount</span>
                     {sortConfig.key === 'totalAmount' && (
-                      sortConfig.direction === 'asc' ? <FiChevronUp /> : <FiChevronDown />
+                      sortConfig.direction === 'asc' ? <ChevronUp /> : <ChevronDown />
                     )}
                   </div>
                 </th>
@@ -331,7 +331,7 @@ const GroupSummary = () => {
                   <div className="flex items-center space-x-1">
                     <span>Agreed Amount</span>
                     {sortConfig.key === 'agreedAmount' && (
-                      sortConfig.direction === 'asc' ? <FiChevronUp /> : <FiChevronDown />
+                      sortConfig.direction === 'asc' ? <ChevronUp /> : <ChevronDown />
                     )}
                   </div>
                 </th>
@@ -342,7 +342,7 @@ const GroupSummary = () => {
                   <div className="flex items-center space-x-1">
                     <span>Savings</span>
                     {sortConfig.key === 'savings' && (
-                      sortConfig.direction === 'asc' ? <FiChevronUp /> : <FiChevronDown />
+                      sortConfig.direction === 'asc' ? <ChevronUp /> : <ChevronDown />
                     )}
                   </div>
                 </th>

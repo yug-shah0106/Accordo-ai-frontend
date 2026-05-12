@@ -1,5 +1,5 @@
+import { Clock, Folder, TrendingUp, Users } from 'lucide-react';
 import type { RequisitionWithDeals } from "../../../types/chatbot";
-import { FiUsers, FiClock, FiTrendingUp, FiFolder } from "react-icons/fi";
 
 interface RequisitionCardProps {
   requisition: RequisitionWithDeals;
@@ -100,7 +100,7 @@ export default function RequisitionCard({ requisition, onClick }: RequisitionCar
             {rfqNumber}
           </span>
           <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-dark-text-secondary">
-            <FiFolder className="w-3 h-3" />
+            <Folder className="w-3 h-3" />
             <span className="truncate max-w-[100px]">{projectName}</span>
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function RequisitionCard({ requisition, onClick }: RequisitionCar
           </div>
           {/* Vendor Count */}
           <div className="flex items-center gap-1 text-sm">
-            <FiUsers className="w-4 h-4 text-gray-400" />
+            <Users className="w-4 h-4 text-gray-400" />
             <span className="text-gray-700 dark:text-dark-text">
               {vendorCount} {vendorCount === 1 ? "vendor" : "vendors"}
             </span>
@@ -161,7 +161,7 @@ export default function RequisitionCard({ requisition, onClick }: RequisitionCar
         <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-dark-border">
           {/* Deadline */}
           <div className="flex items-center gap-1.5">
-            <FiClock
+            <Clock
               className={`w-4 h-4 ${
                 deadlineStatus.color === "red"
                   ? "text-red-500"
@@ -191,7 +191,7 @@ export default function RequisitionCard({ requisition, onClick }: RequisitionCar
 
           {/* Last Activity */}
           <div className="flex items-center gap-1.5">
-            <FiTrendingUp className="w-4 h-4 text-gray-400" />
+            <TrendingUp className="w-4 h-4 text-gray-400" />
             <span className="text-xs text-gray-500 dark:text-dark-text-secondary">
               {getTimeAgo(lastActivityAt)}
             </span>

@@ -2,8 +2,9 @@
  * RequisitionCard - Card component for displaying requisition with bid summary
  */
 
+import { BadgeCheck, Clock, TrendingDown, TrendingUp, Users } from 'lucide-react';
 import React from 'react';
-import { MdVerified, MdAccessTime, MdPeople, MdTrendingUp, MdTrendingDown } from 'react-icons/md';
+
 import type { RequisitionWithBidSummary } from '../../types/bidAnalysis';
 import { ANALYSIS_STATUS_COLORS } from '../../types/bidAnalysis';
 
@@ -71,7 +72,7 @@ export const RequisitionCard: React.FC<RequisitionCardProps> = ({ requisition, o
           <div className="flex items-center gap-2 mb-1">
             <span className="text-sm font-medium text-blue-600">{requisition.rfqId}</span>
             {requisition.hasAwardedVendor && (
-              <MdVerified className="text-blue-500" size={16} />
+              <BadgeCheck className="text-blue-500" size={16} />
             )}
           </div>
           <h3 className="font-semibold text-gray-900 dark:text-dark-text line-clamp-1">{requisition.subject}</h3>
@@ -86,7 +87,7 @@ export const RequisitionCard: React.FC<RequisitionCardProps> = ({ requisition, o
       <div className="grid grid-cols-3 gap-4 py-3 border-y border-gray-100 dark:border-dark-border">
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 text-gray-500 dark:text-dark-text-secondary mb-1">
-            <MdPeople size={14} />
+            <Users size={14} />
             <span className="text-xs">Bids</span>
           </div>
           <p className="font-semibold text-gray-900 dark:text-dark-text">{requisition.bidsCount}</p>
@@ -97,7 +98,7 @@ export const RequisitionCard: React.FC<RequisitionCardProps> = ({ requisition, o
 
         <div className="text-center border-x border-gray-100 dark:border-dark-border">
           <div className="flex items-center justify-center gap-1 text-green-600 mb-1">
-            <MdTrendingDown size={14} />
+            <TrendingDown size={14} />
             <span className="text-xs">Lowest</span>
           </div>
           <p className="font-semibold text-green-700">
@@ -107,7 +108,7 @@ export const RequisitionCard: React.FC<RequisitionCardProps> = ({ requisition, o
 
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 text-red-500 mb-1">
-            <MdTrendingUp size={14} />
+            <TrendingUp size={14} />
             <span className="text-xs">Highest</span>
           </div>
           <p className="font-semibold text-red-600">
@@ -119,7 +120,7 @@ export const RequisitionCard: React.FC<RequisitionCardProps> = ({ requisition, o
       {/* Footer */}
       <div className="flex items-center justify-between mt-3 text-sm text-gray-500 dark:text-dark-text-secondary">
         <div className="flex items-center gap-1">
-          <MdAccessTime size={14} />
+          <Clock size={14} />
           <span>Deadline: {formatDate(requisition.negotiationClosureDate)}</span>
         </div>
         {requisition.awardedVendorName && (

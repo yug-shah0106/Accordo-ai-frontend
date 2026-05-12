@@ -1,9 +1,9 @@
+import { Send, X } from 'lucide-react';
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import sideBarLogo from "../../assets/sideBarLogo.png";
 import { chatApi } from "../../services/chat.service";
-import { FiSend, FiX } from "react-icons/fi";
 
 interface ChatMessage {
   id: number;
@@ -215,7 +215,7 @@ const Chat = () => {
                             className="p-3 hover:bg-gray-100 rounded-full transition-all duration-200 hover:scale-105"
                             title="Close Chat"
                         >
-                            <FiX className="w-6 h-6 text-gray-600" />
+                            <X className="w-6 h-6 text-gray-600" />
                         </button>
                         <div className="relative">
                             <div className="w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
@@ -295,7 +295,6 @@ const Chat = () => {
                     <div ref={messagesEndRef} />
                 </div>
 
-
                 {/* Message Input */}
                 <div className="sticky bottom-0 z-10 px-6 py-4 pb-6 border-t border-gray-100 bg-white shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
                     <form onSubmit={handleSendMessage} className="flex gap-4">
@@ -316,7 +315,7 @@ const Chat = () => {
                                     : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl"
                             }`}
                         >
-                            <FiSend className="w-5 h-5" />
+                            <Send className="w-5 h-5" />
                             Send
                         </button>
                     </form>

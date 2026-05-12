@@ -1,5 +1,5 @@
+import { Trash2 } from 'lucide-react';
 import { useRef, ReactNode, MouseEvent } from "react";
-import { MdOutlineDelete } from "react-icons/md";
 
 interface ModalProps {
   heading: string;
@@ -76,7 +76,7 @@ export default function Modal({
         {/* Delete Icon (if applicable) */}
         {isDeleteIcon && (
           <div className="absolute -top-7 left-[50%] translate-x-[-50%] pt-3 px-3 pb-0 rounded-full bg-[#EF2D2E] text-white flex justify-center items-center text-2xl">
-            <MdOutlineDelete />
+            <Trash2 />
           </div>
         )}
 

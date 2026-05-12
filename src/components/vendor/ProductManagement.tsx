@@ -1,13 +1,10 @@
+import { ArrowLeft, ChevronDown, ChevronUp, Eye, Package, Pencil, Search, SquarePlus, Trash2, XCircle } from 'lucide-react';
 import { useEffect, useState } from "react";
-import { IoSearchOutline, IoCloseCircle } from "react-icons/io5";
-import { VscEdit } from "react-icons/vsc";
-import { PiPlusSquareBold } from "react-icons/pi";
+
 import { Link } from "react-router-dom";
 import Table from "../Table";
 import Pagination from "../Pagination";
-import { RiBox3Line, RiDeleteBin5Line } from "react-icons/ri";
-import { FaRegEye, FaArrowLeft } from "react-icons/fa";
-import { MdOutlineKeyboardArrowDown, MdOutlineKeyboardArrowUp } from "react-icons/md";
+
 import useFetchData from "../../hooks/useFetchData";
 import useDebounce from "../../hooks/useDebounce";
 import Modal from "../Modal";
@@ -99,7 +96,6 @@ const ProductManagement = () => {
           return gstType === "GST" ? `GST % is - ${gstPercentage}` : "-";
         },
 
-
     },
     {
       header: "HSN/SAC Code",
@@ -132,7 +128,7 @@ const ProductManagement = () => {
     {
       type: "button" as const,
       label: "View Details",
-      icon: <FaRegEye />,
+      icon: <Eye />,
       onClick: (row: any) => {
         setSelectedProduct(row);
         setIsSidebarOpen(true);
@@ -141,13 +137,13 @@ const ProductManagement = () => {
     {
       type: "link" as const,
       label: "Edit Details",
-      icon: <VscEdit />,
+      icon: <Pencil />,
       link: (row: any) => `/product-management/editproductform/${row.id}`,
     },
     {
       type: "button" as const,
       label: "Delete",
-      icon: <RiDeleteBin5Line />,
+      icon: <Trash2 />,
       onClick: (row: any) => {
         setIsModal(row.id);
       },
@@ -166,7 +162,7 @@ console.log({products});
       <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border pt-6 px-6 pb-4 flex-shrink-0">
         <div className="mb-4">
           <h1 className="text-xl font-semibold text-gray-800 dark:text-dark-text flex items-center gap-2">
-            <RiBox3Line className="text-xl" />
+            <Package className="text-xl" />
             Product Management
           </h1>
         </div>
@@ -186,10 +182,10 @@ console.log({products});
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 title="Clear search"
               >
-                <IoCloseCircle className="text-lg" />
+                <XCircle className="text-lg" />
               </button>
             ) : (
-              <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-dark-text-secondary" />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-dark-text-secondary" />
             )}
           </div>
           <div className="flex gap-6">
@@ -198,7 +194,7 @@ console.log({products});
               to="/product-management/createproductform"
               className="bg-[#234BF3] text-white font-medium rounded-md px-4 py-2 text-sm flex items-center gap-2"
             >
-              <PiPlusSquareBold className="font-extrabold text-xl rounded-3xl" />{" "}
+              <SquarePlus className="font-extrabold text-xl rounded-3xl" />{" "}
               Create
             </Link>
           </div>
@@ -237,7 +233,7 @@ console.log({products});
             <div className="flex justify-between mb-6 mt-8 items-center">
               <p className="text-md font-semibold flex items-center gap-2 dark:text-dark-text">
                 <button onClick={closeSidebar}>
-                  <FaArrowLeft />
+                  <ArrowLeft />
                 </button>
                 Product Details
               </p>
@@ -250,9 +246,9 @@ console.log({products});
             >
               <h3 className="text-lg font-medium dark:text-dark-text">Basic Information</h3>
               {expandedSections.basicInfo ? (
-                <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                <ChevronUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
               ) : (
-                <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                <ChevronDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
               )}
             </div>
             {expandedSections.basicInfo && (
@@ -287,9 +283,9 @@ console.log({products});
             >
               <h3 className="text-lg font-medium dark:text-dark-text">Specifications</h3>
               {expandedSections.specifications ? (
-                <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                <ChevronUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
               ) : (
-                <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                <ChevronDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
               )}
             </div>
             {expandedSections.specifications && (
@@ -306,9 +302,9 @@ console.log({products});
             >
               <h3 className="text-lg font-medium dark:text-dark-text">Tax Information</h3>
               {expandedSections.taxInfo ? (
-                <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                <ChevronUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
               ) : (
-                <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                <ChevronDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
               )}
             </div>
             {expandedSections.taxInfo && (

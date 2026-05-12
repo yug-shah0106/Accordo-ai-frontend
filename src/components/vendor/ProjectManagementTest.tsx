@@ -1,9 +1,8 @@
+import { ChevronDown, Eye, FolderKanban, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from "react";
-import { AiFillProject } from "react-icons/ai";
-import { VscEdit } from "react-icons/vsc";
+
 import Pagination from "../Pagination";
-import { RiDeleteBin5Line } from "react-icons/ri";
-import { FaCaretDown, FaPlus, FaRegEye } from "react-icons/fa";
+
 import useFetchData from "../../hooks/useFetchData";
 import Table from "../Table";
 
@@ -62,20 +61,20 @@ const Test = () => {
     {
       type: "link" as const,
       label: "View Contracts",
-      icon: <FaRegEye />,
+      icon: <Eye />,
       link: (_row: any) => `/project-management/requisition/contract`,
       state: "whole",
     },
     {
       type: "link" as const,
       label: "Add Vendor",
-      icon: <FaPlus />,
+      icon: <Plus />,
       link: (row: any) => `/add-vendor/${row.Id}`,
     },
     {
       type: "button" as const,
       label: "Cancel Requisition",
-      icon: <RiDeleteBin5Line />,
+      icon: <Trash2 />,
       onClick: (_row: any) => {
         // setIsModal(row.id);
       },
@@ -83,7 +82,7 @@ const Test = () => {
     {
       type: "button" as const,
       label: "View Details",
-      icon: <FaRegEye />,
+      icon: <Eye />,
       onClick: (_row: any) => {
         // setSelectedProject(row);
         // setIsSidebarOpen(row);
@@ -92,7 +91,7 @@ const Test = () => {
     {
       type: "link" as const,
       label: "Edit Details",
-      icon: <VscEdit />,
+      icon: <Pencil />,
       link: (row: any) => `/requisition-management/edit-requisition/${row.id}`,
     },
   ];
@@ -122,7 +121,7 @@ const Test = () => {
     <div className="bg-white rounded-lg h-max shadow-md pt-6 px-6 pb-0">
       <div className="mb-8">
         <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-          <AiFillProject /> Project Management Testing
+          <FolderKanban /> Project Management Testing
         </h1>
       </div>
 
@@ -133,7 +132,7 @@ const Test = () => {
             onClick={() => toggleAccordion(i)}
           >
             <span className="text-lg font-semibold">{project.projectName}</span>
-            <FaCaretDown className={`${expandedRow === project.projectId ? "rotate-180" : ""} transition-all`} />
+            <ChevronDown className={`${expandedRow === project.projectId ? "rotate-180" : ""} transition-all`} />
           </div>
 
           {expandedRow === i && (

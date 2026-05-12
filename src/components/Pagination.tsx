@@ -1,4 +1,4 @@
-import { PiLessThanBold, PiGreaterThanBold } from "react-icons/pi";
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PaginationProps {
   currentPage: number;
@@ -111,7 +111,7 @@ const Pagination = ({
           }`}
           aria-label="Previous page"
         >
-          <PiLessThanBold />
+          <ChevronLeft />
         </button>
 
         {pageNumbers.map((page, index) => {
@@ -148,7 +148,7 @@ const Pagination = ({
           }`}
           aria-label="Next page"
         >
-          <PiGreaterThanBold />
+          <ChevronRight />
         </button>
       </div>
     </div>

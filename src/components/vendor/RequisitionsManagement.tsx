@@ -1,13 +1,10 @@
+import { ArrowLeft, ChevronDown, ChevronUp, Eye, GitPullRequest, Pencil, Plus, Search, SquarePlus, Trash2, XCircle } from 'lucide-react';
 import { useEffect, useRef, useState } from "react";
-import { IoSearchOutline, IoCloseCircle } from "react-icons/io5";
-import { VscEdit } from "react-icons/vsc";
-import { PiPlusSquareBold } from "react-icons/pi";
+
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Table from "../Table";
 import Pagination from "../Pagination";
-import { RiDeleteBin5Line } from "react-icons/ri";
-import { FaArrowLeft, FaPlus, FaRegEye } from "react-icons/fa";
-import { MdOutlineKeyboardArrowDown, MdOutlineKeyboardArrowUp } from "react-icons/md";
+
 import useFetchData from "../../hooks/useFetchData";
 import useDebounce from "../../hooks/useDebounce";
 import { authApi } from "../../api";
@@ -16,7 +13,7 @@ import Modal from "../Modal";
 import Filter from "../Filter";
 import Badge from "../Badge";
 import Breadcrumb from "../Breadcrumbs";
-import { LuGitPullRequest } from "react-icons/lu";
+
 import { env } from "@/utils/env";
 
 const RequisitionsManagement = () => {
@@ -190,7 +187,7 @@ const RequisitionsManagement = () => {
     {
       type: "button" as const,
       label: "View Contracts",
-      icon: <FaRegEye />,
+      icon: <Eye />,
       // link: (row) => `/project-management/requisition/contract`,
       onClick: (row: any) => {
         handleRowClick(row);
@@ -206,7 +203,7 @@ const RequisitionsManagement = () => {
     {
       type: "button" as const,
       label: "Add Vendor",
-      icon: <FaPlus />,
+      icon: <Plus />,
       // link: (row) => `/requisition-management/edit-requisition/${row.id}?redirect=3`,
       onClick: (row: any) => addVendor(row),
       condition: (row: any) => {
@@ -219,7 +216,7 @@ const RequisitionsManagement = () => {
     {
       type: "button" as const,
       label: "Cancel Requisition",
-      icon: <RiDeleteBin5Line />,
+      icon: <Trash2 />,
       onClick: (row: any) => {
         setIsModal(row.id);
       },
@@ -233,7 +230,7 @@ const RequisitionsManagement = () => {
     {
       type: "button" as const,
       label: "View Details",
-      icon: <FaRegEye />,
+      icon: <Eye />,
       onClick: (row: any) => {
         setSelectedProject(row);
         setIsSidebarOpen(row);
@@ -242,7 +239,7 @@ const RequisitionsManagement = () => {
     {
       type: "button" as const,
       label: "Edit Details",
-      icon: <VscEdit />,
+      icon: <Pencil />,
       // link: (row) => `/project-management/edit-requisition/${row.id}`,
       onClick: (row: any) => editDetails(row),
       condition: (row: any) => {
@@ -255,7 +252,7 @@ const RequisitionsManagement = () => {
     {
       type: "button" as const,
       label: "View Summary",
-      icon: <FaRegEye />,
+      icon: <Eye />,
       condition: (row: any) => {
         // Check if any contract has status "Rejected" or "Accepted"
         if (row.Contract && row.Contract.some((contract: any) =>
@@ -419,13 +416,13 @@ const RequisitionsManagement = () => {
       <div className="sticky top-0 z-10 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border pt-6 px-6 pb-4 flex-shrink-0">
         <div className="mb-4">
           <p className="text-xl font-medium text-gray-800 dark:text-dark-text flex items-center gap-2">
-            {/* <FaArrowLeft
+            {/* <ArrowLeft
               onClick={() => {
                 navigate(-1);
               }}
               className="cursor-pointer"
             /> */}
-            <LuGitPullRequest className="text-xl" />
+            <GitPullRequest className="text-xl" />
             All Requisitions
           </p>
           {/* {state !== null && <div className="text-sm text-[#234BF3] cursor-pointer" onClick={() => { navigate(-1) }}>{state.projectId} </div>} */}
@@ -447,10 +444,10 @@ const RequisitionsManagement = () => {
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 title="Clear search"
               >
-                <IoCloseCircle className="text-lg" />
+                <XCircle className="text-lg" />
               </button>
             ) : (
-              <IoSearchOutline className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-dark-text-secondary" />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-dark-text-secondary" />
             )}
           </div>
           <div className="flex gap-6">
@@ -480,7 +477,7 @@ const RequisitionsManagement = () => {
                 : {})}
               className="bg-[#234BF3] text-white font-medium rounded-md px-4 py-2 text-sm flex items-center gap-2"
             >
-              <PiPlusSquareBold className="font-extrabold text-xl rounded-3xl" />
+              <SquarePlus className="font-extrabold text-xl rounded-3xl" />
               Create
             </Link>
           </div>
@@ -526,7 +523,7 @@ const RequisitionsManagement = () => {
             <div className="flex justify-between mb-4 mt-8 items-center">
               <p className="text-md font-semibold flex items-center gap-2 dark:text-dark-text">
                 <button onClick={closeSidebar}>
-                  <FaArrowLeft />
+                  <ArrowLeft />
                 </button>
                 {selectedProject.ReqId}
               </p>
@@ -546,9 +543,9 @@ const RequisitionsManagement = () => {
           >
             <h3 className="text-lg font-medium dark:text-dark-text">Basic Information</h3>
             {expandedSections.basicInfo ? (
-              <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+              <ChevronUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
             ) : (
-              <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+              <ChevronDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
             )}
           </div>
           {expandedSections.basicInfo && selectedProject && (
@@ -600,9 +597,9 @@ const RequisitionsManagement = () => {
               >
                 <h3 className="text-lg font-medium dark:text-dark-text">Product Details</h3>
                 {expandedSections.productDetails ? (
-                  <MdOutlineKeyboardArrowUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                  <ChevronUp className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 ) : (
-                  <MdOutlineKeyboardArrowDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
+                  <ChevronDown className="text-xl text-gray-500 dark:text-dark-text-secondary" />
                 )}
               </div>
               {expandedSections.productDetails && (

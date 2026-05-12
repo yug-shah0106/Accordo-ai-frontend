@@ -5,23 +5,28 @@
  * Includes export functionality (PDF and CSV).
  */
 
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
-  FiArrowLeft,
-  FiDownload,
-  FiCheckCircle,
-  FiXCircle,
-  FiAlertTriangle,
-  FiTrendingUp,
-  FiDollarSign,
-  FiCalendar,
-} from 'react-icons/fi';
-import chatbotService from '../../services/chatbot.service';
-import { exportToCSV, exportSummaryPDF } from '../../services/export.service';
-import toast from 'react-hot-toast';
-import { format } from 'date-fns';
-import type { Deal, Message, NegotiationConfig, Explainability } from '../../types/chatbot';
+  AlertTriangle,
+  ArrowLeft,
+  Calendar,
+  CheckCircle,
+  DollarSign,
+  Download,
+  TrendingUp,
+  XCircle,
+} from "lucide-react";
+import chatbotService from "../../services/chatbot.service";
+import { exportToCSV, exportSummaryPDF } from "../../services/export.service";
+import toast from "react-hot-toast";
+import { format } from "date-fns";
+import type {
+  Deal,
+  Message,
+  NegotiationConfig,
+  Explainability,
+} from "../../types/chatbot";
 
 interface SavingsCalculation {
   savings: number;
@@ -36,7 +41,9 @@ export default function SummaryPage() {
   const [deal, setDeal] = useState<Deal | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [config, setConfig] = useState<NegotiationConfig | null>(null);
-  const [explainability, setExplainability] = useState<Explainability | null>(null);
+  const [explainability, setExplainability] = useState<Explainability | null>(
+    null,
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const [exporting, setExporting] = useState<boolean>(false);
 
@@ -68,11 +75,11 @@ export default function SummaryPage() {
         const explainRes = await chatbotService.getExplainability(ctx);
         setExplainability(explainRes.data.explainability || explainRes.data);
       } catch (err) {
-        console.log('No explainability data available');
+        console.log("No explainability data available");
       }
     } catch (err) {
-      console.error('Failed to load deal:', err);
-      toast.error('Failed to load deal summary');
+      console.error("Failed to load deal:", err);
+      toast.error("Failed to load deal summary");
     } finally {
       setLoading(false);
     }
@@ -85,10 +92,10 @@ export default function SummaryPage() {
       setExporting(true);
       // @ts-ignore - export service uses JS and doesn't have proper types
       await exportSummaryPDF(deal, messages, config, explainability);
-      toast.success('PDF exported successfully');
+      toast.success("PDF exported successfully");
     } catch (err) {
-      console.error('Failed to export PDF:', err);
-      toast.error('Failed to export PDF');
+      console.error("Failed to export PDF:", err);
+      toast.error("Failed to export PDF");
     } finally {
       setExporting(false);
     }
@@ -100,10 +107,10 @@ export default function SummaryPage() {
     try {
       setExporting(true);
       await exportToCSV(deal, messages);
-      toast.success('CSV exported successfully');
+      toast.success("CSV exported successfully");
     } catch (err) {
-      console.error('Failed to export CSV:', err);
-      toast.error('Failed to export CSV');
+      console.error("Failed to export CSV:", err);
+      toast.error("Failed to export CSV");
     } finally {
       setExporting(false);
     }
@@ -124,40 +131,48 @@ export default function SummaryPage() {
 
   const getOutcomeIcon = () => {
     switch (deal?.status) {
-      case 'ACCEPTED':
-        return <FiCheckCircle className="w-12 h-12 text-green-600 dark:text-green-400" />;
-      case 'WALKED_AWAY':
-        return <FiXCircle className="w-12 h-12 text-red-600 dark:text-red-400" />;
-      case 'ESCALATED':
-        return <FiAlertTriangle className="w-12 h-12 text-yellow-600 dark:text-yellow-400" />;
+      case "ACCEPTED":
+        return (
+          <CheckCircle className="w-12 h-12 text-green-600 dark:text-green-400" />
+        );
+      case "WALKED_AWAY":
+        return (
+          <XCircle className="w-12 h-12 text-red-600 dark:text-red-400" />
+        );
+      case "ESCALATED":
+        return (
+          <AlertTriangle className="w-12 h-12 text-yellow-600 dark:text-yellow-400" />
+        );
       default:
-        return <FiTrendingUp className="w-12 h-12 text-blue-600 dark:text-blue-400" />;
+        return (
+          <TrendingUp className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+        );
     }
   };
 
   const getOutcomeColor = (): string => {
     switch (deal?.status) {
-      case 'ACCEPTED':
-        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
-      case 'WALKED_AWAY':
-        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
-      case 'ESCALATED':
-        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+      case "ACCEPTED":
+        return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+      case "WALKED_AWAY":
+        return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+      case "ESCALATED":
+        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400";
       default:
-        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
     }
   };
 
   const getOutcomeMessage = (): string => {
     switch (deal?.status) {
-      case 'ACCEPTED':
-        return 'Deal successfully accepted';
-      case 'WALKED_AWAY':
-        return 'Accordo walked away from negotiation';
-      case 'ESCALATED':
-        return 'Negotiation escalated to manual review';
+      case "ACCEPTED":
+        return "Deal successfully accepted";
+      case "WALKED_AWAY":
+        return "Accordo walked away from negotiation";
+      case "ESCALATED":
+        return "Negotiation escalated to manual review";
       default:
-        return 'Negotiation in progress';
+        return "Negotiation in progress";
     }
   };
 
@@ -166,7 +181,9 @@ export default function SummaryPage() {
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading summary...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">
+            Loading summary...
+          </p>
         </div>
       </div>
     );
@@ -178,7 +195,7 @@ export default function SummaryPage() {
         <div className="text-center">
           <p className="text-red-600 dark:text-red-400">Deal not found</p>
           <button
-            onClick={() => navigate('/chatbot')}
+            onClick={() => navigate("/chatbot")}
             className="mt-4 text-blue-600 dark:text-blue-400 hover:underline"
           >
             Back to Deals
@@ -197,17 +214,19 @@ export default function SummaryPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate('/chatbot')}
+              onClick={() => navigate("/chatbot")}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
               title="Back to deals"
             >
-              <FiArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             </button>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-dark-text">
                 Negotiation Summary
               </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{deal.title}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                {deal.title}
+              </p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -216,7 +235,7 @@ export default function SummaryPage() {
               disabled={exporting}
               className="flex items-center gap-2 px-4 pt-2 pb-0 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-surface border border-gray-300 dark:border-dark-border hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
             >
-              <FiDownload className="w-4 h-4" />
+              <Download className="w-4 h-4" />
               Export CSV
             </button>
             <button
@@ -224,7 +243,7 @@ export default function SummaryPage() {
               disabled={exporting}
               className="flex items-center gap-2 px-4 pt-2 pb-0 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
             >
-              <FiDownload className="w-4 h-4" />
+              <Download className="w-4 h-4" />
               Export PDF
             </button>
           </div>
@@ -266,7 +285,7 @@ export default function SummaryPage() {
             {/* Savings */}
             <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg pt-6 px-6 pb-0">
               <div className="flex items-center gap-3 mb-3">
-                <FiDollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
+                <DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
                 <h3 className="font-semibold text-gray-900 dark:text-dark-text">
                   Total Savings
                 </h3>
@@ -284,8 +303,10 @@ export default function SummaryPage() {
             {/* Final Price */}
             <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg pt-6 px-6 pb-0">
               <div className="flex items-center gap-3 mb-3">
-                <FiTrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                <h3 className="font-semibold text-gray-900 dark:text-dark-text">Final Price</h3>
+                <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <h3 className="font-semibold text-gray-900 dark:text-dark-text">
+                  Final Price
+                </h3>
               </div>
               <div className="space-y-1">
                 <p className="text-3xl font-bold text-gray-900 dark:text-dark-text">
@@ -300,17 +321,18 @@ export default function SummaryPage() {
             {/* Payment Terms */}
             <div className="bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border rounded-lg pt-6 px-6 pb-0">
               <div className="flex items-center gap-3 mb-3">
-                <FiCalendar className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                <Calendar className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 <h3 className="font-semibold text-gray-900 dark:text-dark-text">
                   Payment Terms
                 </h3>
               </div>
               <div className="space-y-1">
                 <p className="text-3xl font-bold text-gray-900 dark:text-dark-text">
-                  {deal.latestOfferJson?.payment_terms || 'N/A'}
+                  {deal.latestOfferJson?.payment_terms || "N/A"}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Ideal: {config?.parameters?.payment_terms?.options?.[0] || 'N/A'}
+                  Ideal:{" "}
+                  {config?.parameters?.payment_terms?.options?.[0] || "N/A"}
                 </p>
               </div>
             </div>
@@ -324,23 +346,35 @@ export default function SummaryPage() {
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Mode</p>
-              <p className="font-medium text-gray-900 dark:text-dark-text">{deal.mode}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                Mode
+              </p>
+              <p className="font-medium text-gray-900 dark:text-dark-text">
+                {deal.mode}
+              </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Rounds</p>
-              <p className="font-medium text-gray-900 dark:text-dark-text">{deal.round}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                Total Rounds
+              </p>
+              <p className="font-medium text-gray-900 dark:text-dark-text">
+                {deal.round}
+              </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Messages</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                Messages
+              </p>
               <p className="font-medium text-gray-900 dark:text-dark-text">
                 {messages.length}
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Created</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                Created
+              </p>
               <p className="font-medium text-gray-900 dark:text-dark-text">
-                {format(new Date(deal.createdAt), 'MMM d, yyyy')}
+                {format(new Date(deal.createdAt), "MMM d, yyyy")}
               </p>
             </div>
           </div>
@@ -356,11 +390,11 @@ export default function SummaryPage() {
               <div
                 key={msg.id || idx}
                 className={`p-4 rounded-lg ${
-                  msg.role === 'VENDOR'
-                    ? 'bg-gray-50 dark:bg-gray-900/50'
-                    : msg.role === 'ACCORDO'
-                    ? 'bg-blue-50 dark:bg-blue-900/30'
-                    : 'bg-yellow-50 dark:bg-yellow-900/30'
+                  msg.role === "VENDOR"
+                    ? "bg-gray-50 dark:bg-gray-900/50"
+                    : msg.role === "ACCORDO"
+                      ? "bg-blue-50 dark:bg-blue-900/30"
+                      : "bg-yellow-50 dark:bg-yellow-900/30"
                 }`}
               >
                 <div className="flex items-start justify-between mb-2">
@@ -368,7 +402,7 @@ export default function SummaryPage() {
                     {msg.role}
                   </span>
                   <span className="text-xs text-gray-500 dark:text-gray-500">
-                    {format(new Date(msg.createdAt), 'MMM d, h:mm a')}
+                    {format(new Date(msg.createdAt), "MMM d, h:mm a")}
                   </span>
                 </div>
                 <p className="text-sm text-gray-900 dark:text-dark-text whitespace-pre-wrap">
@@ -377,14 +411,16 @@ export default function SummaryPage() {
                 {msg.extractedOffer && (
                   <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
                     <p className="text-xs text-gray-600 dark:text-gray-400">
-                      Offer: ${msg.extractedOffer.unit_price} • {msg.extractedOffer.payment_terms}
+                      Offer: ${msg.extractedOffer.unit_price} •{" "}
+                      {msg.extractedOffer.payment_terms}
                     </p>
                   </div>
                 )}
                 {msg.decisionAction && (
                   <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
                     <p className="text-xs text-gray-600 dark:text-gray-400">
-                      Decision: {msg.decisionAction} • Utility: {msg.utilityScore?.toFixed(2)}
+                      Decision: {msg.decisionAction} • Utility:{" "}
+                      {msg.utilityScore?.toFixed(2)}
                     </p>
                   </div>
                 )}
