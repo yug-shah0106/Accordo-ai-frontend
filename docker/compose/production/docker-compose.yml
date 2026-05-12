@@ -1,33 +1,22 @@
-# Production: frontend only. Build and run static app with nginx.
-# Usage: cd docker/compose/production && docker compose up -d --build
-
 services:
   frontend:
-    image: ${DOCKER_IMAGE:-accordo-frontend:latest}
+    image: accordo-ai-frontend:production
+    env_file:
+      - .env
     build:
-      context: ../..
+      context: ../../../
       dockerfile: Dockerfile
       target: runtime
       args:
-        VITE_BACKEND_URL: ${VITE_BACKEND_URL:-}
-        VITE_FRONTEND_URL: ${VITE_FRONTEND_URL:-}
-        VITE_ASSEST_URL: ${VITE_ASSEST_URL:-}
-    container_name: accordo-frontend-production
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL}
+        VITE_FRONTEND_URL: ${VITE_FRONTEND_URL}
+    container_name: accordo-ai-frontend-production
     ports:
-      - "${PORT:-5001}:5001"
+      - "${PORT}:3000"
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:5001/health"]
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/"]
       interval: 30s
       timeout: 10s
       start_period: 10s
       retries: 3
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
     restart: unless-stopped
