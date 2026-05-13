@@ -111,13 +111,21 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       paymentTerms: "",
     },
   });
-  const { data, loading: _loading, error: _error } = useFetchData<Product>("/product/all");
+  // Fetch a large page so the dropdown shows every product. The default
+  // useFetchData limit is 10, which silently truncates dropdowns.
+  const {
+    data,
+    loading: _loading,
+    error: _error,
+  } = useFetchData<Product>("/product/", 1000);
 
   // Watch all form values for autosave
   const formValues = watch();
 
   // Autosave hook - enabled for both new and edit requisitions
-  const autosaveKey = requisitionId ? `requisition_step2_${requisitionId}` : "requisition_step2_new";
+  const autosaveKey = requisitionId
+    ? `requisition_step2_${requisitionId}`
+    : "requisition_step2_new";
   const { lastSaved, isSaving, hasDraft, clearSaved, loadSaved } = useAutoSave({
     key: autosaveKey,
     data: formValues,
@@ -133,7 +141,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   useEffect(() => {
     if (hasDraft && !draftRestored && !serverDataLoaded) {
       const savedData = loadSaved();
-      if (savedData && (savedData.productData?.length > 0 || savedData.paymentTerms)) {
+      if (
+        savedData &&
+        (savedData.productData?.length > 0 || savedData.paymentTerms)
+      ) {
         // Silently restore draft data - this takes priority over server data
         setDraftRestored(true);
         reset(savedData);
@@ -145,28 +156,31 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   const backendAutosaveRef = useRef<NodeJS.Timeout | null>(null);
   const lastBackendSaveRef = useRef<string>("");
 
-  const saveToBackend = useCallback(async (data: FormData) => {
-    if (!requisitionId) return; // Only save to backend when editing
+  const saveToBackend = useCallback(
+    async (data: FormData) => {
+      if (!requisitionId) return; // Only save to backend when editing
 
-    try {
-      const cleanData = {
-        productData: JSON.stringify(data.productData || []),
-        discountTerms: data.discountTerms || "",
-        totalQuantity: data.totalQuantity || 0,
-        totalPrice: data.totalPrice || 0,
-        totalMaxPrice: data.totalMaxPrice || 0,
-        payment_terms: data.paymentTerms || "",
-        net_payment_day: data.netPaymentDay || "",
-        pre_payment_percentage: data.prePaymentPercentage || "",
-        post_payment_percentage: data.postPaymentPercentage || "",
-      };
+      try {
+        const cleanData = {
+          productData: JSON.stringify(data.productData || []),
+          discountTerms: data.discountTerms || "",
+          totalQuantity: data.totalQuantity || 0,
+          totalPrice: data.totalPrice || 0,
+          totalMaxPrice: data.totalMaxPrice || 0,
+          payment_terms: data.paymentTerms || "",
+          net_payment_day: data.netPaymentDay || "",
+          pre_payment_percentage: data.prePaymentPercentage || "",
+          post_payment_percentage: data.postPaymentPercentage || "",
+        };
 
-      await authMultiFormApi.put(`/requisition/${requisitionId}`, cleanData);
-    } catch (error) {
-      // Silent fail for autosave - don't interrupt user
-      console.error("Backend autosave failed:", error);
-    }
-  }, [requisitionId]);
+        await authMultiFormApi.put(`/requisition/${requisitionId}`, cleanData);
+      } catch (error) {
+        // Silent fail for autosave - don't interrupt user
+        console.error("Backend autosave failed:", error);
+      }
+    },
+    [requisitionId],
+  );
 
   // Debounced backend autosave effect
   useEffect(() => {
@@ -206,7 +220,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   }>({
     id: requisition?.id,
     delivery_date: requisition?.deliveryDate?.split("T")[0],
-    negotiation_closure_date: requisition?.negotiationClosureDate?.split("T")[0],
+    negotiation_closure_date:
+      requisition?.negotiationClosureDate?.split("T")[0],
     payment_terms: "",
     status: requisition?.status,
     type_of_currency: requisition?.typeOfCurrency,
@@ -223,13 +238,22 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       reset({
         selectedProduct: "",
         totalPrice: requisition?.totalPrice || "",
-        productData: requisition?.productData ?? requisition?.RequisitionProduct ?? [],
+        productData:
+          requisition?.productData ?? requisition?.RequisitionProduct ?? [],
         // Handle both camelCase and snake_case field names from backend
-        paymentTerms: requisition?.paymentTerms || requisition?.payment_terms || "",
+        paymentTerms:
+          requisition?.paymentTerms || requisition?.payment_terms || "",
         files: requisition?.RequisitionAttachment || [],
-        netPaymentDay: requisition?.netPaymentDay || requisition?.net_payment_day || "",
-        prePaymentPercentage: requisition?.prePaymentPercentage || requisition?.pre_payment_percentage || "",
-        postPaymentPercentage: requisition?.postPaymentPercentage || requisition?.post_payment_percentage || "",
+        netPaymentDay:
+          requisition?.netPaymentDay || requisition?.net_payment_day || "",
+        prePaymentPercentage:
+          requisition?.prePaymentPercentage ||
+          requisition?.pre_payment_percentage ||
+          "",
+        postPaymentPercentage:
+          requisition?.postPaymentPercentage ||
+          requisition?.post_payment_percentage ||
+          "",
         discountTerms: requisition?.discountTerms || "",
       });
     }
@@ -256,7 +280,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   const handleDeleteProduct = (productId: string): void => {
     setValue(
       "productData",
-      watch("productData").filter((i) => i.productId !== productId)
+      watch("productData").filter((i) => i.productId !== productId),
     );
   };
 
@@ -285,17 +309,19 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       toast.error("Please fix form validation errors before submitting");
       return;
     }
-    
+
     _setRequisitionData((prevData: typeof _requisitionData) => ({
       ...prevData,
       payment_terms: data.paymentTerms,
       total_price: String(data.totalPrice),
       products: data.productData.map((product) => {
         const matchedProduct = productData.find(
-          (item) => item.productId === product.productId
+          (item) => item.productId === product.productId,
         );
         return {
-          product_name: matchedProduct ? (matchedProduct as any).product_name : "Unknown",
+          product_name: matchedProduct
+            ? (matchedProduct as any).product_name
+            : "Unknown",
           quantity: product.qty,
           target_price: product.targetPrice,
         };
@@ -337,7 +363,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
         const response = await authMultiFormApi.post<{ data: Requisition }>(
           "/requisition/",
-          apiData
+          apiData,
         );
         setRequisition(response.data.data);
         toast.success("Created Successfully");
@@ -358,20 +384,20 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
           post_payment_percentage: cleanData.postPaymentPercentage,
         };
 
-        console.log('Sending update request with data:', apiData);
+        console.log("Sending update request with data:", apiData);
 
-        await authMultiFormApi.put(
-          `/requisition/${requisitionId}`,
-          apiData
-        );
+        await authMultiFormApi.put(`/requisition/${requisitionId}`, apiData);
         toast.success("Edited Successfully");
         clearSaved(); // Clear autosaved draft on successful edit
         nextStep();
       }
     } catch (error: any) {
-      console.error('Update error:', error);
-      console.error('Error response:', error.response?.data);
-      const errorMessage = error.response?.data?.message || error.message || "Something went wrong";
+      console.error("Update error:", error);
+      console.error("Error response:", error.response?.data);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong";
       toast.error(errorMessage);
     }
   };
@@ -383,7 +409,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
     if (productData) {
       return productData.reduce(
         (acc, curr) => acc + (Number(curr.qty) || 0),
-        0
+        0,
       );
     }
     return 0;
@@ -393,8 +419,9 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   const totalPrice = useMemo(() => {
     if (productData) {
       return productData.reduce(
-        (acc, curr) => acc + (Number(curr.qty) || 0) * (Number(curr.targetPrice) || 0),
-        0
+        (acc, curr) =>
+          acc + (Number(curr.qty) || 0) * (Number(curr.targetPrice) || 0),
+        0,
       );
     }
     return 0;
@@ -404,8 +431,9 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   const totalMaxPrice = useMemo(() => {
     if (productData) {
       return productData.reduce(
-        (acc, curr) => acc + (Number(curr.qty) || 0) * (Number(curr.maximum_price) || 0),
-        0
+        (acc, curr) =>
+          acc + (Number(curr.qty) || 0) * (Number(curr.maximum_price) || 0),
+        0,
       );
     }
     return 0;
@@ -418,12 +446,13 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   }, [totalQuantity, totalPrice, totalMaxPrice, setValue]);
 
   // Format products for FormSelect - filter out already added products
-  const availableProducts = data?.filter(
-    (product) =>
-      !watch("productData")?.find(
-        (p) => p?.productId?.toString() === product?.id?.toString()
-      )
-  ) || [];
+  const availableProducts =
+    data?.filter(
+      (product) =>
+        !watch("productData")?.find(
+          (p) => p?.productId?.toString() === product?.id?.toString(),
+        ),
+    ) || [];
 
   const productOptions: SelectOption[] = availableProducts.map((product) => ({
     value: product.id,
@@ -441,7 +470,9 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       <div className="border-2 rounded p-4 w-full max-w-full overflow-hidden dark:border-dark-border dark:bg-dark-surface">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="text-lg font-semibold dark:text-dark-text">Product Details</h3>
+            <h3 className="text-lg font-semibold dark:text-dark-text">
+              Product Details
+            </h3>
             <p className="font-normal text-[#46403E] dark:text-dark-text-secondary py-2">
               Your details will be used for Product Details
             </p>
@@ -462,7 +493,12 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               />
             </div>
             <div className="">
-              <Button className={"px-2 cursor-pointer"} onClick={() => handleAddProduct()} >Add</Button>
+              <Button
+                className={"px-2 cursor-pointer"}
+                onClick={() => handleAddProduct()}
+              >
+                Add
+              </Button>
             </div>
           </div>
 
@@ -470,7 +506,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
             {Array.isArray(watch("productData")) &&
               watch("productData")?.map((product, index) => {
                 const matchedProduct = data?.find(
-                  (i) => i.id.toString() === product?.productId.toString()
+                  (i) => i.id.toString() === product?.productId.toString(),
                 );
                 return (
                   <li
@@ -485,21 +521,26 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                     <div className="flex items-center gap-4">
                       {/* Quantity Field */}
                       <div className="flex flex-col">
-                        <span className="text-xs text-gray-600 dark:text-dark-text-secondary mb-1 font-medium">Quantity</span>
+                        <span className="text-xs text-gray-600 dark:text-dark-text-secondary mb-1 font-medium">
+                          Quantity
+                        </span>
                         <FormInput
                           placeholder="Enter quantity"
                           type="number"
                           name="qty"
-                          value={watch(`productData.${index}.qty`) || ''}
+                          value={watch(`productData.${index}.qty`) || ""}
                           onChange={(e) => {
                             setValue(
                               "productData",
                               watch("productData").map((i) => {
                                 if (i.productId === product?.productId) {
-                                  return { ...i, qty: Number(e.target.value) || 0 };
+                                  return {
+                                    ...i,
+                                    qty: Number(e.target.value) || 0,
+                                  };
                                 }
                                 return i;
-                              }) as ProductData[]
+                              }) as ProductData[],
                             );
                           }}
                           className="my-1"
@@ -508,18 +549,25 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
                       {/* Target Unit Price Field */}
                       <div className="flex flex-col">
-                        <span className="text-xs text-gray-600 dark:text-dark-text-secondary mb-1 font-medium">Target Unit Price</span>
+                        <span className="text-xs text-gray-600 dark:text-dark-text-secondary mb-1 font-medium">
+                          Target Unit Price
+                        </span>
                         <FormInput
                           placeholder="Enter target Price"
                           type="number"
                           min={0}
                           name="targetPrice"
-                          value={watch(`productData.${index}.targetPrice`) || ''}
+                          value={
+                            watch(`productData.${index}.targetPrice`) || ""
+                          }
                           onChange={(e) => {
-                            const newValue = e.target.value === "" ? "" : parseFloat(e.target.value);
+                            const newValue =
+                              e.target.value === ""
+                                ? ""
+                                : parseFloat(e.target.value);
 
                             // Allow null/empty but prevent negative values
-                            if (typeof newValue === 'number' && newValue < 0) {
+                            if (typeof newValue === "number" && newValue < 0) {
                               toast.error("Target price cannot be negative!");
                               return;
                             }
@@ -531,7 +579,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                                   return { ...i, targetPrice: e.target.value };
                                 }
                                 return i;
-                              })
+                              }),
                             );
                           }}
                           className="my-1"
@@ -541,18 +589,25 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
                       {/* Maximum Acceptable Price Field */}
                       <div className="flex flex-col">
-                        <span className="text-xs text-gray-600 dark:text-dark-text-secondary mb-1 font-medium">Maximum Acceptable Price</span>
+                        <span className="text-xs text-gray-600 dark:text-dark-text-secondary mb-1 font-medium">
+                          Maximum Acceptable Price
+                        </span>
                         <FormInput
                           placeholder="Enter max acceptable price"
                           type="number"
                           min={0}
                           name="maximum_price"
-                          value={watch(`productData.${index}.maximum_price`) || ''}
+                          value={
+                            watch(`productData.${index}.maximum_price`) || ""
+                          }
                           onChange={(e) => {
-                            const newValue = e.target.value === "" ? "" : parseFloat(e.target.value);
+                            const newValue =
+                              e.target.value === ""
+                                ? ""
+                                : parseFloat(e.target.value);
 
                             // Allow null/empty but prevent negative values
-                            if (typeof newValue === 'number' && newValue < 0) {
+                            if (typeof newValue === "number" && newValue < 0) {
                               toast.error("Maximum price cannot be negative!");
                               return;
                             }
@@ -561,10 +616,13 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                               "productData",
                               watch("productData").map((i) => {
                                 if (i.productId === product?.productId) {
-                                  return { ...i, maximum_price: e.target.value };
+                                  return {
+                                    ...i,
+                                    maximum_price: e.target.value,
+                                  };
                                 }
                                 return i;
-                              })
+                              }),
                             );
                           }}
                           className="my-1"
@@ -573,9 +631,13 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
                       {/* Delete Button */}
                       <div className="flex flex-col items-center justify-center">
-                        <span className="text-xs text-gray-600 dark:text-dark-text-secondary mb-1 font-medium">Delete</span>
+                        <span className="text-xs text-gray-600 dark:text-dark-text-secondary mb-1 font-medium">
+                          Delete
+                        </span>
                         <RiDeleteBinLine
-                          onClick={() => handleDeleteProduct(product?.productId)}
+                          onClick={() =>
+                            handleDeleteProduct(product?.productId)
+                          }
                           className="cursor-pointer text-red-500 hover:text-red-700"
                         />
                       </div>
@@ -590,7 +652,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               label="Total Quantity"
               name="totalQuantity"
               disabled={true}
-              value={watch("totalQuantity") || ''}
+              value={watch("totalQuantity") || ""}
               placeholder="Calculated automatically"
               type="text"
               className="my-1"
@@ -599,7 +661,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               label="Total Unit Price"
               name="totalPrice"
               disabled={true}
-              value={watch("totalPrice") || ''}
+              value={watch("totalPrice") || ""}
               placeholder="Calculated automatically"
               type="text"
               className="my-1"
@@ -608,7 +670,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               label="Total Maximum Acceptable Price"
               name="totalMaxPrice"
               disabled={true}
-              value={watch("totalMaxPrice") || ''}
+              value={watch("totalMaxPrice") || ""}
               placeholder="Calculated automatically"
               type="text"
               className="my-1"
@@ -634,14 +696,15 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               name="netPaymentDay"
               placeholder="Enter number of days (optional)"
               type="number"
-              value={watch("netPaymentDay") || ''}
+              value={watch("netPaymentDay") || ""}
               min={0}
               className="my-1"
               onChange={(e) => {
-                const newValue = e.target.value === "" ? "" : parseInt(e.target.value);
+                const newValue =
+                  e.target.value === "" ? "" : parseInt(e.target.value);
 
                 // Allow empty values and prevent negative values
-                if (typeof newValue === 'number' && newValue < 0) {
+                if (typeof newValue === "number" && newValue < 0) {
                   toast.error("Net payment day cannot be negative!");
                   return;
                 }
@@ -659,15 +722,16 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 name="prePaymentPercentage"
                 placeholder="Enter percentage (optional)"
                 type="number"
-                value={watch("prePaymentPercentage") || ''}
+                value={watch("prePaymentPercentage") || ""}
                 min={0}
                 max={100}
                 className="my-1"
                 onChange={(e) => {
-                  const newValue = e.target.value === "" ? "" : parseFloat(e.target.value);
+                  const newValue =
+                    e.target.value === "" ? "" : parseFloat(e.target.value);
 
                   // Prevent exceeding 100%
-                  if (typeof newValue === 'number' && newValue > 100) {
+                  if (typeof newValue === "number" && newValue > 100) {
                     toast.error("Pre payment percentage cannot exceed 100%!");
                     return;
                   }
@@ -681,15 +745,16 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 name="postPaymentPercentage"
                 placeholder="Enter percentage (optional)"
                 type="number"
-                value={watch("postPaymentPercentage") || ''}
+                value={watch("postPaymentPercentage") || ""}
                 min={0}
                 max={100}
                 className="my-1"
                 onChange={(e) => {
-                  const newValue = e.target.value === "" ? "" : parseFloat(e.target.value);
+                  const newValue =
+                    e.target.value === "" ? "" : parseFloat(e.target.value);
 
                   // Prevent exceeding 100%
-                  if (typeof newValue === 'number' && newValue > 100) {
+                  if (typeof newValue === "number" && newValue > 100) {
                     toast.error("Post payment percentage cannot exceed 100%!");
                     return;
                   }
@@ -705,7 +770,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               htmlFor={"files"}
               className={`block text-white-600 dark:text-dark-text font-medium mb-2`}
             >
-              Attachments <span className="font-normal text-gray-500 dark:text-dark-text-secondary">(Optional)</span>
+              Attachments{" "}
+              <span className="font-normal text-gray-500 dark:text-dark-text-secondary">
+                (Optional)
+              </span>
             </label>
             <label
               htmlFor="dropzone-file"
@@ -761,10 +829,14 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                       className="rotate-45 cursor-pointer ml-2 text-red-500 hover:text-red-700 absolute -right-1 top-0"
                       onClick={() => {
                         const currentFiles = watch("files");
-                        const filesArray = Array.isArray(currentFiles) ? currentFiles : Array.from(currentFiles as FileList);
+                        const filesArray = Array.isArray(currentFiles)
+                          ? currentFiles
+                          : Array.from(currentFiles as FileList);
                         setValue(
                           "files",
-                          filesArray.filter((_: any, idx: number) => idx !== index) as any
+                          filesArray.filter(
+                            (_: any, idx: number) => idx !== index,
+                          ) as any,
                         );
                       }}
                     />

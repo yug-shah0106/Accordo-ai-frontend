@@ -1,9 +1,18 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { ArrowLeft, Loader2, Save, AlertCircle, CheckCircle, Mail, X, RefreshCw } from 'lucide-react';
-import toast from 'react-hot-toast';
-import axios from 'axios';
-import chatbotService from '../../services/chatbot.service';
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import {
+  ArrowLeft,
+  Loader2,
+  Save,
+  AlertCircle,
+  CheckCircle,
+  Mail,
+  X,
+  RefreshCw,
+} from "lucide-react";
+import toast from "react-hot-toast";
+import axios from "axios";
+import chatbotService from "../../services/chatbot.service";
 import {
   StepProgress,
   StepOne,
@@ -11,7 +20,7 @@ import {
   StepThree,
   StepFour,
   ReviewStep,
-} from '../../components/chatbot/deal-wizard';
+} from "../../components/chatbot/deal-wizard";
 import type {
   DealWizardFormData,
   DealWizardStepOne,
@@ -23,18 +32,18 @@ import type {
   DeliveryAddress,
   QualityCertification,
   SmartDefaults,
-} from '../../types';
-import { DEFAULT_WIZARD_FORM_DATA } from '../../types';
+} from "../../types";
+import { DEFAULT_WIZARD_FORM_DATA } from "../../types";
 
 const WIZARD_STEPS = [
-  { id: 1, title: 'Basic Info', description: 'RFQ & Vendor' },
-  { id: 2, title: 'Commercial', description: 'Price & Terms' },
-  { id: 3, title: 'Contract', description: 'SLA & Control' },
-  { id: 4, title: 'Weights', description: 'Priorities' },
-  { id: 5, title: 'Review', description: 'Confirm' },
+  { id: 1, title: "Basic Info", description: "RFQ & Vendor" },
+  { id: 2, title: "Commercial", description: "Price & Terms" },
+  { id: 3, title: "Contract", description: "SLA & Control" },
+  { id: 4, title: "Weights", description: "Priorities" },
+  { id: 5, title: "Review", description: "Confirm" },
 ];
 
-const DRAFT_KEY_PREFIX = 'accordo_deal_draft';
+const DRAFT_KEY_PREFIX = "accordo_deal_draft";
 const AUTO_SAVE_INTERVAL = 30000; // 30 seconds
 
 // Single stable key used for the wizard-in-progress draft.
@@ -52,32 +61,49 @@ const getDraftKey = (rfqId: number | null, vendorId: number | null): string => {
 };
 
 // Read the active wizard draft synchronously (used in lazy useState initialisers).
-const readWizardDraft = (): { data: DealWizardFormData; currentStep: number; savedAt: string } | null => {
+const readWizardDraft = (): {
+  data: DealWizardFormData;
+  currentStep: number;
+  savedAt: string;
+} | null => {
   try {
     const raw = localStorage.getItem(WIZARD_DRAFT_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (parsed?.data && typeof parsed.currentStep === 'number') return parsed;
-  } catch { /* ignore */ }
+    if (parsed?.data && typeof parsed.currentStep === "number") return parsed;
+  } catch {
+    /* ignore */
+  }
   return null;
 };
 
 // Write the active wizard draft synchronously.
-const writeWizardDraft = (data: DealWizardFormData, currentStep: number): void => {
+const writeWizardDraft = (
+  data: DealWizardFormData,
+  currentStep: number,
+): void => {
   try {
-    localStorage.setItem(WIZARD_DRAFT_KEY, JSON.stringify({
-      data,
-      currentStep,
-      savedAt: new Date().toISOString(),
-    }));
-  } catch { /* ignore */ }
+    localStorage.setItem(
+      WIZARD_DRAFT_KEY,
+      JSON.stringify({
+        data,
+        currentStep,
+        savedAt: new Date().toISOString(),
+      }),
+    );
+  } catch {
+    /* ignore */
+  }
 };
 
 // Clear the active wizard draft (called on successful submit or explicit discard).
 const clearWizardDraft = (): void => {
-  try { localStorage.removeItem(WIZARD_DRAFT_KEY); } catch { /* ignore */ }
+  try {
+    localStorage.removeItem(WIZARD_DRAFT_KEY);
+  } catch {
+    /* ignore */
+  }
 };
-
 
 /**
  * NewDealPage - Multi-step wizard for creating a new negotiation deal
@@ -89,20 +115,21 @@ export default function NewDealPage() {
   const location = useLocation();
 
   // Support both 'requisitionId' and 'requisition' query params for flexibility
-  const preselectedRequisitionId = searchParams.get('requisitionId') || searchParams.get('requisition');
+  const preselectedRequisitionId =
+    searchParams.get("requisitionId") || searchParams.get("requisition");
 
   // URL parameters for refresh-safe navigation from VendorDetails
-  const urlRfqId = searchParams.get('rfqId');
-  const urlVendorId = searchParams.get('vendorId');
-  const urlVendorName = searchParams.get('vendorName');  // Fallback for vendor matching
-  const urlLocked = searchParams.get('locked') === 'true';
-  const urlReturnTo = searchParams.get('returnTo');
+  const urlRfqId = searchParams.get("rfqId");
+  const urlVendorId = searchParams.get("vendorId");
+  const urlVendorName = searchParams.get("vendorName"); // Fallback for vendor matching
+  const urlLocked = searchParams.get("locked") === "true";
+  const urlReturnTo = searchParams.get("returnTo");
   // Optional: contractId from "Start Negotiation" on existing contract
   // When provided, the deal will be linked to this existing contract
-  const urlContractId = searchParams.get('contractId');
+  const urlContractId = searchParams.get("contractId");
   // Optional: previousContractId from "Re-negotiate" on escalated contract
   // When provided, a new contract will be created referencing the old one
-  const urlPreviousContractId = searchParams.get('previousContractId');
+  const urlPreviousContractId = searchParams.get("previousContractId");
 
   // Handle router state from VendorDetails "Start Negotiation" flow
   const routerState = location.state as {
@@ -113,7 +140,7 @@ export default function NewDealPage() {
   } | null;
 
   // Check if we're in "locked" mode (either from router state OR URL param)
-  const isLockedMode = (routerState?.lockedFields === true) || urlLocked;
+  const isLockedMode = routerState?.lockedFields === true || urlLocked;
   const prefilledRequisition = routerState?.requisition || null;
   const prefilledVendor = routerState?.vendor || null;
   const returnToPath = routerState?.returnTo || urlReturnTo || null;
@@ -123,27 +150,27 @@ export default function NewDealPage() {
     // Priority 1: Return to path from router state OR URL param (VendorDetails flow)
     if (returnToPath) {
       return {
-        label: 'Cancel',
+        label: "Cancel",
         path: returnToPath,
       };
     }
     // Priority 2: Coming from a specific requisition via query param (rfqId or requisitionId)
     if (urlRfqId) {
       return {
-        label: 'Back to Requisition',
+        label: "Back to Requisition",
         path: `/requisition-management/edit/${urlRfqId}`,
       };
     }
     if (preselectedRequisitionId) {
       return {
-        label: 'Back to Deals',
+        label: "Back to Deals",
         path: `/chatbot/requisitions/${preselectedRequisitionId}`,
       };
     }
     // Priority 3: Generic deal creation - go back to requisitions list
     return {
-      label: 'Back to Requisitions',
-      path: '/chatbot/requisitions',
+      label: "Back to Requisitions",
+      path: "/chatbot/requisitions",
     };
   }, [preselectedRequisitionId, returnToPath, urlRfqId]);
 
@@ -153,20 +180,30 @@ export default function NewDealPage() {
   // browser restarts — eliminating all remount-related resets.
   const [currentStep, setCurrentStep] = useState<number>(() => {
     const draft = readWizardDraft();
-    if (draft && draft.currentStep >= 1 && draft.currentStep <= 5) return draft.currentStep;
+    if (draft && draft.currentStep >= 1 && draft.currentStep <= 5)
+      return draft.currentStep;
     return 1;
   });
   const [formData, setFormData] = useState<DealWizardFormData>(() => {
     const draft = readWizardDraft();
     if (draft?.data) {
-      const validParamIds = new Set(['targetUnitPrice', 'paymentTerms', 'maxAcceptablePrice', 'deliveryDate', 'warrantyPeriod', 'qualityStandards']);
+      const validParamIds = new Set([
+        "targetUnitPrice",
+        "paymentTerms",
+        "maxAcceptablePrice",
+        "deliveryDate",
+        "warrantyPeriod",
+        "qualityStandards",
+      ]);
       const hasOutdatedParams = draft.data.stepFour?.weights?.some(
-        (w: { parameterId: string }) => !validParamIds.has(w.parameterId)
+        (w: { parameterId: string }) => !validParamIds.has(w.parameterId),
       );
       return {
         ...DEFAULT_WIZARD_FORM_DATA,
         ...draft.data,
-        stepFour: hasOutdatedParams ? DEFAULT_WIZARD_FORM_DATA.stepFour : (draft.data.stepFour || DEFAULT_WIZARD_FORM_DATA.stepFour),
+        stepFour: hasOutdatedParams
+          ? DEFAULT_WIZARD_FORM_DATA.stepFour
+          : draft.data.stepFour || DEFAULT_WIZARD_FORM_DATA.stepFour,
       };
     }
     return DEFAULT_WIZARD_FORM_DATA;
@@ -176,8 +213,12 @@ export default function NewDealPage() {
   const [requisitions, setRequisitions] = useState<RequisitionSummary[]>([]);
   const [vendors, setVendors] = useState<VendorSummary[]>([]);
   const [addresses, setAddresses] = useState<DeliveryAddress[]>([]);
-  const [certifications, setCertifications] = useState<QualityCertification[]>([]);
-  const [smartDefaults, setSmartDefaults] = useState<SmartDefaults | null>(null);
+  const [certifications, setCertifications] = useState<QualityCertification[]>(
+    [],
+  );
+  const [smartDefaults, setSmartDefaults] = useState<SmartDefaults | null>(
+    null,
+  );
 
   // Loading states
   const [loadingRequisitions, setLoadingRequisitions] = useState(true);
@@ -188,7 +229,9 @@ export default function NewDealPage() {
 
   // Validation & draft
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string[]>
+  >({});
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [draftSaving, setDraftSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -199,12 +242,21 @@ export default function NewDealPage() {
   const multiVendorMode = !urlVendorId && !prefilledVendor;
 
   // Batch deal creation results
-  type BatchDealResult = { vendorId: number; vendorName: string; status: 'fulfilled' | 'rejected'; error?: string };
-  const [batchResults, setBatchResults] = useState<BatchDealResult[] | null>(null);
+  type BatchDealResult = {
+    vendorId: number;
+    vendorName: string;
+    status: "fulfilled" | "rejected";
+    error?: string;
+  };
+  const [batchResults, setBatchResults] = useState<BatchDealResult[] | null>(
+    null,
+  );
 
   // Email failure modal state
   const [showEmailFailedModal, setShowEmailFailedModal] = useState(false);
-  const [emailFailureError, setEmailFailureError] = useState<string | null>(null);
+  const [emailFailureError, setEmailFailureError] = useState<string | null>(
+    null,
+  );
   const [pendingDealNavigation, setPendingDealNavigation] = useState<{
     rfqId: number;
     vendorId: number;
@@ -221,7 +273,7 @@ export default function NewDealPage() {
           const rfqRes = await chatbotService.getRequisitions();
           setRequisitions(rfqRes.data || []);
         } catch (err) {
-          console.warn('[NewDealPage] Failed to load requisitions:', err);
+          console.warn("[NewDealPage] Failed to load requisitions:", err);
           // Use mock data for development
           setRequisitions([]);
         }
@@ -235,21 +287,37 @@ export default function NewDealPage() {
           const certRes = await chatbotService.getQualityCertifications();
           setCertifications(certRes.data || []);
         } catch (err) {
-          console.warn('Failed to load certifications:', err);
+          console.warn("Failed to load certifications:", err);
           // Use default certifications
           setCertifications([
-            { id: 'ISO_9001', name: 'ISO 9001:2015', category: 'Quality Management' },
-            { id: 'ISO_14001', name: 'ISO 14001:2015', category: 'Environmental' },
-            { id: 'ISO_27001', name: 'ISO 27001:2022', category: 'Information Security' },
-            { id: 'CE', name: 'CE Marking', category: 'European Conformity' },
-            { id: 'FDA', name: 'FDA Registered', category: 'Food & Drug' },
-            { id: 'UL', name: 'UL Listed', category: 'Safety' },
-            { id: 'RoHS', name: 'RoHS Compliant', category: 'Hazardous Substances' },
+            {
+              id: "ISO_9001",
+              name: "ISO 9001:2015",
+              category: "Quality Management",
+            },
+            {
+              id: "ISO_14001",
+              name: "ISO 14001:2015",
+              category: "Environmental",
+            },
+            {
+              id: "ISO_27001",
+              name: "ISO 27001:2022",
+              category: "Information Security",
+            },
+            { id: "CE", name: "CE Marking", category: "European Conformity" },
+            { id: "FDA", name: "FDA Registered", category: "Food & Drug" },
+            { id: "UL", name: "UL Listed", category: "Safety" },
+            {
+              id: "RoHS",
+              name: "RoHS Compliant",
+              category: "Hazardous Substances",
+            },
           ]);
         }
         setLoadingCertifications(false);
       } catch (err) {
-        console.error('Error loading initial data:', err);
+        console.error("Error loading initial data:", err);
       }
     };
 
@@ -273,7 +341,10 @@ export default function NewDealPage() {
 
   // Get current draft key based on selected RFQ+Vendor
   const currentDraftKey = useMemo(() => {
-    return getDraftKey(formData.stepOne.requisitionId, formData.stepOne.vendorId);
+    return getDraftKey(
+      formData.stepOne.requisitionId,
+      formData.stepOne.vendorId,
+    );
   }, [formData.stepOne.requisitionId, formData.stepOne.vendorId]);
 
   // Auto-save draft — writes to localStorage (primary, survives navigation) and
@@ -293,7 +364,7 @@ export default function NewDealPage() {
       sessionStorage.setItem(getDraftKey(null, null), draftData);
       setLastSaved(new Date());
     } catch (err) {
-      console.warn('Failed to save draft:', err);
+      console.warn("Failed to save draft:", err);
     }
     setDraftSaving(false);
   }, [formData, currentStep, currentDraftKey]);
@@ -302,9 +373,9 @@ export default function NewDealPage() {
   // no timer, no race. The correct step is persisted before any navigation occurs.
   useEffect(() => {
     writeWizardDraft(formData, currentStep);
-  // formData intentionally omitted — step changes are what matter here; formData
-  // changes are handled by the 30s auto-save timer below.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // formData intentionally omitted — step changes are what matter here; formData
+    // changes are handled by the 30s auto-save timer below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 
   // Setup auto-save timer for formData changes (throttled — step is already saved above)
@@ -335,17 +406,25 @@ export default function NewDealPage() {
     const save = () => {
       writeWizardDraft(formData, currentStep);
       try {
-        const draftData = JSON.stringify({ data: formData, currentStep, savedAt: new Date().toISOString() });
+        const draftData = JSON.stringify({
+          data: formData,
+          currentStep,
+          savedAt: new Date().toISOString(),
+        });
         sessionStorage.setItem(currentDraftKey, draftData);
         sessionStorage.setItem(getDraftKey(null, null), draftData);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     };
-    const onVisibility = () => { if (document.visibilityState === 'hidden') save(); };
-    window.addEventListener('beforeunload', save);
-    document.addEventListener('visibilitychange', onVisibility);
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") save();
+    };
+    window.addEventListener("beforeunload", save);
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
-      window.removeEventListener('beforeunload', save);
-      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener("beforeunload", save);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [formData, currentStep, currentDraftKey]);
 
@@ -361,14 +440,15 @@ export default function NewDealPage() {
       const res = await chatbotService.getRequisitionVendors(rfqId);
       setVendors(res.data || []);
     } catch (err) {
-      console.warn('Failed to load vendors for RFQ:', err);
+      console.warn("Failed to load vendors for RFQ:", err);
       setVendors([]);
     }
     setLoadingVendors(false);
   }, []);
 
   // Track if we've loaded vendors for the preselected requisition
-  const [vendorsLoadedForPreselection, setVendorsLoadedForPreselection] = useState(false);
+  const [vendorsLoadedForPreselection, setVendorsLoadedForPreselection] =
+    useState(false);
 
   // Track if we've initialized from router state (locked mode)
   const [routerStateInitialized, setRouterStateInitialized] = useState(false);
@@ -379,10 +459,15 @@ export default function NewDealPage() {
 
   // Initialize form from router state (VendorDetails "Start Negotiation" flow)
   useEffect(() => {
-    if (isLockedMode && prefilledRequisition && prefilledVendor && !routerStateInitialized && !hasDraftRef.current) {
-
+    if (
+      isLockedMode &&
+      prefilledRequisition &&
+      prefilledVendor &&
+      !routerStateInitialized &&
+      !hasDraftRef.current
+    ) {
       // Set form data from router state
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         stepOne: {
           ...prev.stepOne,
@@ -390,12 +475,12 @@ export default function NewDealPage() {
           vendorId: prefilledVendor.id,
           title: prefilledRequisition.title || prev.stepOne.title,
           vendorLocked: true, // Locked when coming from router state with lockedFields
-        }
+        },
       }));
 
       // Add the prefilled requisition to the list if not present
-      setRequisitions(prev => {
-        const exists = prev.some(r => r.id === prefilledRequisition.id);
+      setRequisitions((prev) => {
+        const exists = prev.some((r) => r.id === prefilledRequisition.id);
         if (!exists) {
           return [...prev, prefilledRequisition as RequisitionSummary];
         }
@@ -403,7 +488,8 @@ export default function NewDealPage() {
       });
 
       // Check if prefilled vendor has addresses
-      const hasAddresses = prefilledVendor.addresses && prefilledVendor.addresses.length > 0;
+      const hasAddresses =
+        prefilledVendor.addresses && prefilledVendor.addresses.length > 0;
 
       if (hasAddresses) {
         // Vendor has addresses, use directly
@@ -414,26 +500,28 @@ export default function NewDealPage() {
         setLoadingVendors(true);
 
         // Fetch vendors for the requisition to get complete data including addresses
-        chatbotService.getRequisitionVendors(prefilledRequisition.id)
-          .then(res => {
+        chatbotService
+          .getRequisitionVendors(prefilledRequisition.id)
+          .then((res) => {
             const fetchedVendors = res.data || [];
 
             // Try to find matching vendor by multiple criteria (ID mismatch workaround)
             // VendorDetails passes vendorId, but API returns user.id, so match by name/email
-            const fullVendorData = fetchedVendors.find(v =>
-              v.id === prefilledVendor.id ||  // Try ID first (in case it matches)
-              (v.email && v.email === prefilledVendor.email) ||  // Match by email
-              (v.name && v.name === prefilledVendor.name)  // Match by name
+            const fullVendorData = fetchedVendors.find(
+              (v) =>
+                v.id === prefilledVendor.id || // Try ID first (in case it matches)
+                (v.email && v.email === prefilledVendor.email) || // Match by email
+                (v.name && v.name === prefilledVendor.name), // Match by name
             );
 
             if (fullVendorData) {
               // Update the form's vendorId to match the API's vendor ID
-              setFormData(prev => ({
+              setFormData((prev) => ({
                 ...prev,
                 stepOne: {
                   ...prev.stepOne,
-                  vendorId: fullVendorData.id,  // Use correct vendor ID from API
-                }
+                  vendorId: fullVendorData.id, // Use correct vendor ID from API
+                },
               }));
               setVendors([fullVendorData]);
             } else if (fetchedVendors.length > 0) {
@@ -442,12 +530,14 @@ export default function NewDealPage() {
               setVendors(fetchedVendors);
             } else {
               // No vendors from API, use prefilled (will have no addresses)
-              console.warn('[NewDealPage] No vendors from API, using prefilled vendor');
+              console.warn(
+                "[NewDealPage] No vendors from API, using prefilled vendor",
+              );
               setVendors([prefilledVendor as VendorSummary]);
             }
           })
-          .catch(err => {
-            console.warn('[NewDealPage] Failed to fetch vendor data:', err);
+          .catch((err) => {
+            console.warn("[NewDealPage] Failed to fetch vendor data:", err);
             // Fallback to prefilled vendor without addresses
             setVendors([prefilledVendor as VendorSummary]);
           })
@@ -459,7 +549,12 @@ export default function NewDealPage() {
       setRouterStateInitialized(true);
       setVendorsLoadedForPreselection(true); // Prevent other useEffect from overriding
     }
-  }, [isLockedMode, prefilledRequisition, prefilledVendor, routerStateInitialized]);
+  }, [
+    isLockedMode,
+    prefilledRequisition,
+    prefilledVendor,
+    routerStateInitialized,
+  ]);
 
   // Initialize from URL parameters (refresh-safe approach from VendorDetails)
   useEffect(() => {
@@ -476,7 +571,6 @@ export default function NewDealPage() {
         return;
       }
 
-
       try {
         setLoadingVendors(true);
 
@@ -485,49 +579,57 @@ export default function NewDealPage() {
         const rfqList = rfqRes.data || [];
         setRequisitions(rfqList);
 
-        const selectedRfq = rfqList.find(r => r.id === parseInt(urlRfqId));
+        const selectedRfq = rfqList.find((r) => r.id === parseInt(urlRfqId));
 
         // Fetch vendors for the requisition - this returns vendors with addresses
-        const vendorRes = await chatbotService.getRequisitionVendors(parseInt(urlRfqId));
+        const vendorRes = await chatbotService.getRequisitionVendors(
+          parseInt(urlRfqId),
+        );
         const vendorList = vendorRes.data || [];
 
         // Find the specific vendor using multi-criteria matching
         // Priority: 1. ID match, 2. vendorId match, 3. name match (case-insensitive)
-        const decodedVendorName = urlVendorName ? decodeURIComponent(urlVendorName) : null;
-        const selectedVendor = vendorList.find(v =>
-          v.id === parseInt(urlVendorId) ||
-          v.id?.toString() === urlVendorId ||
-          v.vendorId?.toString() === urlVendorId ||
-          (decodedVendorName && v.name?.toLowerCase() === decodedVendorName.toLowerCase())
+        const decodedVendorName = urlVendorName
+          ? decodeURIComponent(urlVendorName)
+          : null;
+        const selectedVendor = vendorList.find(
+          (v) =>
+            v.id === parseInt(urlVendorId) ||
+            v.id?.toString() === urlVendorId ||
+            v.vendorId?.toString() === urlVendorId ||
+            (decodedVendorName &&
+              v.name?.toLowerCase() === decodedVendorName.toLowerCase()),
         );
 
         if (selectedVendor) {
-
           // Set vendors state - show ONLY this vendor in locked mode
           setVendors([selectedVendor]);
 
           // Set form data with pre-selected values
           // Lock dropdown when vendor is found from URL (per user requirement)
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
             stepOne: {
               ...prev.stepOne,
               requisitionId: parseInt(urlRfqId),
               vendorId: selectedVendor.id,
               title: selectedRfq?.title || prev.stepOne.title,
-              vendorLocked: isLockedMode,  // Respect locked=true from URL
-            }
+              vendorLocked: isLockedMode, // Respect locked=true from URL
+            },
           }));
         } else if (vendorList.length > 0 && decodedVendorName) {
           // Vendor not found by ID or name - try partial name match as last resort
-          const partialMatch = vendorList.find(v =>
-            v.name?.toLowerCase().includes(decodedVendorName.toLowerCase()) ||
-            decodedVendorName.toLowerCase().includes(v.name?.toLowerCase() || '')
+          const partialMatch = vendorList.find(
+            (v) =>
+              v.name?.toLowerCase().includes(decodedVendorName.toLowerCase()) ||
+              decodedVendorName
+                .toLowerCase()
+                .includes(v.name?.toLowerCase() || ""),
           );
 
           if (partialMatch) {
             setVendors([partialMatch]);
-            setFormData(prev => ({
+            setFormData((prev) => ({
               ...prev,
               stepOne: {
                 ...prev.stepOne,
@@ -535,54 +637,64 @@ export default function NewDealPage() {
                 vendorId: partialMatch.id,
                 title: selectedRfq?.title || prev.stepOne.title,
                 vendorLocked: isLockedMode,
-              }
+              },
             }));
           } else {
             // Still no match - show all vendors but don't auto-select wrong one
-            console.warn('[NewDealPage] No vendor match found, showing all vendors. URL vendorId:', urlVendorId, 'vendorName:', decodedVendorName);
+            console.warn(
+              "[NewDealPage] No vendor match found, showing all vendors. URL vendorId:",
+              urlVendorId,
+              "vendorName:",
+              decodedVendorName,
+            );
             setVendors(vendorList);
-            setFormData(prev => ({
+            setFormData((prev) => ({
               ...prev,
               stepOne: {
                 ...prev.stepOne,
                 requisitionId: parseInt(urlRfqId),
-                vendorId: null,  // Don't auto-select wrong vendor
+                vendorId: null, // Don't auto-select wrong vendor
                 title: selectedRfq?.title || prev.stepOne.title,
-                vendorLocked: false,  // Unlock so user can select
-              }
+                vendorLocked: false, // Unlock so user can select
+              },
             }));
           }
         } else if (vendorList.length > 0) {
           // No vendor name hint and no ID match - show all vendors unlocked
-          console.warn('[NewDealPage] Vendor not found by ID, no name hint. Showing all vendors.');
+          console.warn(
+            "[NewDealPage] Vendor not found by ID, no name hint. Showing all vendors.",
+          );
           setVendors(vendorList);
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
             stepOne: {
               ...prev.stepOne,
               requisitionId: parseInt(urlRfqId),
-              vendorId: null,  // Don't auto-select wrong vendor
+              vendorId: null, // Don't auto-select wrong vendor
               title: selectedRfq?.title || prev.stepOne.title,
-              vendorLocked: false,  // Unlock dropdown since requested vendor not found
-            }
+              vendorLocked: false, // Unlock dropdown since requested vendor not found
+            },
           }));
         } else {
           // No vendors available - just set the RFQ
-          console.warn('[NewDealPage] No vendors found for RFQ');
-          setFormData(prev => ({
+          console.warn("[NewDealPage] No vendors found for RFQ");
+          setFormData((prev) => ({
             ...prev,
             stepOne: {
               ...prev.stepOne,
               requisitionId: parseInt(urlRfqId),
               title: selectedRfq?.title || prev.stepOne.title,
-            }
+            },
           }));
         }
 
         setRouterStateInitialized(true);
         setVendorsLoadedForPreselection(true);
       } catch (error) {
-        console.error('[NewDealPage] Failed to initialize from URL params:', error);
+        console.error(
+          "[NewDealPage] Failed to initialize from URL params:",
+          error,
+        );
         // On error, fall back to normal flow
       } finally {
         setLoadingVendors(false);
@@ -591,18 +703,27 @@ export default function NewDealPage() {
     };
 
     initFromUrlParams();
-  }, [urlRfqId, urlVendorId, urlVendorName, routerStateInitialized, isLockedMode]);
+  }, [
+    urlRfqId,
+    urlVendorId,
+    urlVendorName,
+    routerStateInitialized,
+    isLockedMode,
+  ]);
 
   // Auto-populate requisition from URL query param (requisitionId=X scenario - NOT locked)
   useEffect(() => {
-    if (hasDraftRef.current) return; // Draft loaded at mount — don't overwrite with URL params
     if (preselectedRequisitionId && requisitions.length > 0) {
       const rfqId = parseInt(preselectedRequisitionId);
-      const rfq = requisitions.find(r => r.id === rfqId);
+      const rfq = requisitions.find((r) => r.id === rfqId);
       if (rfq) {
-        // Always set the form data to match the URL parameter
-        if (formData.stepOne.requisitionId !== rfqId) {
-          setFormData(prev => ({
+        // Set form data to match the URL parameter — but if a draft was loaded
+        // at mount, don't overwrite the user's saved work (only fill in if the
+        // draft didn't already have an RFQ selected).
+        const draftHasRfq =
+          hasDraftRef.current && formData.stepOne.requisitionId;
+        if (!draftHasRfq && formData.stepOne.requisitionId !== rfqId) {
+          setFormData((prev) => ({
             ...prev,
             stepOne: {
               ...prev.stepOne,
@@ -610,31 +731,47 @@ export default function NewDealPage() {
               vendorId: null, // Reset vendor when RFQ is pre-selected
               title: rfq.title || prev.stepOne.title,
               vendorLocked: false, // Explicitly NOT locked for requisitionId param
-            }
+            },
           }));
         }
-        // Always load vendors when we have a preselected requisition (even if draft had the same one)
+        // Always load vendors when we have a preselected requisition — refresh
+        // should not leave the vendor dropdown empty just because a draft existed.
         if (!vendorsLoadedForPreselection) {
           handleRequisitionChange(rfqId);
           setVendorsLoadedForPreselection(true);
         }
       }
     }
-  }, [preselectedRequisitionId, requisitions, formData.stepOne.requisitionId, handleRequisitionChange, vendorsLoadedForPreselection]);
+  }, [
+    preselectedRequisitionId,
+    requisitions,
+    formData.stepOne.requisitionId,
+    handleRequisitionChange,
+    vendorsLoadedForPreselection,
+  ]);
 
   // Load vendors when draft is restored with a requisitionId (but no URL param)
   // This ensures vendors are loaded even if coming from localStorage draft
   useEffect(() => {
     // Only run if there's no preselected requisition (already handled above)
     // and a requisitionId is set (e.g., from draft) but vendors array is empty
-    if (!preselectedRequisitionId &&
-        formData.stepOne.requisitionId &&
-        vendors.length === 0 &&
-        !loadingVendors &&
-        !loadingRequisitions) {
+    if (
+      !preselectedRequisitionId &&
+      formData.stepOne.requisitionId &&
+      vendors.length === 0 &&
+      !loadingVendors &&
+      !loadingRequisitions
+    ) {
       handleRequisitionChange(formData.stepOne.requisitionId);
     }
-  }, [preselectedRequisitionId, formData.stepOne.requisitionId, vendors.length, loadingVendors, loadingRequisitions, handleRequisitionChange]);
+  }, [
+    preselectedRequisitionId,
+    formData.stepOne.requisitionId,
+    vendors.length,
+    loadingVendors,
+    loadingRequisitions,
+    handleRequisitionChange,
+  ]);
 
   // Load smart defaults when vendor changes
   useEffect(() => {
@@ -646,70 +783,89 @@ export default function NewDealPage() {
       }
 
       try {
-        const res = await chatbotService.getSmartDefaults(requisitionId, vendorId);
+        const res = await chatbotService.getSmartDefaults(
+          requisitionId,
+          vendorId,
+        );
         setSmartDefaults(res.data);
 
         // Apply smart defaults to form data if available
         if (res.data) {
           setFormData((prev) => {
             // Helper to check if a value is empty (null, undefined, 0, or empty string)
-            const isEmpty = (val: unknown): boolean => val === null || val === undefined || val === 0 || val === '';
+            const isEmpty = (val: unknown): boolean =>
+              val === null || val === undefined || val === 0 || val === "";
 
             return {
-            ...prev,
-            stepTwo: {
-              ...prev.stepTwo,
-              priceQuantity: {
-                ...prev.stepTwo.priceQuantity,
-                // Use total values from requisition (new behavior)
-                // Use isEmpty check instead of ?? to also apply defaults when value is 0
-                targetUnitPrice: isEmpty(prev.stepTwo.priceQuantity.targetUnitPrice)
-                  ? (res.data.priceQuantity.totalTargetPrice ?? res.data.priceQuantity.targetUnitPrice)
-                  : prev.stepTwo.priceQuantity.targetUnitPrice,
-                maxAcceptablePrice: isEmpty(prev.stepTwo.priceQuantity.maxAcceptablePrice)
-                  ? (res.data.priceQuantity.totalMaxPrice ?? res.data.priceQuantity.maxAcceptablePrice)
-                  : prev.stepTwo.priceQuantity.maxAcceptablePrice,
-                // Auto-populate minimum order quantity from total quantity
-                minOrderQuantity: isEmpty(prev.stepTwo.priceQuantity.minOrderQuantity)
-                  ? res.data.priceQuantity.totalQuantity
-                  : prev.stepTwo.priceQuantity.minOrderQuantity,
-                // Always write currency from SmartDefaults (requisition source of truth)
-                currency: res.data.currency ?? prev.stepTwo.priceQuantity.currency ?? null,
+              ...prev,
+              stepTwo: {
+                ...prev.stepTwo,
+                priceQuantity: {
+                  ...prev.stepTwo.priceQuantity,
+                  // Use total values from requisition (new behavior)
+                  // Use isEmpty check instead of ?? to also apply defaults when value is 0
+                  targetUnitPrice: isEmpty(
+                    prev.stepTwo.priceQuantity.targetUnitPrice,
+                  )
+                    ? (res.data.priceQuantity.totalTargetPrice ??
+                      res.data.priceQuantity.targetUnitPrice)
+                    : prev.stepTwo.priceQuantity.targetUnitPrice,
+                  maxAcceptablePrice: isEmpty(
+                    prev.stepTwo.priceQuantity.maxAcceptablePrice,
+                  )
+                    ? (res.data.priceQuantity.totalMaxPrice ??
+                      res.data.priceQuantity.maxAcceptablePrice)
+                    : prev.stepTwo.priceQuantity.maxAcceptablePrice,
+                  // Auto-populate minimum order quantity from total quantity
+                  minOrderQuantity: isEmpty(
+                    prev.stepTwo.priceQuantity.minOrderQuantity,
+                  )
+                    ? res.data.priceQuantity.totalQuantity
+                    : prev.stepTwo.priceQuantity.minOrderQuantity,
+                  // Always write currency from SmartDefaults (requisition source of truth)
+                  currency:
+                    res.data.currency ??
+                    prev.stepTwo.priceQuantity.currency ??
+                    null,
+                },
+                paymentTerms: {
+                  ...prev.stepTwo.paymentTerms,
+                  minDays:
+                    prev.stepTwo.paymentTerms.minDays ??
+                    res.data.paymentTerms.minDays,
+                  maxDays:
+                    prev.stepTwo.paymentTerms.maxDays ??
+                    res.data.paymentTerms.maxDays,
+                },
+                delivery: {
+                  ...prev.stepTwo.delivery,
+                  // deliveryDate from requisition -> preferredDate in wizard
+                  preferredDate: isEmpty(prev.stepTwo.delivery.preferredDate)
+                    ? res.data.delivery.deliveryDate || null
+                    : prev.stepTwo.delivery.preferredDate,
+                  // maxDeliveryDate from requisition -> requiredDate in wizard
+                  requiredDate: isEmpty(prev.stepTwo.delivery.requiredDate)
+                    ? res.data.delivery.maxDeliveryDate || null
+                    : prev.stepTwo.delivery.requiredDate,
+                },
               },
-              paymentTerms: {
-                ...prev.stepTwo.paymentTerms,
-                minDays: prev.stepTwo.paymentTerms.minDays ?? res.data.paymentTerms.minDays,
-                maxDays: prev.stepTwo.paymentTerms.maxDays ?? res.data.paymentTerms.maxDays,
+              stepThree: {
+                ...prev.stepThree,
+                negotiationControl: {
+                  ...prev.stepThree.negotiationControl,
+                  deadline: isEmpty(prev.stepThree.negotiationControl.deadline)
+                    ? (res.data.delivery.negotiationClosureDate ?? null)
+                    : prev.stepThree.negotiationControl.deadline,
+                  // Note: walkawayThreshold and maxRounds removed from wizard UI (Feb 2026)
+                  // Backend applies its own defaults based on priority
+                },
               },
-              delivery: {
-                ...prev.stepTwo.delivery,
-                // deliveryDate from requisition -> preferredDate in wizard
-                preferredDate: isEmpty(prev.stepTwo.delivery.preferredDate)
-                  ? (res.data.delivery.deliveryDate || null)
-                  : prev.stepTwo.delivery.preferredDate,
-                // maxDeliveryDate from requisition -> requiredDate in wizard
-                requiredDate: isEmpty(prev.stepTwo.delivery.requiredDate)
-                  ? (res.data.delivery.maxDeliveryDate || null)
-                  : prev.stepTwo.delivery.requiredDate,
-              },
-            },
-            stepThree: {
-              ...prev.stepThree,
-              negotiationControl: {
-                ...prev.stepThree.negotiationControl,
-                deadline: isEmpty(prev.stepThree.negotiationControl.deadline)
-                  ? (res.data.delivery.negotiationClosureDate ?? null)
-                  : prev.stepThree.negotiationControl.deadline,
-                // Note: walkawayThreshold and maxRounds removed from wizard UI (Feb 2026)
-                // Backend applies its own defaults based on priority
-              },
-            },
-            stepFour: prev.stepFour,
-          };
+              stepFour: prev.stepFour,
+            };
           });
         }
       } catch (err) {
-        console.warn('Failed to load smart defaults:', err);
+        console.warn("Failed to load smart defaults:", err);
       }
     };
 
@@ -728,9 +884,13 @@ export default function NewDealPage() {
         setAddresses(buyerAddresses);
 
         // Auto-populate with default address if available and no address is selected yet
-        if (buyerAddresses.length > 0 && !formData.stepTwo.delivery.locationId) {
+        if (
+          buyerAddresses.length > 0 &&
+          !formData.stepTwo.delivery.locationId
+        ) {
           // Find the default address or use the first one
-          const defaultAddr = buyerAddresses.find((addr) => addr.isDefault) || buyerAddresses[0];
+          const defaultAddr =
+            buyerAddresses.find((addr) => addr.isDefault) || buyerAddresses[0];
           if (defaultAddr) {
             setFormData((prev) => ({
               ...prev,
@@ -746,7 +906,7 @@ export default function NewDealPage() {
           }
         }
       } catch (err) {
-        console.warn('Failed to load buyer addresses:', err);
+        console.warn("Failed to load buyer addresses:", err);
         setAddresses([]);
       } finally {
         setLoadingAddresses(false);
@@ -783,19 +943,19 @@ export default function NewDealPage() {
     const { stepOne } = formData;
 
     if (!stepOne.requisitionId) {
-      newErrors.requisitionId = 'Please select an RFQ';
+      newErrors.requisitionId = "Please select an RFQ";
     }
     if (multiVendorMode) {
       if (!stepOne.vendorIds?.length) {
-        newErrors.vendorId = 'Please select at least one vendor';
+        newErrors.vendorId = "Please select at least one vendor";
       }
     } else {
       if (!stepOne.vendorId) {
-        newErrors.vendorId = 'Please select a vendor';
+        newErrors.vendorId = "Please select a vendor";
       }
     }
     if (!stepOne.title.trim()) {
-      newErrors.title = 'Deal title is required';
+      newErrors.title = "Deal title is required";
     }
 
     setErrors(newErrors);
@@ -807,41 +967,54 @@ export default function NewDealPage() {
     const { priceQuantity, paymentTerms, delivery } = formData.stepTwo;
 
     if (!priceQuantity.targetUnitPrice || priceQuantity.targetUnitPrice <= 0) {
-      newErrors.targetUnitPrice = 'Target unit price is required';
+      newErrors.targetUnitPrice = "Target unit price is required";
     }
-    if (!priceQuantity.maxAcceptablePrice || priceQuantity.maxAcceptablePrice <= 0) {
-      newErrors.maxAcceptablePrice = 'Maximum acceptable price is required';
+    if (
+      !priceQuantity.maxAcceptablePrice ||
+      priceQuantity.maxAcceptablePrice <= 0
+    ) {
+      newErrors.maxAcceptablePrice = "Maximum acceptable price is required";
     }
     if (
       priceQuantity.targetUnitPrice &&
       priceQuantity.maxAcceptablePrice &&
       priceQuantity.maxAcceptablePrice < priceQuantity.targetUnitPrice
     ) {
-      newErrors.maxAcceptablePrice = 'Maximum price must be greater than or equal to target price';
+      newErrors.maxAcceptablePrice =
+        "Maximum price must be greater than or equal to target price";
     }
-    if (!priceQuantity.minOrderQuantity || priceQuantity.minOrderQuantity <= 0) {
-      newErrors.minOrderQuantity = 'Minimum order quantity is required';
+    if (
+      !priceQuantity.minOrderQuantity ||
+      priceQuantity.minOrderQuantity <= 0
+    ) {
+      newErrors.minOrderQuantity = "Minimum order quantity is required";
     }
     if (!paymentTerms.minDays || paymentTerms.minDays <= 0) {
-      newErrors.minPaymentDays = 'Minimum payment days is required';
+      newErrors.minPaymentDays = "Minimum payment days is required";
     }
     if (!paymentTerms.maxDays || paymentTerms.maxDays <= 0) {
-      newErrors.maxPaymentDays = 'Maximum payment days is required';
+      newErrors.maxPaymentDays = "Maximum payment days is required";
     }
-    if (paymentTerms.minDays && paymentTerms.maxDays && paymentTerms.maxDays < paymentTerms.minDays) {
-      newErrors.maxPaymentDays = 'Maximum days must be greater than minimum days';
+    if (
+      paymentTerms.minDays &&
+      paymentTerms.maxDays &&
+      paymentTerms.maxDays < paymentTerms.minDays
+    ) {
+      newErrors.maxPaymentDays =
+        "Maximum days must be greater than minimum days";
     }
     if (!delivery.requiredDate) {
-      newErrors.requiredDate = 'Required delivery date is required';
+      newErrors.requiredDate = "Required delivery date is required";
     }
     if (!delivery.locationId && !delivery.locationAddress) {
-      newErrors.locationId = 'Delivery location is required';
+      newErrors.locationId = "Delivery location is required";
     }
     if (
       delivery.partialDelivery.allowed &&
       !delivery.partialDelivery.minValue
     ) {
-      newErrors.partialDeliveryValue = 'Partial delivery minimum value is required';
+      newErrors.partialDeliveryValue =
+        "Partial delivery minimum value is required";
     }
 
     setErrors(newErrors);
@@ -853,15 +1026,19 @@ export default function NewDealPage() {
     const { contractSla } = formData.stepThree;
 
     if (!contractSla.warrantyPeriod) {
-      newErrors.warrantyPeriod = 'Warranty period is required';
-    } else if (contractSla.warrantyPeriod === 'CUSTOM' && (contractSla.customWarrantyMonths === null || contractSla.customWarrantyMonths === undefined)) {
-      newErrors.warrantyPeriod = 'Please enter a custom warranty period';
+      newErrors.warrantyPeriod = "Warranty period is required";
+    } else if (
+      contractSla.warrantyPeriod === "CUSTOM" &&
+      (contractSla.customWarrantyMonths === null ||
+        contractSla.customWarrantyMonths === undefined)
+    ) {
+      newErrors.warrantyPeriod = "Please enter a custom warranty period";
     }
     if (
       contractSla.lateDeliveryPenaltyPerDay === null ||
       contractSla.lateDeliveryPenaltyPerDay === undefined
     ) {
-      newErrors.lateDeliveryPenaltyPerDay = 'Late delivery penalty is required';
+      newErrors.lateDeliveryPenaltyPerDay = "Late delivery penalty is required";
     }
 
     setErrors(newErrors);
@@ -885,35 +1062,35 @@ export default function NewDealPage() {
 
     // Validate Step 1
     if (!formData.stepOne.requisitionId) {
-      allErrors.step1_requisitionId = ['Please select an RFQ'];
+      allErrors.step1_requisitionId = ["Please select an RFQ"];
     }
     if (multiVendorMode) {
       if (!formData.stepOne.vendorIds?.length) {
-        allErrors.step1_vendorId = ['Please select at least one vendor'];
+        allErrors.step1_vendorId = ["Please select at least one vendor"];
       }
     } else {
       if (!formData.stepOne.vendorId) {
-        allErrors.step1_vendorId = ['Please select a vendor'];
+        allErrors.step1_vendorId = ["Please select a vendor"];
       }
     }
     if (!formData.stepOne.title.trim()) {
-      allErrors.step1_title = ['Deal title is required'];
+      allErrors.step1_title = ["Deal title is required"];
     }
 
     // Validate Step 2
     if (!formData.stepTwo.priceQuantity.targetUnitPrice) {
-      allErrors.step2_targetPrice = ['Target unit price is required'];
+      allErrors.step2_targetPrice = ["Target unit price is required"];
     }
     if (!formData.stepTwo.priceQuantity.maxAcceptablePrice) {
-      allErrors.step2_maxPrice = ['Maximum acceptable price is required'];
+      allErrors.step2_maxPrice = ["Maximum acceptable price is required"];
     }
     if (!formData.stepTwo.delivery.requiredDate) {
-      allErrors.step2_deliveryDate = ['Required delivery date is required'];
+      allErrors.step2_deliveryDate = ["Required delivery date is required"];
     }
 
     // Validate Step 3
     if (!formData.stepThree.contractSla.warrantyPeriod) {
-      allErrors.step3_warranty = ['Warranty period is required'];
+      allErrors.step3_warranty = ["Warranty period is required"];
     }
 
     setValidationErrors(allErrors);
@@ -964,7 +1141,9 @@ export default function NewDealPage() {
   // Address modal handler (placeholder)
   const handleAddNewAddress = () => {
     // In a full implementation, this would open a modal
-    alert('Address management will be implemented. For now, please select an existing address.');
+    alert(
+      "Address management will be implemented. For now, please select an existing address.",
+    );
   };
 
   // Submit
@@ -1000,12 +1179,14 @@ export default function NewDealPage() {
       };
 
       // Sanitize contractSla: ensure lateDeliveryPenaltyPerDay is within backend range (0.5-2)
-      const penaltyPerDay = formData.stepThree.contractSla.lateDeliveryPenaltyPerDay;
+      const penaltyPerDay =
+        formData.stepThree.contractSla.lateDeliveryPenaltyPerDay;
       const sanitizedContractSla = {
         ...formData.stepThree.contractSla,
-        lateDeliveryPenaltyPerDay: penaltyPerDay !== null && penaltyPerDay !== undefined
-          ? Math.min(2, Math.max(0.5, penaltyPerDay))
-          : 1,
+        lateDeliveryPenaltyPerDay:
+          penaltyPerDay !== null && penaltyPerDay !== undefined
+            ? Math.min(2, Math.max(0.5, penaltyPerDay))
+            : 1,
         // Ensure maxPenaltyCap is null (not empty object) when not configured
         maxPenaltyCap: formData.stepThree.contractSla.maxPenaltyCap?.type
           ? formData.stepThree.contractSla.maxPenaltyCap
@@ -1016,7 +1197,8 @@ export default function NewDealPage() {
       const sanitizedPriceQuantity = {
         ...formData.stepTwo.priceQuantity,
         targetUnitPrice: formData.stepTwo.priceQuantity.targetUnitPrice ?? 0,
-        maxAcceptablePrice: formData.stepTwo.priceQuantity.maxAcceptablePrice ?? 0,
+        maxAcceptablePrice:
+          formData.stepTwo.priceQuantity.maxAcceptablePrice ?? 0,
         minOrderQuantity: formData.stepTwo.priceQuantity.minOrderQuantity ?? 0,
       };
 
@@ -1048,7 +1230,11 @@ export default function NewDealPage() {
               : {}),
         };
 
-        const response = await chatbotService.createDealWithConfig(rfqId, vendorId, createInput);
+        const response = await chatbotService.createDealWithConfig(
+          rfqId,
+          vendorId,
+          createInput,
+        );
 
         // Clear drafts on successful creation
         clearWizardDraft();
@@ -1061,21 +1247,23 @@ export default function NewDealPage() {
 
         if (emailStatus && !emailStatus.success) {
           // Email failed - show warning modal with retry option
-          setEmailFailureError(emailStatus.error || 'Unknown error');
+          setEmailFailureError(emailStatus.error || "Unknown error");
           setPendingDealNavigation({ rfqId, vendorId, dealId });
           setShowEmailFailedModal(true);
           setSubmitting(false);
         } else {
           // Email sent successfully (or no email status returned) - show toast and navigate
-          toast.success('Deal created! Email notification sent to vendor', {
+          toast.success("Deal created! Email notification sent to vendor", {
             duration: 4000,
-            icon: '✉️',
+            icon: "✉️",
           });
-          navigate(`/chatbot/requisitions/${rfqId}/vendors/${vendorId}/deals/${dealId}`);
+          navigate(
+            `/chatbot/requisitions/${rfqId}/vendors/${vendorId}/deals/${dealId}`,
+          );
         }
       } else {
         // Multi-vendor batch: parallel create → results summary panel
-        const promises = vendorIds.map(vendorId => {
+        const promises = vendorIds.map((vendorId) => {
           const createInput = {
             title: formData.stepOne.title,
             counterparty: vendors.find((v) => v.id === vendorId)?.name,
@@ -1089,25 +1277,34 @@ export default function NewDealPage() {
             customParameters: formData.stepThree.customParameters,
             parameterWeights,
           };
-          return chatbotService.createDealWithConfig(rfqId, vendorId, createInput)
+          return chatbotService
+            .createDealWithConfig(rfqId, vendorId, createInput)
             .then(() => ({
               vendorId,
-              vendorName: vendors.find(v => v.id === vendorId)?.name ?? 'Vendor',
-              status: 'fulfilled' as const,
+              vendorName:
+                vendors.find((v) => v.id === vendorId)?.name ?? "Vendor",
+              status: "fulfilled" as const,
             }))
             .catch((err: any) => ({
               vendorId,
-              vendorName: vendors.find(v => v.id === vendorId)?.name ?? 'Vendor',
-              status: 'rejected' as const,
-              error: err?.response?.data?.message ?? err?.message ?? 'Unknown error',
+              vendorName:
+                vendors.find((v) => v.id === vendorId)?.name ?? "Vendor",
+              status: "rejected" as const,
+              error:
+                err?.response?.data?.message ?? err?.message ?? "Unknown error",
             }));
         });
 
         const rawResults = await Promise.allSettled(promises);
-        const dealResults: BatchDealResult[] = rawResults.map(r =>
-          r.status === 'fulfilled'
+        const dealResults: BatchDealResult[] = rawResults.map((r) =>
+          r.status === "fulfilled"
             ? r.value
-            : { vendorId: 0, vendorName: 'Unknown', status: 'rejected' as const, error: 'Promise rejected' }
+            : {
+                vendorId: 0,
+                vendorName: "Unknown",
+                status: "rejected" as const,
+                error: "Promise rejected",
+              },
         );
 
         clearWizardDraft();
@@ -1117,13 +1314,16 @@ export default function NewDealPage() {
         setSubmitting(false);
       }
     } catch (err: unknown) {
-      console.error('Failed to create deal:', err);
-      let errorMessage = 'Failed to create deal. Please try again.';
+      console.error("Failed to create deal:", err);
+      let errorMessage = "Failed to create deal. Please try again.";
       // Extract detailed validation errors from axios 400 response
       if (axios.isAxiosError(err) && err.response) {
-        const data = err.response.data as { message?: string; errors?: string[] };
+        const data = err.response.data as {
+          message?: string;
+          errors?: string[];
+        };
         if (data?.errors?.length) {
-          errorMessage = data.errors.join('. ');
+          errorMessage = data.errors.join(". ");
         } else if (data?.message) {
           errorMessage = data.message;
         } else {
@@ -1139,7 +1339,11 @@ export default function NewDealPage() {
 
   // Clear draft
   const handleClearDraft = () => {
-    if (confirm('Are you sure you want to clear your saved draft? This cannot be undone.')) {
+    if (
+      confirm(
+        "Are you sure you want to clear your saved draft? This cannot be undone.",
+      )
+    ) {
       clearWizardDraft();
       sessionStorage.removeItem(currentDraftKey);
       sessionStorage.removeItem(getDraftKey(null, null));
@@ -1154,11 +1358,13 @@ export default function NewDealPage() {
   const handleContinueWithoutEmail = () => {
     if (pendingDealNavigation) {
       setShowEmailFailedModal(false);
-      toast('Deal created, but email was not sent. You can resend later.', {
-        icon: '⚠️',
+      toast("Deal created, but email was not sent. You can resend later.", {
+        icon: "⚠️",
         duration: 5000,
       });
-      navigate(`/chatbot/requisitions/${pendingDealNavigation.rfqId}/vendors/${pendingDealNavigation.vendorId}/deals/${pendingDealNavigation.dealId}`);
+      navigate(
+        `/chatbot/requisitions/${pendingDealNavigation.rfqId}/vendors/${pendingDealNavigation.vendorId}/deals/${pendingDealNavigation.dealId}`,
+      );
     }
   };
 
@@ -1168,21 +1374,35 @@ export default function NewDealPage() {
     setRetryingEmail(true);
     try {
       const { rfqId, vendorId, dealId } = pendingDealNavigation;
-      const result = await chatbotService.retryDealEmail({ rfqId, vendorId, dealId });
+      const result = await chatbotService.retryDealEmail({
+        rfqId,
+        vendorId,
+        dealId,
+      });
 
       if (result.data.success) {
-        toast.success('Email sent successfully!', { icon: '✉️', duration: 4000 });
+        toast.success("Email sent successfully!", {
+          icon: "✉️",
+          duration: 4000,
+        });
         setShowEmailFailedModal(false);
-        navigate(`/chatbot/requisitions/${rfqId}/vendors/${vendorId}/deals/${dealId}`);
+        navigate(
+          `/chatbot/requisitions/${rfqId}/vendors/${vendorId}/deals/${dealId}`,
+        );
       } else {
-        setEmailFailureError(result.data.error || 'Failed to send email');
-        toast.error('Email retry failed. You can try again or continue without email.');
+        setEmailFailureError(result.data.error || "Failed to send email");
+        toast.error(
+          "Email retry failed. You can try again or continue without email.",
+        );
       }
     } catch (err: unknown) {
-      console.error('Email retry failed:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to retry email';
+      console.error("Email retry failed:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to retry email";
       setEmailFailureError(errorMessage);
-      toast.error('Email retry failed. You can try again or continue without email.');
+      toast.error(
+        "Email retry failed. You can try again or continue without email.",
+      );
     } finally {
       setRetryingEmail(false);
     }
@@ -1256,7 +1476,6 @@ export default function NewDealPage() {
     }
   };
 
-
   return (
     <div className="flex flex-col min-h-full bg-gray-100 dark:bg-dark-bg">
       {/* Header */}
@@ -1265,13 +1484,18 @@ export default function NewDealPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <button
-                onClick={() => { clearWizardDraft(); navigate(backButtonConfig.path); }}
+                onClick={() => {
+                  clearWizardDraft();
+                  navigate(backButtonConfig.path);
+                }}
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-2 flex items-center gap-1"
               >
                 <ArrowLeft className="w-4 h-4" />
                 {backButtonConfig.label}
               </button>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-dark-text">Create New Deal</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-dark-text">
+                Create New Deal
+              </h1>
               <p className="text-gray-600 dark:text-dark-text-secondary text-sm mt-1">
                 Configure your negotiation parameters
               </p>
@@ -1290,7 +1514,11 @@ export default function NewDealPage() {
                     <>
                       <CheckCircle className="w-4 h-4 text-green-500" />
                       <span>
-                        Saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        Saved{" "}
+                        {lastSaved.toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </span>
                     </>
                   )}
@@ -1323,44 +1551,65 @@ export default function NewDealPage() {
             {batchResults ? (
               /* Batch Results Panel */
               <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary">Deal Creation Results</h3>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary">
+                  Deal Creation Results
+                </h3>
 
-                {batchResults.filter(r => r.status === 'fulfilled').length > 0 && (
+                {batchResults.filter((r) => r.status === "fulfilled").length >
+                  0 && (
                   <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
                     <span className="text-sm text-green-700">
-                      {batchResults.filter(r => r.status === 'fulfilled').length} deal(s) created successfully
+                      {
+                        batchResults.filter((r) => r.status === "fulfilled")
+                          .length
+                      }{" "}
+                      deal(s) created successfully
                     </span>
                   </div>
                 )}
 
-                {batchResults.filter(r => r.status === 'rejected').length > 0 && (
+                {batchResults.filter((r) => r.status === "rejected").length >
+                  0 && (
                   <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
                     <span className="text-sm text-red-700">
-                      {batchResults.filter(r => r.status === 'rejected').length} deal(s) failed
+                      {
+                        batchResults.filter((r) => r.status === "rejected")
+                          .length
+                      }{" "}
+                      deal(s) failed
                     </span>
                   </div>
                 )}
 
                 <div className="divide-y divide-gray-100 dark:divide-dark-border border border-gray-200 dark:border-dark-border rounded-lg overflow-hidden">
                   {batchResults.map((r, idx) => (
-                    <div key={r.vendorId || idx} className={`flex items-center justify-between px-4 py-3 ${r.status === 'fulfilled' ? 'bg-white dark:bg-dark-surface' : 'bg-red-50'}`}>
+                    <div
+                      key={r.vendorId || idx}
+                      className={`flex items-center justify-between px-4 py-3 ${r.status === "fulfilled" ? "bg-white dark:bg-dark-surface" : "bg-red-50"}`}
+                    >
                       <div className="flex items-center gap-3 min-w-0">
-                        {r.status === 'fulfilled' ? (
+                        {r.status === "fulfilled" ? (
                           <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
                         ) : (
                           <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
                         )}
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-900 dark:text-dark-text truncate">{r.vendorName}</p>
-                          {r.status === 'rejected' && r.error && (
-                            <p className="text-xs text-red-600 truncate">{r.error}</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-dark-text truncate">
+                            {r.vendorName}
+                          </p>
+                          {r.status === "rejected" && r.error && (
+                            <p className="text-xs text-red-600 truncate">
+                              {r.error}
+                            </p>
                           )}
                         </div>
                       </div>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${r.status === 'fulfilled' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                        {r.status === 'fulfilled' ? 'Created' : 'Failed'}
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${r.status === "fulfilled" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                      >
+                        {r.status === "fulfilled" ? "Created" : "Failed"}
                       </span>
                     </div>
                   ))}
@@ -1377,7 +1626,9 @@ export default function NewDealPage() {
               <div className="flex items-start gap-2">
                 <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
                 <div>
-                  <h3 className="text-sm font-medium text-red-800">Error creating deal</h3>
+                  <h3 className="text-sm font-medium text-red-800">
+                    Error creating deal
+                  </h3>
                   <p className="text-sm text-red-700 mt-1">{submitError}</p>
                 </div>
               </div>
@@ -1391,7 +1642,7 @@ export default function NewDealPage() {
               <>
                 <div />
                 <div className="flex items-center gap-3">
-                  {batchResults.some(r => r.status === 'rejected') && (
+                  {batchResults.some((r) => r.status === "rejected") && (
                     <button
                       type="button"
                       onClick={() => setBatchResults(null)}
@@ -1430,7 +1681,10 @@ export default function NewDealPage() {
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => { clearWizardDraft(); navigate(backButtonConfig.path); }}
+                    onClick={() => {
+                      clearWizardDraft();
+                      navigate(backButtonConfig.path);
+                    }}
                     disabled={submitting}
                     className="px-6 py-3 bg-gray-100 dark:bg-dark-bg text-gray-700 dark:text-dark-text-secondary font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                   >
@@ -1482,7 +1736,9 @@ export default function NewDealPage() {
                 <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
                   <Mail className="w-5 h-5 text-amber-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-amber-900">Email Notification Failed</h3>
+                <h3 className="text-lg font-semibold text-amber-900">
+                  Email Notification Failed
+                </h3>
               </div>
               <button
                 onClick={handleContinueWithoutEmail}
@@ -1495,7 +1751,8 @@ export default function NewDealPage() {
             {/* Modal Body */}
             <div className="px-6 py-5">
               <p className="text-gray-700 dark:text-dark-text-secondary mb-4">
-                Your deal was created successfully, but we couldn't send the email notification to the vendor.
+                Your deal was created successfully, but we couldn't send the
+                email notification to the vendor.
               </p>
 
               {emailFailureError && (
@@ -1508,7 +1765,9 @@ export default function NewDealPage() {
               )}
 
               <p className="text-sm text-gray-500 dark:text-dark-text-secondary">
-                You can retry sending the email or continue to the deal page. The vendor will need to be notified manually if you choose to continue.
+                You can retry sending the email or continue to the deal page.
+                The vendor will need to be notified manually if you choose to
+                continue.
               </p>
             </div>
 

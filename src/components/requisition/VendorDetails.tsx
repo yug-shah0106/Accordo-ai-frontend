@@ -12,7 +12,11 @@ import Modal from "../Modal";
 import chatbotService from "../../services/chatbot.service";
 import type { VendorDealSummary } from "../../types/chatbot";
 import { env } from "@/utils/env";
-import { DEAL_STATUS_COLORS, getContractStatusColors, type ContractStatus } from "../../constants/colors";
+import {
+  DEAL_STATUS_COLORS,
+  getContractStatusColors,
+  type ContractStatus,
+} from "../../constants/colors";
 
 interface Contract {
   id: string;
@@ -72,7 +76,7 @@ interface FormData {
 
 // Timeline item - can be either a deal or a contract
 interface TimelineItem {
-  type: 'deal' | 'contract';
+  type: "deal" | "contract";
   id: string;
   vendorId: string;
   createdAt: string;
@@ -94,15 +98,26 @@ interface VendorGroup {
 const statusConfig = DEAL_STATUS_COLORS;
 
 // Helper to get deal counts by status for a vendor
-const getVendorDealCounts = (vendorId: string, deals: VendorDealSummary[]): { active: number; completed: number } => {
-  const vendorDeals = deals.filter(d => d.vendorId?.toString() === vendorId);
-  const active = vendorDeals.filter(d => d.status === 'NEGOTIATING' || d.status === 'ESCALATED').length;
-  const completed = vendorDeals.filter(d => d.status === 'ACCEPTED' || d.status === 'WALKED_AWAY').length;
+const getVendorDealCounts = (
+  vendorId: string,
+  deals: VendorDealSummary[],
+): { active: number; completed: number } => {
+  const vendorDeals = deals.filter((d) => d.vendorId?.toString() === vendorId);
+  const active = vendorDeals.filter(
+    (d) => d.status === "NEGOTIATING" || d.status === "ESCALATED",
+  ).length;
+  const completed = vendorDeals.filter(
+    (d) => d.status === "ACCEPTED" || d.status === "WALKED_AWAY",
+  ).length;
   return { active, completed };
 };
 
 // Format vendor label with deal counts
-const formatVendorLabel = (vendorName: string, active: number, completed: number): string => {
+const formatVendorLabel = (
+  vendorName: string,
+  active: number,
+  completed: number,
+): string => {
   if (active === 0 && completed === 0) {
     return vendorName;
   }
@@ -111,7 +126,7 @@ const formatVendorLabel = (vendorName: string, active: number, completed: number
   if (active > 0) parts.push(`${active} Active`);
   if (completed > 0) parts.push(`${completed} Completed`);
 
-  return `${vendorName} (${parts.join(', ')})`;
+  return `${vendorName} (${parts.join(", ")})`;
 };
 
 // Truncate token for display
@@ -156,11 +171,16 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     if (!requisitionId) return;
     setLoadingDeals(true);
     try {
-      const response = await chatbotService.getRequisitionDeals(parseInt(requisitionId));
+      const response = await chatbotService.getRequisitionDeals(
+        parseInt(requisitionId),
+      );
       setDeals(response.data?.deals || []);
     } catch (error: any) {
-      console.error('Failed to load deals:', error);
-      const msg = error?.response?.data?.message || error?.message || 'Failed to load vendor deals';
+      console.error("Failed to load deals:", error);
+      const msg =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to load vendor deals";
       toast.error(msg);
       setDeals([]);
     } finally {
@@ -176,15 +196,18 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
   // Refetch when tab regains focus
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === "visible") {
         fetchDeals();
       }
     };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [fetchDeals]);
 
-  const { data, loading: _loading } = useFetchData<Vendor>("/vendor/");
+  // Large page so the vendor dropdown lists every vendor (default limit 10
+  // silently truncates dropdowns).
+  const { data, loading: _loading } = useFetchData<Vendor>("/vendor/", 1000);
   const contractData = watch("contractData") || [];
 
   // Build vendor groups with timeline items
@@ -193,12 +216,12 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     const pending: Contract[] = [];
 
     // Add deals to groups
-    deals.forEach(deal => {
-      const vendorId = deal.vendorId?.toString() || '';
+    deals.forEach((deal) => {
+      const vendorId = deal.vendorId?.toString() || "";
       if (!groups.has(vendorId)) {
         groups.set(vendorId, {
           vendorId,
-          vendorName: deal.vendorName || 'Unknown Vendor',
+          vendorName: deal.vendorName || "Unknown Vendor",
           email: deal.vendorEmail,
           items: [],
           dealCount: 0,
@@ -209,14 +232,14 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
 
       const group = groups.get(vendorId)!;
       group.items.push({
-        type: 'deal',
+        type: "deal",
         id: deal.dealId,
         vendorId,
         createdAt: deal.lastActivityAt || new Date().toISOString(),
         deal,
       });
       group.dealCount++;
-      if (deal.status === 'NEGOTIATING' || deal.status === 'ESCALATED') {
+      if (deal.status === "NEGOTIATING" || deal.status === "ESCALATED") {
         group.activeDeals++;
       } else {
         group.completedDeals++;
@@ -224,8 +247,8 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     });
 
     // Process contracts - separate pending contracts from those linked to deals
-    contractData.forEach(contract => {
-      const vendorId = contract.vendorId?.toString() || '';
+    contractData.forEach((contract) => {
+      const vendorId = contract.vendorId?.toString() || "";
       // A contract is linked to a deal only if it has chatbotDealId set.
       // Unlinked contracts (chatbotDealId is null) are pending even if the vendor has other deals.
       const isLinkedToDeal = !!contract.chatbotDealId;
@@ -237,7 +260,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
         // Add contract to existing vendor group's timeline
         const group = groups.get(vendorId)!;
         group.items.push({
-          type: 'contract',
+          type: "contract",
           id: contract.id,
           vendorId,
           createdAt: contract.createdAt || new Date().toISOString(),
@@ -247,8 +270,11 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     });
 
     // Sort timeline items chronologically (newest first)
-    groups.forEach(group => {
-      group.items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    groups.forEach((group) => {
+      group.items.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
     });
 
     return {
@@ -274,7 +300,8 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
       submitRequisition();
       nextStep();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Something went wrong";
+      const errorMessage =
+        err instanceof Error ? err.message : "Something went wrong";
       toast.error(errorMessage);
     }
   };
@@ -291,15 +318,21 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
       } = await authApi.post<{ data: Contract }>("/contract/", {
         requisitionId: parseInt(requisitionId, 10),
         vendorId: parseInt(watch("selectedVendor"), 10),
-        skipEmail: true,      // Don't send email - just adding vendor
-        skipChatbot: true,    // Don't auto-create deal - user can start negotiation later
+        skipEmail: true, // Don't send email - just adding vendor
+        skipChatbot: true, // Don't auto-create deal - user can start negotiation later
       });
 
-      setValue("contractData", [...(watch("contractData") || []), contractResponse]);
+      setValue("contractData", [
+        ...(watch("contractData") || []),
+        contractResponse,
+      ]);
       setValue("selectedVendor", "");
       toast.success("Vendor added successfully");
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || "Something went wrong";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong";
       toast.error(errorMessage);
     }
   };
@@ -311,12 +344,13 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
       setValue(
         "contractData",
         watch("contractData")?.filter(
-          (i) => i?.id?.toString() !== id?.toString()
-        )
+          (i) => i?.id?.toString() !== id?.toString(),
+        ),
       );
       toast.success("Contract deleted successfully");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Something went wrong";
+      const errorMessage =
+        error instanceof Error ? error.message : "Something went wrong";
       toast.error(errorMessage);
     }
   };
@@ -324,7 +358,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
   // Open contract link in new window
   const handleOpenContractLink = (contract: Contract): void => {
     const link = `${env("VITE_FRONTEND_URL")}/vendor-contract/${contract?.uniqueToken}`;
-    window.open(link, '_blank');
+    window.open(link, "_blank");
   };
 
   // Copy link to clipboard
@@ -335,23 +369,31 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
   };
 
   // Start negotiation - opens wizard in a new tab with optional contractId or previousContractId
-  const handleStartNegotiation = (vendorId: string, vendorName: string, contractId?: string, previousContractId?: string): void => {
+  const handleStartNegotiation = (
+    vendorId: string,
+    vendorName: string,
+    contractId?: string,
+    previousContractId?: string,
+  ): void => {
     const searchParams = new URLSearchParams({
       rfqId: requisitionId,
       vendorId: vendorId,
       vendorName: vendorName,
-      locked: 'true',
+      locked: "true",
       returnTo: `/requisition-management/edit-requisition/${requisitionId}`,
     });
 
     // Re-negotiation: pass previousContractId so a new contract is created
     if (previousContractId) {
-      searchParams.set('previousContractId', previousContractId);
+      searchParams.set("previousContractId", previousContractId);
     } else if (contractId) {
-      searchParams.set('contractId', contractId);
+      searchParams.set("contractId", contractId);
     }
 
-    window.open(`/chatbot/requisitions/deals/new?${searchParams.toString()}`, '_blank');
+    window.open(
+      `/chatbot/requisitions/deals/new?${searchParams.toString()}`,
+      "_blank",
+    );
   };
 
   const handleModalConfirm = (): void => {
@@ -359,7 +401,8 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
     try {
       navigate(-1);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Something went wrong";
+      const errorMessage =
+        err instanceof Error ? err.message : "Something went wrong";
       toast.error(errorMessage);
     }
   };
@@ -370,7 +413,10 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
 
   // Open deal negotiation room in a new tab
   const handleViewDeal = (deal: VendorDealSummary): void => {
-    window.open(`/chatbot/requisitions/${requisitionId}/vendors/${deal.vendorId}/deals/${deal.dealId}`, '_blank');
+    window.open(
+      `/chatbot/requisitions/${requisitionId}/vendors/${deal.vendorId}/deals/${deal.dealId}`,
+      "_blank",
+    );
   };
 
   const submitRequisition = async (): Promise<void> => {
@@ -385,17 +431,19 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
   // Get all vendors that don't already have a contract
   const availableVendors = (data || []).filter((vendor) => {
     const hasContract = contractData.find(
-      (contract) => contract?.vendorId?.toString() === vendor.vendorId?.toString()
+      (contract) =>
+        contract?.vendorId?.toString() === vendor.vendorId?.toString(),
     );
     const hasDeal = deals.find(
-      (deal) => deal.vendorId?.toString() === vendor.vendorId?.toString()
+      (deal) => deal.vendorId?.toString() === vendor.vendorId?.toString(),
     );
     return !hasContract && !hasDeal;
   });
 
   // Format vendors for FormSelect with deal count indicators
   const vendorOptions: SelectOption[] = availableVendors.map((vendor) => {
-    const vendorName = vendor.Vendor?.name || vendor.Vendor?.companyName || 'Unknown Vendor';
+    const vendorName =
+      vendor.Vendor?.name || vendor.Vendor?.companyName || "Unknown Vendor";
     const { active, completed } = getVendorDealCounts(vendor.vendorId, deals);
 
     return {
@@ -406,17 +454,19 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
 
   // Format date for timeline display (compact version)
   const formatDate = (dateStr: string): string => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
     });
   };
 
-  const activeGroup = vendorGroups.find(g => g.vendorId === activeVendorTab);
+  const activeGroup = vendorGroups.find((g) => g.vendorId === activeVendorTab);
 
   return (
     <div className="border-2 rounded p-4 w-full max-w-full overflow-hidden dark:border-dark-border dark:bg-dark-surface">
-      <h3 className="text-lg font-semibold dark:text-dark-text">Vendor Details</h3>
+      <h3 className="text-lg font-semibold dark:text-dark-text">
+        Vendor Details
+      </h3>
       <p className="font-normal text-[#46403E] dark:text-dark-text-secondary py-2 text-sm">
         Select a vendor and start a negotiation deal
       </p>
@@ -449,10 +499,14 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
         {/* Tabbed Vendor View with Timeline */}
         {(vendorGroups.length > 0 || loadingDeals) && (
           <div className="mt-5">
-            <h4 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary mb-3">Vendor Negotiations</h4>
+            <h4 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary mb-3">
+              Vendor Negotiations
+            </h4>
 
             {loadingDeals ? (
-              <div className="text-sm text-gray-500 dark:text-dark-text-secondary p-4 bg-gray-50 dark:bg-dark-bg/50 rounded-lg">Loading...</div>
+              <div className="text-sm text-gray-500 dark:text-dark-text-secondary p-4 bg-gray-50 dark:bg-dark-bg/50 rounded-lg">
+                Loading...
+              </div>
             ) : (
               <div className="border border-gray-200 dark:border-dark-border rounded-lg overflow-hidden">
                 {/* Tab Headers - Horizontal scroll */}
@@ -464,13 +518,15 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                       onClick={() => setActiveVendorTab(group.vendorId)}
                       className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors flex-shrink-0 ${
                         activeVendorTab === group.vendorId
-                          ? 'border-blue-500 text-blue-600 bg-white dark:bg-dark-surface'
-                          : 'border-transparent text-gray-500 dark:text-dark-text-secondary hover:text-gray-700 dark:hover:text-dark-text hover:bg-gray-100 dark:hover:bg-gray-700'
+                          ? "border-blue-500 text-blue-600 bg-white dark:bg-dark-surface"
+                          : "border-transparent text-gray-500 dark:text-dark-text-secondary hover:text-gray-700 dark:hover:text-dark-text hover:bg-gray-100 dark:hover:bg-gray-700"
                       }`}
                     >
                       <div className="flex items-center gap-2">
                         <FiUser className="w-4 h-4" />
-                        <span className="max-w-[120px] truncate">{group.vendorName}</span>
+                        <span className="max-w-[120px] truncate">
+                          {group.vendorName}
+                        </span>
                         <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-dark-text-secondary">
                           {group.dealCount}
                         </span>
@@ -485,7 +541,9 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                     {/* Vendor Summary Header */}
                     <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100 dark:border-dark-border gap-3">
                       <div className="min-w-0 flex-1">
-                        <h5 className="font-medium text-gray-900 dark:text-dark-text text-base truncate">{activeGroup.vendorName}</h5>
+                        <h5 className="font-medium text-gray-900 dark:text-dark-text text-base truncate">
+                          {activeGroup.vendorName}
+                        </h5>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {activeGroup.activeDeals > 0 && (
@@ -500,7 +558,12 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                         )}
                         <Button
                           className="px-3 py-1.5 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1 text-sm"
-                          onClick={() => handleStartNegotiation(activeGroup.vendorId, activeGroup.vendorName)}
+                          onClick={() =>
+                            handleStartNegotiation(
+                              activeGroup.vendorId,
+                              activeGroup.vendorName,
+                            )
+                          }
                           type="button"
                         >
                           <FiPlay className="w-3 h-3" />
@@ -511,17 +574,23 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
 
                     {/* Deals Section */}
                     {(() => {
-                      const dealItems = activeGroup.items.filter(i => i.type === 'deal');
+                      const dealItems = activeGroup.items.filter(
+                        (i) => i.type === "deal",
+                      );
                       return (
                         <div className="mb-4">
                           <div className="flex items-center gap-2 mb-2">
-                            <h6 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary">Deals</h6>
+                            <h6 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary">
+                              Deals
+                            </h6>
                             <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-dark-text-secondary">
                               {dealItems.length}
                             </span>
                           </div>
                           {dealItems.length === 0 ? (
-                            <p className="text-sm text-gray-400 dark:text-gray-500 italic">No deals yet</p>
+                            <p className="text-sm text-gray-400 dark:text-gray-500 italic">
+                              No deals yet
+                            </p>
                           ) : (
                             <div className="space-y-2">
                               {dealItems.map((item) => (
@@ -531,11 +600,14 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                                 >
                                   <div className="flex items-center justify-between gap-3">
                                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                                      <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${statusConfig[item.deal!.status].bg} ${statusConfig[item.deal!.status].text}`}>
+                                      <span
+                                        className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${statusConfig[item.deal!.status].bg} ${statusConfig[item.deal!.status].text}`}
+                                      >
                                         {statusConfig[item.deal!.status].label}
                                       </span>
                                       <span className="text-xs text-gray-500 dark:text-dark-text-secondary flex-shrink-0">
-                                        Round {item.deal!.currentRound}/{item.deal!.maxRounds}
+                                        Round {item.deal!.currentRound}/
+                                        {item.deal!.maxRounds}
                                       </span>
                                       <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
                                         {formatDate(item.createdAt)}
@@ -560,37 +632,53 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
 
                     {/* Contracts Section */}
                     {(() => {
-                      const contractItems = activeGroup.items.filter(i => i.type === 'contract');
+                      const contractItems = activeGroup.items.filter(
+                        (i) => i.type === "contract",
+                      );
                       return (
                         <div>
                           <div className="flex items-center gap-2 mb-2">
-                            <h6 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary">Contracts</h6>
+                            <h6 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary">
+                              Contracts
+                            </h6>
                             <span className="px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-dark-text-secondary">
                               {contractItems.length}
                             </span>
                           </div>
                           {contractItems.length === 0 ? (
-                            <p className="text-sm text-gray-400 dark:text-gray-500 italic">No contracts</p>
+                            <p className="text-sm text-gray-400 dark:text-gray-500 italic">
+                              No contracts
+                            </p>
                           ) : (
                             <div className="space-y-2">
                               {contractItems.map((item) => {
-                                const contractStatus = getContractStatusColors(item.contract!.status);
-                                const isSuperseded = item.contract!.status === 'Escalated' &&
-                                  activeGroup.items.some(other =>
-                                    other.type === 'contract' && other.contract?.previousContractId?.toString() === item.contract!.id.toString()
+                                const contractStatus = getContractStatusColors(
+                                  item.contract!.status,
+                                );
+                                const isSuperseded =
+                                  item.contract!.status === "Escalated" &&
+                                  activeGroup.items.some(
+                                    (other) =>
+                                      other.type === "contract" &&
+                                      other.contract?.previousContractId?.toString() ===
+                                        item.contract!.id.toString(),
                                   );
                                 return (
                                   <div
                                     key={item.id}
-                                    className={`py-2 px-3 rounded-lg border ${contractStatus.cardBg} ${contractStatus.cardBorder} ${isSuperseded ? 'opacity-60 scale-[0.97] origin-left' : ''}`}
+                                    className={`py-2 px-3 rounded-lg border ${contractStatus.cardBg} ${contractStatus.cardBorder} ${isSuperseded ? "opacity-60 scale-[0.97] origin-left" : ""}`}
                                   >
                                     <div className="flex items-center justify-between gap-3">
                                       <div className="flex items-center gap-3 min-w-0 flex-1">
-                                        <span className={`text-xs px-2 py-0.5 rounded-full ${contractStatus.bg} ${contractStatus.text} flex-shrink-0`}>
+                                        <span
+                                          className={`text-xs px-2 py-0.5 rounded-full ${contractStatus.bg} ${contractStatus.text} flex-shrink-0`}
+                                        >
                                           {contractStatus.label}
                                         </span>
                                         {isSuperseded && (
-                                          <span className="text-xs text-gray-400 dark:text-gray-500 italic flex-shrink-0">(Superseded)</span>
+                                          <span className="text-xs text-gray-400 dark:text-gray-500 italic flex-shrink-0">
+                                            (Superseded)
+                                          </span>
                                         )}
                                         <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
                                           {formatDate(item.createdAt)}
@@ -598,7 +686,9 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                                       </div>
                                       <button
                                         type="button"
-                                        onClick={() => handleOpenContractLink(item.contract!)}
+                                        onClick={() =>
+                                          handleOpenContractLink(item.contract!)
+                                        }
                                         className="p-1.5 rounded border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-surface hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
                                         title="Open link"
                                       >
@@ -623,14 +713,22 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
         {/* Pending Contracts Section */}
         {pendingContracts.length > 0 && (
           <div className="mt-5">
-            <h4 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary mb-2">Pending Contracts</h4>
-            <p className="text-xs text-gray-500 dark:text-dark-text-secondary mb-3">Vendors added but no negotiation started</p>
+            <h4 className="text-sm font-semibold text-gray-700 dark:text-dark-text-secondary mb-2">
+              Pending Contracts
+            </h4>
+            <p className="text-xs text-gray-500 dark:text-dark-text-secondary mb-3">
+              Vendors added but no negotiation started
+            </p>
             <ul className="space-y-2">
               {pendingContracts.map((contract) => {
                 const matchedVendor = data?.find(
-                  (v) => v?.vendorId?.toString() === contract?.vendorId?.toString()
+                  (v) =>
+                    v?.vendorId?.toString() === contract?.vendorId?.toString(),
                 );
-                const vendorName = matchedVendor?.Vendor?.name || matchedVendor?.Vendor?.companyName || 'Unknown Vendor';
+                const vendorName =
+                  matchedVendor?.Vendor?.name ||
+                  matchedVendor?.Vendor?.companyName ||
+                  "Unknown Vendor";
                 const fullLink = `${env("VITE_FRONTEND_URL")}/vendor-contract/${contract?.uniqueToken}`;
 
                 return (
@@ -639,7 +737,9 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                     className="bg-amber-50 px-4 py-3 flex items-center justify-between gap-3 border border-amber-200 rounded-lg"
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="font-medium text-gray-900 dark:text-dark-text text-sm truncate">{vendorName}</span>
+                      <span className="font-medium text-gray-900 dark:text-dark-text text-sm truncate">
+                        {vendorName}
+                      </span>
                       <span
                         className="text-xs text-gray-500 dark:text-dark-text-secondary truncate max-w-[140px] cursor-help"
                         title={fullLink}
