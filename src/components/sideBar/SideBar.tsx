@@ -200,7 +200,6 @@ import { CiLogout } from "react-icons/ci";
 import Modal from "../Modal";
 import { authApi } from "../../api";
 import { tokenStorage } from "../../utils/tokenStorage";
-import toast from "react-hot-toast";
 import { useTheme } from "../../context/ThemeContext";
 import { useOnboardingStatus } from "../OnboardingReminder";
 

@@ -66,7 +66,9 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
 }) => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
-  const [tenureInDays, setTenureInDays] = useState<number | undefined>(undefined);
+  const [tenureInDays, setTenureInDays] = useState<number | undefined>(
+    undefined,
+  );
   const [showDraftDialog, setShowDraftDialog] = useState(false);
   const [isFormReady, setIsFormReady] = useState(false);
 
@@ -100,11 +102,17 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
       return `requisition_step1_${requisitionId}`;
     }
     // For new requisitions, use project-specific key if projectId is provided
-    const projectKey = projectId?.id || 'new';
+    const projectKey = projectId?.id || "new";
     return `requisition_step1_new_project_${projectKey}`;
   }, [requisitionId, projectId?.id]);
 
-  const { lastSaved, isSaving, hasDraft: _hasDraft, clearSaved, loadSaved } = useAutoSave({
+  const {
+    lastSaved,
+    isSaving,
+    hasDraft: _hasDraft,
+    clearSaved,
+    loadSaved,
+  } = useAutoSave({
     key: autosaveKey,
     data: formValues,
     interval: 2000, // Save 2 seconds after last change
@@ -168,25 +176,28 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
   const backendAutosaveRef = useRef<NodeJS.Timeout | null>(null);
   const lastBackendSaveRef = useRef<string>("");
 
-  const saveToBackend = useCallback(async (data: FormData) => {
-    if (!requisitionId) return; // Only save to backend when editing
+  const saveToBackend = useCallback(
+    async (data: FormData) => {
+      if (!requisitionId) return; // Only save to backend when editing
 
-    try {
-      const cleanData = {
-        subject: data.subject,
-        category: data.category,
-        deliveryDate: data.deliveryDate,
-        maxDeliveryDate: data.maxDeliveryDate || null,
-        negotiationClosureDate: data.negotiationClosureDate,
-        typeOfCurrency: data.typeOfCurrency,
-      };
+      try {
+        const cleanData = {
+          subject: data.subject,
+          category: data.category,
+          deliveryDate: data.deliveryDate,
+          maxDeliveryDate: data.maxDeliveryDate || null,
+          negotiationClosureDate: data.negotiationClosureDate,
+          typeOfCurrency: data.typeOfCurrency,
+        };
 
-      await authMultiFormApi.put(`/requisition/${requisitionId}`, cleanData);
-    } catch (error) {
-      // Silent fail for autosave - don't interrupt user
-      console.error("Backend autosave failed:", error);
-    }
-  }, [requisitionId]);
+        await authMultiFormApi.put(`/requisition/${requisitionId}`, cleanData);
+      } catch (error) {
+        // Silent fail for autosave - don't interrupt user
+        console.error("Backend autosave failed:", error);
+      }
+    },
+    [requisitionId],
+  );
 
   // Debounced backend autosave effect
   useEffect(() => {
@@ -217,14 +228,19 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
     if (projectId) {
       setTenureInDays(projectId.tenureInDays ?? undefined);
     }
-    // Only reset form from requisition data if we're editing (not creating new)
-    if (requisition || requisitionId) {
+    // Reset form when editing OR when creating with a preselected project,
+    // so projectId from route state is actually loaded into form state and
+    // Zod's required-projectId validation passes.
+    if (requisition || requisitionId || projectId?.id) {
       const formData: FormData = {
         projectId: projectId?.id || requisition?.projectId || "",
         subject: requisition?.subject || "",
         category: requisition?.category || "",
         deliveryDate: requisition?.deliveryDate?.split("T")[0] || "",
-        maxDeliveryDate: (requisition?.maxDeliveryDate || requisition?.maximumDeliveryDate)?.split("T")[0] || "",
+        maxDeliveryDate:
+          (
+            requisition?.maxDeliveryDate || requisition?.maximumDeliveryDate
+          )?.split("T")[0] || "",
         negotiationClosureDate:
           requisition?.negotiationClosureDate?.split("T")[0] || "",
         typeOfCurrency: requisition?.typeOfCurrency || "",
@@ -274,10 +290,10 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
 
         const response = await authMultiFormApi.post<{ data: { id: string } }>(
           "/requisition/",
-          payload
+          payload,
         );
         navigate(
-          `/requisition-management/edit-requisition/${response.data.data.id}`
+          `/requisition-management/edit-requisition/${response.data.data.id}`,
         );
         toast.success("Created Successfully");
         clearSaved(); // Clear autosaved draft on successful creation
@@ -293,17 +309,17 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
           maxDeliveryDate: data.maxDeliveryDate || null,
         };
 
-        await authMultiFormApi.put(
-          `/requisition/${requisitionId}`,
-          payload
-        );
+        await authMultiFormApi.put(`/requisition/${requisitionId}`, payload);
         toast.success("Edited Successfully");
         clearSaved(); // Clear autosaved draft on successful edit
         nextStep();
       }
     } catch (error: any) {
       console.error("Requisition error:", error.response?.data || error);
-      const errorMessage = error.response?.data?.message || error.message || "Something went wrong";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong";
       toast.error(errorMessage);
     }
   };
@@ -316,9 +332,10 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
         label: project.projectName,
         value: String(project.id),
       }));
-      setProjects(formattedOptions as Project[] || []);
+      setProjects((formattedOptions as Project[]) || []);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to fetch projects";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to fetch projects";
       console.error(errorMessage);
     }
   };
@@ -333,7 +350,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
     const selectedProjectId = watch("projectId");
     if (selectedProjectId) {
       const selectedProject = projects.find(
-        (project) => project.value === selectedProjectId
+        (project) => project.value === selectedProjectId,
       );
 
       if (selectedProject) {
@@ -367,7 +384,8 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
               Restore Draft?
             </h3>
             <p className="text-gray-600 dark:text-dark-text-secondary mb-4">
-              You have an unsaved requisition draft from a previous session. Would you like to restore it or start fresh?
+              You have an unsaved requisition draft from a previous session.
+              Would you like to restore it or start fresh?
             </p>
             <div className="flex justify-end gap-3">
               <Button
@@ -390,129 +408,133 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
       )}
 
       <div className="border-2 rounded p-4 w-full max-w-full overflow-hidden dark:border-dark-border dark:bg-dark-surface">
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="text-lg font-semibold dark:text-dark-text">Basic Information</h3>
-          <p className="font-normal text-[#46403E] dark:text-dark-text-secondary py-2">
-            Your details will be used for Basic information
-          </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="text-lg font-semibold dark:text-dark-text">
+              Basic Information
+            </h3>
+            <p className="font-normal text-[#46403E] dark:text-dark-text-secondary py-2">
+              Your details will be used for Basic information
+            </p>
+          </div>
+          <AutosaveIndicator lastSaved={lastSaved} isSaving={isSaving} />
         </div>
-        <AutosaveIndicator lastSaved={lastSaved} isSaving={isSaving} />
-      </div>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          {requisitionId && (
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            {requisitionId && (
+              <FormInput
+                label="RFQ Id"
+                name="rfqId"
+                placeholder="Enter RFQ Id"
+                error={errors.rfqId?.message}
+                value={watch("rfqId")?.slice(-12) || ""}
+                onChange={(e) => setValue("rfqId", e.target.value)}
+                disabled={true}
+                className="my-1"
+              />
+            )}
+
             <FormInput
-              label="RFQ Id"
-              name="rfqId"
-              placeholder="Enter RFQ Id"
-              error={errors.rfqId?.message}
-              value={watch("rfqId")?.slice(-12) || ""}
-              onChange={(e) => setValue("rfqId", e.target.value)}
-              disabled={true}
-              className="my-1"
-            />
-          )}
-
-          <FormInput
-            label="Requisition Name"
-            name="subject"
-            placeholder="Enter Requisition Name"
-            type="text"
-            value={watch("subject") || ""}
-            onChange={(e) => setValue("subject", e.target.value)}
-            error={errors.subject?.message}
-            required
-            className="my-1"
-          />
-
-          {projectId === null && (
-            <FormSelect
-              label="Project"
-              name="projectId"
-              placeholder="Select Project"
-              options={projectOptions}
-              value={watch("projectId") || ""}
-              onChange={(e) => setValue("projectId", e.target.value)}
-              error={errors.projectId?.message}
+              label="Requisition Name"
+              name="subject"
+              placeholder="Enter Requisition Name"
+              type="text"
+              value={watch("subject") || ""}
+              onChange={(e) => setValue("subject", e.target.value)}
+              error={errors.subject?.message}
               required
               className="my-1"
             />
-          )}
 
-          <FormInput
-            label="Requisition Category"
-            name="category"
-            placeholder="Enter Requisition Category"
-            type="text"
-            value={watch("category") || ""}
-            onChange={(e) => setValue("category", e.target.value)}
-            error={errors.category?.message}
-            required
-            className="my-1"
-          />
+            {projectId === null && (
+              <FormSelect
+                label="Project"
+                name="projectId"
+                placeholder="Select Project"
+                options={projectOptions}
+                value={watch("projectId") || ""}
+                onChange={(e) => setValue("projectId", e.target.value)}
+                error={errors.projectId?.message}
+                required
+                className="my-1"
+              />
+            )}
 
-          <FormInput
-            label="Delivery Date"
-            name="deliveryDate"
-            type="date"
-            value={watch("deliveryDate") || ""}
-            onChange={(e) => setValue("deliveryDate", e.target.value)}
-            error={errors.deliveryDate?.message}
-            required
-            className="text-gray-700"
-          />
+            <FormInput
+              label="Requisition Category"
+              name="category"
+              placeholder="Enter Requisition Category"
+              type="text"
+              value={watch("category") || ""}
+              onChange={(e) => setValue("category", e.target.value)}
+              error={errors.category?.message}
+              required
+              className="my-1"
+            />
 
-          <FormInput
-            label="Maximum Delivery Date"
-            name="maxDeliveryDate"
-            type="date"
-            value={watch("maxDeliveryDate") || ""}
-            onChange={(e) => setValue("maxDeliveryDate", e.target.value)}
-            error={errors.maxDeliveryDate?.message}
-            required
-            className="text-gray-700"
-          />
+            <FormInput
+              label="Delivery Date"
+              name="deliveryDate"
+              type="date"
+              value={watch("deliveryDate") || ""}
+              onChange={(e) => setValue("deliveryDate", e.target.value)}
+              error={errors.deliveryDate?.message}
+              required
+              className="text-gray-700"
+            />
 
-          <FormInput
-            label="Negotiation Closure Date"
-            name="negotiationClosureDate"
-            type="date"
-            value={watch("negotiationClosureDate") || ""}
-            onChange={(e) => setValue("negotiationClosureDate", e.target.value)}
-            error={errors.negotiationClosureDate?.message}
-            required
-            className="text-gray-700"
-          />
+            <FormInput
+              label="Maximum Delivery Date"
+              name="maxDeliveryDate"
+              type="date"
+              value={watch("maxDeliveryDate") || ""}
+              onChange={(e) => setValue("maxDeliveryDate", e.target.value)}
+              error={errors.maxDeliveryDate?.message}
+              required
+              className="text-gray-700"
+            />
 
-          <FormSelect
-            label="Currency"
-            name="typeOfCurrency"
-            options={currencyOptions}
-            value={watch("typeOfCurrency") || ""}
-            onChange={(e) => setValue("typeOfCurrency", e.target.value)}
-            error={errors.typeOfCurrency?.message}
-            required
-          />
-        </div>
-        <div className="mt-4 flex justify-start gap-4">
-          <Button
-            className="px-4 py-2 !bg-[white] !text-[black] border rounded !w-fit"
-            type="button"
-            disabled={isSubmitting || currentStep === 1}
-          >
-            Previous
-          </Button>
-          <Button
-            type="submit"
-            disabled={isSubmitting || currentStep === 3}
-            className="px-4 py-2 bg-blue-500 text-white rounded  !w-fit"
-          >
-            Next
-          </Button>
-        </div>
-      </form>
-    </div>
+            <FormInput
+              label="Negotiation Closure Date"
+              name="negotiationClosureDate"
+              type="date"
+              value={watch("negotiationClosureDate") || ""}
+              onChange={(e) =>
+                setValue("negotiationClosureDate", e.target.value)
+              }
+              error={errors.negotiationClosureDate?.message}
+              required
+              className="text-gray-700"
+            />
+
+            <FormSelect
+              label="Currency"
+              name="typeOfCurrency"
+              options={currencyOptions}
+              value={watch("typeOfCurrency") || ""}
+              onChange={(e) => setValue("typeOfCurrency", e.target.value)}
+              error={errors.typeOfCurrency?.message}
+              required
+            />
+          </div>
+          <div className="mt-4 flex justify-start gap-4">
+            <Button
+              className="px-4 py-2 !bg-[white] !text-[black] border rounded !w-fit"
+              type="button"
+              disabled={isSubmitting || currentStep === 1}
+            >
+              Previous
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting || currentStep === 3}
+              className="px-4 py-2 bg-blue-500 text-white rounded  !w-fit"
+            >
+              Next
+            </Button>
+          </div>
+        </form>
+      </div>
     </>
   );
 };

@@ -22,7 +22,10 @@ interface CreateProjectFormProps {
   onClose?: () => void;
 }
 
-const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProjectFormProps) => {
+const CreateProjectForm = ({
+  onSave: _onSave,
+  onClose: _onClose,
+}: CreateProjectFormProps) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const companyId = Number(localStorage.getItem("%companyId%"));
@@ -33,7 +36,7 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
   const autosaveKey = useMemo(() => {
     return id
       ? `project_edit_draft_${id}`
-      : `project_create_draft_${companyId || 'new'}`;
+      : `project_create_draft_${companyId || "new"}`;
   }, [id, companyId]);
 
   const {
@@ -62,29 +65,44 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
 
   // Watch form values for autosave (exclude selectedPoc as it's just for UI)
   const formValues = watch();
-  const autosaveData = useMemo(() => ({
-    projectName: formValues.projectName,
-    projectAddress: formValues.projectAddress,
-    typeOfProject: formValues.typeOfProject,
-    tenureInDays: formValues.tenureInDays,
-    pointOfContact: formValues.pointOfContact,
-  }), [
-    formValues.projectName,
-    formValues.projectAddress,
-    formValues.typeOfProject,
-    formValues.tenureInDays,
-    formValues.pointOfContact,
-  ]);
+  const autosaveData = useMemo(
+    () => ({
+      projectName: formValues.projectName,
+      projectAddress: formValues.projectAddress,
+      typeOfProject: formValues.typeOfProject,
+      tenureInDays: formValues.tenureInDays,
+      pointOfContact: formValues.pointOfContact,
+    }),
+    [
+      formValues.projectName,
+      formValues.projectAddress,
+      formValues.typeOfProject,
+      formValues.tenureInDays,
+      formValues.pointOfContact,
+    ],
+  );
 
   // Autosave hook - saves 2 seconds after last change
-  const { lastSaved, isSaving, hasDraft: _hasDraft, clearSaved, loadSaved } = useAutoSave({
+  const {
+    lastSaved,
+    isSaving,
+    hasDraft: _hasDraft,
+    clearSaved,
+    loadSaved,
+  } = useAutoSave({
     key: autosaveKey,
     data: autosaveData,
     interval: 2000, // 2 seconds debounce
     enabled: isDataLoaded, // Only enable after initial data is loaded
   });
 
-  const { data, loading: _loading, error: _dataError } = useFetchData("/customer/");
+  // Large page so the POC dropdown lists every user. Default limit 10 silently
+  // truncates dropdowns.
+  const {
+    data,
+    loading: _loading,
+    error: _dataError,
+  } = useFetchData("/customer/", 1000);
 
   const hasMeaningfulDraft = (savedDraft: string | null): boolean => {
     if (!savedDraft) return false;
@@ -95,9 +113,12 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
         parsed?.projectAddress?.trim() ||
         parsed?.typeOfProject?.trim() ||
         parsed?.tenureInDays?.toString().trim() ||
-        (Array.isArray(parsed?.pointOfContact) && parsed.pointOfContact.length > 0)
+        (Array.isArray(parsed?.pointOfContact) &&
+          parsed.pointOfContact.length > 0)
       );
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   };
 
   // Check for existing draft on mount
@@ -213,7 +234,8 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
               Restore Draft?
             </h3>
             <p className="text-gray-600 mb-4">
-              You have an unsaved draft from a previous session. Would you like to restore it?
+              You have an unsaved draft from a previous session. Would you like
+              to restore it?
             </p>
             <div className="flex justify-end gap-3">
               <Button
@@ -240,7 +262,10 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
         <div className="flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-xl font-medium">
             <IoArrowBackOutline
-              onClick={() => { clearSaved(); navigate(-1); }}
+              onClick={() => {
+                clearSaved();
+                navigate(-1);
+              }}
               className="cursor-pointer"
             />
             {id ? "Edit Project" : "Create Project"}
@@ -253,16 +278,18 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
       <div className="flex-1 overflow-y-auto px-16 pb-0">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-2 gap-6 pt-6 pb-0">
-            {id && <InputField
-              label="Project Id"
-              name="projectId"
-              placeholder="Enter Project ID"
-              type="text"
-              value={watch("projectId")?.slice(-12)}
-              register={register}
-              disabled={true}
-              wholeInputClassName={`!my-0`}
-            />}
+            {id && (
+              <InputField
+                label="Project Id"
+                name="projectId"
+                placeholder="Enter Project ID"
+                type="text"
+                value={watch("projectId")?.slice(-12)}
+                register={register}
+                disabled={true}
+                wholeInputClassName={`!my-0`}
+              />
+            )}
 
             <InputField
               label="Project Name"
@@ -310,7 +337,9 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
                 name="selectedPoc"
                 options={data?.filter(
                   (i: any) =>
-                    !watch("pointOfContact")?.map(String).includes(String(i.id))
+                    !watch("pointOfContact")
+                      ?.map(String)
+                      .includes(String(i.id)),
                 )}
                 register={register}
                 optionKey={"name"}
@@ -321,14 +350,14 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
             </div>
             <div className="self-end cursor-pointer">
               <Button
-                className="px-4 py-2 bg-[#2563eb] text-white hover:bg-[#1d4ed8] rounded-lg font-medium transition-all duration-200 flex items-center gap-2 min-w-[90px] justify-center shadow-sm hover:shadow-md active:shadow-inner" 
+                className="px-4 py-2 bg-[#2563eb] text-white hover:bg-[#1d4ed8] rounded-lg font-medium transition-all duration-200 flex items-center gap-2 min-w-[90px] justify-center shadow-sm hover:shadow-md active:shadow-inner"
                 onClick={async () => {
                   const selectedPoc = watch("selectedPoc");
                   if (!selectedPoc) {
                     toast.error("Please select a valid POC");
                     return;
                   }
-                  
+
                   const newPointOfContact = [
                     ...(watch("pointOfContact") || []),
                     selectedPoc,
@@ -336,7 +365,7 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
 
                   setValue("pointOfContact", newPointOfContact as any);
                   setValue("selectedPoc", "");
-                  
+
                   await trigger("pointOfContact");
                 }}
               >
@@ -378,7 +407,9 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
                         type="button"
                         className="absolute -right-1 -top-1"
                         onClick={async () => {
-                          const newPointOfContact = getValues("pointOfContact").filter((p) => p !== i);
+                          const newPointOfContact = getValues(
+                            "pointOfContact",
+                          ).filter((p) => p !== i);
                           setValue("pointOfContact", newPointOfContact);
                           await trigger("pointOfContact");
                         }}
@@ -395,7 +426,10 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
             <Button
               type="button"
               className="px-6 py-3 !bg-white border-2 border-gray-400 !text-gray-800 hover:bg-gray-100 hover:border-gray-500 hover:!text-gray-900 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 min-w-[120px] justify-center"
-              onClick={() => { clearSaved(); navigate(-1); }}
+              onClick={() => {
+                clearSaved();
+                navigate(-1);
+              }}
             >
               Cancel
             </Button>
@@ -403,9 +437,10 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
               type="submit"
               disabled={isSubmitting || !isValid}
               className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 min-w-[120px] justify-center shadow-sm hover:shadow-md active:shadow-inner
-                ${isSubmitting || !isValid
-                  ? 'bg-[#f3f4f6] text-[#9ca3af] cursor-not-allowed shadow-none'
-                  : 'bg-[#2563eb] text-white hover:bg-[#1d4ed8] active:bg-[#1e40af]'
+                ${
+                  isSubmitting || !isValid
+                    ? "bg-[#f3f4f6] text-[#9ca3af] cursor-not-allowed shadow-none"
+                    : "bg-[#2563eb] text-white hover:bg-[#1d4ed8] active:bg-[#1e40af]"
                 }`}
             >
               {isSubmitting ? (
@@ -427,4 +462,3 @@ const CreateProjectForm = ({ onSave: _onSave, onClose: _onClose }: CreateProject
 };
 
 export default CreateProjectForm;
-
