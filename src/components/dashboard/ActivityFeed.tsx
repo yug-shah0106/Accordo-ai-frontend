@@ -1,4 +1,4 @@
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, isValid } from 'date-fns';
 import {
   CheckCircle2,
   XCircle,
@@ -51,7 +51,9 @@ const ActivityCard = ({ activity }: { activity: ActivityItem }) => {
           {activity.description}
         </p>
         <p className="text-xs text-gray-400 dark:text-dark-text-secondary mt-1">
-          {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
+          {isValid(new Date(activity.timestamp))
+            ? formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })
+            : '—'}
         </p>
       </div>
       {url && (

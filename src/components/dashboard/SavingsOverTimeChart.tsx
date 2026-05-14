@@ -46,6 +46,17 @@ const SavingsOverTimeChart = ({ timeline }: SavingsOverTimeChartProps) => {
 
   if (!timeline) return null;
 
+  if (
+    !Array.isArray(timeline.data) ||
+    !Array.isArray(timeline.previousPeriodCumulative) ||
+    !Array.isArray(timeline.labels) ||
+    !Array.isArray(timeline.cumulative) ||
+    !timeline.summary ||
+    typeof timeline.summary !== 'object'
+  ) {
+    return null;
+  }
+
   const hasData = timeline.data.some((v) => v > 0);
   const hasPrevData = timeline.previousPeriodCumulative.some((v) => v > 0);
 

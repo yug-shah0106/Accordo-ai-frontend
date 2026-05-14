@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { dashboardService } from '../../services/dashboard.service';
 import type { DashboardPeriod, DashboardStatsData } from '../../types/dashboard';
+import { coerceDashboardStatsFromService } from '../../utils/coerceDashboardStats';
 
 export function useDashboardStats(initialPeriod: DashboardPeriod = '30d') {
   const [data, setData] = useState<DashboardStatsData | null>(null);
@@ -15,8 +16,16 @@ export function useDashboardStats(initialPeriod: DashboardPeriod = '30d') {
     setError(null);
     try {
       const res = await dashboardService.getStats(p);
+      const parsed = coerceDashboardStatsFromService(res);
       if (mountedRef.current) {
-        setData(res.data);
+        if (parsed) {
+          setData(parsed);
+        } else {
+          setData(null);
+          const message = 'Unexpected dashboard response from server';
+          setError(message);
+          toast.error(message);
+        }
       }
     } catch (err: any) {
       if (mountedRef.current) {

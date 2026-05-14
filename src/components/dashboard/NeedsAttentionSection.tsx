@@ -222,11 +222,13 @@ const UnresponsiveCard = ({ items }: { items: UnresponsiveVendor[] }) => (
 const NeedsAttentionSection = ({ attention }: NeedsAttentionSectionProps) => {
   if (!attention) return null;
 
+  const stalled = attention.stalledNegotiations ?? [];
+  const deadlines = attention.approachingDeadlines ?? [];
+  const escalated = attention.escalatedDeals ?? [];
+  const unresponsive = attention.unresponsiveVendors ?? [];
+
   const totalCount =
-    attention.stalledNegotiations.length +
-    attention.approachingDeadlines.length +
-    attention.escalatedDeals.length +
-    attention.unresponsiveVendors.length;
+    stalled.length + deadlines.length + escalated.length + unresponsive.length;
 
   return (
     <div>
@@ -242,10 +244,10 @@ const NeedsAttentionSection = ({ attention }: NeedsAttentionSectionProps) => {
         )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <StalledCard items={attention.stalledNegotiations} />
-        <DeadlineCard items={attention.approachingDeadlines} />
-        <EscalatedCard items={attention.escalatedDeals} />
-        <UnresponsiveCard items={attention.unresponsiveVendors} />
+        <StalledCard items={stalled} />
+        <DeadlineCard items={deadlines} />
+        <EscalatedCard items={escalated} />
+        <UnresponsiveCard items={unresponsive} />
       </div>
     </div>
   );
