@@ -20,6 +20,7 @@ import type {
   UseFetchDataReturn
 } from "../../types/management.types";
 import { env } from "@/utils/env";
+import { normalizeViteBackendUrl } from "@/utils/normalizeViteBackendUrl";
 
 const PoManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -116,7 +117,7 @@ const PoManagement = () => {
       label: "Download PO",
       icon: <BsDownload />,
       link: (row: PurchaseOrder) =>
-        `${env("VITE_BACKEND_URL")}/po/download/${row.id}`,
+        `${normalizeViteBackendUrl(env("VITE_BACKEND_URL") || "")}/po/download/${row.id}`,
     },
     {
       type: "button",

@@ -5,9 +5,10 @@ import axios, {
 } from "axios";
 import { tokenStorage } from "../utils/tokenStorage";
 import { env } from "../utils/env";
+import { normalizeViteBackendUrl } from "../utils/normalizeViteBackendUrl";
 
 const buildBaseUrl = (): string => {
-  const rawBaseUrl = (env("VITE_BACKEND_URL") || "").trim();
+  const rawBaseUrl = normalizeViteBackendUrl(env("VITE_BACKEND_URL") || "");
   if (!rawBaseUrl) {
     return "/api";
   }
