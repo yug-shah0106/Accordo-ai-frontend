@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { chatbotService } from '../../services/chatbot.service';
 import type { DemoScenarioType, Deal, Message } from '../../types';
+import logger from "../../utils/logger";
 
 interface DemoScenario {
   type: DemoScenarioType;
@@ -106,7 +107,7 @@ export default function DemoScenarios() {
             } as Deal);
           }
         } catch (err) {
-          console.warn(`Failed to load deals for requisition ${req.id}:`, err);
+          logger.warn(`Failed to load deals for requisition ${req.id}:`, err);
         }
       }
 
@@ -120,7 +121,7 @@ export default function DemoScenarios() {
       const errorMsg = err.response?.data?.error || err.message || 'Failed to load deals';
       setError(errorMsg);
       toast.error(errorMsg);
-      console.error('Error fetching deals:', err);
+      logger.error('Error fetching deals:', err);
     } finally {
       setLoadingDeals(false);
     }
@@ -163,7 +164,7 @@ export default function DemoScenarios() {
       const errorMsg = err.response?.data?.error || err.message || 'Failed to run demo';
       setError(errorMsg);
       toast.error(errorMsg, { id: 'demo-toast' });
-      console.error('Demo error:', err);
+      logger.error('Demo error:', err);
     } finally {
       setIsRunning(false);
     }

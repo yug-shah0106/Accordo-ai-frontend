@@ -4,6 +4,7 @@ import { useLocation, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Menu, X, Calendar, Package, FileText } from "lucide-react";
 import { authApi } from "../../api";
+import logger from "../../utils/logger";
 
 interface ChatSidebarProps {
     logo?: string;
@@ -73,7 +74,7 @@ export default function ChatSidebar({ logo: _logo }: ChatSidebarProps) {
                 await getProjectDetails(requisition.projectId);
             }
         } catch (error) {
-            console.error("Error fetching requisition:", error);
+            logger.error("Error fetching requisition:", error);
         } finally {
             setLoading(false);
         }
@@ -87,7 +88,7 @@ export default function ChatSidebar({ logo: _logo }: ChatSidebarProps) {
             const res = await authApi.get(`/project/${projectId}`);
             setProjectDataa(res.data.data);
         } catch (error) {
-            console.error("Error fetching project:", error);
+            logger.error("Error fetching project:", error);
             // Don't show error if project doesn't exist
         }
     };

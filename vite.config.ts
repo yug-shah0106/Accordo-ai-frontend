@@ -24,9 +24,20 @@ export default defineConfig(({ mode }) => {
       },
     },
     optimizeDeps: {
-      include: ["react-router-dom", "@mui/material", "@emotion/react", "@emotion/styled"],
+      include: [
+        "react-router-dom",
+        "@mui/material",
+        "@emotion/react",
+        "@emotion/styled",
+      ],
     },
     plugins: [react()],
+    // Production builds: strip raw `console.*` and `debugger` statements as a safety net.
+    // App code should call `logger.*` (src/utils/logger.ts) which already no-ops debug/info/warn in prod;
+    // this catches anything that slipped past the convention. See LOGGING.md at repo root.
+    esbuild: {
+      drop: mode === "production" ? ["console", "debugger"] : [],
+    },
     server: {
       host: env.VITE_DEV_HOST || "0.0.0.0",
       port: env.VITE_DEV_PORT ? Number(env.VITE_DEV_PORT) : 5001,

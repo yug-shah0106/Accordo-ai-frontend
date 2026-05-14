@@ -19,13 +19,14 @@ import Breadcrumb from "../Breadcrumbs";
 import { LuGitPullRequest } from "react-icons/lu";
 import { env } from "@/utils/env";
 import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
+import logger from "../../utils/logger";
 
 const RequisitionsManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<any>(false);
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const navigate = useNavigate();
   const { state } = useLocation();
-  console.log({ state });
+  logger.debug({ state });
 
   const [isModal, setIsModal] = useState<any>(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -134,7 +135,7 @@ const RequisitionsManagement = () => {
     setSearch("");
   };
 
-  console.log(state);
+  logger.debug(state);
 
   const handleDeleteModalConfirm = async (id: any) => {
     try {
@@ -273,7 +274,7 @@ const RequisitionsManagement = () => {
   ];
 
   const handleRowClick = (project: any) => {
-    console.log({ project });
+    logger.debug({ project });
 
     if (project.status === "Cancelled") {
       toast.error("Requsition is Cancelled");
@@ -286,7 +287,7 @@ const RequisitionsManagement = () => {
     // setIsSidebarOpen(true);
   };
   const editDetails = (row: any) => {
-    console.log({ row });
+    logger.debug({ row });
 
     // Only block editing for Cancelled requisitions
     if (row.status === "Cancelled") {

@@ -17,6 +17,7 @@ import { useAutoSave } from "../../hooks/useAutoSave";
 import AutosaveIndicator from "../AutosaveIndicator";
 import { env } from "@/utils/env";
 import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
+import logger from "../../utils/logger";
 
 interface CreateProjectFormProps {
   onSave?: () => void;
@@ -178,7 +179,7 @@ const CreateProjectForm = ({
         setIsDataLoaded(true);
       }
     } catch (error: any) {
-      console.error(error.message || "Something went wrong");
+      logger.error(error.message || "Something went wrong");
       setIsDataLoaded(true);
     }
   };

@@ -16,13 +16,14 @@ import Modal from "../Modal";
 import Filter from "../Filter";
 import { env } from "@/utils/env";
 import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
+import logger from "../../utils/logger";
 
 const ViewRequisition = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<any>(false);
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const navigate = useNavigate();
   const { state } = useLocation();
-  console.log({ state });
+  logger.debug({ state });
   const [isModal, setIsModal] = useState<any>(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState<any>([

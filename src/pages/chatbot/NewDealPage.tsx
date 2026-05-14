@@ -34,6 +34,7 @@ import type {
   SmartDefaults,
 } from "../../types";
 import { DEFAULT_WIZARD_FORM_DATA } from "../../types";
+import logger from "../../utils/logger";
 
 const WIZARD_STEPS = [
   { id: 1, title: "Basic Info", description: "RFQ & Vendor" },
@@ -273,7 +274,7 @@ export default function NewDealPage() {
           const rfqRes = await chatbotService.getRequisitions();
           setRequisitions(rfqRes.data || []);
         } catch (err) {
-          console.warn("[NewDealPage] Failed to load requisitions:", err);
+          logger.warn("[NewDealPage] Failed to load requisitions:", err);
           // Use mock data for development
           setRequisitions([]);
         }
@@ -287,7 +288,7 @@ export default function NewDealPage() {
           const certRes = await chatbotService.getQualityCertifications();
           setCertifications(certRes.data || []);
         } catch (err) {
-          console.warn("Failed to load certifications:", err);
+          logger.warn("Failed to load certifications:", err);
           // Use default certifications
           setCertifications([
             {
@@ -317,7 +318,7 @@ export default function NewDealPage() {
         }
         setLoadingCertifications(false);
       } catch (err) {
-        console.error("Error loading initial data:", err);
+        logger.error("Error loading initial data:", err);
       }
     };
 
@@ -364,7 +365,7 @@ export default function NewDealPage() {
       sessionStorage.setItem(getDraftKey(null, null), draftData);
       setLastSaved(new Date());
     } catch (err) {
-      console.warn("Failed to save draft:", err);
+      logger.warn("Failed to save draft:", err);
     }
     setDraftSaving(false);
   }, [formData, currentStep, currentDraftKey]);
@@ -440,7 +441,7 @@ export default function NewDealPage() {
       const res = await chatbotService.getRequisitionVendors(rfqId);
       setVendors(res.data || []);
     } catch (err) {
-      console.warn("Failed to load vendors for RFQ:", err);
+      logger.warn("Failed to load vendors for RFQ:", err);
       setVendors([]);
     }
     setLoadingVendors(false);
@@ -530,14 +531,14 @@ export default function NewDealPage() {
               setVendors(fetchedVendors);
             } else {
               // No vendors from API, use prefilled (will have no addresses)
-              console.warn(
+              logger.warn(
                 "[NewDealPage] No vendors from API, using prefilled vendor",
               );
               setVendors([prefilledVendor as VendorSummary]);
             }
           })
           .catch((err) => {
-            console.warn("[NewDealPage] Failed to fetch vendor data:", err);
+            logger.warn("[NewDealPage] Failed to fetch vendor data:", err);
             // Fallback to prefilled vendor without addresses
             setVendors([prefilledVendor as VendorSummary]);
           })
@@ -641,7 +642,7 @@ export default function NewDealPage() {
             }));
           } else {
             // Still no match - show all vendors but don't auto-select wrong one
-            console.warn(
+            logger.warn(
               "[NewDealPage] No vendor match found, showing all vendors. URL vendorId:",
               urlVendorId,
               "vendorName:",
@@ -661,7 +662,7 @@ export default function NewDealPage() {
           }
         } else if (vendorList.length > 0) {
           // No vendor name hint and no ID match - show all vendors unlocked
-          console.warn(
+          logger.warn(
             "[NewDealPage] Vendor not found by ID, no name hint. Showing all vendors.",
           );
           setVendors(vendorList);
@@ -677,7 +678,7 @@ export default function NewDealPage() {
           }));
         } else {
           // No vendors available - just set the RFQ
-          console.warn("[NewDealPage] No vendors found for RFQ");
+          logger.warn("[NewDealPage] No vendors found for RFQ");
           setFormData((prev) => ({
             ...prev,
             stepOne: {
@@ -691,7 +692,7 @@ export default function NewDealPage() {
         setRouterStateInitialized(true);
         setVendorsLoadedForPreselection(true);
       } catch (error) {
-        console.error(
+        logger.error(
           "[NewDealPage] Failed to initialize from URL params:",
           error,
         );
@@ -865,7 +866,7 @@ export default function NewDealPage() {
           });
         }
       } catch (err) {
-        console.warn("Failed to load smart defaults:", err);
+        logger.warn("Failed to load smart defaults:", err);
       }
     };
 
@@ -906,7 +907,7 @@ export default function NewDealPage() {
           }
         }
       } catch (err) {
-        console.warn("Failed to load buyer addresses:", err);
+        logger.warn("Failed to load buyer addresses:", err);
         setAddresses([]);
       } finally {
         setLoadingAddresses(false);
@@ -1314,7 +1315,7 @@ export default function NewDealPage() {
         setSubmitting(false);
       }
     } catch (err: unknown) {
-      console.error("Failed to create deal:", err);
+      logger.error("Failed to create deal:", err);
       let errorMessage = "Failed to create deal. Please try again.";
       // Extract detailed validation errors from axios 400 response
       if (axios.isAxiosError(err) && err.response) {
@@ -1396,7 +1397,7 @@ export default function NewDealPage() {
         );
       }
     } catch (err: unknown) {
-      console.error("Email retry failed:", err);
+      logger.error("Email retry failed:", err);
       const errorMessage =
         err instanceof Error ? err.message : "Failed to retry email";
       setEmailFailureError(errorMessage);

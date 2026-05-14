@@ -22,6 +22,7 @@ import { exportToCSV, exportSummaryPDF } from '../../services/export.service';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import type { Deal, Message, NegotiationConfig, Explainability } from '../../types/chatbot';
+import logger from "../../utils/logger";
 
 interface SavingsCalculation {
   savings: number;
@@ -68,10 +69,10 @@ export default function SummaryPage() {
         const explainRes = await chatbotService.getExplainability(ctx);
         setExplainability(explainRes.data.explainability || explainRes.data);
       } catch (err) {
-        console.log('No explainability data available');
+        logger.debug('No explainability data available');
       }
     } catch (err) {
-      console.error('Failed to load deal:', err);
+      logger.error('Failed to load deal:', err);
       toast.error('Failed to load deal summary');
     } finally {
       setLoading(false);
@@ -87,7 +88,7 @@ export default function SummaryPage() {
       await exportSummaryPDF(deal, messages, config, explainability);
       toast.success('PDF exported successfully');
     } catch (err) {
-      console.error('Failed to export PDF:', err);
+      logger.error('Failed to export PDF:', err);
       toast.error('Failed to export PDF');
     } finally {
       setExporting(false);
@@ -102,7 +103,7 @@ export default function SummaryPage() {
       await exportToCSV(deal, messages);
       toast.success('CSV exported successfully');
     } catch (err) {
-      console.error('Failed to export CSV:', err);
+      logger.error('Failed to export CSV:', err);
       toast.error('Failed to export CSV');
     } finally {
       setExporting(false);

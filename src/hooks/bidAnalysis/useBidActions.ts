@@ -2,124 +2,168 @@
  * Hook for bid action operations (select, reject, restore)
  */
 
-import { useState, useCallback } from 'react';
-import { bidAnalysisService } from '../../services/bidAnalysis.service';
-import { tokenStorage } from '../../utils/tokenStorage';
-import type { SelectBidResult, RejectBidResult, RestoreBidResult } from '../../types/bidAnalysis';
-import toast from 'react-hot-toast';
-import { env } from '@/utils/env';
-import { normalizeViteBackendUrl } from '@/utils/normalizeViteBackendUrl';
+import { useState, useCallback } from "react";
+import { bidAnalysisService } from "../../services/bidAnalysis.service";
+import { tokenStorage } from "../../utils/tokenStorage";
+import type {
+  SelectBidResult,
+  RejectBidResult,
+  RestoreBidResult,
+} from "../../types/bidAnalysis";
+import toast from "react-hot-toast";
+import { env } from "@/utils/env";
+import { normalizeViteBackendUrl } from "@/utils/normalizeViteBackendUrl";
+import logger from "../../utils/logger";
 
 interface UseBidActionsResult {
   loading: boolean;
-  selectBid: (requisitionId: number, bidId: string, remarks?: string) => Promise<SelectBidResult | null>;
-  rejectBid: (requisitionId: number, bidId: string, remarks?: string) => Promise<RejectBidResult | null>;
-  restoreBid: (requisitionId: number, bidId: string) => Promise<RestoreBidResult | null>;
+  selectBid: (
+    requisitionId: number,
+    bidId: string,
+    remarks?: string,
+  ) => Promise<SelectBidResult | null>;
+  rejectBid: (
+    requisitionId: number,
+    bidId: string,
+    remarks?: string,
+  ) => Promise<RejectBidResult | null>;
+  restoreBid: (
+    requisitionId: number,
+    bidId: string,
+  ) => Promise<RestoreBidResult | null>;
   downloadPdf: (requisitionId: number) => void;
 }
 
 export function useBidActions(): UseBidActionsResult {
   const [loading, setLoading] = useState(false);
 
-  const selectBid = useCallback(async (
-    requisitionId: number,
-    bidId: string,
-    remarks?: string
-  ): Promise<SelectBidResult | null> => {
-    try {
-      setLoading(true);
+  const selectBid = useCallback(
+    async (
+      requisitionId: number,
+      bidId: string,
+      remarks?: string,
+    ): Promise<SelectBidResult | null> => {
+      try {
+        setLoading(true);
 
-      const result = await bidAnalysisService.selectBid(requisitionId, bidId, remarks);
+        const result = await bidAnalysisService.selectBid(
+          requisitionId,
+          bidId,
+          remarks,
+        );
 
-      toast.success(`Vendor ${result.vendorName} selected successfully! PO #${result.poId || 'pending'} created.`);
+        toast.success(
+          `Vendor ${result.vendorName} selected successfully! PO #${result.poId || "pending"} created.`,
+        );
 
-      return result;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to select vendor';
-      toast.error(message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        return result;
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to select vendor";
+        toast.error(message);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
-  const rejectBid = useCallback(async (
-    requisitionId: number,
-    bidId: string,
-    remarks?: string
-  ): Promise<RejectBidResult | null> => {
-    try {
-      setLoading(true);
+  const rejectBid = useCallback(
+    async (
+      requisitionId: number,
+      bidId: string,
+      remarks?: string,
+    ): Promise<RejectBidResult | null> => {
+      try {
+        setLoading(true);
 
-      const result = await bidAnalysisService.rejectBid(requisitionId, bidId, remarks);
+        const result = await bidAnalysisService.rejectBid(
+          requisitionId,
+          bidId,
+          remarks,
+        );
 
-      toast.success('Bid rejected successfully');
+        toast.success("Bid rejected successfully");
 
-      return result;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to reject bid';
-      toast.error(message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        return result;
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to reject bid";
+        toast.error(message);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
-  const restoreBid = useCallback(async (
-    requisitionId: number,
-    bidId: string
-  ): Promise<RestoreBidResult | null> => {
-    try {
-      setLoading(true);
+  const restoreBid = useCallback(
+    async (
+      requisitionId: number,
+      bidId: string,
+    ): Promise<RestoreBidResult | null> => {
+      try {
+        setLoading(true);
 
-      const result = await bidAnalysisService.restoreBid(requisitionId, bidId);
+        const result = await bidAnalysisService.restoreBid(
+          requisitionId,
+          bidId,
+        );
 
-      toast.success('Bid restored successfully');
+        toast.success("Bid restored successfully");
 
-      return result;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to restore bid';
-      toast.error(message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        return result;
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to restore bid";
+        toast.error(message);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   const downloadPdf = useCallback(async (requisitionId: number) => {
     try {
       // Log the export action
-      bidAnalysisService.logExport(requisitionId).catch(console.error);
+      bidAnalysisService
+        .logExport(requisitionId)
+        .catch((err) => logger.error(err));
 
       // Get the auth token
       const token = tokenStorage.getAccessToken();
       if (!token) {
-        toast.error('Authentication required. Please log in again.');
+        toast.error("Authentication required. Please log in again.");
         return;
       }
 
       // Build full URL with backend base
-      const backendUrl = normalizeViteBackendUrl(env("VITE_BACKEND_URL") || "").replace(
-        /\/+$/,
-        "",
-      );
+      const backendUrl = normalizeViteBackendUrl(
+        env("VITE_BACKEND_URL") || "",
+      ).replace(/\/+$/, "");
       const pdfPath = bidAnalysisService.getPdfDownloadUrl(requisitionId);
       const pdfUrl = backendUrl ? `${backendUrl}${pdfPath}` : pdfPath;
 
       const response = await fetch(pdfUrl, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (!response.ok) {
         if (response.status === 401) {
-          toast.error('Session expired. Please log in again.');
+          toast.error("Session expired. Please log in again.");
         } else if (response.status === 404) {
-          toast.error('PDF not found. The comparison may not have been generated yet.');
+          toast.error(
+            "PDF not found. The comparison may not have been generated yet.",
+          );
         } else {
-          toast.error('Failed to download PDF. Please try again.');
+          toast.error("Failed to download PDF. Please try again.");
         }
         return;
       }
@@ -127,7 +171,7 @@ export function useBidActions(): UseBidActionsResult {
       // Get the blob and create download link
       const blob = await response.blob();
       const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = downloadUrl;
       link.download = `bid-comparison-rfq-${requisitionId}.pdf`;
       document.body.appendChild(link);
@@ -135,10 +179,10 @@ export function useBidActions(): UseBidActionsResult {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
 
-      toast.success('PDF downloaded successfully');
+      toast.success("PDF downloaded successfully");
     } catch (err) {
-      console.error('PDF download error:', err);
-      toast.error('Failed to download PDF. Please try again.');
+      logger.error("PDF download error:", err);
+      toast.error("Failed to download PDF. Please try again.");
     }
   }, []);
 

@@ -10,6 +10,7 @@ import type {
   TopBidInfo,
 } from '../../types/bidAnalysis';
 import toast from 'react-hot-toast';
+import logger from "../../utils/logger";
 
 // Polling interval in milliseconds (30 seconds)
 const POLLING_INTERVAL = 30000;
@@ -85,7 +86,7 @@ export function useBidAnalysisDetail(requisitionId: number | null): UseBidAnalys
       }
     } catch (err) {
       // Don't show toast for history errors - it's secondary data
-      console.error('Failed to load history:', err);
+      logger.error('Failed to load history:', err);
     } finally {
       if (isMounted.current) {
         setHistoryLoading(false);

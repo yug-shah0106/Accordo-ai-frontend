@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import Modal from "../Modal";
 import { env } from "@/utils/env";
 import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
+import logger from "../../utils/logger";
 
 interface SettingsFormData {
   profileData?: {
@@ -115,7 +116,7 @@ const UpdateProfile = ({
           }
         }
       } catch (error) {
-        console.error("Failed to fetch user data:", error);
+        logger.error("Failed to fetch user data:", error);
       }
     };
 
@@ -177,7 +178,7 @@ const UpdateProfile = ({
       toast.success("Profile updated successfully");
       nextStep();
     } catch (error) {
-      console.error("API call failed: ", error);
+      logger.error("API call failed: ", error);
       toast.error("Failed to update profile");
     }
   };
@@ -199,7 +200,7 @@ const UpdateProfile = ({
       }
       toast.success("Profile photo removed");
     } catch (error) {
-      console.error("Failed to remove profile photo:", error);
+      logger.error("Failed to remove profile photo:", error);
       toast.error("Failed to remove profile photo");
     } finally {
       setIsDeleting(false);

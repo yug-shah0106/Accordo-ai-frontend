@@ -3,12 +3,13 @@ import { Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
+  DoughnutController,
   Tooltip,
   Legend,
-} from 'chart.js';
+} from "chart.js";
 
 // Register Chart.js components
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, DoughnutController, Tooltip, Legend);
 
 // Types
 interface RequisitionStatus {

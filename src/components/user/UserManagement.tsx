@@ -19,6 +19,7 @@ import type {
   TableAction,
   UseFetchDataReturn
 } from "../../types/management.types";
+import logger from "../../utils/logger";
 
 const UserManagement = () => {
   const [isModal, setIsModal] = useState(false);
@@ -105,9 +106,9 @@ const UserManagement = () => {
       const response = await authApi.put(
         `/auth/reset-password-auto/${user.id}`
       );
-      console.log(response);
+      logger.debug(response);
     } catch (error) {
-      console.log(error);
+      logger.debug(error);
     }
   };
 
@@ -118,9 +119,9 @@ const UserManagement = () => {
       data.append("status", user.status === "active" ? "inactive" : "active");
       const response = await authApi.post(`/user/update-profile`, data);
       await refetch();
-      console.log(response);
+      logger.debug(response);
     } catch (error) {
-      console.error("Error updating status:", error);
+      logger.error("Error updating status:", error);
     }
   };
 

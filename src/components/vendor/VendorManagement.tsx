@@ -27,6 +27,7 @@ import type {
 } from "../../types/management.types";
 import { env } from "@/utils/env";
 import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
+import logger from "../../utils/logger";
 
 const VendorManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -166,17 +167,17 @@ const VendorManagement = () => {
     },
   ];
   const handleStatusChange = async (row: VendorRow) => {
-    console.log({ row });
+    logger.debug({ row });
 
     try {
       const response = await authApi.put(`/vendor/${row.vendorId}`, {
         status: row.Vendor.status === "active" ? "inactive" : "active",
       });
-      console.log({ response });
+      logger.debug({ response });
 
       refetch();
     } catch (error) {
-      console.error("Error changing status:", error);
+      logger.error("Error changing status:", error);
     }
   };
 
@@ -196,7 +197,7 @@ const VendorManagement = () => {
 
   const handleDeleteModalConfirm = async (id: string) => {
     // Placeholder for delete confirmation
-    console.log("Delete vendor:", id);
+    logger.debug("Delete vendor:", id);
   };
 
   useEffect(() => {
@@ -214,7 +215,7 @@ const VendorManagement = () => {
                       selectedProject?.companyId;
 
     if (!companyId) {
-      console.error("No companyId found for vendor");
+      logger.error("No companyId found for vendor");
       return;
     }
 
@@ -222,9 +223,9 @@ const VendorManagement = () => {
     try {
       const response = await authApi.get(`/company/${companyId}`);
       setCompanyData(response.data.data);
-      console.log("Company data loaded:", response.data.data);
+      logger.debug("Company data loaded:", response.data.data);
     } catch (error) {
-      console.error("Error fetching company details:", error);
+      logger.error("Error fetching company details:", error);
       setCompanyData(null);
     } finally {
       setIsLoadingDetails(false);

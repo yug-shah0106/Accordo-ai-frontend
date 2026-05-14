@@ -18,6 +18,7 @@ import {
   getContractStatusColors,
   type ContractStatus,
 } from "../../constants/colors";
+import logger from "../../utils/logger";
 
 interface Contract {
   id: string;
@@ -177,7 +178,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
       );
       setDeals(response.data?.deals || []);
     } catch (error: any) {
-      console.error("Failed to load deals:", error);
+      logger.error("Failed to load deals:", error);
       const msg =
         error?.response?.data?.message ||
         error?.message ||
@@ -425,7 +426,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
       if (!requisition) return;
       // Requisition submission logic (currently not used)
     } catch (error) {
-      console.error("Error sending data:", error);
+      logger.error("Error sending data:", error);
     }
   };
 

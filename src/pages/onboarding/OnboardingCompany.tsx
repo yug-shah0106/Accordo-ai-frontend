@@ -14,6 +14,7 @@ import { AddressData } from "../../types/address";
 import { env } from "@/utils/env";
 import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
 import { getTurnoverOptions } from "../../utils/turnover";
+import logger from "../../utils/logger";
 
 interface OnboardingFormData {
   profileData?: any;
@@ -71,7 +72,9 @@ const OnboardingCompany = ({
     typeOfCurrency: "",
     customIndustryType: "",
   });
-  const [imagePreviews, setImagePreviews] = useState<Record<string, string | null>>({
+  const [imagePreviews, setImagePreviews] = useState<
+    Record<string, string | null>
+  >({
     companyLogo: null,
   });
   const [showDeleteLogoModal, setShowDeleteLogoModal] = useState(false);
@@ -93,7 +96,7 @@ const OnboardingCompany = ({
   useEffect(() => {
     const getCompanyData = async () => {
       try {
-        const response = await authApi(`company/get/${id}`);
+        const response = await authApi(`/company/${id}`);
         const companyData = response.data.data;
 
         const formattedEstablishmentDate = companyData.establishmentDate
@@ -131,11 +134,11 @@ const OnboardingCompany = ({
               country: addr.country || "India",
               postalCode: addr.postalCode || "",
               isDefault: addr.isDefault || false,
-            }))
+            })),
           );
         }
       } catch (error) {
-        console.error(error);
+        logger.error(error);
       }
     };
 
@@ -157,7 +160,9 @@ const OnboardingCompany = ({
     if (activeAddresses.length === 0) {
       newErrors.addresses = "At least one address is required";
     } else {
-      const invalidAddresses = activeAddresses.filter((addr) => !addr.address.trim());
+      const invalidAddresses = activeAddresses.filter(
+        (addr) => !addr.address.trim(),
+      );
       if (invalidAddresses.length > 0) {
         newErrors.addresses = "Street address is required for all addresses";
       }
@@ -209,7 +214,10 @@ const OnboardingCompany = ({
       if (addresses.length > 0) {
         const addressesToSend = addresses.map((addr) => ({
           id: addr.id,
-          label: addr.label === "Custom" && addr.customLabel ? addr.customLabel : addr.label,
+          label:
+            addr.label === "Custom" && addr.customLabel
+              ? addr.customLabel
+              : addr.label,
           address: addr.address,
           city: addr.city,
           state: addr.state,
@@ -230,14 +238,16 @@ const OnboardingCompany = ({
         onComplete();
       }
     } catch (error) {
-      console.error("API call failed: ", error);
+      logger.error("API call failed: ", error);
       toast.error("Failed to save company details");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     const updates: Record<string, string> = { [name]: value };
     // Reset turnover when currency changes since stored value includes currency
@@ -286,7 +296,7 @@ const OnboardingCompany = ({
       }
       toast.success("Company logo removed");
     } catch (error) {
-      console.error("Failed to remove company logo:", error);
+      logger.error("Failed to remove company logo:", error);
       toast.error("Failed to remove company logo");
     } finally {
       setIsDeletingLogo(false);
@@ -386,7 +396,9 @@ const OnboardingCompany = ({
       <form onSubmit={onSubmit}>
         {/* General Information Section */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900">General Information</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            General Information
+          </h3>
           <p className="text-sm text-gray-600 mt-1 mb-6">
             Basic company details
           </p>
@@ -399,7 +411,11 @@ const OnboardingCompany = ({
               type="text"
               value={formData.companyName}
               onChange={handleChange}
-              error={errors.companyName ? { message: errors.companyName, type: 'manual' } : undefined}
+              error={
+                errors.companyName
+                  ? { message: errors.companyName, type: "manual" }
+                  : undefined
+              }
               className="text-sm text-gray-900"
               required
             />
@@ -409,7 +425,11 @@ const OnboardingCompany = ({
               name="establishmentDate"
               value={formData.establishmentDate}
               onChange={handleChange}
-              error={errors.establishmentDate ? { message: errors.establishmentDate, type: 'manual' } : undefined}
+              error={
+                errors.establishmentDate
+                  ? { message: errors.establishmentDate, type: "manual" }
+                  : undefined
+              }
               className="text-sm text-gray-900"
             />
 
@@ -422,7 +442,11 @@ const OnboardingCompany = ({
                 { label: "Domestic", value: "Domestic" },
                 { label: "International", value: "International" },
               ]}
-              error={errors.nature ? { message: errors.nature, type: 'manual' } : undefined}
+              error={
+                errors.nature
+                  ? { message: errors.nature, type: "manual" }
+                  : undefined
+              }
             />
 
             <InputField
@@ -432,7 +456,11 @@ const OnboardingCompany = ({
               type="text"
               value={formData.type}
               onChange={handleChange}
-              error={errors.type ? { message: errors.type, type: 'manual' } : undefined}
+              error={
+                errors.type
+                  ? { message: errors.type, type: "manual" }
+                  : undefined
+              }
               className="text-sm text-gray-900"
             />
           </div>
@@ -447,7 +475,9 @@ const OnboardingCompany = ({
 
         {/* Business Details Section */}
         <div className="mb-8 pt-6 border-t border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Business Details</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Business Details
+          </h3>
           <p className="text-sm text-gray-600 mt-1 mb-6">
             Employee count, turnover, and industry information
           </p>
@@ -464,17 +494,25 @@ const OnboardingCompany = ({
                 { label: "100-1000", value: "100-1000" },
                 { label: "1000+", value: "1000+" },
               ]}
-              error={errors.numberOfEmployees ? { message: errors.numberOfEmployees, type: 'manual' } : undefined}
+              error={
+                errors.numberOfEmployees
+                  ? { message: errors.numberOfEmployees, type: "manual" }
+                  : undefined
+              }
             />
 
             <SelectField
-              label={`Annual Turnover${formData.typeOfCurrency ? ` (in ${formData.typeOfCurrency === 'INR' ? 'Crores' : 'Million'})` : ''}`}
+              label={`Annual Turnover${formData.typeOfCurrency ? ` (in ${formData.typeOfCurrency === "INR" ? "Crores" : "Million"})` : ""}`}
               name="annualTurnover"
               value={formData.annualTurnover}
               onChange={handleChange}
               options={getTurnoverOptions(formData.typeOfCurrency)}
               placeholder="Select turnover range"
-              error={errors.annualTurnover ? { message: errors.annualTurnover, type: 'manual' } : undefined}
+              error={
+                errors.annualTurnover
+                  ? { message: errors.annualTurnover, type: "manual" }
+                  : undefined
+              }
             />
 
             <SelectField
@@ -482,12 +520,19 @@ const OnboardingCompany = ({
               name="industryType"
               onChange={handleChange}
               value={formData.industryType}
-              error={errors.industryType ? { message: errors.industryType, type: 'manual' } : undefined}
+              error={
+                errors.industryType
+                  ? { message: errors.industryType, type: "manual" }
+                  : undefined
+              }
               options={[
                 { label: "Construction", value: "Construction" },
                 { label: "Healthcare", value: "Healthcare" },
                 { label: "Transportation", value: "Transportation" },
-                { label: "Information Technology", value: "Information Technology" },
+                {
+                  label: "Information Technology",
+                  value: "Information Technology",
+                },
                 { label: "Oil and Gas", value: "Oil and Gas" },
                 { label: "Defence", value: "Defence" },
                 { label: "Renewable Energy", value: "Renewable Energy" },
@@ -505,7 +550,11 @@ const OnboardingCompany = ({
                 type="text"
                 value={formData.customIndustryType}
                 onChange={handleChange}
-                error={errors.customIndustryType ? { message: errors.customIndustryType, type: 'manual' } : undefined}
+                error={
+                  errors.customIndustryType
+                    ? { message: errors.customIndustryType, type: "manual" }
+                    : undefined
+                }
                 className="text-sm text-gray-900"
               />
             )}
@@ -520,7 +569,11 @@ const OnboardingCompany = ({
                 { label: "USD", value: "USD" },
                 { label: "EUR", value: "EUR" },
               ]}
-              error={errors.typeOfCurrency ? { message: errors.typeOfCurrency, type: 'manual' } : undefined}
+              error={
+                errors.typeOfCurrency
+                  ? { message: errors.typeOfCurrency, type: "manual" }
+                  : undefined
+              }
             />
           </div>
         </div>
@@ -528,7 +581,9 @@ const OnboardingCompany = ({
         {/* Info about optional fields */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <p className="text-sm text-blue-800">
-            <strong>Note:</strong> You can add compliance documents, bank details, and point of contact information later from the Settings page.
+            <strong>Note:</strong> You can add compliance documents, bank
+            details, and point of contact information later from the Settings
+            page.
           </p>
         </div>
 
@@ -556,9 +611,10 @@ const OnboardingCompany = ({
             disabled={isSubmitting}
             loading={isSubmitting}
             className={`!w-auto px-6 py-3 rounded-lg font-medium transition-all duration-200 min-w-[160px]
-              ${isSubmitting
-                ? "!bg-gray-300 !text-gray-500 cursor-not-allowed"
-                : "!bg-blue-600 !text-white hover:!bg-blue-700"
+              ${
+                isSubmitting
+                  ? "!bg-gray-300 !text-gray-500 cursor-not-allowed"
+                  : "!bg-blue-600 !text-white hover:!bg-blue-700"
               }`}
           >
             Complete Setup

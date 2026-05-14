@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import logger from "../utils/logger";
 
 interface UseAutoSaveOptions {
   key: string;
@@ -68,7 +69,7 @@ export const useAutoSave = ({
       setHasDraft(true);
       setIsSaving(false);
     } catch (error) {
-      console.error('Error saving to localStorage:', error);
+      logger.error('Error saving to localStorage:', error);
       setIsSaving(false);
     }
   }, [data, enabled, key]);
@@ -86,7 +87,7 @@ export const useAutoSave = ({
       }
       return null;
     } catch (error) {
-      console.error('Error loading from localStorage:', error);
+      logger.error('Error loading from localStorage:', error);
       return null;
     }
   };
@@ -101,7 +102,7 @@ export const useAutoSave = ({
       previousDataRef.current = '';
       clearedRef.current = true;
     } catch (error) {
-      console.error('Error clearing localStorage:', error);
+      logger.error('Error clearing localStorage:', error);
     }
   }, [key]);
 
@@ -146,7 +147,7 @@ export const useAutoSave = ({
             localStorage.setItem(key, currentDataString);
             localStorage.setItem(`${key}_timestamp`, new Date().toISOString());
           } catch (error) {
-            console.error('Error saving on unmount:', error);
+            logger.error('Error saving on unmount:', error);
           }
         }
       }

@@ -5,6 +5,7 @@ import { useLocation } from "react-router-dom";
 import { authApi } from "../../api";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
+import logger from "../../utils/logger";
 
 interface Company {
   id?: string;
@@ -105,12 +106,12 @@ const VendorBasicInformation: React.FC<VendorBasicInformationProps> = ({
       // Try to get vendor from either direct Vendor association or VendorCompanies
       const vendor = (company as any)?.Vendor?.[0] || (company as any)?.VendorCompanies?.[0]?.Vendor;
 
-      console.log('=== STEP 2 - BASIC INFORMATION ===');
-      console.log('Company object:', company);
-      console.log('Vendor from company.Vendor[0]:', (company as any)?.Vendor?.[0]);
-      console.log('Vendor from VendorCompanies:', (company as any)?.VendorCompanies?.[0]?.Vendor);
-      console.log('Selected vendor:', vendor);
-      console.log('Resetting form with:', {
+      logger.debug('=== STEP 2 - BASIC INFORMATION ===');
+      logger.debug('Company object:', company);
+      logger.debug('Vendor from company.Vendor[0]:', (company as any)?.Vendor?.[0]);
+      logger.debug('Vendor from VendorCompanies:', (company as any)?.VendorCompanies?.[0]?.Vendor);
+      logger.debug('Selected vendor:', vendor);
+      logger.debug('Resetting form with:', {
         name: vendor?.name || "",
         phone: vendor?.phone || "",
         email: vendor?.email || "",

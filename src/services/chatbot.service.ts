@@ -38,6 +38,7 @@ import type {
   QualityCertification,
   DecisionAction,
 } from "../types";
+import logger from "../utils/logger";
 
 // Re-export DealContext for convenience
 export type { DealContext } from "../types";
@@ -1082,7 +1083,7 @@ export const chatbotService = {
       context: DealContext;
     };
   }> => {
-    console.log("[chatbotService.lookupDeal] Calling API for dealId:", dealId);
+    logger.debug("[chatbotService.lookupDeal] Calling API for dealId:", dealId);
     const res = await authApi.get<{
       message: string;
       data: {
@@ -1091,7 +1092,7 @@ export const chatbotService = {
         context: DealContext;
       };
     }>(`${CHATBOT_BASE}/deals/${dealId}/lookup`);
-    console.log(
+    logger.debug(
       "[chatbotService.lookupDeal] API response:",
       res.status,
       res.data?.message,
@@ -1254,7 +1255,7 @@ export const chatbotService = {
    * @deprecated Use getRequisitionsForNegotiation() instead
    */
   getRequisitions: async (): Promise<{ data: RequisitionSummary[] }> => {
-    console.warn(
+    logger.warn(
       "chatbotService.getRequisitions() is deprecated. Use getRequisitionsForNegotiation() instead.",
     );
     return chatbotService.getRequisitionsForNegotiation();

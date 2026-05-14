@@ -11,6 +11,7 @@ import productSchema from "../../schema/product";
 import Button from "../Button";
 import { useAutoSave } from "../../hooks/useAutoSave";
 import AutosaveIndicator from "../AutosaveIndicator";
+import logger from "../../utils/logger";
 
 const CreateProductForm = () => {
   const { id } = useParams();
@@ -95,7 +96,7 @@ const CreateProductForm = () => {
       } = await authApi.get(`/product/${productId}`);
       reset({ ...data });
     } catch (error: any) {
-      console.error(error.message || "Something went wrong");
+      logger.error(error.message || "Something went wrong");
     }
   };
 

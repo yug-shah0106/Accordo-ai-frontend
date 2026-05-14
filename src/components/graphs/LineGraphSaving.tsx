@@ -6,13 +6,14 @@ import {
   LinearScale,
   PointElement,
   LineElement,
+  LineController,
   Title,
   Tooltip,
   Legend,
   Filler,
   ChartOptions,
   TooltipItem,
-} from 'chart.js';
+} from "chart.js";
 
 // Register Chart.js components
 ChartJS.register(
@@ -20,10 +21,11 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  LineController,
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
 );
 
 // Types
@@ -46,7 +48,7 @@ interface LineChartData {
   datasets: LineChartDataset[];
 }
 
-type FilterType = 'D' | 'M' | 'Y';
+type FilterType = "D" | "M" | "Y";
 
 // const LineGraphSaving = () => {
 //   const [SavingLineGraph, setSavingLineGraph] = useState({
@@ -117,7 +119,7 @@ type FilterType = 'D' | 'M' | 'Y';
 //         datasets: categoryData,
 //       });
 //     } catch (error) {
-//       console.error("Error fetching dashboard data:", error);
+//       logger.error("Error fetching dashboard data:", error);
 //     }
 //   };
 
@@ -167,14 +169,6 @@ type FilterType = 'D' | 'M' | 'Y';
 
 // export default LineGraphSaving;
 
-
-
-
-
-
-
-
-
 const LineGraphSaving = () => {
   // Dummy data for testing
   const dummyRequisitions: SavingRequisition[] = [
@@ -221,7 +215,10 @@ const LineGraphSaving = () => {
   };
 
   // Filter requisitions data based on the selected filter type
-  const filterData = (requisitions: SavingRequisition[], type: FilterType): void => {
+  const filterData = (
+    requisitions: SavingRequisition[],
+    type: FilterType,
+  ): void => {
     const savingsByCategoryAndTime: Record<string, number[]> = {};
     let labels: string[] = [];
 
@@ -271,7 +268,9 @@ const LineGraphSaving = () => {
     } else if (type === "Y") {
       // Group by year
       const years = [
-        ...new Set(requisitions.map((req) => new Date(req.createdAt).getFullYear())),
+        ...new Set(
+          requisitions.map((req) => new Date(req.createdAt).getFullYear()),
+        ),
       ].sort(); // Sort years for consistency
       labels = years.map((year) => year.toString()); // Ensure string type for labels
 
@@ -285,20 +284,21 @@ const LineGraphSaving = () => {
 
         const yearIndex = years.indexOf(year);
         if (yearIndex !== -1) {
-          savingsByCategoryAndTime[category][yearIndex] += req.savingsInPrice || 0;
+          savingsByCategoryAndTime[category][yearIndex] +=
+            req.savingsInPrice || 0;
         }
       });
     }
 
-    const categoryData: LineChartDataset[] = Object.keys(savingsByCategoryAndTime).map(
-      (category, index) => ({
-        label: category,
-        data: savingsByCategoryAndTime[category],
-        fill: false,
-        borderColor: getRandomColor(index), // Dynamic color for each category
-        tension: 0.4,
-      })
-    );
+    const categoryData: LineChartDataset[] = Object.keys(
+      savingsByCategoryAndTime,
+    ).map((category, index) => ({
+      label: category,
+      data: savingsByCategoryAndTime[category],
+      fill: false,
+      borderColor: getRandomColor(index), // Dynamic color for each category
+      tension: 0.4,
+    }));
 
     setSavingLineGraph({
       labels,
@@ -331,12 +331,12 @@ const LineGraphSaving = () => {
   };
 
   // Line chart options
-  const chartOptions: ChartOptions<'line'> = {
+  const chartOptions: ChartOptions<"line"> = {
     responsive: true,
     plugins: {
       tooltip: {
         callbacks: {
-          label: function (tooltipItem: TooltipItem<'line'>) {
+          label: function (tooltipItem: TooltipItem<"line">) {
             const value = tooltipItem.raw as number;
             return `$${value.toFixed(2)}`; // Format savings as $
           },
@@ -347,7 +347,8 @@ const LineGraphSaving = () => {
       x: {
         title: {
           display: true,
-          text: filterType === "D" ? "Day" : filterType === "M" ? "Month" : "Year",
+          text:
+            filterType === "D" ? "Day" : filterType === "M" ? "Month" : "Year",
         },
       },
       y: {
@@ -364,25 +365,30 @@ const LineGraphSaving = () => {
     <div>
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-gray-600 font-medium">Category-wise Savings Trend</h3>
+          <h3 className="text-gray-600 font-medium">
+            Category-wise Savings Trend
+          </h3>
           <div className="flex space-x-2">
             <button
-              className={`px-3 pt-1 pb-0 text-sm rounded ${filterType === "D" ? "bg-blue-500 text-white" : "bg-gray-200"
-                }`}
+              className={`px-3 pt-1 pb-0 text-sm rounded ${
+                filterType === "D" ? "bg-blue-500 text-white" : "bg-gray-200"
+              }`}
               onClick={() => handleFilterChange("D")}
             >
               D
             </button>
             <button
-              className={`px-3 pt-1 pb-0 text-sm rounded ${filterType === "M" ? "bg-blue-500 text-white" : "bg-gray-200"
-                }`}
+              className={`px-3 pt-1 pb-0 text-sm rounded ${
+                filterType === "M" ? "bg-blue-500 text-white" : "bg-gray-200"
+              }`}
               onClick={() => handleFilterChange("M")}
             >
               M
             </button>
             <button
-              className={`px-3 pt-1 pb-0 text-sm rounded ${filterType === "Y" ? "bg-blue-500 text-white" : "bg-gray-200"
-                }`}
+              className={`px-3 pt-1 pb-0 text-sm rounded ${
+                filterType === "Y" ? "bg-blue-500 text-white" : "bg-gray-200"
+              }`}
               onClick={() => handleFilterChange("Y")}
             >
               Y

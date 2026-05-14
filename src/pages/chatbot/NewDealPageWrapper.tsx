@@ -3,6 +3,7 @@
  * This wraps NewDealPage to catch and display any errors
  */
 import React, { Component, ErrorInfo, Suspense } from 'react';
+import logger from "../../utils/logger";
 
 // Error boundary class component
 class NewDealErrorBoundary extends Component<
@@ -19,8 +20,8 @@ class NewDealErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('[NewDealPageWrapper] Error caught:', error);
-    console.error('[NewDealPageWrapper] Error info:', errorInfo);
+    logger.error('[NewDealPageWrapper] Error caught:', error);
+    logger.error('[NewDealPageWrapper] Error info:', errorInfo);
     this.setState({ errorInfo });
   }
 
@@ -79,7 +80,7 @@ const LazyNewDealPage = React.lazy(() => import('./NewDealPage'));
 
 // Main wrapper component
 export default function NewDealPageWrapper() {
-  console.log('[NewDealPageWrapper] Rendering wrapper');
+  logger.debug('[NewDealPageWrapper] Rendering wrapper');
 
   return (
     <NewDealErrorBoundary>

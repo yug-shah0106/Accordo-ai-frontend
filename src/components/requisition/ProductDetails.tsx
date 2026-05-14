@@ -14,6 +14,7 @@ import { useAutoSave } from "../../hooks/useAutoSave";
 import AutosaveIndicator from "../AutosaveIndicator";
 import { env } from "@/utils/env";
 import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
+import logger from "../../utils/logger";
 
 interface ProductData {
   productId: string;
@@ -177,7 +178,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         await authMultiFormApi.put(`/requisition/${requisitionId}`, cleanData);
       } catch (error) {
         // Silent fail for autosave - don't interrupt user
-        console.error("Backend autosave failed:", error);
+        logger.error("Backend autosave failed:", error);
       }
     },
     [requisitionId],
@@ -385,7 +386,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
           post_payment_percentage: cleanData.postPaymentPercentage,
         };
 
-        console.log("Sending update request with data:", apiData);
+        logger.debug("Sending update request with data:", apiData);
 
         await authMultiFormApi.put(`/requisition/${requisitionId}`, apiData);
         toast.success("Edited Successfully");
@@ -393,8 +394,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         nextStep();
       }
     } catch (error: any) {
-      console.error("Update error:", error);
-      console.error("Error response:", error.response?.data);
+      logger.error("Update error:", error);
+      logger.error("Error response:", error.response?.data);
       const errorMessage =
         error.response?.data?.message ||
         error.message ||

@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import sideBarLogo from "../../assets/sideBarLogo.png";
 import { chatApi } from "../../services/chat.service";
 import { FiSend, FiX } from "react-icons/fi";
+import logger from "../../utils/logger";
 
 interface ChatMessage {
   id: number;
@@ -103,7 +104,7 @@ const Chat = () => {
                     }]);
                 }
             } catch (error: any) {
-                console.error("Error loading chat history:", error);
+                logger.error("Error loading chat history:", error);
                 // Don't show error toast if it's just no sessions found
                 if (error.response?.status !== 404) {
                     toast.error("Failed to load chat history");
@@ -173,7 +174,7 @@ const Chat = () => {
                 ];
             });
         } catch (error: any) {
-            console.error("Error sending message:", error);
+            logger.error("Error sending message:", error);
             toast.error(error.response?.data?.error || "Failed to send message. Please try again.");
             
             // Remove typing indicator on error

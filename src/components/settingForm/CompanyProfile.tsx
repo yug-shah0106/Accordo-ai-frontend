@@ -16,6 +16,7 @@ import { FieldError } from "react-hook-form";
 import { getTurnoverOptions } from "../../utils/turnover";
 import { env } from "@/utils/env";
 import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
+import logger from "../../utils/logger";
 
 // Helper to convert string error to FieldError format
 const toFieldError = (error: string | undefined): FieldError | undefined => {
@@ -96,7 +97,9 @@ const CompanyProfile = ({
     typeOfCurrency: "",
     customIndustryType: "",
   });
-  const [imagePreviews, setImagePreviews] = useState<Record<string, string | null>>({
+  const [imagePreviews, setImagePreviews] = useState<
+    Record<string, string | null>
+  >({
     gstFile: null,
     panFile: null,
     msmeFile: null,
@@ -112,15 +115,18 @@ const CompanyProfile = ({
   useEffect(() => {
     const getCompanyData = async () => {
       try {
-        const response = await authApi(`company/get/${id}`);
+        const response = await authApi(`/company/${id}`);
         const companyData = response.data.data;
 
         const formattedEstablishmentDate = companyData.establishmentDate
           ? new Date(companyData.establishmentDate).toISOString().split("T")[0]
           : "";
 
+        const sanitized = Object.fromEntries(
+          Object.entries(companyData).map(([k, v]) => [k, v ?? ""]),
+        ) as typeof formData;
         setFormData({
-          ...companyData,
+          ...sanitized,
           establishmentDate: formattedEstablishmentDate,
         });
 
@@ -157,11 +163,11 @@ const CompanyProfile = ({
               country: addr.country || "India",
               postalCode: addr.postalCode || "",
               isDefault: addr.isDefault || false,
-            }))
+            })),
           );
         }
       } catch (error) {
-        console.error(error);
+        logger.error(error);
       }
     };
 
@@ -182,9 +188,14 @@ const CompanyProfile = ({
     }
 
     // Validate required fields in addresses
-    const invalidAddresses = activeAddresses.filter((addr) => !addr.address.trim());
+    const invalidAddresses = activeAddresses.filter(
+      (addr) => !addr.address.trim(),
+    );
     if (invalidAddresses.length > 0) {
-      setErrors({ ...errors, addresses: "Street address is required for all addresses" });
+      setErrors({
+        ...errors,
+        addresses: "Street address is required for all addresses",
+      });
       toast.error("Please fill in the street address for all addresses");
       return;
     }
@@ -223,7 +234,10 @@ const CompanyProfile = ({
       if (addresses.length > 0) {
         const addressesToSend = addresses.map((addr) => ({
           id: addr.id,
-          label: addr.label === "Custom" && addr.customLabel ? addr.customLabel : addr.label,
+          label:
+            addr.label === "Custom" && addr.customLabel
+              ? addr.customLabel
+              : addr.label,
           address: addr.address,
           city: addr.city,
           state: addr.state,
@@ -242,14 +256,16 @@ const CompanyProfile = ({
       toast.success("Company details updated successfully");
       nextStep();
     } catch (error) {
-      console.error("API call failed: ", error);
+      logger.error("API call failed: ", error);
       toast.error("Failed to update company details");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value, type } = e.target;
     const files = (e.target as HTMLInputElement).files;
 
@@ -312,7 +328,7 @@ const CompanyProfile = ({
       }
       toast.success("Company logo removed");
     } catch (error) {
-      console.error("Failed to remove company logo:", error);
+      logger.error("Failed to remove company logo:", error);
       toast.error("Failed to remove company logo");
     } finally {
       setIsDeletingLogo(false);
@@ -405,7 +421,9 @@ const CompanyProfile = ({
       <form onSubmit={onSubmit}>
         {/* General Information Section */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">General Information</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">
+            General Information
+          </h3>
           <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1 mb-6">
             Basic company details and registration information
           </p>
@@ -465,7 +483,9 @@ const CompanyProfile = ({
 
         {/* Business Details Section */}
         <div className="mb-8 pt-6 border-t border-gray-200 dark:border-dark-border">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Business Details</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">
+            Business Details
+          </h3>
           <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1 mb-6">
             Employee count, turnover, and compliance documents
           </p>
@@ -486,7 +506,7 @@ const CompanyProfile = ({
             />
 
             <SelectField
-              label={`Annual Turnover${formData.typeOfCurrency ? ` (in ${formData.typeOfCurrency === 'INR' ? 'Crores' : 'Million'})` : ''}`}
+              label={`Annual Turnover${formData.typeOfCurrency ? ` (in ${formData.typeOfCurrency === "INR" ? "Crores" : "Million"})` : ""}`}
               name="annualTurnover"
               value={formData.annualTurnover}
               onChange={handleChange}
@@ -505,7 +525,10 @@ const CompanyProfile = ({
                 { label: "Construction", value: "Construction" },
                 { label: "Healthcare", value: "Healthcare" },
                 { label: "Transportation", value: "Transportation" },
-                { label: "Information Technology", value: "Information Technology" },
+                {
+                  label: "Information Technology",
+                  value: "Information Technology",
+                },
                 { label: "Oil and Gas", value: "Oil and Gas" },
                 { label: "Defence", value: "Defence" },
                 { label: "Renewable Energy", value: "Renewable Energy" },
@@ -544,7 +567,9 @@ const CompanyProfile = ({
 
           {/* Compliance Documents */}
           <div className="mt-6 space-y-4">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary">Compliance Documents</h4>
+            <h4 className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary">
+              Compliance Documents
+            </h4>
             <p className="text-xs text-gray-500 dark:text-gray-500">
               Enter the number manually or upload a document to auto-extract
             </p>
@@ -555,7 +580,9 @@ const CompanyProfile = ({
                 name="gstNumber"
                 placeholder="Enter GST No or upload document"
                 value={formData.gstNumber}
-                onChange={(value) => setFormData({ ...formData, gstNumber: value })}
+                onChange={(value) =>
+                  setFormData({ ...formData, gstNumber: value })
+                }
                 onFileChange={(file) => {
                   if (file) {
                     setFormData({ ...formData, gstFile: file });
@@ -571,7 +598,9 @@ const CompanyProfile = ({
                 name="panNumber"
                 placeholder="Enter PAN No or upload document"
                 value={formData.panNumber}
-                onChange={(value) => setFormData({ ...formData, panNumber: value })}
+                onChange={(value) =>
+                  setFormData({ ...formData, panNumber: value })
+                }
                 onFileChange={(file) => {
                   if (file) {
                     setFormData({ ...formData, panFile: file });
@@ -587,7 +616,9 @@ const CompanyProfile = ({
                 name="msmeNumber"
                 placeholder="Enter MSME/Udyam No or upload document"
                 value={formData.msmeNumber}
-                onChange={(value) => setFormData({ ...formData, msmeNumber: value })}
+                onChange={(value) =>
+                  setFormData({ ...formData, msmeNumber: value })
+                }
                 onFileChange={(file) => {
                   if (file) {
                     setFormData({ ...formData, msmeFile: file });
@@ -595,7 +626,9 @@ const CompanyProfile = ({
                 }}
                 documentType="MSME"
                 error={errors.msmeNumber}
-                existingFileName={imagePreviews.msmeFile ? "MSME Document" : null}
+                existingFileName={
+                  imagePreviews.msmeFile ? "MSME Document" : null
+                }
               />
 
               <ComplianceDocumentField
@@ -603,7 +636,9 @@ const CompanyProfile = ({
                 name="ciNumber"
                 placeholder="Enter CIN/LLPIN or upload document"
                 value={formData.ciNumber}
-                onChange={(value) => setFormData({ ...formData, ciNumber: value })}
+                onChange={(value) =>
+                  setFormData({ ...formData, ciNumber: value })
+                }
                 onFileChange={(file) => {
                   if (file) {
                     setFormData({ ...formData, ciFile: file });
@@ -619,7 +654,9 @@ const CompanyProfile = ({
 
         {/* Point of Contact Section */}
         <div className="mb-8 pt-6 border-t border-gray-200 dark:border-dark-border">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Point of Contact</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">
+            Point of Contact
+          </h3>
           <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1 mb-6">
             Primary contact person details
           </p>
@@ -684,7 +721,9 @@ const CompanyProfile = ({
 
         {/* Bank Details Section */}
         <div className="mb-8 pt-6 border-t border-gray-200 dark:border-dark-border">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Bank Details</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">
+            Bank Details
+          </h3>
           <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1 mb-6">
             Banking and payment information
           </p>
@@ -801,7 +840,9 @@ const CompanyProfile = ({
 
         {/* Escalation Matrix Section */}
         <div className="mb-8 pt-6 border-t border-gray-200 dark:border-dark-border">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">Escalation Matrix</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">
+            Escalation Matrix
+          </h3>
           <p className="text-sm text-gray-600 dark:text-dark-text-secondary mt-1 mb-6">
             Secondary contact for escalations
           </p>
@@ -868,9 +909,10 @@ const CompanyProfile = ({
             disabled={isSubmitting}
             loading={isSubmitting}
             className={`!w-auto px-6 py-3 rounded-lg font-medium transition-all duration-200 min-w-[100px]
-              ${isSubmitting
-                ? '!bg-gray-300 !text-gray-500 cursor-not-allowed'
-                : '!bg-blue-600 !text-white hover:!bg-blue-700'
+              ${
+                isSubmitting
+                  ? "!bg-gray-300 !text-gray-500 cursor-not-allowed"
+                  : "!bg-blue-600 !text-white hover:!bg-blue-700"
               }`}
           >
             Save & Continue

@@ -8,6 +8,7 @@ import CompanyProfile from "../settingForm/CompanyProfile";
 import ChangePassword from "../settingForm/ChangePassword";
 import { useAutoSave } from "../../hooks/useAutoSave";
 import toast from "react-hot-toast";
+import logger from "../../utils/logger";
 
 // Form data interface for auto-save
 interface SettingsFormData {
@@ -129,7 +130,7 @@ const UserInfo = () => {
       } = await authApi.get(`/company/${companyId}`);
       setCompany(data);
     } catch (error: any) {
-      console.error(error.message || "Something went wrong");
+      logger.error(error.message || "Something went wrong");
     }
   };
 
@@ -140,7 +141,7 @@ const UserInfo = () => {
       } = await authApi.get(`/user/profile`);
       setUserId(data.id);
     } catch (error: any) {
-      console.error(error.message || "Something went wrong");
+      logger.error(error.message || "Something went wrong");
     } finally {
       setIsLoading(false);
     }
