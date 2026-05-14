@@ -12,6 +12,7 @@ import Modal from "../../components/Modal";
 import AddressSection from "../../components/settingForm/AddressSection";
 import { AddressData } from "../../types/address";
 import { env } from "@/utils/env";
+import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
 import { getTurnoverOptions } from "../../utils/turnover";
 
 interface OnboardingFormData {
@@ -114,7 +115,7 @@ const OnboardingCompany = ({
 
         setImagePreviews({
           companyLogo: companyData.companyLogo
-            ? `${env("VITE_ASSEST_URL")}/uploads/${companyData.companyLogo}`
+            ? `${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${companyData.companyLogo}`
             : null,
         });
 

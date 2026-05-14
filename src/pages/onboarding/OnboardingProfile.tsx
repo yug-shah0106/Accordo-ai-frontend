@@ -9,6 +9,7 @@ import { FiUser } from "react-icons/fi";
 import toast from "react-hot-toast";
 import Modal from "../../components/Modal";
 import { env } from "@/utils/env";
+import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
 
 interface OnboardingFormData {
   profileData?: {
@@ -97,7 +98,7 @@ const OnboardingProfile = ({
 
           if (userData.profilePic) {
             setPreview(
-              `${env("VITE_ASSEST_URL")}/uploads/${userData.profilePic}`
+              `${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${userData.profilePic}`
             );
           }
         }

@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import Modal from "../Modal";
 import Filter from "../Filter";
 import { env } from "@/utils/env";
+import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
 
 const ViewRequisition = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<any>(false);
@@ -450,7 +451,7 @@ const ViewRequisition = () => {
                   key={attachment.id}
                   className="h-10 w-10"
                   src={
-                    env("VITE_ASSEST_URL") +
+                    normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "") +
                     "/uploads/" +
                     attachment?.attachmentUrl
                   }

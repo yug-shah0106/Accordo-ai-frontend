@@ -26,6 +26,7 @@ import type {
   UseFetchDataReturn
 } from "../../types/management.types";
 import { env } from "@/utils/env";
+import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
 
 const VendorManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -619,7 +620,7 @@ const VendorManagement = () => {
                           {companyData?.gstNumber || "-"}
                           {companyData?.gstFileUrl && (
                             <a
-                              href={`${env("VITE_ASSEST_URL")}/uploads/${companyData.gstFileUrl}`}
+                              href={`${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${companyData.gstFileUrl}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-600 ml-2 text-xs hover:underline"
@@ -635,7 +636,7 @@ const VendorManagement = () => {
                           {companyData?.panNumber || "-"}
                           {companyData?.panFileUrl && (
                             <a
-                              href={`${env("VITE_ASSEST_URL")}/uploads/${companyData.panFileUrl}`}
+                              href={`${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${companyData.panFileUrl}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-600 ml-2 text-xs hover:underline"
@@ -651,7 +652,7 @@ const VendorManagement = () => {
                           {companyData?.msmeNumber || "-"}
                           {companyData?.msmeFileUrl && (
                             <a
-                              href={`${env("VITE_ASSEST_URL")}/uploads/${companyData.msmeFileUrl}`}
+                              href={`${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${companyData.msmeFileUrl}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-600 ml-2 text-xs hover:underline"
@@ -667,7 +668,7 @@ const VendorManagement = () => {
                           {companyData?.ciNumber || "-"}
                           {companyData?.ciFileUrl && (
                             <a
-                              href={`${env("VITE_ASSEST_URL")}/uploads/${companyData.ciFileUrl}`}
+                              href={`${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${companyData.ciFileUrl}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-600 ml-2 text-xs hover:underline"

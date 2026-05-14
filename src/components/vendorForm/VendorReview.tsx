@@ -4,6 +4,7 @@ import { authApi } from "../../api";
 import toast from "react-hot-toast";
 import { Check } from "lucide-react";
 import { env } from "@/utils/env";
+import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
 
 interface Vendor {
   id: string;
@@ -400,7 +401,7 @@ const VendorReview: React.FC<VendorReviewProps> = ({
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Cancelled Cheque</p>
                     <img
-                      src={`${env("VITE_ASSEST_URL")}/uploads/${companyData.cancelledChequeURL}`}
+                      src={`${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${companyData.cancelledChequeURL}`}
                       alt="Cancelled Cheque"
                       className="w-32 h-auto border border-gray-300 dark:border-dark-border rounded"
                     />

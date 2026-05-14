@@ -1,9 +1,10 @@
 /**
- * Ensures VITE_BACKEND_URL is absolute when it points at a host.
+ * Ensures VITE_* URLs used in the browser are absolute when they point at a host.
+ * Same rules for VITE_BACKEND_URL, VITE_ASSEST_URL, and VITE_FRONTEND_URL.
  * Values without a scheme (e.g. "ec2-....amazonaws.com:5002") are treated as
- * paths by axios/fetch and get resolved against the frontend origin.
+ * paths and resolve against the current page origin (broken images, wrong API host).
  */
-export function normalizeViteBackendUrl(raw: string): string {
+export function normalizeViteEnvUrl(raw: string): string {
   const trimmed = raw.trim();
   if (!trimmed) {
     return "";
@@ -19,3 +20,6 @@ export function normalizeViteBackendUrl(raw: string): string {
   }
   return `http://${trimmed}`;
 }
+
+/** Alias for {@link normalizeViteEnvUrl} — kept for existing imports. */
+export const normalizeViteBackendUrl = normalizeViteEnvUrl;

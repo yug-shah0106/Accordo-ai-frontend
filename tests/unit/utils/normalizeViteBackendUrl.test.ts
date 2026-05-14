@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeViteBackendUrl } from '../../../src/utils/normalizeViteBackendUrl';
+import {
+  normalizeViteBackendUrl,
+  normalizeViteEnvUrl,
+} from '../../../src/utils/normalizeViteBackendUrl';
 
-describe('normalizeViteBackendUrl', () => {
+describe('normalizeViteEnvUrl / normalizeViteBackendUrl', () => {
+  it('exports the same function under both names', () => {
+    expect(normalizeViteEnvUrl('host.test:1')).toBe(normalizeViteBackendUrl('host.test:1'));
+  });
   it('returns empty for blank input', () => {
     expect(normalizeViteBackendUrl('')).toBe('');
     expect(normalizeViteBackendUrl('   ')).toBe('');

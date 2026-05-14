@@ -15,6 +15,7 @@ import { AddressData } from "../../types/address";
 import { FieldError } from "react-hook-form";
 import { getTurnoverOptions } from "../../utils/turnover";
 import { env } from "@/utils/env";
+import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
 
 // Helper to convert string error to FieldError format
 const toFieldError = (error: string | undefined): FieldError | undefined => {
@@ -125,22 +126,22 @@ const CompanyProfile = ({
 
         setImagePreviews({
           gstFile: companyData.gstFileUrl
-            ? `${env("VITE_ASSEST_URL")}/uploads/${companyData.gstFileUrl}`
+            ? `${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${companyData.gstFileUrl}`
             : null,
           panFile: companyData.panFileUrl
-            ? `${env("VITE_ASSEST_URL")}/uploads/${companyData.panFileUrl}`
+            ? `${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${companyData.panFileUrl}`
             : null,
           msmeFile: companyData.msmeFileUrl
-            ? `${env("VITE_ASSEST_URL")}/uploads/${companyData.msmeFileUrl}`
+            ? `${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${companyData.msmeFileUrl}`
             : null,
           ciFile: companyData.ciFileUrl
-            ? `${env("VITE_ASSEST_URL")}/uploads/${companyData.ciFileUrl}`
+            ? `${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${companyData.ciFileUrl}`
             : null,
           cancelledChequeURL: companyData.cancelledChequeURL
-            ? `${env("VITE_ASSEST_URL")}/uploads/${companyData.cancelledChequeURL}`
+            ? `${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${companyData.cancelledChequeURL}`
             : null,
           companyLogo: companyData.companyLogo
-            ? `${env("VITE_ASSEST_URL")}/uploads/${companyData.companyLogo}`
+            ? `${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${companyData.companyLogo}`
             : null,
         });
 

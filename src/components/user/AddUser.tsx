@@ -8,6 +8,7 @@ import Button from "../Button";
 import toast from "react-hot-toast";
 import { BiUserCheck } from "react-icons/bi";
 import { env } from "@/utils/env";
+import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
 
 interface Role {
   id: number;
@@ -68,7 +69,7 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
         setSelectedApprovalLevel(data.approvalLevel);
       }
       if (data.profilePic) {
-        const url = `${env("VITE_ASSEST_URL")}/uploads/${data.profilePic}`;
+        const url = `${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${data.profilePic}`;
         setPreview(url);
       }
     } catch (error: any) {

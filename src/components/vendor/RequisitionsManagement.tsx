@@ -18,6 +18,7 @@ import Badge from "../Badge";
 import Breadcrumb from "../Breadcrumbs";
 import { LuGitPullRequest } from "react-icons/lu";
 import { env } from "@/utils/env";
+import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
 
 const RequisitionsManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<any>(false);
@@ -661,7 +662,7 @@ const RequisitionsManagement = () => {
                   key={attachment.id}
                   className="h-10 w-10"
                   src={
-                    env("VITE_ASSEST_URL") +
+                    normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "") +
                     "/uploads/" +
                     attachment?.attachmentUrl
                   }

@@ -13,6 +13,7 @@ import { step2 } from "../../schema/requisition";
 import { useAutoSave } from "../../hooks/useAutoSave";
 import AutosaveIndicator from "../AutosaveIndicator";
 import { env } from "@/utils/env";
+import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
 
 interface ProductData {
   productId: string;
@@ -820,7 +821,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                     <img
                       src={
                         file?.attachmentUrl
-                          ? `${env("VITE_ASSEST_URL")}/uploads/${file?.attachmentUrl}`
+                          ? `${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${file?.attachmentUrl}`
                           : URL.createObjectURL(file)
                       }
                       className="w-12 h-12"
