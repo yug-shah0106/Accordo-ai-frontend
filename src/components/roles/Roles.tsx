@@ -10,6 +10,7 @@ import { VscEdit } from "react-icons/vsc";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { format } from "date-fns";
 import { IoArrowBackOutline } from "react-icons/io5";
+import logger from "../../utils/logger";
 
 interface Role {
   id: number;
@@ -69,7 +70,7 @@ function Roles() {
         setRoles((response.data.data || []).filter((role: Role) => role.name !== 'Super Admin'));
       }
     } catch (error) {
-      console.error("Error fetching roles:", error);
+      logger.error("Error fetching roles:", error);
     }
   };
 
@@ -84,7 +85,7 @@ function Roles() {
         getAllRoles();
       }
     } catch (error) {
-      console.error("Error deleting role:", error);
+      logger.error("Error deleting role:", error);
     }
   };
 

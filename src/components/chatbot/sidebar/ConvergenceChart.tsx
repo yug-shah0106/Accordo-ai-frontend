@@ -5,21 +5,31 @@
  * Uses Chart.js (existing dependency) for line chart rendering.
  */
 
-import React, { useMemo } from 'react';
-import { Line } from 'react-chartjs-2';
+import React, { useMemo } from "react";
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  LineController,
   Filler,
   Tooltip,
   Legend,
-} from 'chart.js';
+} from "chart.js";
 
 // Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  LineController,
+  Filler,
+  Tooltip,
+  Legend,
+);
 
 interface RoundData {
   round: number;
@@ -47,26 +57,26 @@ export const ConvergenceChart: React.FC<ConvergenceChartProps> = ({
       labels,
       datasets: [
         {
-          label: 'Vendor Offer',
+          label: "Vendor Offer",
           data: vendorPrices,
-          borderColor: '#ef4444',
-          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          borderColor: "#ef4444",
+          backgroundColor: "rgba(239, 68, 68, 0.1)",
           borderWidth: 2,
           pointRadius: 4,
-          pointBackgroundColor: '#ef4444',
+          pointBackgroundColor: "#ef4444",
           tension: 0.3,
           fill: false,
         },
         {
-          label: 'PM Counter',
+          label: "PM Counter",
           data: pmCounters,
-          borderColor: '#3b82f6',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderColor: "#3b82f6",
+          backgroundColor: "rgba(59, 130, 246, 0.1)",
           borderWidth: 2,
           pointRadius: 4,
-          pointBackgroundColor: '#3b82f6',
+          pointBackgroundColor: "#3b82f6",
           tension: 0.3,
-          fill: '-1',
+          fill: "-1",
         },
       ],
     };
@@ -79,7 +89,7 @@ export const ConvergenceChart: React.FC<ConvergenceChartProps> = ({
       plugins: {
         legend: {
           display: true,
-          position: 'bottom' as const,
+          position: "bottom" as const,
           labels: {
             boxWidth: 8,
             padding: 8,
@@ -91,7 +101,9 @@ export const ConvergenceChart: React.FC<ConvergenceChartProps> = ({
           callbacks: {
             label: (ctx: any) => {
               const val = ctx.parsed.y;
-              return val != null ? `${ctx.dataset.label}: $${val.toLocaleString()}` : '';
+              return val != null
+                ? `${ctx.dataset.label}: $${val.toLocaleString()}`
+                : "";
             },
           },
         },
@@ -105,7 +117,7 @@ export const ConvergenceChart: React.FC<ConvergenceChartProps> = ({
           ticks: { font: { size: 10 } },
         },
         y: {
-          grid: { color: 'rgba(0,0,0,0.05)' },
+          grid: { color: "rgba(0,0,0,0.05)" },
           ticks: {
             font: { size: 10 },
             callback: (val: any) => `$${Number(val).toLocaleString()}`,
@@ -114,10 +126,10 @@ export const ConvergenceChart: React.FC<ConvergenceChartProps> = ({
       },
       interaction: {
         intersect: false,
-        mode: 'index' as const,
+        mode: "index" as const,
       },
     }),
-    []
+    [],
   );
 
   if (roundHistory.length < 2) {
@@ -137,11 +149,11 @@ export const ConvergenceChart: React.FC<ConvergenceChartProps> = ({
         <span
           className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
             isConverging
-              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+              : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
           }`}
         >
-          {isConverging ? 'Converging' : 'Not Converging'}
+          {isConverging ? "Converging" : "Not Converging"}
         </span>
       </div>
     </div>

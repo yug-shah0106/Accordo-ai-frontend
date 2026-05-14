@@ -9,6 +9,7 @@ import vendorChatService, {
 import { MesoOptions } from "../../components/chatbot/MesoOptions";
 import type { MesoResult, MesoOption, NegotiationPhase } from "../../types/chatbot";
 import { DEAL_STATUS_COLORS } from "../../constants/colors";
+import logger from "../../utils/logger";
 
 /**
  * VendorChat Page
@@ -765,7 +766,7 @@ export default function VendorChat() {
         await vendorChatService.enterChat(uniqueToken);
       } catch (enterError) {
         // Ignore errors here - deal might already be entered
-        console.log("Enter chat:", enterError);
+        logger.debug("Enter chat:", enterError);
       }
 
       // Fetch deal data
@@ -790,7 +791,7 @@ export default function VendorChat() {
         }
       }
     } catch (err: any) {
-      console.error("Error fetching deal:", err);
+      logger.error("Error fetching deal:", err);
       setError(err.response?.data?.message || "Failed to load negotiation");
       if (err.response?.status === 404) {
         toast.error("Negotiation not found. Please check your link.");
@@ -813,9 +814,9 @@ export default function VendorChat() {
     setPmTyping(true);
 
     try {
-      console.log('[VendorChat] Selecting MESO option:', option.id);
+      logger.debug('[VendorChat] Selecting MESO option:', option.id);
       const response = await vendorChatService.selectMesoOption(uniqueToken, option.id);
-      console.log('[VendorChat] MESO selection response:', response);
+      logger.debug('[VendorChat] MESO selection response:', response);
 
       // Add the confirmation message
       if (response.data.message) {
@@ -834,7 +835,7 @@ export default function VendorChat() {
 
       toast.success("Your selection has been accepted! Deal is now under review.");
     } catch (err: any) {
-      console.error('[VendorChat] MESO selection error:', err);
+      logger.error('[VendorChat] MESO selection error:', err);
       toast.error(err.response?.data?.message || 'Failed to submit selection');
       setSelectedMesoId(null);
     } finally {
@@ -857,9 +858,9 @@ export default function VendorChat() {
     setPmTyping(true);
 
     try {
-      console.log('[VendorChat] Submitting Others form:', { totalPrice, paymentTermsDays });
+      logger.debug('[VendorChat] Submitting Others form:', { totalPrice, paymentTermsDays });
       const response = await vendorChatService.submitOthers(uniqueToken, totalPrice, paymentTermsDays);
-      console.log('[VendorChat] Others submission response:', response);
+      logger.debug('[VendorChat] Others submission response:', response);
 
       // Add vendor message
       if (response.data.vendorMessage) {
@@ -882,7 +883,7 @@ export default function VendorChat() {
         setSelectedMesoId(null);
         setInputMode('disabled');
         setNegotiationPhase(response.data.meso.phase || 'MESO_PRESENTATION');
-        console.log("[VendorChat] New MESO options received after Others:", response.data.meso.options.length);
+        logger.debug("[VendorChat] New MESO options received after Others:", response.data.meso.options.length);
       } else {
         setMesoResult(null);
         setInputMode('text');
@@ -902,7 +903,7 @@ export default function VendorChat() {
         toast("Something went wrong, but the system recovered. Please continue.", { icon: "🛡️" });
       }
     } catch (err: any) {
-      console.error('[VendorChat] Others submission error:', err);
+      logger.error('[VendorChat] Others submission error:', err);
       toast.error(err.response?.data?.message || 'Failed to submit offer');
     } finally {
       setSending(false);
@@ -925,9 +926,9 @@ export default function VendorChat() {
     setPmTyping(true);
 
     try {
-      console.log('[VendorChat] Submitting discount:', percent);
+      logger.debug('[VendorChat] Submitting discount:', percent);
       const response = await vendorChatService.submitDiscount(uniqueToken, percent);
-      console.log('[VendorChat] Discount submission response:', response);
+      logger.debug('[VendorChat] Discount submission response:', response);
 
       if (response.data.vendorMessage) {
         setMessages((prev) => [...prev, response.data.vendorMessage]);
@@ -970,7 +971,7 @@ export default function VendorChat() {
         toast('This negotiation has been escalated for review.', { icon: '⚠️' });
       }
     } catch (err: any) {
-      console.error('[VendorChat] Discount submission error:', err);
+      logger.error('[VendorChat] Discount submission error:', err);
       toast.error(err.response?.data?.message || 'Failed to submit discount');
     } finally {
       setSending(false);
@@ -986,9 +987,9 @@ export default function VendorChat() {
     setPmTyping(true);
 
     try {
-      console.log('[VendorChat] Submitting payment terms:', days);
+      logger.debug('[VendorChat] Submitting payment terms:', days);
       const response = await vendorChatService.submitPaymentTerms(uniqueToken, days);
-      console.log('[VendorChat] Payment terms submission response:', response);
+      logger.debug('[VendorChat] Payment terms submission response:', response);
 
       if (response.data.vendorMessage) {
         setMessages((prev) => [...prev, response.data.vendorMessage]);
@@ -1028,7 +1029,7 @@ export default function VendorChat() {
         toast('This negotiation has been escalated for review.', { icon: '⚠️' });
       }
     } catch (err: any) {
-      console.error('[VendorChat] Payment terms submission error:', err);
+      logger.error('[VendorChat] Payment terms submission error:', err);
       toast.error(err.response?.data?.message || 'Failed to submit payment terms');
     } finally {
       setSending(false);
@@ -1038,9 +1039,9 @@ export default function VendorChat() {
 
   // Send message handler
   const handleSend = async (content: string) => {
-    console.log('[VendorChat] handleSend called with content:', content?.substring(0, 50));
+    logger.debug('[VendorChat] handleSend called with content:', content?.substring(0, 50));
     if (!uniqueToken || !content.trim() || sending) {
-      console.log('[VendorChat] Blocked - token:', !!uniqueToken, 'content:', !!content?.trim(), 'sending:', sending);
+      logger.debug('[VendorChat] Blocked - token:', !!uniqueToken, 'content:', !!content?.trim(), 'sending:', sending);
       return;
     }
 
@@ -1048,9 +1049,9 @@ export default function VendorChat() {
       setSending(true);
 
       // Phase 1: Send vendor message (instant)
-      console.log('[VendorChat] Phase 1: Sending vendor message...');
+      logger.debug('[VendorChat] Phase 1: Sending vendor message...');
       const messageResponse = await vendorChatService.sendMessage(uniqueToken, content);
-      console.log('[VendorChat] Phase 1 response:', messageResponse);
+      logger.debug('[VendorChat] Phase 1 response:', messageResponse);
 
       // Validate response before updating state
       if (!messageResponse?.data?.vendorMessage) {
@@ -1064,17 +1065,17 @@ export default function VendorChat() {
       }
 
       // Phase 2: Get PM response (async)
-      console.log('[VendorChat] Phase 2: Getting PM response...');
+      logger.debug('[VendorChat] Phase 2: Getting PM response...');
       setPmTyping(true);
       const pmResponse = await vendorChatService.getPMResponse(
         uniqueToken,
         messageResponse.data.vendorMessage.id
       );
-      console.log('[VendorChat] Phase 2 response:', pmResponse);
+      logger.debug('[VendorChat] Phase 2 response:', pmResponse);
 
       // Validate PM response before updating state
       if (!pmResponse?.data?.pmMessage) {
-        console.error('[VendorChat] Invalid Phase 2 response - no PM message');
+        logger.error('[VendorChat] Invalid Phase 2 response - no PM message');
         toast.error('PM response was incomplete');
         return;
       }
@@ -1102,7 +1103,7 @@ export default function VendorChat() {
           setNegotiationPhase('MESO_PRESENTATION');
         }
 
-        console.log("[VendorChat] MESO options received:", pmResponse.data.meso.options.length);
+        logger.debug("[VendorChat] MESO options received:", pmResponse.data.meso.options.length);
       } else {
         // No MESO on this response. Check if the PM attached a structured
         // prompt (payment_terms / discount_percent) — if so, switch the
@@ -1134,8 +1135,8 @@ export default function VendorChat() {
         toast("Something went wrong, but the system recovered. Please continue.", { icon: "🛡️" });
       }
     } catch (err: any) {
-      console.error("[VendorChat] Error sending message:", err);
-      console.error("[VendorChat] Error details:", err.response?.data);
+      logger.error("[VendorChat] Error sending message:", err);
+      logger.error("[VendorChat] Error details:", err.response?.data);
       toast.error(err.response?.data?.message || "Failed to send message");
     } finally {
       setSending(false);

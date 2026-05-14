@@ -5,6 +5,7 @@ import type { DealSummaryResponse } from "../../../types/chatbot";
 import type { DealContext } from "../../../types/chatbot";
 import toast from "react-hot-toast";
 import ExportPDFModal from "./ExportPDFModal";
+import logger from "../../../utils/logger";
 
 interface DealSummaryModalProps {
   dealId: string;
@@ -43,7 +44,7 @@ export default function DealSummaryModal({ dealId, rfqId, vendorId, isOpen, onCl
       });
       setSummary(response.data);
     } catch (err: any) {
-      console.error("Failed to fetch deal summary:", err);
+      logger.error("Failed to fetch deal summary:", err);
       setError(err.response?.data?.message || "Failed to load deal summary");
     } finally {
       setLoading(false);

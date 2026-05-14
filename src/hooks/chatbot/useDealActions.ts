@@ -15,6 +15,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { chatbotService } from '../../services/chatbot.service';
 import type { Deal, Message, ExtendedNegotiationConfig, DealContext, DealMode, DecisionAction } from '../../types';
+import logger from "../../utils/logger";
 
 // Timeout for PM response before falling back to deterministic response
 const PM_RESPONSE_TIMEOUT_MS = 5000;
@@ -114,11 +115,11 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
 
   // Load deal data using lookupDeal (gets both deal and context)
   const loadDeal = useCallback(async () => {
-    console.log('[useDealActions] loadDeal called, dealId:', dealId);
+    logger.debug('[useDealActions] loadDeal called, dealId:', dealId);
 
     // Validate dealId - check for undefined, 'undefined' string, or invalid UUID format
     if (!dealId || dealId === 'undefined' || !UUID_REGEX.test(dealId)) {
-      console.log('[useDealActions] Invalid dealId, setting error');
+      logger.debug('[useDealActions] Invalid dealId, setting error');
       setError(new Error('Invalid deal ID'));
       setLoading(false);
       return;
@@ -128,17 +129,17 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
       setLoading(true);
       setError(null);
 
-      console.log('[useDealActions] Calling lookupDeal API...');
+      logger.debug('[useDealActions] Calling lookupDeal API...');
       // Use lookupDeal to get deal + context in one call
       const response = await chatbotService.lookupDeal(dealId);
-      console.log('[useDealActions] API response received:', response);
+      logger.debug('[useDealActions] API response received:', response);
 
       if (!response || !response.data) {
         throw new Error('Invalid response from lookupDeal');
       }
 
       const { deal: fetchedDeal, messages: fetchedMessages, context: fetchedContext } = response.data;
-      console.log('[useDealActions] Parsed deal:', fetchedDeal?.id, 'status:', fetchedDeal?.status);
+      logger.debug('[useDealActions] Parsed deal:', fetchedDeal?.id, 'status:', fetchedDeal?.status);
 
       if (!fetchedDeal) {
         throw new Error('No deal data received');
@@ -147,9 +148,9 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
       setDeal(fetchedDeal);
       setMessages(fetchedMessages || []);
       setContext(fetchedContext);
-      console.log('[useDealActions] State updated successfully');
+      logger.debug('[useDealActions] State updated successfully');
     } catch (err) {
-      console.error('[useDealActions] Error loading deal:', err);
+      logger.error('[useDealActions] Error loading deal:', err);
       setError(err instanceof Error ? err : new Error('Failed to load deal'));
     } finally {
       setLoading(false);
@@ -164,7 +165,7 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
       const response = await chatbotService.getDealConfig(context);
       setConfig(response.data.config);
     } catch (err) {
-      console.error('Failed to load config:', err);
+      logger.error('Failed to load config:', err);
       // Config is optional, don't set error
     }
   }, [context]);
@@ -250,7 +251,7 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
   const sendVendorMessageTwoPhase = useCallback(async (content: string): Promise<void> => {
     if (!isValidContext(context)) {
       toast.error('Unable to send message: deal context is incomplete');
-      console.error('sendVendorMessageTwoPhase: Invalid context', context);
+      logger.error('sendVendorMessageTwoPhase: Invalid context', context);
       return;
     }
 
@@ -266,7 +267,7 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
 
     try {
       // ========== PHASE 1: Save vendor message instantly ==========
-      console.log('[TwoPhase] Phase 1: Saving vendor message instantly');
+      logger.debug('[TwoPhase] Phase 1: Saving vendor message instantly');
       const phase1Response = await chatbotService.saveVendorMessageInstant(context, content);
 
       if (!isMountedRef.current) return;
@@ -274,7 +275,7 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
       // Immediately update UI with vendor message
       if (phase1Response.data.vendorMessage) {
         setMessages(prev => [...prev, phase1Response.data.vendorMessage]);
-        console.log('[TwoPhase] Vendor message added to UI');
+        logger.debug('[TwoPhase] Vendor message added to UI');
       }
 
       if (phase1Response.data.deal) {
@@ -288,7 +289,7 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
         throw new Error('No vendorMessageId returned from Phase 1');
       }
 
-      console.log('[TwoPhase] Phase 2: Generating PM response (5s timeout), vendorMessageId:', vendorMessageId);
+      logger.debug('[TwoPhase] Phase 2: Generating PM response (5s timeout), vendorMessageId:', vendorMessageId);
       setPmTyping(true);  // Show typing indicator
 
       // Create a promise that races between async response and timeout
@@ -306,12 +307,12 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
 
       if (result === 'timeout') {
         // LLM was too slow, use fallback
-        console.log('[TwoPhase] LLM timeout after 5s, using fallback response');
+        logger.debug('[TwoPhase] LLM timeout after 5s, using fallback response');
         pmResponse = await chatbotService.generatePMResponseFallback(context, vendorMessageId);
         usedFallback = true;
       } else {
         // Got LLM response in time
-        console.log('[TwoPhase] Got LLM response in time');
+        logger.debug('[TwoPhase] Got LLM response in time');
         pmResponse = result;
       }
 
@@ -325,7 +326,7 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
       const updatedDeal = pmResponse.data?.deal;
       const decision = pmResponse.data?.decision;
 
-      console.log('[TwoPhase] Processing PM response:', {
+      logger.debug('[TwoPhase] Processing PM response:', {
         hasPmMessage: !!pmMessage,
         hasDeal: !!updatedDeal,
         hasDecision: !!decision,
@@ -338,14 +339,14 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
           // Check if message already exists to prevent duplicates
           const exists = prevMessages.some(m => m.id === pmMessage.id);
           if (exists) {
-            console.log('[TwoPhase] PM message already exists, skipping duplicate');
+            logger.debug('[TwoPhase] PM message already exists, skipping duplicate');
             return prevMessages;
           }
-          console.log('[TwoPhase] Adding PM message to UI', usedFallback ? '(fallback)' : '(LLM)');
+          logger.debug('[TwoPhase] Adding PM message to UI', usedFallback ? '(fallback)' : '(LLM)');
           return [...prevMessages, pmMessage];
         });
       } else {
-        console.warn('[TwoPhase] No pmMessage in response!');
+        logger.warn('[TwoPhase] No pmMessage in response!');
       }
 
       // Update deal state
@@ -385,7 +386,7 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
       const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
       setError(new Error(errorMessage));
       toast.error(errorMessage);
-      console.error('[TwoPhase] Error:', err);
+      logger.error('[TwoPhase] Error:', err);
     } finally {
       // CRITICAL: Ensure states are cleared AFTER all updates
       // Use setTimeout to let React batch the state updates first
@@ -395,7 +396,7 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
           if (isMountedRef.current) {
             setSending(false);
             setPmTyping(false);
-            console.log('[TwoPhase] Cleared sending and pmTyping states, phase2Completed:', phase2Completed);
+            logger.debug('[TwoPhase] Cleared sending and pmTyping states, phase2Completed:', phase2Completed);
           }
         }, 50);
       }
@@ -406,7 +407,7 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
   const sendVendorOffer = useCallback(async (content: string): Promise<void> => {
     if (!isValidContext(context)) {
       toast.error('Unable to send offer: deal context is incomplete');
-      console.error('sendVendorOffer: Invalid context - missing or invalid rfqId/vendorId/dealId', context);
+      logger.error('sendVendorOffer: Invalid context - missing or invalid rfqId/vendorId/dealId', context);
       return;
     }
 
@@ -478,7 +479,7 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
       const errorMessage = err instanceof Error ? err.message : 'Failed to send offer';
       setError(new Error(errorMessage));
       toast.error(errorMessage);
-      console.error('Failed to send vendor offer:', err);
+      logger.error('Failed to send vendor offer:', err);
     } finally {
       setSending(false);
     }
@@ -488,7 +489,7 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
   const initializeNegotiation = useCallback(async (): Promise<void> => {
     if (!isValidContext(context)) {
       toast.error('Unable to start negotiation: deal context is incomplete');
-      console.error('initializeNegotiation: Invalid context - missing or invalid rfqId/vendorId/dealId', context);
+      logger.error('initializeNegotiation: Invalid context - missing or invalid rfqId/vendorId/dealId', context);
       return;
     }
 
@@ -521,7 +522,7 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
       const errorMessage = err instanceof Error ? err.message : 'Failed to start negotiation';
       setError(new Error(errorMessage));
       toast.error(errorMessage);
-      console.error('Failed to initialize negotiation:', err);
+      logger.error('Failed to initialize negotiation:', err);
     } finally {
       setSending(false);
     }
@@ -531,7 +532,7 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
   const reset = useCallback(async (): Promise<void> => {
     if (!isValidContext(context)) {
       toast.error('Unable to reset deal: deal context is incomplete');
-      console.error('reset: Invalid context - missing or invalid rfqId/vendorId/dealId', context);
+      logger.error('reset: Invalid context - missing or invalid rfqId/vendorId/dealId', context);
       return;
     }
 
@@ -548,7 +549,7 @@ export function useDealActions(dealId: string | undefined): UseDealActionsReturn
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to reset deal';
       toast.error(errorMessage);
-      console.error('Failed to reset deal:', err);
+      logger.error('Failed to reset deal:', err);
       // Don't re-throw to prevent UI crash
     } finally {
       setResetLoading(false);

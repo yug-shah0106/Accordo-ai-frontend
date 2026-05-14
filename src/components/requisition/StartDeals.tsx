@@ -8,6 +8,7 @@ import useFetchData from "../../hooks/useFetchData";
 import chatbotService from "../../services/chatbot.service";
 import DealWizardModal from "./DealWizardModal";
 import type { DealWizardFormData, VendorDealSummary } from "../../types";
+import logger from "../../utils/logger";
 
 interface Contract {
   id: string;
@@ -93,7 +94,7 @@ const StartDeals: React.FC<StartDealsProps> = ({
       );
       setDeals(response.data?.deals || []);
     } catch (error: any) {
-      console.error("Failed to load deals:", error);
+      logger.error("Failed to load deals:", error);
       const msg =
         error?.response?.data?.message ||
         error?.message ||

@@ -7,6 +7,7 @@ import OnboardingProfile from "./OnboardingProfile";
 import OnboardingCompany from "./OnboardingCompany";
 import { useAutoSave } from "../../hooks/useAutoSave";
 import toast from "react-hot-toast";
+import logger from "../../utils/logger";
 
 // Form data interface for auto-save
 interface OnboardingFormData {
@@ -92,7 +93,7 @@ const OnboardingPage = () => {
         setUserId(userData.id);
         setCompanyId(userData.companyId?.toString() || localStorage.getItem("%companyId%"));
       } catch (error: any) {
-        console.error("Error fetching user data:", error);
+        logger.error("Error fetching user data:", error);
         // If not authenticated, redirect to auth page
         if (error.response?.status === 401) {
           navigate("/auth");

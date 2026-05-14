@@ -15,13 +15,15 @@ import toast from "react-hot-toast";
 import Modal from "../Modal";
 import Filter from "../Filter";
 import { env } from "@/utils/env";
+import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
+import logger from "../../utils/logger";
 
 const ViewRequisition = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<any>(false);
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const navigate = useNavigate();
   const { state } = useLocation();
-  console.log({ state });
+  logger.debug({ state });
   const [isModal, setIsModal] = useState<any>(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState<any>([
@@ -450,7 +452,7 @@ const ViewRequisition = () => {
                   key={attachment.id}
                   className="h-10 w-10"
                   src={
-                    env("VITE_ASSEST_URL") +
+                    normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "") +
                     "/uploads/" +
                     attachment?.attachmentUrl
                   }

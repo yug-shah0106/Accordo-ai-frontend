@@ -28,12 +28,13 @@
  * addToHistory(deal);
  *
  * // Get recent deals
- * console.log(recentDeals);
+ * logger.debug(recentDeals);
  * ```
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import type { Deal } from '../../types/chatbot';
+import logger from "../../utils/logger";
 
 // ============================================================================
 // Types
@@ -88,7 +89,7 @@ function loadHistory(storageKey: string): HistoryEntry[] {
       timestamp: new Date(entry.timestamp),
     }));
   } catch (error) {
-    console.error('Failed to load history from storage:', error);
+    logger.error('Failed to load history from storage:', error);
     return [];
   }
 }
@@ -106,7 +107,7 @@ function saveHistory(storageKey: string, history: HistoryEntry[]): void {
 
     storage.setItem(storageKey, JSON.stringify(limited));
   } catch (error) {
-    console.error('Failed to save history to storage:', error);
+    logger.error('Failed to save history to storage:', error);
   }
 }
 
@@ -119,7 +120,7 @@ function clearHistoryStorage(storageKey: string): void {
       storageKey === SESSION_STORAGE_KEY ? sessionStorage : localStorage;
     storage.removeItem(storageKey);
   } catch (error) {
-    console.error('Failed to clear history from storage:', error);
+    logger.error('Failed to clear history from storage:', error);
   }
 }
 
@@ -186,7 +187,7 @@ export function useHistoryTracking(
           }));
           setRecentDeals(entries);
         } catch (error) {
-          console.error('Failed to parse storage change:', error);
+          logger.error('Failed to parse storage change:', error);
         }
       }
     };

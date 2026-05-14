@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import logger from "../../../utils/logger";
 
 interface Props {
   children: React.ReactNode;
@@ -30,7 +31,7 @@ export class ChatErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('[ChatErrorBoundary] Caught error:', error, errorInfo);
+    logger.error('[ChatErrorBoundary] Caught error:', error, errorInfo);
   }
 
   handleRetry = () => {

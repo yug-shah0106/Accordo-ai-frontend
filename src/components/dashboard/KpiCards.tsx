@@ -80,9 +80,13 @@ const KpiCards = ({ kpis, loading }: KpiCardsProps) => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      {cards.map((c) => (
-        <KpiCard key={c.key} label={c.label} metric={kpis[c.key]} metricKey={c.key} />
-      ))}
+      {cards.map((c) => {
+        const metric = kpis[c.key];
+        if (!metric) {
+          return <KpiCardSkeleton key={c.key} />;
+        }
+        return <KpiCard key={c.key} label={c.label} metric={metric} metricKey={c.key} />;
+      })}
     </div>
   );
 };

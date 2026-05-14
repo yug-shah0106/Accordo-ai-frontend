@@ -18,6 +18,8 @@ import Modal from "../Modal";
 import Breadcrumb from "../Breadcrumbs";
 import toast from "react-hot-toast";
 import { env } from "@/utils/env";
+import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
+import logger from "../../utils/logger";
 
 const Contracts = () => {
   const { state } = useLocation();
@@ -70,7 +72,7 @@ const Contracts = () => {
   } = useFetchData("/contract/", 10, undefined, undefined, {
     requisitionid: state.id,
   });
-  console.log({ contract });
+  logger.debug({ contract });
 
   const debounce = useDebounce(setSearch, 600);
 
@@ -92,7 +94,7 @@ const Contracts = () => {
     {
       header: "Link",
       accessor: "uniqueToken",
-      isLink: `${env("VITE_FRONTEND_URL")}/vendor-contract/`,
+      isLink: `${normalizeViteEnvUrl(env("VITE_FRONTEND_URL") || "")}/vendor-contract/`,
     },
     {
       header: "Created On",
@@ -110,7 +112,7 @@ const Contracts = () => {
       const {
         data: { data },
       } = await authApi.put(`/contract/approve/${row.id}`);
-      console.log("Approved Data:", data);
+      logger.debug("Approved Data:", data);
 
       const response = await authApi.get(
         `/requisition/${row.requisitionId}`
@@ -134,14 +136,14 @@ JSON.parse(row.contractDetails);
         // poUrl: "https://www.google.com/",
       };
 
-      console.log("Payload for PO:", payload);
+      logger.debug("Payload for PO:", payload);
 
       const po = await authApi.post(`/po/`, payload);
-      console.log("PO Created:", po.data);
+      logger.debug("PO Created:", po.data);
 
       refetch();
     } catch (error: any) {
-      console.error(error.message || "Something went wrong");
+      logger.error(error.message || "Something went wrong");
     } finally {
       setIsModalOpen(false);
     }
@@ -185,7 +187,7 @@ JSON.parse(row.contractDetails);
       label: "View Contracts",
       icon: <FaRegEye />,
       onClick: (row: any) => {
-        console.log({ row: JSON.parse(row.contractDetails) });
+        logger.debug({ row: JSON.parse(row.contractDetails) });
         setContractModal(row);
       },
     },
@@ -337,7 +339,7 @@ JSON.parse(row.contractDetails);
             )} */}
             <Breadcrumb breadcrumbItems={breadcrumbItems} />
           </div>
-          {(() => { console.log({ state }); return null; })()}
+          {(() => { logger.debug({ state }); return null; })()}
 
 
           <div className="flex justify-between gap-2 mb-4">
@@ -491,7 +493,7 @@ JSON.parse(row.contractDetails);
                           <div>
                             <p className="text-gray-500">Contract Link</p>
                             <a
-                              href={`${env("VITE_FRONTEND_URL")}/vendor-contract/${contractModel?.uniqueToken}`}
+                              href={`${normalizeViteEnvUrl(env("VITE_FRONTEND_URL") || "")}/vendor-contract/${contractModel?.uniqueToken}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="font-medium text-blue-600 hover:underline"
@@ -510,7 +512,7 @@ JSON.parse(row.contractDetails);
                 try {
                   contractDetails = JSON.parse(contractModel?.contractDetails || "{}");
                 } catch (error) {
-                  console.error("Error parsing contract details:", error);
+                  logger.error("Error parsing contract details:", error);
                   // Fallback to empty object if parsing fails
                   contractDetails = {};
                 }
@@ -611,7 +613,7 @@ JSON.parse(row.contractDetails);
                           <div>
                             <p className="text-gray-500">Contract Link</p>
                             <a
-                              href={`${env("VITE_FRONTEND_URL")}/vendor-contract/${contractModel?.uniqueToken}`}
+                              href={`${normalizeViteEnvUrl(env("VITE_FRONTEND_URL") || "")}/vendor-contract/${contractModel?.uniqueToken}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="font-medium text-blue-600 hover:underline"

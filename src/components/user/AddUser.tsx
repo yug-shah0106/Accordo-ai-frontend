@@ -8,6 +8,8 @@ import Button from "../Button";
 import toast from "react-hot-toast";
 import { BiUserCheck } from "react-icons/bi";
 import { env } from "@/utils/env";
+import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
+import logger from "../../utils/logger";
 
 interface Role {
   id: number;
@@ -68,11 +70,11 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
         setSelectedApprovalLevel(data.approvalLevel);
       }
       if (data.profilePic) {
-        const url = `${env("VITE_ASSEST_URL")}/uploads/${data.profilePic}`;
+        const url = `${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${data.profilePic}`;
         setPreview(url);
       }
     } catch (error: any) {
-      console.error(error.response?.data?.error || "Something went wrong");
+      logger.error(error.response?.data?.error || "Something went wrong");
       toast.error("Failed to load user data");
     }
   };
@@ -83,12 +85,12 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
       const response = await authApi.get(`/role/`);
       const roles = response.data.data || [];
       const filtered = roles.filter((role: Role) => {
-        const name = (role.name || '').toLowerCase().trim();
-        return name !== 'super admin';
+        const name = (role.name || "").toLowerCase().trim();
+        return name !== "super admin";
       });
       setUserRoles(filtered);
     } catch (error: any) {
-      console.error("Error fetching roles:", error);
+      logger.error("Error fetching roles:", error);
       toast.error("Failed to load roles");
     } finally {
       setRolesLoading(false);
@@ -145,7 +147,7 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
 
       navigate("/user-management");
     } catch (error: any) {
-      console.error("Error during form submission:", error);
+      logger.error("Error during form submission:", error);
       toast.error(error.response?.data?.error || "Something went wrong");
     }
   };
@@ -176,7 +178,10 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
       <div className="flex-1 overflow-y-auto px-6 pb-6 pt-6">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white dark:bg-dark-surface rounded-lg shadow-sm">
-            <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              encType="multipart/form-data"
+            >
               <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Row 1: Full Name + Email */}
@@ -233,8 +238,18 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
                         {rolesLoading ? (
                           <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
                         ) : (
-                          <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                          <svg
+                            className="h-5 w-5 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M19 9l-7 7-7-7"
+                            />
                           </svg>
                         )}
                       </div>
@@ -261,8 +276,18 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
                         <option value="procurement">Procurement</option>
                       </select>
                       <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        <svg
+                          className="h-5 w-5 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 9l-7 7-7-7"
+                          />
                         </svg>
                       </div>
                     </div>
@@ -274,7 +299,9 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
                     <div className="relative">
                       <select
                         value={selectedApprovalLevel}
-                        onChange={(e) => setSelectedApprovalLevel(e.target.value)}
+                        onChange={(e) =>
+                          setSelectedApprovalLevel(e.target.value)
+                        }
                         className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
                       >
                         <option value="NONE">None</option>
@@ -283,8 +310,18 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
                         <option value="L3">Level 3</option>
                       </select>
                       <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        <svg
+                          className="h-5 w-5 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 9l-7 7-7-7"
+                          />
                         </svg>
                       </div>
                     </div>
@@ -303,44 +340,6 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
                     />
                   )}
                 </div>
-
-                {/* Role Selection */}
-                <div className="mt-6">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-2">
-                    User Role <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={selectedRole}
-                      onChange={(e) => setSelectedRole(e.target.value)}
-                      disabled={rolesLoading}
-                      className="w-full border border-gray-300 dark:border-dark-border rounded-lg px-4 py-3 text-sm text-gray-900 dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white dark:bg-dark-bg disabled:bg-gray-100 dark:disabled:bg-dark-bg/50 disabled:cursor-not-allowed"
-                    >
-                      <option value="">
-                        {rolesLoading ? "Loading roles..." : "Select a role"}
-                      </option>
-                      {userRoles.map((role) => (
-                        <option key={role.id} value={role.id}>
-                          {role.name}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                      {rolesLoading ? (
-                        <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                      ) : (
-                        <svg className="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                  {userRoles.length === 0 && !rolesLoading && (
-                    <p className="mt-1 text-sm text-red-500">
-                      No roles available. Please contact administrator.
-                    </p>
-                  )}
-                </div>
               </div>
 
               {/* Form Actions - Matching Project Form Style */}
@@ -356,9 +355,10 @@ const CreateUserForm = ({ onClose: _onClose }: CreateUserFormProps) => {
                   type="submit"
                   disabled={isSubmitting || !selectedRole}
                   className={`!w-auto px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 min-w-[120px] justify-center shadow-sm hover:shadow-md active:shadow-inner
-                    ${isSubmitting || !selectedRole
-                      ? '!bg-[#f3f4f6] !text-[#9ca3af] cursor-not-allowed shadow-none'
-                      : '!bg-[#2563eb] !text-white hover:!bg-[#1d4ed8] active:!bg-[#1e40af]'
+                    ${
+                      isSubmitting || !selectedRole
+                        ? "!bg-[#f3f4f6] !text-[#9ca3af] cursor-not-allowed shadow-none"
+                        : "!bg-[#2563eb] !text-white hover:!bg-[#1d4ed8] active:!bg-[#1e40af]"
                     }`}
                   loading={isSubmitting}
                 >

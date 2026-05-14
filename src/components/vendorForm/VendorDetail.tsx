@@ -5,6 +5,8 @@ import { useEffect } from "react";
 import InputField from "../InputField";
 import toast from "react-hot-toast";
 import { env } from "@/utils/env";
+import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
+import logger from "../../utils/logger";
 
 interface Company {
   id?: string;
@@ -103,11 +105,11 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
   };
 
   useEffect(() => {
-    console.log('=== STEP 3 - VENDOR DETAILS ===');
-    console.log('Company object:', company);
-    console.log('GST Number:', company?.gstNumber);
-    console.log('PAN Number:', company?.panNumber);
-    console.log('Resetting form with:', {
+    logger.debug('=== STEP 3 - VENDOR DETAILS ===');
+    logger.debug('Company object:', company);
+    logger.debug('GST Number:', company?.gstNumber);
+    logger.debug('PAN Number:', company?.panNumber);
+    logger.debug('Resetting form with:', {
       gstNumber: company?.gstNumber || "",
       panNumber: company?.panNumber || "",
       msmeNumber: company?.msmeNumber || "",
@@ -157,7 +159,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
           </div>
             {company?.gstFileUrl && (
               <img
-                src={`${env("VITE_ASSEST_URL")}/uploads/${company.gstFileUrl}`}
+                src={`${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${company.gstFileUrl}`}
                 alt="GST File"
                 className="w-[10%] h-auto"
               />
@@ -186,7 +188,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
           </div>
           {company?.panFileUrl && (
             <img
-              src={`${env("VITE_ASSEST_URL")}/uploads/${company.panFileUrl}`}
+              src={`${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${company.panFileUrl}`}
               alt="PAN File"
               className="w-[10%] h-auto"
             />
@@ -215,7 +217,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
           </div>
           {company?.msmeFileUrl && (
             <img
-              src={`${env("VITE_ASSEST_URL")}/uploads/${company.msmeFileUrl}`}
+              src={`${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${company.msmeFileUrl}`}
               alt="MSME File"
               className="w-[10%] h-auto"
             />
@@ -246,7 +248,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({
           </div>
           {company?.ciFileUrl && (
             <img
-              src={`${env("VITE_ASSEST_URL")}/uploads/${company.ciFileUrl}`}
+              src={`${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${company.ciFileUrl}`}
               alt="CI File"
               className="w-[10%] h-auto"
             />

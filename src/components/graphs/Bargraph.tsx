@@ -1,24 +1,26 @@
-import { useEffect, useState } from 'react';
-import { Bar } from 'react-chartjs-2';
+import { useEffect, useState } from "react";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   BarElement,
+  BarController,
   Title,
   Tooltip,
   Legend,
   ChartOptions,
-} from 'chart.js';
+} from "chart.js";
 
 // Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
+  BarController,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
 // Types
@@ -39,7 +41,7 @@ interface BarChartData {
   }[];
 }
 
-type FilterType = 'D' | 'M' | 'Y';
+type FilterType = "D" | "M" | "Y";
 
 // const Bargraph = () => {
 
@@ -57,11 +59,6 @@ type FilterType = 'D' | 'M' | 'Y';
 //       });
 //   const companyId = localStorage.getItem('%companyId%')
 
-
-
-
-
-
 //     const getDashBoardData = async () => {
 //         try {
 //           const response = await authApi.get(`/requisition/`, {
@@ -69,7 +66,7 @@ type FilterType = 'D' | 'M' | 'Y';
 //               page: 1,
 //               limit: 10,
 //               projectid: "",
-//               companyid: companyId, 
+//               companyid: companyId,
 //             },
 //           });
 
@@ -123,10 +120,9 @@ type FilterType = 'D' | 'M' | 'Y';
 //           ],
 //         });
 //         } catch (error) {
-//           console.error("Error fetching dashboard data:", error);
+//           logger.error("Error fetching dashboard data:", error);
 //         }
 //       };
-
 
 //       useEffect(() => {
 
@@ -158,7 +154,6 @@ type FilterType = 'D' | 'M' | 'Y';
 //         },
 //       };
 
-
 //   return (
 //     <div>
 //         <div className="bg-white border rounded-lg shadow-sm pt-6 px-6 pb-0">
@@ -173,16 +168,11 @@ type FilterType = 'D' | 'M' | 'Y';
 //           <Bar data={barData} options={barOptions} />
 //         </div>
 
-
-
 //     </div>
 //   )
 // }
 
 // export default Bargraph
-
-
-
 
 const Bargraph = () => {
   // Generate random dummy data for the last 10 years
@@ -203,7 +193,7 @@ const Bargraph = () => {
 
           data.push({
             createdAt: `${year}-${String(i + 1).padStart(2, "0")}-${String(
-              randomDay
+              randomDay,
             ).padStart(2, "0")}`,
             category: randomCategory,
             savingsInPrice: randomSavings,
@@ -362,7 +352,7 @@ const Bargraph = () => {
     setFilterType(type);
   };
 
-  const barOptions: ChartOptions<'bar'> = {
+  const barOptions: ChartOptions<"bar"> = {
     responsive: true,
     plugins: {
       legend: {
@@ -390,25 +380,30 @@ const Bargraph = () => {
   return (
     <div>
       <div className="bg-white border rounded-lg shadow-sm pt-6 px-6 pb-0">
-        <h3 className="text-gray-600 font-medium mb-4">Category-wise Savings</h3>
+        <h3 className="text-gray-600 font-medium mb-4">
+          Category-wise Savings
+        </h3>
         <div className="flex justify-end space-x-2 mb-4">
           <button
-            className={`px-3 pt-1 pb-0 text-sm rounded ${filterType === "D" ? "bg-blue-500 text-white" : "bg-gray-200"
-              }`}
+            className={`px-3 pt-1 pb-0 text-sm rounded ${
+              filterType === "D" ? "bg-blue-500 text-white" : "bg-gray-200"
+            }`}
             onClick={() => handleFilterChange("D")}
           >
             D
           </button>
           <button
-            className={`px-3 pt-1 pb-0 text-sm rounded ${filterType === "M" ? "bg-blue-500 text-white" : "bg-gray-200"
-              }`}
+            className={`px-3 pt-1 pb-0 text-sm rounded ${
+              filterType === "M" ? "bg-blue-500 text-white" : "bg-gray-200"
+            }`}
             onClick={() => handleFilterChange("M")}
           >
             M
           </button>
           <button
-            className={`px-3 pt-1 pb-0 text-sm rounded ${filterType === "Y" ? "bg-blue-500 text-white" : "bg-gray-200"
-              }`}
+            className={`px-3 pt-1 pb-0 text-sm rounded ${
+              filterType === "Y" ? "bg-blue-500 text-white" : "bg-gray-200"
+            }`}
             onClick={() => handleFilterChange("Y")}
           >
             Y

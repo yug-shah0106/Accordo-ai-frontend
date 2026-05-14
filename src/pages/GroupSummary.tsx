@@ -4,6 +4,7 @@ import { FiChevronDown, FiChevronUp, FiFilter, FiSearch, FiFileText, FiRefreshCw
 import { FaMedal, FaCrown, FaGem, FaAward, FaStar, FaCheckCircle } from 'react-icons/fa';
 import { authApi } from '../api';
 import toast from 'react-hot-toast';
+import logger from "../utils/logger";
 
 interface CompanyData {
   id: string;
@@ -98,7 +99,7 @@ const GroupSummary = () => {
         const savingsPercentage = totalAmount > 0 ? ((savings / totalAmount) * 100) : 0;
 
         // Debug logging
-        console.log('Contract calculation:', {
+        logger.debug('Contract calculation:', {
           contractId: contract.id,
           vendorName: contract.Vendor?.name,
           totalAmount,
@@ -135,7 +136,7 @@ const GroupSummary = () => {
       }));
 
     } catch (error: any) {
-      console.error('Error fetching requisition data:', error);
+      logger.error('Error fetching requisition data:', error);
       const errorMessage = error.response?.data?.message || 'Failed to fetch requisition data';
       setError(errorMessage);
       toast.error(errorMessage);

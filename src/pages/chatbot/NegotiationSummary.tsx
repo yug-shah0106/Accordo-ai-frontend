@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import chatbotService from '../../services/chatbot.service';
 import type { VendorDealSummary } from '../../types/chatbot';
 import toast from 'react-hot-toast';
+import logger from "../../utils/logger";
 
 // Map VendorDealSummary to Deal-like structure for display
 type DealLike = VendorDealSummary & {
@@ -60,13 +61,13 @@ export default function NegotiationSummary() {
           }
         } catch (err) {
           // Skip requisitions with errors
-          console.warn(`Failed to load deals for requisition ${req.id}:`, err);
+          logger.warn(`Failed to load deals for requisition ${req.id}:`, err);
         }
       }
 
       setDeals(allDeals);
     } catch (error: any) {
-      console.error('Failed to load deals:', error);
+      logger.error('Failed to load deals:', error);
       toast.error(error.response?.data?.message || 'Failed to load negotiation summary');
     } finally {
       setLoading(false);
