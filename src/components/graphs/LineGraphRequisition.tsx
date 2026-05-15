@@ -6,13 +6,14 @@ import {
   LinearScale,
   PointElement,
   LineElement,
+  LineController,
   Title,
   Tooltip,
   Legend,
   Filler,
   ChartOptions,
   TooltipItem,
-} from 'chart.js';
+} from "chart.js";
 
 // Register Chart.js components
 ChartJS.register(
@@ -20,10 +21,11 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  LineController,
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
 );
 
 // Types
@@ -42,10 +44,9 @@ interface LineChartData {
   }[];
 }
 
-type FilterType = 'D' | 'M' | 'Y';
+type FilterType = "D" | "M" | "Y";
 
 // const LineGraphrequisitions = () => {
-
 
 //   const [lineData, setLineData] = useState({
 //     labels: Array.from({ length: 12 }, (_, i) =>
@@ -65,7 +66,7 @@ type FilterType = 'D' | 'M' | 'Y';
 
 //   const [selectedYear, setSelectedYear] = useState(null); // To track the selected year
 //   const [availableYears, setAvailableYears] = useState([]); //
-  
+
 //   const getDashBoardData = async () => {
 //     try {
 //       const response = await authApi.get(`/requisition/`, {
@@ -110,7 +111,7 @@ type FilterType = 'D' | 'M' | 'Y';
 //         }));
 //       }
 //     } catch (error) {
-//       console.error("Error fetching dashboard data:", error);
+//       logger.error("Error fetching dashboard data:", error);
 //     }
 //   };
 //   // Fetch data whenever the selected year changes
@@ -184,8 +185,6 @@ type FilterType = 'D' | 'M' | 'Y';
 // };
 
 // export default LineGraphrequisitions;
-
-
 
 // import { useState, useEffect } from "react";
 // import { Line } from "react-chartjs-2";
@@ -336,12 +335,13 @@ const LineGraphRequisitions = () => {
   };
 
   // Chart options with fix for y-axis negative values
-  const options: ChartOptions<'line'> = {
+  const options: ChartOptions<"line"> = {
     responsive: true,
     plugins: {
       tooltip: {
         callbacks: {
-          label: (tooltipItem: TooltipItem<'line'>) => `${tooltipItem.raw} Requisitions`,
+          label: (tooltipItem: TooltipItem<"line">) =>
+            `${tooltipItem.raw} Requisitions`,
         },
       },
     },
@@ -350,7 +350,11 @@ const LineGraphRequisitions = () => {
         title: {
           display: true,
           text:
-            filterType === "D" ? "Last 30 Days" : filterType === "M" ? "Months" : "Years",
+            filterType === "D"
+              ? "Last 30 Days"
+              : filterType === "M"
+                ? "Months"
+                : "Years",
         },
       },
       y: {
@@ -373,22 +377,25 @@ const LineGraphRequisitions = () => {
         {/* Filter buttons: D, M, Y */}
         <div className="flex space-x-2">
           <button
-            className={`px-3 pt-1 pb-0 text-sm rounded ${filterType === "D" ? "bg-blue-500 text-white" : "bg-gray-200"
-              }`}
+            className={`px-3 pt-1 pb-0 text-sm rounded ${
+              filterType === "D" ? "bg-blue-500 text-white" : "bg-gray-200"
+            }`}
             onClick={() => handleFilterChange("D")}
           >
             D
           </button>
           <button
-            className={`px-3 pt-1 pb-0 text-sm rounded ${filterType === "M" ? "bg-blue-500 text-white" : "bg-gray-200"
-              }`}
+            className={`px-3 pt-1 pb-0 text-sm rounded ${
+              filterType === "M" ? "bg-blue-500 text-white" : "bg-gray-200"
+            }`}
             onClick={() => handleFilterChange("M")}
           >
             M
           </button>
           <button
-            className={`px-3 pt-1 pb-0 text-sm rounded ${filterType === "Y" ? "bg-blue-500 text-white" : "bg-gray-200"
-              }`}
+            className={`px-3 pt-1 pb-0 text-sm rounded ${
+              filterType === "Y" ? "bg-blue-500 text-white" : "bg-gray-200"
+            }`}
             onClick={() => handleFilterChange("Y")}
           >
             Y

@@ -10,6 +10,7 @@ import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAutoSave } from "../../hooks/useAutoSave";
 import AutosaveIndicator from "../AutosaveIndicator";
+import logger from "../../utils/logger";
 
 interface Project {
   id: string;
@@ -193,7 +194,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
         await authMultiFormApi.put(`/requisition/${requisitionId}`, cleanData);
       } catch (error) {
         // Silent fail for autosave - don't interrupt user
-        console.error("Backend autosave failed:", error);
+        logger.error("Backend autosave failed:", error);
       }
     },
     [requisitionId],
@@ -286,7 +287,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
           maxDeliveryDate: data.maxDeliveryDate || null,
         };
 
-        console.log("Creating requisition with payload:", payload);
+        logger.debug("Creating requisition with payload:", payload);
 
         const response = await authMultiFormApi.post<{ data: { id: string } }>(
           "/requisition/",
@@ -315,7 +316,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
         nextStep();
       }
     } catch (error: any) {
-      console.error("Requisition error:", error.response?.data || error);
+      logger.error("Requisition error:", error.response?.data || error);
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
@@ -336,7 +337,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to fetch projects";
-      console.error(errorMessage);
+      logger.error(errorMessage);
     }
   };
 

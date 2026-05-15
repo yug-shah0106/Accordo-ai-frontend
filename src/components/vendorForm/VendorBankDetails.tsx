@@ -6,6 +6,7 @@ import { authApi } from "../../api";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 import { env } from "@/utils/env";
+import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
 
 interface Company {
   id?: string;
@@ -198,7 +199,7 @@ const VendorBankDetails: React.FC<VendorBankDetailsProps> = ({
             <div>
               {company?.cancelledChequeURL && (
                 <img
-                  src={`${env("VITE_ASSEST_URL")}/uploads/${company.cancelledChequeURL}`}
+                  src={`${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${company.cancelledChequeURL}`}
                   alt="Cancelled Cheque"
                   className="w-[50%] h-auto"
                 />

@@ -12,6 +12,7 @@ import VendorBankDetails from "../vendorForm/VendorBankDetails";
 import VendorCurrencyDetails from "../vendorForm/VendorCurrencyDetails";
 import VendorReview from "../vendorForm/VendorReview";
 import toast from "react-hot-toast";
+import logger from "../../utils/logger";
 
 interface Company {
   id: string;
@@ -86,12 +87,12 @@ const AddVendor: React.FC = () => {
         data: { data },
       } = await authApi.get<{ data: Company }>(`/company/${companyId}`);
 
-      console.log('=== FETCHED COMPANY DATA ===');
-      console.log('Company Name:', data.companyName);
-      console.log('GST Number:', data.gstNumber);
-      console.log('Bank Name:', data.bankName);
-      console.log('Vendor array:', (data as any).Vendor);
-      console.log('VendorCompanies array:', (data as any).VendorCompanies);
+      logger.debug('=== FETCHED COMPANY DATA ===');
+      logger.debug('Company Name:', data.companyName);
+      logger.debug('GST Number:', data.gstNumber);
+      logger.debug('Bank Name:', data.bankName);
+      logger.debug('Vendor array:', (data as any).Vendor);
+      logger.debug('VendorCompanies array:', (data as any).VendorCompanies);
 
       setCompany(data);
     } catch (error) {

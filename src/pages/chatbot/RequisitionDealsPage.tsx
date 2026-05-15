@@ -7,6 +7,7 @@ import { FiArrowLeft, FiPlus, FiRefreshCw, FiFilter, FiFolder, FiDollarSign, FiC
 // Note: FiArchive is still used for the "View Archived" link in the header
 import { ConfirmDialog, ArchiveFilterDropdown } from "../../components/chatbot/common";
 import toast from "react-hot-toast";
+import logger from "../../utils/logger";
 
 interface RequisitionDealsState {
   data: RequisitionDealsResponse | null;
@@ -56,7 +57,7 @@ export default function RequisitionDealsPage() {
         loading: false,
       }));
     } catch (err: any) {
-      console.error("Failed to fetch requisition deals:", err);
+      logger.error("Failed to fetch requisition deals:", err);
       setState((prev) => ({
         ...prev,
         error: err,

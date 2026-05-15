@@ -4,25 +4,29 @@ import {
   LinearScale,
   PointElement,
   LineElement,
+  LineController,
   BarElement,
+  BarController,
   Filler,
   Tooltip,
   Legend,
-} from 'chart.js';
-import { Chart } from 'react-chartjs-2';
-import { TrendingUp, Calendar, Zap } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
-import type { SavingsTimeline } from '../../types/dashboard';
+} from "chart.js";
+import { Chart } from "react-chartjs-2";
+import { TrendingUp, Calendar, Zap } from "lucide-react";
+import { useTheme } from "../../context/ThemeContext";
+import type { SavingsTimeline } from "../../types/dashboard";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  LineController,
   BarElement,
+  BarController,
   Filler,
   Tooltip,
-  Legend
+  Legend,
 );
 
 interface SavingsOverTimeChartProps {
@@ -45,6 +49,17 @@ const SavingsOverTimeChart = ({ timeline }: SavingsOverTimeChartProps) => {
   const { isDark } = useTheme();
 
   if (!timeline) return null;
+
+  if (
+    !Array.isArray(timeline.data) ||
+    !Array.isArray(timeline.previousPeriodCumulative) ||
+    !Array.isArray(timeline.labels) ||
+    !Array.isArray(timeline.cumulative) ||
+    !timeline.summary ||
+    typeof timeline.summary !== "object"
+  ) {
+    return null;
+  }
 
   const hasData = timeline.data.some((v) => v > 0);
   const hasPrevData = timeline.previousPeriodCumulative.some((v) => v > 0);
@@ -72,31 +87,43 @@ const SavingsOverTimeChart = ({ timeline }: SavingsOverTimeChartProps) => {
     datasets: [
       // Per-bucket savings bars
       {
-        type: 'bar' as const,
-        label: 'Period Savings',
+        type: "bar" as const,
+        label: "Period Savings",
         data: timeline.data,
-        backgroundColor: isDark ? 'rgba(99, 102, 241, 0.35)' : 'rgba(35, 75, 243, 0.18)',
-        hoverBackgroundColor: isDark ? 'rgba(99, 102, 241, 0.55)' : 'rgba(35, 75, 243, 0.35)',
+        backgroundColor: isDark
+          ? "rgba(99, 102, 241, 0.35)"
+          : "rgba(35, 75, 243, 0.18)",
+        hoverBackgroundColor: isDark
+          ? "rgba(99, 102, 241, 0.55)"
+          : "rgba(35, 75, 243, 0.35)",
         borderRadius: 4,
         borderSkipped: false,
         barPercentage: 0.6,
         categoryPercentage: 0.8,
-        yAxisID: 'yBar',
+        yAxisID: "yBar",
         order: 2,
       },
       // Cumulative line
       {
-        type: 'line' as const,
-        label: 'Cumulative Savings',
+        type: "line" as const,
+        label: "Cumulative Savings",
         data: timeline.cumulative,
-        borderColor: '#234BF3',
+        borderColor: "#234BF3",
         backgroundColor: (ctx: any) => {
           const chart = ctx.chart;
           const { ctx: canvasCtx, chartArea } = chart;
-          if (!chartArea) return 'rgba(35, 75, 243, 0.05)';
-          const gradient = canvasCtx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-          gradient.addColorStop(0, isDark ? 'rgba(35, 75, 243, 0.18)' : 'rgba(35, 75, 243, 0.10)');
-          gradient.addColorStop(1, 'rgba(35, 75, 243, 0.0)');
+          if (!chartArea) return "rgba(35, 75, 243, 0.05)";
+          const gradient = canvasCtx.createLinearGradient(
+            0,
+            chartArea.top,
+            0,
+            chartArea.bottom,
+          );
+          gradient.addColorStop(
+            0,
+            isDark ? "rgba(35, 75, 243, 0.18)" : "rgba(35, 75, 243, 0.10)",
+          );
+          gradient.addColorStop(1, "rgba(35, 75, 243, 0.0)");
           return gradient;
         },
         fill: true,
@@ -104,29 +131,29 @@ const SavingsOverTimeChart = ({ timeline }: SavingsOverTimeChartProps) => {
         borderWidth: 2.5,
         pointRadius: timeline.cumulative.length <= 10 ? 3 : 0,
         pointHoverRadius: 5,
-        pointBackgroundColor: '#234BF3',
-        pointBorderColor: isDark ? '#1a1f2e' : '#ffffff',
+        pointBackgroundColor: "#234BF3",
+        pointBorderColor: isDark ? "#1a1f2e" : "#ffffff",
         pointBorderWidth: 2,
-        yAxisID: 'yLine',
+        yAxisID: "yLine",
         order: 1,
       },
       // Previous period comparison (dashed)
       ...(hasPrevData
         ? [
             {
-              type: 'line' as const,
-              label: 'Previous Period',
+              type: "line" as const,
+              label: "Previous Period",
               data: timeline.previousPeriodCumulative,
-              borderColor: isDark ? '#4a5568' : '#CBD5E1',
+              borderColor: isDark ? "#4a5568" : "#CBD5E1",
               borderDash: [6, 4],
-              backgroundColor: 'transparent',
+              backgroundColor: "transparent",
               fill: false,
               tension: 0.35,
               borderWidth: 1.5,
               pointRadius: 0,
               pointHoverRadius: 4,
-              pointBackgroundColor: isDark ? '#4a5568' : '#CBD5E1',
-              yAxisID: 'yLine',
+              pointBackgroundColor: isDark ? "#4a5568" : "#CBD5E1",
+              yAxisID: "yLine",
               order: 0,
             },
           ]
@@ -139,31 +166,31 @@ const SavingsOverTimeChart = ({ timeline }: SavingsOverTimeChartProps) => {
     maintainAspectRatio: false,
     interaction: {
       intersect: false,
-      mode: 'index' as const,
+      mode: "index" as const,
     },
     plugins: {
       legend: {
         display: true,
-        position: 'bottom' as const,
-        align: 'center' as const,
+        position: "bottom" as const,
+        align: "center" as const,
         labels: {
           boxWidth: 10,
           boxHeight: 10,
           usePointStyle: true,
-          pointStyle: 'rectRounded',
-          color: isDark ? '#94a3b8' : '#64748B',
-          font: { size: 11, family: 'Inter, system-ui, sans-serif' },
+          pointStyle: "rectRounded",
+          color: isDark ? "#94a3b8" : "#64748B",
+          font: { size: 11, family: "Inter, system-ui, sans-serif" },
           padding: 16,
-          filter: (item: any) => item.text !== 'Period Savings' || hasData,
+          filter: (item: any) => item.text !== "Period Savings" || hasData,
         },
       },
       tooltip: {
-        backgroundColor: isDark ? '#1e293b' : '#0f172a',
-        titleColor: '#f1f5f9',
-        bodyColor: '#cbd5e1',
-        titleFont: { size: 12, weight: 'bold' as const },
+        backgroundColor: isDark ? "#1e293b" : "#0f172a",
+        titleColor: "#f1f5f9",
+        bodyColor: "#cbd5e1",
+        titleFont: { size: 12, weight: "bold" as const },
         bodyFont: { size: 11 },
-        borderColor: isDark ? '#334155' : '#1e293b',
+        borderColor: isDark ? "#334155" : "#1e293b",
         borderWidth: 1,
         padding: { top: 10, bottom: 10, left: 14, right: 14 },
         cornerRadius: 8,
@@ -183,25 +210,26 @@ const SavingsOverTimeChart = ({ timeline }: SavingsOverTimeChartProps) => {
       x: {
         grid: { display: false },
         ticks: {
-          color: isDark ? '#64748b' : '#94a3b8',
+          color: isDark ? "#64748b" : "#94a3b8",
           font: { size: 10 },
           maxRotation: 0,
           autoSkip: true,
-          maxTicksLimit: timeline.labels.length <= 10 ? timeline.labels.length : 10,
+          maxTicksLimit:
+            timeline.labels.length <= 10 ? timeline.labels.length : 10,
         },
         border: { display: false },
       },
       // Left axis for cumulative line
       yLine: {
-        type: 'linear' as const,
-        position: 'left' as const,
+        type: "linear" as const,
+        position: "left" as const,
         beginAtZero: true,
         grid: {
-          color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+          color: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
         },
         border: { display: false },
         ticks: {
-          color: isDark ? '#64748b' : '#94a3b8',
+          color: isDark ? "#64748b" : "#94a3b8",
           font: { size: 10 },
           padding: 8,
           callback: (val: any) => formatCurrencyCompact(val),
@@ -210,13 +238,13 @@ const SavingsOverTimeChart = ({ timeline }: SavingsOverTimeChartProps) => {
       },
       // Right axis for per-bucket bars (hidden axis, shares scale feel)
       yBar: {
-        type: 'linear' as const,
-        position: 'right' as const,
+        type: "linear" as const,
+        position: "right" as const,
         beginAtZero: true,
         grid: { display: false },
         border: { display: false },
         ticks: {
-          color: isDark ? '#475569' : '#cbd5e1',
+          color: isDark ? "#475569" : "#cbd5e1",
           font: { size: 10 },
           padding: 8,
           callback: (val: any) => formatCurrencyCompact(val),
@@ -240,14 +268,18 @@ const SavingsOverTimeChart = ({ timeline }: SavingsOverTimeChartProps) => {
         <div className="flex items-center gap-5 mb-4 mt-2">
           <div className="flex items-center gap-1.5">
             <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="text-xs text-gray-500 dark:text-dark-text-secondary">Total</span>
+            <span className="text-xs text-gray-500 dark:text-dark-text-secondary">
+              Total
+            </span>
             <span className="text-xs font-semibold text-gray-800 dark:text-dark-text">
               {formatCurrency(summary.total)}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5 text-blue-500" />
-            <span className="text-xs text-gray-500 dark:text-dark-text-secondary">Avg/period</span>
+            <span className="text-xs text-gray-500 dark:text-dark-text-secondary">
+              Avg/period
+            </span>
             <span className="text-xs font-semibold text-gray-800 dark:text-dark-text">
               {formatCurrency(summary.avgPerBucket)}
             </span>
@@ -255,7 +287,9 @@ const SavingsOverTimeChart = ({ timeline }: SavingsOverTimeChartProps) => {
           {summary.peakValue > 0 && (
             <div className="flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5 text-amber-500" />
-              <span className="text-xs text-gray-500 dark:text-dark-text-secondary">Best</span>
+              <span className="text-xs text-gray-500 dark:text-dark-text-secondary">
+                Best
+              </span>
               <span className="text-xs font-semibold text-gray-800 dark:text-dark-text">
                 {formatCurrency(summary.peakValue)}
               </span>

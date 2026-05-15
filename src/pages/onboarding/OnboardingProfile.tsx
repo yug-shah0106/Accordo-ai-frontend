@@ -9,6 +9,8 @@ import { FiUser } from "react-icons/fi";
 import toast from "react-hot-toast";
 import Modal from "../../components/Modal";
 import { env } from "@/utils/env";
+import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
+import logger from "../../utils/logger";
 
 interface OnboardingFormData {
   profileData?: {
@@ -97,12 +99,12 @@ const OnboardingProfile = ({
 
           if (userData.profilePic) {
             setPreview(
-              `${env("VITE_ASSEST_URL")}/uploads/${userData.profilePic}`
+              `${normalizeViteEnvUrl(env("VITE_ASSEST_URL") || "")}/uploads/${userData.profilePic}`
             );
           }
         }
       } catch (error) {
-        console.error("Failed to fetch user data:", error);
+        logger.error("Failed to fetch user data:", error);
         // If no user data, use prefilled values
         if (isMounted && (prefilledName || prefilledEmail)) {
           reset({
@@ -172,7 +174,7 @@ const OnboardingProfile = ({
       toast.success("Profile updated successfully");
       nextStep();
     } catch (error) {
-      console.error("API call failed: ", error);
+      logger.error("API call failed: ", error);
       toast.error("Failed to update profile");
     }
   };
@@ -193,7 +195,7 @@ const OnboardingProfile = ({
       }
       toast.success("Profile photo removed");
     } catch (error) {
-      console.error("Failed to remove profile photo:", error);
+      logger.error("Failed to remove profile photo:", error);
       toast.error("Failed to remove profile photo");
     } finally {
       setIsDeleting(false);

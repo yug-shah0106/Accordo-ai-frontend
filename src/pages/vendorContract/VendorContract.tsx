@@ -9,6 +9,7 @@ import api from "../../api";
 import { useEffect, useState } from "react";
 import DateField from "../../components/DateField";
 import SelectField from "../../components/SelectField";
+import logger from "../../utils/logger";
 
 const CURRENCY_SYMBOL_MAP: Record<string, string> = {
   USD: '$',
@@ -43,7 +44,7 @@ const VendorContact = () => {
       } = await api.get(`/contract/get-contract-details?uniquetoken=${uniqueToken}`);
       setContracts(data);
     } catch (error: any) {
-      console.error("Error fetching vendor contract:", error);
+      logger.error("Error fetching vendor contract:", error);
       toast.error(error.message || "Something went wrong while fetching data");
     } finally {
       setLoading(false);
@@ -111,7 +112,7 @@ const VendorContact = () => {
         }
       }
     } catch (e) {
-      console.error('Failed to parse contractDetails for pre-fill:', e);
+      logger.error('Failed to parse contractDetails for pre-fill:', e);
     }
   }, [contracts, setValue]);
 
@@ -174,7 +175,7 @@ const VendorContact = () => {
         contractDetails: contractDetails,
       });
 
-      console.log("API Response:", response.data);
+      logger.debug("API Response:", response.data);
 
       // Update local state
       setContracts((prev: any) => ({
@@ -187,7 +188,7 @@ const VendorContact = () => {
       // Show countdown and redirect to vendor chat
       setShowCountdown(true);
     } catch (error: any) {
-      console.error("Error in onSubmit:", error);
+      logger.error("Error in onSubmit:", error);
       toast.error(error.response?.data?.message || error.message || "Something went wrong");
     }
   };

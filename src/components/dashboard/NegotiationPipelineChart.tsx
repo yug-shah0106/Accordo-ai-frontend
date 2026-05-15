@@ -3,26 +3,40 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
+  BarController,
   Tooltip,
-} from 'chart.js';
-import { Bar } from 'react-chartjs-2';
-import { useTheme } from '../../context/ThemeContext';
-import type { NegotiationPipeline } from '../../types/dashboard';
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+import { useTheme } from "../../context/ThemeContext";
+import type { NegotiationPipeline } from "../../types/dashboard";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  BarController,
+  Tooltip,
+);
 
 interface NegotiationPipelineChartProps {
   pipeline: NegotiationPipeline | undefined;
 }
 
-const NegotiationPipelineChart = ({ pipeline }: NegotiationPipelineChartProps) => {
+const NegotiationPipelineChart = ({
+  pipeline,
+}: NegotiationPipelineChartProps) => {
   const { isDark } = useTheme();
 
   if (!pipeline) return null;
 
-  const labels = ['Negotiating', 'Accepted', 'Walked Away', 'Escalated'];
-  const values = [pipeline.negotiating, pipeline.accepted, pipeline.walkedAway, pipeline.escalated];
-  const colors = ['#3B82F6', '#10B981', '#EF4444', '#F59E0B'];
+  const labels = ["Negotiating", "Accepted", "Walked Away", "Escalated"];
+  const values = [
+    pipeline.negotiating,
+    pipeline.accepted,
+    pipeline.walkedAway,
+    pipeline.escalated,
+  ];
+  const colors = ["#3B82F6", "#10B981", "#EF4444", "#F59E0B"];
 
   const data = {
     labels,
@@ -37,7 +51,7 @@ const NegotiationPipelineChart = ({ pipeline }: NegotiationPipelineChartProps) =
   };
 
   const options = {
-    indexAxis: 'y' as const,
+    indexAxis: "y" as const,
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -52,17 +66,17 @@ const NegotiationPipelineChart = ({ pipeline }: NegotiationPipelineChartProps) =
       x: {
         beginAtZero: true,
         grid: {
-          color: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+          color: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
         },
         ticks: {
-          color: isDark ? '#a0aec0' : '#6B7280',
+          color: isDark ? "#a0aec0" : "#6B7280",
           stepSize: 1,
         },
       },
       y: {
         grid: { display: false },
         ticks: {
-          color: isDark ? '#e2e8f0' : '#374151',
+          color: isDark ? "#e2e8f0" : "#374151",
           font: { size: 13 },
         },
       },

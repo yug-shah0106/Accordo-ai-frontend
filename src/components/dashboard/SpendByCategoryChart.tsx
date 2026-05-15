@@ -3,13 +3,20 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
+  BarController,
   Tooltip,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import { useTheme } from "../../context/ThemeContext";
 import type { SpendCategory } from "../../types/dashboard";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  BarController,
+  Tooltip,
+);
 
 interface SpendByCategoryChartProps {
   categories: SpendCategory[] | undefined;

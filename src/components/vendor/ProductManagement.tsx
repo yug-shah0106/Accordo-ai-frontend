@@ -13,6 +13,7 @@ import useDebounce from "../../hooks/useDebounce";
 import Modal from "../Modal";
 import { authApi } from "../../api";
 import toast from "react-hot-toast";
+import logger from "../../utils/logger";
 
 const ProductManagement = () => {
   const [isModal, setIsModal] = useState(false);
@@ -52,9 +53,9 @@ const ProductManagement = () => {
     setTotalDoc: _setTotalDoc,
     refetch,
   } = useFetchData("/product/", 10);
-  console.log({totalCount});
-  console.log({page});
-  console.log({totalDoc});
+  logger.debug({totalCount});
+  logger.debug({page});
+  logger.debug({totalDoc});
 
   
   const debounce = useDebounce(setSearch, 600);
@@ -153,7 +154,7 @@ const ProductManagement = () => {
       },
     },
   ];
-console.log({products});
+logger.debug({products});
 
   // Reset scroll position when component mounts
   useEffect(() => {

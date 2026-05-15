@@ -16,6 +16,7 @@ import Modal from "../Modal";
 import { useRef } from "react";
 import { LuTwitch } from "react-icons/lu";
 import { hasPermission } from "../../utils/permissions";
+import logger from "../../utils/logger";
 
 // Error boundary component - defined outside to prevent re-creation on each render
 class ErrorBoundary extends React.Component<
@@ -32,7 +33,7 @@ class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error in component:', error, errorInfo);
+    logger.error('Error in component:', error, errorInfo);
   }
 
   render() {

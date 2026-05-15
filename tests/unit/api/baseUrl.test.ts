@@ -14,6 +14,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
  *   - URL ending with "/api" → used as-is
  *   - URL not ending with "/api" → appends "/api"
  *   - trailing slashes are stripped before the check
+ *   - host:port without scheme → http://... (absolute URL for axios)
  */
 describe('API base URL construction', () => {
   beforeEach(() => {
@@ -90,5 +91,17 @@ describe('API base URL construction', () => {
     expect(mod.default.defaults.baseURL).toBe('https://api.example.com/api');
     expect(mod.authApi.defaults.baseURL).toBe('https://api.example.com/api');
     expect(mod.authMultiFormApi.defaults.baseURL).toBe('https://api.example.com/api');
+  });
+
+  it('prepends http:// when env is host:port without scheme', async () => {
+    window.__ENV__ = {
+      VITE_BACKEND_URL: 'ec2-13-232-58-235.ap-south-1.compute.amazonaws.com:5002',
+    };
+
+    const baseURL = await getApiBaseURL();
+
+    expect(baseURL).toBe(
+      'http://ec2-13-232-58-235.ap-south-1.compute.amazonaws.com:5002/api',
+    );
   });
 });

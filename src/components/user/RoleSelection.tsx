@@ -3,6 +3,7 @@ import { IoClose } from "react-icons/io5";
 import Button from "../Button";
 import { authApi } from "../../api";
 import toast from "react-hot-toast";
+import logger from "../../utils/logger";
 
 interface RoleSelectionModalProps {
   onClose: () => void;
@@ -106,7 +107,7 @@ const RoleSelectionModal = ({ onClose, edit_role, onSuccess }: RoleSelectionModa
         onClose();
       }
     } catch (error: any) {
-      console.error("Error creating role:", error);
+      logger.error("Error creating role:", error);
       toast.error(error.response?.data?.error || "Failed to create role");
     } finally {
       setIsSubmitting(false);
@@ -140,7 +141,7 @@ const RoleSelectionModal = ({ onClose, edit_role, onSuccess }: RoleSelectionModa
         onClose();
       }
     } catch (error: any) {
-      console.error("Error updating role:", error);
+      logger.error("Error updating role:", error);
       toast.error(error.response?.data?.error || "Failed to update role");
     } finally {
       setIsSubmitting(false);

@@ -41,7 +41,7 @@ const Table = ({
 
   // const handleCopy = (link) => {
   //   if (!navigator.clipboard) {
-  //     console.warn("Clipboard API not available or blocked.");
+  //     logger.warn("Clipboard API not available or blocked.");
   //     fallbackCopyText(link);
   //     return;
   //   }
@@ -49,11 +49,11 @@ const Table = ({
   //   navigator.clipboard
   //     .writeText(link)
   //     .then(() => {
-  //       console.log("Link copied successfully!");
+  //       logger.debug("Link copied successfully!");
   //       toast.success("Link copied to clipboard!");
   //     })
   //     .catch((error) => {
-  //       console.error("Error copying link:", error);
+  //       logger.error("Error copying link:", error);
   //       fallbackCopyText(link);
   //     });
   // };
@@ -68,7 +68,7 @@ const Table = ({
   //     document.execCommand("copy");
   //     toast.success("Link copied using fallback method!");
   //   } catch (err) {
-  //     console.error("Fallback copy failed:", err);
+  //     logger.error("Fallback copy failed:", err);
   //   }
   //   document.body.removeChild(textarea);
   // };

@@ -18,7 +18,7 @@ const ProtectedRoute = ({
   // const hasPermission = (perm) => {
   //     const userPermissions =
   //         JSON.parse(localStorage.getItem("projectPermission")) || [];
-  //     console.log("User Permissions:", userPermissions);
+  //     logger.debug("User Permissions:", userPermissions);
 
   //     const [module, permissionType] = perm.split(":");
 

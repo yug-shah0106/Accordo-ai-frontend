@@ -7,6 +7,7 @@ import VendorDetails from "./VendorDetails";
 import StartDeals from "./StartDeals";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { authApi } from "../../api";
+import logger from "../../utils/logger";
 
 interface Requisition {
   id: string;
@@ -90,7 +91,7 @@ const AddRequisition: React.FC = () => {
       setRequisition(data);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Something went wrong";
-      console.error(errorMessage);
+      logger.error(errorMessage);
     }
   };
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { authApi } from "../../api";
 import toast from "react-hot-toast";
+import logger from "../../utils/logger";
 
 interface NegotiationParametersProps {
     requisitionId: string;
@@ -50,7 +51,7 @@ const NegotiationParameters = ({ requisitionId, onUpdate }: NegotiationParameter
                 discountedValue: requisition.discountedValue || "",
             });
         } catch (error: unknown) {
-            console.error("Error fetching requisition:", error);
+            logger.error("Error fetching requisition:", error);
             const errorMessage = error instanceof Error ? error.message : "Failed to load negotiation parameters";
             toast.error(errorMessage);
         } finally {
@@ -100,7 +101,7 @@ const NegotiationParameters = ({ requisitionId, onUpdate }: NegotiationParameter
                 onUpdate();
             }
         } catch (error: unknown) {
-            console.error("Error updating negotiation parameters:", error);
+            logger.error("Error updating negotiation parameters:", error);
             const errorMessage = error instanceof Error ? error.message : "Failed to update negotiation parameters";
             toast.error(errorMessage);
         } finally {
@@ -248,4 +249,3 @@ const NegotiationParameters = ({ requisitionId, onUpdate }: NegotiationParameter
 };
 
 export default NegotiationParameters;
-

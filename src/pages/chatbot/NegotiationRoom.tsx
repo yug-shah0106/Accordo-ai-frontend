@@ -16,6 +16,7 @@ import {
   AiReasoningModal,
   type UnifiedRecommendationAction as RecommendationAction,
 } from "../../components/chatbot/sidebar";
+import logger from "../../utils/logger";
 
 // Type for weighted utility data from API
 interface WeightedUtilityData {
@@ -56,7 +57,7 @@ export default function NegotiationRoom() {
   const navigate = useNavigate();
 
   // DEBUG: Log component mount and dealId
-  console.log('[NegotiationRoom] MOUNTED with dealId:', dealId);
+  logger.debug('[NegotiationRoom] MOUNTED with dealId:', dealId);
 
   const [showExportDropdown, setShowExportDropdown] = useState<boolean>(false);
   const exportDropdownRef = useRef<HTMLDivElement>(null);
@@ -245,7 +246,7 @@ export default function NegotiationRoom() {
           toast.success("Deal has been reset. Vendor will need to start negotiation again.");
           setStatusBanner(null); // Clear any status banner
         } catch (err) {
-          console.error("Failed to reset deal:", err);
+          logger.error("Failed to reset deal:", err);
           toast.error("Failed to reset deal. Please try again.");
         }
       }
@@ -275,7 +276,7 @@ export default function NegotiationRoom() {
       const response = await chatbotService.getDealSummary(context);
       setSummary(response.data);
     } catch (err: any) {
-      console.error("Failed to fetch deal summary:", err);
+      logger.error("Failed to fetch deal summary:", err);
       setSummaryError(err.response?.data?.message || "Failed to load deal summary");
     } finally {
       setSummaryLoading(false);
@@ -297,7 +298,7 @@ export default function NegotiationRoom() {
       const response = await chatbotService.getDealUtility(context);
       setUtilityData(response.data);
     } catch (err) {
-      console.error("Failed to fetch utility data:", err);
+      logger.error("Failed to fetch utility data:", err);
       // Silently fail - utility data is optional enhancement
     } finally {
       setUtilityLoading(false);
@@ -311,7 +312,7 @@ export default function NegotiationRoom() {
       const response = await chatbotService.getBehavioralData(context);
       setBehavioralData(response.data);
     } catch (err) {
-      console.debug("Behavioral data not available:", err);
+      logger.debug("Behavioral data not available:", err);
       // Silently fail - behavioral data is an optional enhancement
     }
   }, [context]);

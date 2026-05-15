@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { chatApi } from "../services/chat.service";
+import logger from "../utils/logger";
 
 interface Message {
     role: string;
@@ -40,7 +41,7 @@ const NegotiationChat = () => {
             const aiMessage = { role: "assistant", content: response.message };
             setMessages((prev) => [...prev, aiMessage]);
         } catch (error) {
-            console.error("Failed to send message:", error);
+            logger.error("Failed to send message:", error);
             const errorMessage = { role: "system", content: "Error: Failed to get response from AI." };
             setMessages((prev) => [...prev, errorMessage]);
         } finally {
@@ -127,4 +128,3 @@ const NegotiationChat = () => {
 };
 
 export default NegotiationChat;
-

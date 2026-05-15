@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -54,6 +54,49 @@ interface LoginResponse {
   };
 }
 
+/** Supports `{ data: { accessToken, refreshToken, user } }` and flat `{ accessToken, refreshToken, user }` on the axios body. */
+function extractLoginPayload(axiosBody: unknown): {
+  accessToken: string;
+  refreshToken: string;
+  user?: User;
+} | null {
+  if (!axiosBody || typeof axiosBody !== "object") {
+    return null;
+  }
+  const root = axiosBody as Record<string, unknown>;
+  const inner =
+    root.data !== undefined && typeof root.data === "object"
+      ? (root.data as Record<string, unknown>)
+      : root;
+  const accessToken = inner.accessToken;
+  const refreshToken = inner.refreshToken;
+  if (typeof accessToken !== "string" || typeof refreshToken !== "string") {
+    return null;
+  }
+  return {
+    accessToken,
+    refreshToken,
+    user: inner.user as User | undefined,
+  };
+}
+
+function persistSessionFromLogin(payload: {
+  accessToken: string;
+  refreshToken: string;
+  user?: User;
+}): void {
+  tokenStorage.setTokens(payload.accessToken, payload.refreshToken);
+  const user = payload.user;
+  localStorage.setItem("%companyId%", String(user?.companyId ?? ""));
+  localStorage.setItem("projectPermission", user?.RolePermission?.project || "");
+  localStorage.setItem("requisitionPermission", user?.RolePermission?.requisition || "");
+  localStorage.setItem("contractPermission", user?.RolePermission?.contract || "");
+  localStorage.setItem("productPermission", user?.RolePermission?.product || "");
+  localStorage.setItem("vendorPermission", user?.RolePermission?.vendor || "");
+  localStorage.setItem("poPermission", user?.RolePermission?.po || "");
+  localStorage.setItem("userPermission", user?.RolePermission?.user || "");
+}
+
 export default function AuthPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("login");
@@ -70,6 +113,12 @@ export default function AuthPage() {
   const registerForm = useForm<RegisterFormData>({
     resolver: zodResolver(RegisterSchema),
   });
+
+  useEffect(() => {
+    if (tokenStorage.hasTokens()) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   const openModal = (): void => {
     setIsModalOpen(true);
@@ -93,21 +142,12 @@ export default function AuthPage() {
     try {
       const response = await api.post<LoginResponse>("/auth/login", data);
       if (response?.status === 200 || response?.statusText === "OK") {
-        const { accessToken, refreshToken, user } = response.data.data;
-
-        // Store tokens using tokenStorage utility
-        tokenStorage.setTokens(accessToken, refreshToken);
-
-        // Store user data and permissions
-        localStorage.setItem("%companyId%", String(user.companyId));
-        localStorage.setItem("projectPermission", user?.RolePermission?.project || "");
-        localStorage.setItem("requisitionPermission", user?.RolePermission?.requisition || "");
-        localStorage.setItem("contractPermission", user?.RolePermission?.contract || "");
-        localStorage.setItem("productPermission", user?.RolePermission?.product || "");
-        localStorage.setItem("vendorPermission", user?.RolePermission?.vendor || "");
-        localStorage.setItem("poPermission", user?.RolePermission?.po || "");
-        localStorage.setItem("userPermission", user?.RolePermission?.user || "");
-
+        const payload = extractLoginPayload(response.data);
+        if (!payload) {
+          toast.error("Unexpected login response from server. Please contact support.");
+          return;
+        }
+        persistSessionFromLogin(payload);
         navigate("/dashboard");
       }
     } catch (error: any) {
@@ -136,20 +176,12 @@ export default function AuthPage() {
       });
 
       if (loginResponse?.status === 200 || loginResponse?.statusText === "OK") {
-        const { accessToken, refreshToken, user } = loginResponse.data.data;
-
-        // Store tokens using tokenStorage utility
-        tokenStorage.setTokens(accessToken, refreshToken);
-
-        // Store user data and permissions
-        localStorage.setItem("%companyId%", String(user.companyId));
-        localStorage.setItem("projectPermission", user?.RolePermission?.project || "");
-        localStorage.setItem("requisitionPermission", user?.RolePermission?.requisition || "");
-        localStorage.setItem("contractPermission", user?.RolePermission?.contract || "");
-        localStorage.setItem("productPermission", user?.RolePermission?.product || "");
-        localStorage.setItem("vendorPermission", user?.RolePermission?.vendor || "");
-        localStorage.setItem("poPermission", user?.RolePermission?.po || "");
-        localStorage.setItem("userPermission", user?.RolePermission?.user || "");
+        const payload = extractLoginPayload(loginResponse.data);
+        if (!payload) {
+          toast.error("Unexpected login response from server. Please contact support.");
+          return;
+        }
+        persistSessionFromLogin(payload);
 
         toast.success("Welcome to Accordo! Let's set up your profile.");
 
@@ -180,7 +212,7 @@ export default function AuthPage() {
   return (
     <div className="w-full max-w-sm px-6 py-4 mx-auto">
       {/* Pill/Button Tabs */}
-      <div className="flex bg-gray-100 dark:bg-dark-bg rounded-full p-1 mb-6">
+      <div className="flex bg-gray-100 dark:bg-dark-surface rounded-full p-1 mb-6">
         <button
           type="button"
           onClick={() => handleTabChange("login")}

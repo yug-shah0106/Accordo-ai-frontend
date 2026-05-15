@@ -20,6 +20,8 @@ import type {
   UseFetchDataReturn
 } from "../../types/management.types";
 import { env } from "@/utils/env";
+import { normalizeViteBackendUrl } from "@/utils/normalizeViteBackendUrl";
+import logger from "../../utils/logger";
 
 const PoManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -91,12 +93,12 @@ const PoManagement = () => {
     if (cancelPoId) {
       try {
         const response = await authApi.put(`/po/cancel/${cancelPoId}`);
-        console.log(response.status);
+        logger.debug(response.status);
         refetch(); // Refresh data
         setIsModal(false);
         setCancelPoId(null);
       } catch (error) {
-        console.error("Error canceling PO:", error);
+        logger.error("Error canceling PO:", error);
         alert("An error occurred while canceling the purchase order.");
       }
     }
@@ -116,7 +118,7 @@ const PoManagement = () => {
       label: "Download PO",
       icon: <BsDownload />,
       link: (row: PurchaseOrder) =>
-        `${env("VITE_BACKEND_URL")}/po/download/${row.id}`,
+        `${normalizeViteBackendUrl(env("VITE_BACKEND_URL") || "")}/po/download/${row.id}`,
     },
     {
       type: "button",

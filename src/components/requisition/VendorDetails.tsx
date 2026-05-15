@@ -12,11 +12,13 @@ import Modal from "../Modal";
 import chatbotService from "../../services/chatbot.service";
 import type { VendorDealSummary } from "../../types/chatbot";
 import { env } from "@/utils/env";
+import { normalizeViteEnvUrl } from "@/utils/normalizeViteBackendUrl";
 import {
   DEAL_STATUS_COLORS,
   getContractStatusColors,
   type ContractStatus,
 } from "../../constants/colors";
+import logger from "../../utils/logger";
 
 interface Contract {
   id: string;
@@ -176,7 +178,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
       );
       setDeals(response.data?.deals || []);
     } catch (error: any) {
-      console.error("Failed to load deals:", error);
+      logger.error("Failed to load deals:", error);
       const msg =
         error?.response?.data?.message ||
         error?.message ||
@@ -357,13 +359,13 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
 
   // Open contract link in new window
   const handleOpenContractLink = (contract: Contract): void => {
-    const link = `${env("VITE_FRONTEND_URL")}/vendor-contract/${contract?.uniqueToken}`;
+    const link = `${normalizeViteEnvUrl(env("VITE_FRONTEND_URL") || "")}/vendor-contract/${contract?.uniqueToken}`;
     window.open(link, "_blank");
   };
 
   // Copy link to clipboard
   const handleCopyLink = (contract: Contract): void => {
-    const link = `${env("VITE_FRONTEND_URL")}/vendor-contract/${contract?.uniqueToken}`;
+    const link = `${normalizeViteEnvUrl(env("VITE_FRONTEND_URL") || "")}/vendor-contract/${contract?.uniqueToken}`;
     navigator.clipboard.writeText(link);
     toast.success("Link copied to clipboard");
   };
@@ -424,7 +426,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
       if (!requisition) return;
       // Requisition submission logic (currently not used)
     } catch (error) {
-      console.error("Error sending data:", error);
+      logger.error("Error sending data:", error);
     }
   };
 
@@ -729,7 +731,7 @@ const VendorDetails: React.FC<VendorDetailsProps> = ({
                   matchedVendor?.Vendor?.name ||
                   matchedVendor?.Vendor?.companyName ||
                   "Unknown Vendor";
-                const fullLink = `${env("VITE_FRONTEND_URL")}/vendor-contract/${contract?.uniqueToken}`;
+                const fullLink = `${normalizeViteEnvUrl(env("VITE_FRONTEND_URL") || "")}/vendor-contract/${contract?.uniqueToken}`;
 
                 return (
                   <li

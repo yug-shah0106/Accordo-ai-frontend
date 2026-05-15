@@ -6,6 +6,7 @@ import { RequisitionCard } from "../../components/chatbot/requisition-view";
 import { FiPlus, FiFilter, FiRefreshCw, FiArchive, FiRotateCcw } from "react-icons/fi";
 import { ConfirmDialog, ArchiveFilterDropdown } from "../../components/chatbot/common";
 import toast from "react-hot-toast";
+import logger from "../../utils/logger";
 
 interface RequisitionListState {
   requisitions: RequisitionWithDeals[];
@@ -62,7 +63,7 @@ export default function RequisitionListPage() {
         loading: false,
       }));
     } catch (err: any) {
-      console.error("Failed to fetch requisitions:", err);
+      logger.error("Failed to fetch requisitions:", err);
       setState((prev) => ({
         ...prev,
         error: err,

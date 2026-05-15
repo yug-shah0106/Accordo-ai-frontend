@@ -5,9 +5,10 @@ import axios, {
 } from "axios";
 import { tokenStorage } from "../utils/tokenStorage";
 import { env } from "../utils/env";
+import { normalizeViteBackendUrl } from "../utils/normalizeViteBackendUrl";
 
 const buildBaseUrl = (): string => {
-  const rawBaseUrl = (env("VITE_BACKEND_URL") || "").trim();
+  const rawBaseUrl = normalizeViteBackendUrl(env("VITE_BACKEND_URL") || "");
   if (!rawBaseUrl) {
     return "/api";
   }
@@ -36,9 +37,30 @@ export const authMultiFormApi: AxiosInstance = axios.create({
   baseURL: withApiPrefix,
 });
 
+/**
+ * Generate a short-ish UUID for cross-service request correlation.
+ * Browser crypto.randomUUID is available everywhere we ship (>= Safari 15.4).
+ */
+const newRequestId = (): string => {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
+    return crypto.randomUUID();
+  }
+  // Fallback for very old browsers
+  return `r-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+};
+
 const setAuthHeader = (
   config: InternalAxiosRequestConfig,
 ): InternalAxiosRequestConfig => {
+  // Attach a fresh request id so backend + auth logs can be correlated.
+  // If something upstream already set it (rare), preserve it.
+  if (!config.headers["x-request-id"]) {
+    config.headers["x-request-id"] = newRequestId();
+  }
+
   const storedToken = tokenStorage.getAccessToken();
   if (!storedToken) {
     return config;
@@ -74,6 +96,9 @@ interface QueuedRequest {
 }
 
 let failedQueue: QueuedRequest[] = [];
+// Once we've decided to redirect to /auth (refresh failed or no refresh token),
+// further 401s should short-circuit instead of looping through refresh again.
+let sessionExpired = false;
 
 const processQueue = (error: any = null, token: string | null = null): void => {
   failedQueue.forEach((prom) => {
@@ -87,6 +112,16 @@ const processQueue = (error: any = null, token: string | null = null): void => {
   failedQueue = [];
 };
 
+const expireSession = (error: unknown): Promise<never> => {
+  sessionExpired = true;
+  processQueue(error, null);
+  tokenStorage.clearTokens();
+  if (typeof window !== "undefined" && window.location.pathname !== "/auth") {
+    window.location.replace("/auth");
+  }
+  return Promise.reject(error);
+};
+
 const createResponseInterceptor = (instance: AxiosInstance): void => {
   instance.interceptors.response.use(
     (response) => response,
@@ -94,6 +129,13 @@ const createResponseInterceptor = (instance: AxiosInstance): void => {
       const originalRequest = error.config as InternalAxiosRequestConfig & {
         _retry?: boolean;
       };
+
+      // Once a session has been declared expired, every further 401 short-circuits.
+      // Without this guard, components mounted on the page can keep firing requests
+      // after window.location.replace() starts navigating, looping the interceptor.
+      if (sessionExpired && error.response?.status === 401) {
+        return Promise.reject(error);
+      }
 
       // Check if error is 401 and we haven't already retried
       // Also exclude refresh token endpoint to prevent infinite loop
@@ -123,11 +165,7 @@ const createResponseInterceptor = (instance: AxiosInstance): void => {
           const refreshToken = tokenStorage.getRefreshToken();
 
           if (!refreshToken) {
-            tokenStorage.clearTokens();
-            if (window.location.pathname !== "/auth") {
-              window.location.href = "/auth";
-            }
-            return Promise.reject(error);
+            return expireSession(error);
           }
 
           // Call refresh token endpoint
@@ -167,16 +205,11 @@ const createResponseInterceptor = (instance: AxiosInstance): void => {
             : `Bearer ${accessToken}`;
           return instance(originalRequest);
         } catch (refreshError) {
-          // Refresh failed - clear tokens and redirect to login
-          processQueue(refreshError, null);
-          tokenStorage.clearTokens();
-
-          // Redirect to login page if not already there
-          if (window.location.pathname !== "/auth") {
-            window.location.href = "/auth";
-          }
-
-          return Promise.reject(refreshError);
+          // Refresh failed — clear tokens, mark session expired, redirect.
+          // The sessionExpired guard at the top of this interceptor stops any
+          // subsequent in-flight 401s from looping while the navigation lands.
+          isRefreshing = false;
+          return expireSession(refreshError);
         } finally {
           isRefreshing = false;
         }

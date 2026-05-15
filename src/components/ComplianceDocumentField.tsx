@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { FiUpload, FiX, FiCheck } from 'react-icons/fi';
 import { ImSpinner8 } from 'react-icons/im';
 import { authApi } from '../api';
+import logger from "../utils/logger";
 
 interface ComplianceDocumentFieldProps {
   label: string;
@@ -63,7 +64,7 @@ const ComplianceDocumentField: React.FC<ComplianceDocumentFieldProps> = ({
 
       setHasFile(true);
     } catch (error) {
-      console.error('Document extraction failed:', error);
+      logger.error('Document extraction failed:', error);
       // Even if extraction fails, we keep the file
       if (onFileChange) {
         onFileChange(file, file.name);

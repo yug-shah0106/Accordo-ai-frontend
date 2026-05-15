@@ -10,6 +10,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { useAutoSave } from '../../hooks/useAutoSave';
 import toast from 'react-hot-toast';
 import { authApi } from '../../api';
+import logger from "../../utils/logger";
 
 /**
  * Address data structure for vendor company
@@ -171,7 +172,7 @@ const VendorFormContainer: React.FC<VendorFormContainerProps> = ({
           const response = await authApi.get(`/company/${companyId}`);
           setCompany(response.data.data);
         } catch (error) {
-          console.error('Error fetching company data:', error);
+          logger.error('Error fetching company data:', error);
           toast.error('Failed to load vendor data');
         } finally {
           setIsLoadingCompany(false);

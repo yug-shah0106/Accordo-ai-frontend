@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { authApi } from "../../api";
 import toast from "react-hot-toast";
 import { z } from "zod";
+import logger from "../../utils/logger";
 
 const validationSchema = z
   .object({
@@ -73,7 +74,7 @@ const ChangePassword = ({
       toast.success("Password changed successfully!");
       navigate("/dashboard");
     } catch (error: any) {
-      console.error("API call failed: ", error);
+      logger.error("API call failed: ", error);
       toast.error(error.response?.data?.message || "Failed to change password");
     }
   };

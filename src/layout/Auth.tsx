@@ -17,7 +17,7 @@ export default function Layout({ children, logo, className = "" }: LayoutProps) 
         </div>
       </nav>
 
-      <main className={`flex-1 flex justify-center items-center overflow-y-auto bg-white dark:bg-dark-bg`}>
+      <main className={`flex-1 flex justify-center items-center overflow-y-auto bg-white dark:bg-dark-surface`}>
         <div className={`w-full max-w-sm p-4 rounded-md ${className}`}>
           {children}
         </div>

@@ -14,6 +14,7 @@ import { useState } from "react";
 import { FiX, FiDownload, FiMail, FiLoader, FiCheck, FiAlertCircle } from "react-icons/fi";
 import type { DealContext } from "../../../types/chatbot";
 import chatbotService from "../../../services/chatbot.service";
+import logger from "../../../utils/logger";
 
 interface ExportPDFModalProps {
   isOpen: boolean;
@@ -84,7 +85,7 @@ export default function ExportPDFModal({
         setProgress(0);
       }, 1500);
     } catch (error: any) {
-      console.error("PDF download failed:", error);
+      logger.error("PDF download failed:", error);
       setStatus("error");
       setErrorMessage(error.response?.data?.message || "Failed to generate PDF. Please try again.");
     }
@@ -116,7 +117,7 @@ export default function ExportPDFModal({
         setEmail("");
       }, 2000);
     } catch (error: any) {
-      console.error("PDF email failed:", error);
+      logger.error("PDF email failed:", error);
       setStatus("error");
       setErrorMessage(error.response?.data?.message || "Failed to send email. Please try again.");
     }
